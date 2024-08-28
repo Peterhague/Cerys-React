@@ -47,7 +47,7 @@ const AppBody: React.FC = () => {
       case "userDashHome":
         return <UserDashHome handleView={handleView} />;
       case "customerLogin":
-        return <CustomerLogin handleView={handleView} />;
+        return <CustomerLogin handleView={handleView} updateSession={updateSession} session={session} />;
       case "customerSignUp":
         return <CustomerSignUp handleView={handleView} updateSession={updateSession} session={session} />;
       case "customerSignUpDtls":
