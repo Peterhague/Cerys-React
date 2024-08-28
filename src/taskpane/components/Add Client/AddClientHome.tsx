@@ -11,7 +11,7 @@ const AddClientHome: React.FC<addClientHomeProps> = (props: addClientHomeProps) 
   return (
     <>
       <CerysButton buttonText={"ADD CORPORATE CLIENT"} handleView={() => props.handleView("addCorpClientDtls")} />
-      <CerysButton buttonText={"ADD INDIVIDUAL AS CLIENT"} handleView={() => props.handleView("addClientHome")} />
+      <CerysButton buttonText={"ADD INDIVIDUAL AS CLIENT"} handleView={() => props.handleView("addIndiClientDtls")} />
     </>
   );
 };

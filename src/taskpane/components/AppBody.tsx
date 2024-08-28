@@ -13,6 +13,7 @@ import CustomerDashHome from "./CustomerDashHome";
 import CustomerClientsHome from "./CustomerClientsHome";
 import AddClientHome from "./Add Client/AddClientHome";
 import AddCorpClientDtls from "./Add Client/Add Corporate Client/AddCorpClientDtls";
+import AddIndiClientDtls from "./Add Client/Add Individual Client/AddIndiClientDtls";
 import AddCorpClientShares from "./Add Client/Add Corporate Client/AddCorpClientShares";
 import AddCorpClientOptions from "./Add Client/Add Corporate Client/AddCorpClientOptions";
 import AddCorpClientIndisHome from "./Add Client/Add Corporate Client/AddCorpClientIndisHome";
@@ -23,6 +24,8 @@ import AddCorpClientSHHome from "./Add Client/Add Corporate Client/AddCorpClient
 import AddCorpClientSHNew from "./Add Client/Add Corporate Client/AddCorpClientSHNew";
 import AddCorpClientAmort from "./Add Client/Add Corporate Client/AddCorpClientAmort";
 import AddCorpClientDepn from "./Add Client/Add Corporate Client/AddCorpClientDepn";
+import AddIndiClientAssocOptions from "./Add Client/Add Individual Client/AddIndiClientAssocOptions";
+import AddIndiClientAssocDir from "./Add Client/Add Individual Client/AddIndiClientAssocDir";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -86,6 +89,12 @@ const AppBody: React.FC = () => {
         return <AddCorpClientAmort handleView={handleView} updateSession={updateSession} session={session} />;
       case "addCorpClientDepn":
         return <AddCorpClientDepn handleView={handleView} updateSession={updateSession} session={session} />;
+      case "addIndiClientDtls":
+        return <AddIndiClientDtls handleView={handleView} updateSession={updateSession} session={session} />;
+      case "addIndiClientAssocOptions":
+        return <AddIndiClientAssocOptions handleView={handleView} updateSession={updateSession} session={session} />;
+      case "addIndiClientAssocDir":
+        return <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

@@ -250,7 +250,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
                   ></input>
                 </div>
                 <div>
-                  <label htmlFor="isDirector">No longer in office?</label>
+                  <label htmlFor="isCeased">No longer in office?</label>
                   <input
                     type="checkbox"
                     id="isCeased"
