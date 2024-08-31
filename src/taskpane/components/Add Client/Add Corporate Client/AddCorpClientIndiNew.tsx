@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { fetchOptionsNewIndi, fetchOptionsUpdateClientPrelim } from "../../../fetching/generateOptions";
-import { clientAddPersonsUrl, postIndiUrl, postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
+//import { fetchOptionsNewIndi, fetchOptionsUpdateClientPrelim } from "../../../fetching/generateOptions";
+//import { clientAddPersonsUrl, postIndiUrl, postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 interface addCorpClientIndiNewProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -30,28 +30,53 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
   const [isClient, setIsClient] = useState(false);
   const [clientCode, setClientCode] = useState("");
 
-  const shareClasses = session["newClientPrelim"]["shareClasses"];
-  console.log(shareClasses);
+  let newShareAllocations = [];
+
+  //const shareClasses = session["newClientPrelim"]["shareClasses"];
+  //console.log(shareClasses);
 
   const handleShareholderChecked = () => {
     setIsShareholder(true);
     setShowShareClasses(true);
   };
 
-  const handleShareAllocation = (value, shareClassId) => {
-    shareClasses.forEach((sClass) => {
-      if (sClass._id === shareClassId && sClass.issuedNotAllocated >= value) {
+  const handleShareAllocation = (value, shareClassNumber) => {
+    session["newClientPrelim"]["shareClasses"].forEach((sClass) => {
+      console.log(sClass);
+      if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= value) {
+        console.log(typeof value);
         sClass["prelimAllocation"] = parseInt(value);
-        sClass.issuedNotAllocated -= parseInt(value);
+        console.log(sClass["prelimAllocation"]);
+        //sClass.issuedNotAllocated -= parseInt(value);
         const allocation = {
+          key: shareClassNumber,
           clientName: session["newClientPrelim"]["clientName"],
           clientCode: session["newClientPrelim"]["clientCode"],
           clientId: session["newClientPrelim"]["_id"],
-          shareClassId: sClass._id,
+          //shareClassId: sClass._id,
           shareClassName: sClass.shareClassName,
+          shareClassNumber,
           interest: parseInt(value),
         };
-        setShareAllocations([...shareAllocations, allocation]);
+        /*let updated = false;
+        newShareAllocations.forEach((item) => {
+          if (item.key === shareClassNumber) {
+            console.log("matched");
+            updated = true;
+          }
+        });*/
+        const updatedShareAllocations = [allocation];
+        newShareAllocations.forEach((item) => {
+          if (item.key !== shareClassNumber) {
+            updatedShareAllocations.push(item);
+          }
+        });
+        newShareAllocations = updatedShareAllocations;
+        //!updated && setShareAllocations([...shareAllocations, allocation]);
+        //!updated && newShareAllocations.push(allocation);
+        console.log(allocation);
+        console.log(newShareAllocations);
+        setShareAllocations(newShareAllocations);
       } else {
         console.log("There aren't enough shares available for this allocation");
       }
@@ -84,25 +109,34 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
       otherShareholdings: [],
     };
     updateSession(session);
-    const updatesFromDb = await processNewIndi(newIndi);
-    const updatedClient = await updateClient(updatesFromDb.person);
-    console.log(updatedClient);
-    session["newClientPrelim"] = updatedClient;
+    //const updatesFromDb = await processNewIndi(newIndi);
+    processNewIndi(newIndi);
+    //const updatedClient = await updateClient(updatesFromDb.person);
+    //console.log(updatedClient);
+    //session["newClientPrelim"] = updatedClient;
+    //session["newClientPrelim"]["newIndividuals"] = [];
+    session["newClientPrelim"]["newIndividuals"].push(newIndi);
+    session["newClientPrelim"]["shareClasses"].forEach((item) => {
+      console.log(item);
+      item.issuedNotAllocated -= item.prelimAllocation;
+      item.prelimAllocation = 0;
+      console.log(item);
+    });
     updateSession(session);
     console.log(session);
     handleView("addCorpClientIndisHome");
   };
 
   const processNewIndi = async (newIndi) => {
-    const customerId = session["customer"]["_id"];
+    //const customerId = session["customer"]["_id"];
     newIndi.isDirector && addDirectorship(newIndi);
     newIndi.isShareholder && addShareholding(newIndi);
     console.log(newIndi);
-    const options = fetchOptionsNewIndi(newIndi, customerId);
-    const route = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
-    const newIndiDb = await fetch(route, options);
-    const newIndiObj = await newIndiDb.json();
-    return newIndiObj;
+    //const options = fetchOptionsNewIndi(newIndi, customerId);
+    //const route = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
+    //const newIndiDb = await fetch(route, options);
+    //const newIndiObj = await newIndiDb.json();
+    //return newIndiObj;
   };
 
   const addDirectorship = (newIndi) => {
@@ -114,15 +148,17 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
       dateCeased: newIndi.dateCeased,
     };
     newIndi._clientDirectorships.push(directorship);
+    session["newClientPrelim"]["directors"].push(newIndi); // CODE ADDED HERE
   };
 
   const addShareholding = (newIndi) => {
     console.log(shareAllocations);
     newIndi._clientShareholdings = shareAllocations;
+    session["newClientPrelim"]["shareholders"].push(newIndi); // CODE ADDED HERE
     console.log(newIndi);
   };
 
-  const updateClient = async (newIndiDb) => {
+  /*const updateClient = async (newIndiDb) => {
     newIndiDb.clientId = session["newClientPrelim"]["_id"];
     newIndiDb._clientDirectorships.length > 0 && constructDirectorObjDb(newIndiDb);
     newIndiDb._clientShareholdings.length > 0 && constructShareholderObjDb(newIndiDb);
@@ -153,7 +189,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
         shareClassName: newIndiDb._clientShareholdings[0].shareClassName,
       },
     ];
-  };
+  };*/
 
   return (
     <>
@@ -311,9 +347,9 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
           </>
         )}
         {showShareClasses &&
-          shareClasses.map((sC) => (
+          session["newClientPrelim"]["shareClasses"].map((sC) => (
             <>
-              <table key={sC._id}>
+              <table key={sC.shareClassNumber}>
                 <tbody>
                   <tr>
                     <td>Shares issued</td>
@@ -332,7 +368,10 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
                       Allocate to {firstName} {lastName}
                     </td>
                     <td>
-                      <input type="number" onChange={(e) => handleShareAllocation(e.target.value, sC._id)}></input>
+                      <input
+                        type="number"
+                        onChange={(e) => handleShareAllocation(e.target.value, sC.shareClassNumber)}
+                      ></input>
                     </td>
                   </tr>
                 </tbody>

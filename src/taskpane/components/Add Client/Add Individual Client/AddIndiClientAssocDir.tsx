@@ -1,18 +1,18 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-interface addIndiClientAssocDirprops {
+interface addIndiClientAssocDirProps {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirprops> = ({
+const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
   updateSession,
   handleView,
   session,
-}: addIndiClientAssocDirprops) => {
-  const [client, setClient] = useState("");
+}: addIndiClientAssocDirProps) => {
+  const [clientId, setClientId] = useState("");
   const [dateAppointed, setDateAppointed] = useState("");
   const [isCeased, setIsCeased] = useState(false);
   const [dateCeased, setDateCeased] = useState("");
@@ -20,14 +20,26 @@ const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirprops> = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const directorship = {
-      client,
+      clientId,
       dateAppointed,
       dateCeased,
     };
-    updateSession(session);
+    populateNewDirectorship(directorship);
     console.log(directorship);
+    session["newIndiClientPrelim"]["_clientDirectorships"].push(directorship);
+    console.log(session);
+    updateSession(session);
     //const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
-    //handleView(route);
+    handleView("addIndiClientAssocOptions");
+  };
+
+  const populateNewDirectorship = (directorship) => {
+    session["customer"]["clients"].forEach((client) => {
+      if (client._id === directorship.clientId) {
+        directorship.clientName = client.clientName;
+        directorship.clientCode = client.clientCode;
+      }
+    });
   };
 
   return (
@@ -40,10 +52,10 @@ const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirprops> = ({
               name="client"
               id="client"
               className="form-control"
-              value={client}
-              onChange={(e) => setClient(e.target.value)}
+              value={clientId}
+              onChange={(e) => setClientId(e.target.value)}
             >
-              {!client && <option>Please select</option>}
+              {!clientId && <option>Please select</option>}
               {session["customer"]["clients"].map((client) => (
                 <option key={client._id} value={client._id}>
                   {client.clientName}

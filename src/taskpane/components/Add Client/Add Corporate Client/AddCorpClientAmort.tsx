@@ -52,14 +52,16 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({
       amortRateCompSware,
     };
     console.log(amortPols);
-    const updatedClient = await updateClientDb(amortPols);
-    session["newClientPrelim"] = updatedClient;
+    //const updatedClient = await updateClientDb(amortPols);
+    //session["newClientPrelim"] = updatedClient;
+    const updatedObj = { ...session["newClientPrelim"], ...amortPols };
+    session["newClientPrelim"] = updatedObj;
     updateSession(session);
     console.log(session);
     handleView("addCorpClientOptions");
   };
 
-  const updateClientDb = async (amortPols) => {
+  /*const updateClientDb = async (amortPols) => {
     const options = fetchOptionsUpdateClientAmort(
       amortPols,
       session["customer"]["_id"],
@@ -68,7 +70,7 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({
     const updatedClientDb = await fetch(addClientPrelimAmortUrl, options);
     const updatedClient = updatedClientDb.json();
     return updatedClient;
-  };
+  };*/
 
   return (
     <>

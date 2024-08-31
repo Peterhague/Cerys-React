@@ -30,7 +30,12 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
       phone,
       address,
       uTR,
+      _clientDirectorships: [],
+      _clientShareholdings: [],
+      otherDirectorships: [],
+      otherShareholdings: [],
     };
+    session["newIndiClientPrelim"] = newIndi;
     updateSession(session);
     console.log(newIndi);
     const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";

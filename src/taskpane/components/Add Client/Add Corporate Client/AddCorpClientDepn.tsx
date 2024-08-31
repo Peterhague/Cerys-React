@@ -83,14 +83,16 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
       depnBasisOfficeEquip,
       depnRateOfficeEquip,
     };
-    const updatedClient = await updateClientDb(depnPols);
-    console.log(updatedClient);
-    session["newClientPrelim"] = updatedClient;
+    //const updatedClient = await updateClientDb(depnPols);
+    //console.log(updatedClient);
+    //session["newClientPrelim"] = updatedClient;
+    const updatedObj = { ...session["newClientPrelim"], ...depnPols };
+    session["newClientPrelim"] = updatedObj;
     updateSession(session);
     handleView("addCorpClientOptions");
   };
 
-  const updateClientDb = async (depnPols) => {
+  /*const updateClientDb = async (depnPols) => {
     console.log(depnPols);
     const options = fetchOptionsUpdateClientDepn(
       depnPols,
@@ -100,7 +102,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
     const updatedClientDb = await fetch(addClientPrelimDepnUrl, options);
     const updatedClient = updatedClientDb.json();
     return updatedClient;
-  };
+  };*/
 
   return (
     <>

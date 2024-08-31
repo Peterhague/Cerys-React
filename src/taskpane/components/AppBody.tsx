@@ -26,6 +26,7 @@ import AddCorpClientAmort from "./Add Client/Add Corporate Client/AddCorpClientA
 import AddCorpClientDepn from "./Add Client/Add Corporate Client/AddCorpClientDepn";
 import AddIndiClientAssocOptions from "./Add Client/Add Individual Client/AddIndiClientAssocOptions";
 import AddIndiClientAssocDir from "./Add Client/Add Individual Client/AddIndiClientAssocDir";
+import AddIndiClientAssocSH from "./Add Client/Add Individual Client/AddIndiClientAssocSH";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -94,7 +95,9 @@ const AppBody: React.FC = () => {
       case "addIndiClientAssocOptions":
         return <AddIndiClientAssocOptions handleView={handleView} updateSession={updateSession} session={session} />;
       case "addIndiClientAssocDir":
-        return <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
+            return <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
+        case "addIndiClientAssocSH":
+            return <AddIndiClientAssocSH handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

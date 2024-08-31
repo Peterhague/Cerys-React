@@ -23,8 +23,13 @@ const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newClientDtls = { clientCode, clientName, reportingPeriod, companyNumber, senior, manager, rI };
-    session["newCorpClientDtls"] = newClientDtls;
-    session["newCorpClientShareClasses"] = [];
+    //session["newCorpClientDtls"] = newClientDtls;
+    //session["newCorpClientShareClasses"] = [];
+    session["newClientPrelim"] = newClientDtls;
+    session["newClientPrelim"]["shareClasses"] = [];
+    session["newClientPrelim"]["directors"] = [];
+    session["newClientPrelim"]["shareholders"] = [];
+    session["newClientPrelim"]["newIndividuals"] = [];
     updateSession(session);
     console.log(session);
     handleView("addCorpClientShares");
