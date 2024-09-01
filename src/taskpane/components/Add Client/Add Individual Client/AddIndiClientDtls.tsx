@@ -1,6 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
+import { postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 interface addIndiClientDtlsprops {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -39,7 +41,16 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
     updateSession(session);
     console.log(newIndi);
     const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
+    session["customer"]["clients"].length === 0 && processNewIndi(newIndi);
     handleView(route);
+  };
+
+  const processNewIndi = async (newIndi) => {
+    const customerId = session["customer"]["_id"];
+    const options = fetchOptionsNewIndi(newIndi, customerId);
+    const newIndiDb = await fetch(postNonCorpClientUrl, options);
+    const newIndiObj = await newIndiDb.json();
+    console.log(newIndiObj);
   };
 
   return (
