@@ -8,6 +8,8 @@ export const customerUrl = "http://localhost:4000/api/customer";
 
 export const clientUrl = "http://localhost:4000/api/client";
 
+export const addClientGlobalUrl = "http://localhost:4000/api/client/global";
+
 export const addClientPrelimUrl = "http://localhost:4000/api/client/preliminary";
 
 export const addClientPrelimAmortUrl = "http://localhost:4000/api/client/add-amort-pols";
