@@ -281,7 +281,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
                 checked={isShareholder}
                 onChange={handleShareholderChecked}
               ></input>
-            </div>{" "}
+            </div>
             <div>
               <label htmlFor="isClient"> Register as a client?</label>
               <input

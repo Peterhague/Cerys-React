@@ -27,6 +27,8 @@ import AddCorpClientDepn from "./Add Client/Add Corporate Client/AddCorpClientDe
 import AddIndiClientAssocOptions from "./Add Client/Add Individual Client/AddIndiClientAssocOptions";
 import AddIndiClientAssocDir from "./Add Client/Add Individual Client/AddIndiClientAssocDir";
 import AddIndiClientAssocSH from "./Add Client/Add Individual Client/AddIndiClientAssocSH";
+import CustomerIndisHome from "./CustomerIndisHome";
+import AddIndiDtls from "./Add Non-client Individual/AddIndiDtls";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -95,9 +97,13 @@ const AppBody: React.FC = () => {
       case "addIndiClientAssocOptions":
         return <AddIndiClientAssocOptions handleView={handleView} updateSession={updateSession} session={session} />;
       case "addIndiClientAssocDir":
-            return <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
-        case "addIndiClientAssocSH":
-            return <AddIndiClientAssocSH handleView={handleView} updateSession={updateSession} session={session} />;
+        return <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
+      case "addIndiClientAssocSH":
+        return <AddIndiClientAssocSH handleView={handleView} updateSession={updateSession} session={session} />;
+      case "customerIndisHome":
+        return <CustomerIndisHome handleView={handleView} updateSession={updateSession} session={session} />;
+      case "addIndiDtls":
+        return <AddIndiDtls handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

@@ -1,44 +1,36 @@
 import * as React from "react";
 import { useState } from "react";
-import CerysButton from "../../CerysButton";
-import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
-import { postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
-interface addIndiClientDtlsprops {
+import CerysButton from "../CerysButton";
+import { fetchOptionsNewIndi } from "../../fetching/generateOptions";
+import { postIndiUrl } from "../../fetching/apiEndpoints";
+interface addIndiDtlsprops {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
-  updateSession,
-  handleView,
-  session,
-}: addIndiClientDtlsprops) => {
+const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ updateSession, handleView, session }: addIndiDtlsprops) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
-  const [clientCode, setClientCode] = useState("");
   const [email, setEmail] = useState("");
   const [phone, setPhone] = useState("");
   const [address, setAddress] = useState("");
-  const [uTR, setUTR] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newIndi = {
       firstName,
       lastName,
-      clientCode,
       email,
       phone,
       address,
-      uTR,
-      isClient: true,
+      isClient: false,
       _clientDirectorships: [],
       _clientShareholdings: [],
       otherDirectorships: [],
       otherShareholdings: [],
     };
-    session["newIndiClientPrelim"] = newIndi;
+    session["newIndiPrelim"] = newIndi;
     updateSession(session);
     console.log(newIndi);
     const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
@@ -49,9 +41,11 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
   const processNewIndi = async (newIndi) => {
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsNewIndi(newIndi, customerId);
-    const newIndiDb = await fetch(postNonCorpClientUrl, options);
-    const newIndiObj = await newIndiDb.json();
-    console.log(newIndiObj);
+    const newIndiAndUpdatedCustomerDb = await fetch(postIndiUrl, options);
+    const newIndiAndUpdatedCustomerObj = await newIndiAndUpdatedCustomerDb.json();
+    console.log(newIndiAndUpdatedCustomerObj);
+    session["customer"] = newIndiAndUpdatedCustomerObj.customer;
+    updateSession(session);
   };
 
   return (
@@ -79,17 +73,6 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
               placeholder="Last Name"
               value={lastName}
               onChange={(e) => setLastName(e.target.value)}
-            ></input>
-          </div>
-          <div>
-            <input
-              name="clientCode"
-              type="text"
-              id="clientCode"
-              className="form-control"
-              placeholder="Client code"
-              value={clientCode}
-              onChange={(e) => setClientCode(e.target.value)}
             ></input>
           </div>
           <div>
@@ -125,17 +108,6 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
               onChange={(e) => setAddress(e.target.value)}
             ></input>
           </div>
-          <div>
-            <input
-              name="uTR"
-              type="text"
-              id="uTR"
-              className="form-control"
-              placeholder="Unique Taxpayer Reference"
-              value={uTR}
-              onChange={(e) => setUTR(e.target.value)}
-            ></input>
-          </div>
 
           <div>
             <button type="submit">Submit details</button>
@@ -147,4 +119,4 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
   );
 };
 
-export default AddIndiClientDtls;
+export default AddIndiDtls;

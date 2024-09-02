@@ -34,7 +34,7 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
       <CerysButton buttonText={"ENTER AMORTISATION POLICIES"} handleView={() => handleView("addCorpClientAmort")} />
       <CerysButton buttonText={"ENTER DEPRECIATION POLICIES"} handleView={() => handleView("addCorpClientDepn")} />
       <CerysButton buttonText={"ENTER VAT DETAILS"} handleView={() => handleView("addClientHome")} />
-      <CerysButton buttonText={"ADD INDIVIDUALS"} handleView={() => handleView("addCorpClientIndisHome")} />
+      <CerysButton buttonText={"ADD INDIVIDUALS"} handleView={() => handleView("addCorpClientIndiNew")} />
       <CerysButton buttonText={"Submit client now"} handleView={() => handleSubmission()} />
     </>
   );

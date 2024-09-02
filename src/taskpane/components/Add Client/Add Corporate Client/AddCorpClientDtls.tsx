@@ -30,6 +30,7 @@ const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({
     session["newClientPrelim"]["directors"] = [];
     session["newClientPrelim"]["shareholders"] = [];
     session["newClientPrelim"]["newIndividuals"] = [];
+    session["newClientPrelim"]["existingIndividuals"] = [];
     updateSession(session);
     console.log(session);
     handleView("addCorpClientShares");
