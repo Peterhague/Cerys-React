@@ -16,7 +16,7 @@ const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
   const [shareClasses, setShareClasses] = useState(null);
   const [showShareClasses, setShowShareClasses] = useState(false);
 
-  const prelimClient = session["newIndiClientPrelim"];
+  const prelimClient = session["newIndiPrelim"];
 
   const handleSubmit = async (e) => {
     e.preventDefault();

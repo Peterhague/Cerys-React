@@ -13,7 +13,6 @@ const AddCorpClientIndisHome: React.FC<addCorpClientIndisHomeProps> = ({
   handleView,
 }: addCorpClientIndisHomeProps) => {
   const [selectedIndi, setSelectedIndi] = useState("");
-  const [selectedIndiObj, setSelectedIndiObj] = useState<{ [key: string]: any }>({});
   const [isDirector, setIsDirector] = useState(false);
   const [dateAppointed, setDateAppointed] = useState("");
   const [isCeased, setIsCeased] = useState(false);
@@ -23,10 +22,6 @@ const AddCorpClientIndisHome: React.FC<addCorpClientIndisHomeProps> = ({
   const [shareAllocations, setShareAllocations] = useState([]);
 
   let newShareAllocations = [];
-
-  setSelectedIndiObj({ test: true });
-
-  console.log(selectedIndiObj);
 
   const handleShareholderChecked = () => {
     setIsShareholder(true);
@@ -73,8 +68,14 @@ const AddCorpClientIndisHome: React.FC<addCorpClientIndisHomeProps> = ({
         indi.isDirector && addDirectorship(indi);
         indi.isShareholder = isShareholder;
         indi.isShareholder && addShareholding(indi);
+        console.log("HERE!!!!");
+        console.log(indi);
         session["newClientPrelim"]["existingIndividuals"].push(indi);
       }
+    });
+    session["newClientPrelim"]["shareClasses"].forEach((item) => {
+      item.issuedNotAllocated -= item.prelimAllocation;
+      item.prelimAllocation = 0;
     });
     console.log(session);
   };
@@ -91,12 +92,15 @@ const AddCorpClientIndisHome: React.FC<addCorpClientIndisHomeProps> = ({
       dateAppointed: indi.dateAppointed,
       dateCeased: indi.dateCeased,
     };
-    indi._clientDirectorships.push(directorship);
+    indi.newClientDirectorships = [];
+    indi.newClientDirectorships.push(directorship);
     session["newClientPrelim"]["directors"].push(indi);
   };
 
   const addShareholding = (indi) => {
-    indi._clientShareholdings = shareAllocations;
+    indi.newClientShareholdings = shareAllocations;
+    indi.shareholdings = indi.newClientShareholdings;
+    //indi._clientShareholdings = shareAllocations;
     session["newClientPrelim"]["shareholders"].push(indi);
     console.log(indi);
   };

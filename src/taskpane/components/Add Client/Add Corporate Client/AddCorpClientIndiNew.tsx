@@ -12,6 +12,8 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
   handleView,
   session,
 }: addCorpClientIndiNewProps) => {
+  //const [selectedIndi, setSelectedIndi] = useState("");
+  //const [addNewIndi, setAddNewIndi] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -107,7 +109,6 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
     const directorship = {
       clientName: session["newClientPrelim"]["clientName"],
       clientCode: session["newClientPrelim"]["clientCode"],
-      clientId: session["newClientPrelim"]["_id"],
       dateAppointed: newIndi.dateAppointed,
       dateCeased: newIndi.dateCeased,
     };
@@ -117,6 +118,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
 
   const addShareholding = (newIndi) => {
     newIndi._clientShareholdings = shareAllocations;
+    newIndi.shareholdings = newIndi._clientShareholdings;
     session["newClientPrelim"]["shareholders"].push(newIndi);
     console.log(newIndi);
   };
@@ -226,6 +228,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
                 onChange={(e) => setUTR(e.target.value)}
               ></input>
             </div>
+
             <div>
               <label htmlFor="isDirector"> Designate as a director?</label>
               <input

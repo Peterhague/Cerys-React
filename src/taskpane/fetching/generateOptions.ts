@@ -127,6 +127,7 @@ export function fetchOptionsAddClient(client, customer) {
       directors: client.directors,
       shareholders: client.shareholders,
       newIndividuals: client.newIndividuals,
+      existingIndividuals: client.existingIndividuals,
       amortBasisCompSware: client.amortBasisCompSware,
       amortBasisDevCosts: client.amortBasisDevCosts,
       amortBasisGwill: client.amortBasisGwill,

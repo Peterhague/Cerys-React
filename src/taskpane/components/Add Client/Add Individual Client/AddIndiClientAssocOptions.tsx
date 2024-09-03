@@ -1,7 +1,7 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
-import { postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
+import { postIndiUrl, postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 
 interface addIndiClientAssocOptionsProps {
   updateSession: (update) => void;
@@ -15,16 +15,19 @@ const AddIndiClientAssocOptions: React.FC<addIndiClientAssocOptionsProps> = ({
   session,
 }: addIndiClientAssocOptionsProps) => {
   const processNewIndiClient = async () => {
-    const newIndiClient = session["newIndiClientPrelim"];
-    console.log(newIndiClient);
-    delete session["newIndiClientPrelim"];
+    const newIndi = session["newIndiPrelim"];
+    console.log(newIndi);
+    delete session["newIndiPrelim"];
+    //updateSession(session);
+    const customerId = session["customer"]["_id"];
+    const options = fetchOptionsNewIndi(newIndi, customerId);
+    const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
+    const newIndiAndCustomerDb = await fetch(url, options);
+    const newIndiAndCustomerObj = await newIndiAndCustomerDb.json();
+    console.log(newIndiAndCustomerObj);
+    session["customer"] = newIndiAndCustomerObj.customer;
     updateSession(session);
     handleView("customerDashHome");
-    const customerId = session["customer"]["_id"];
-    const options = fetchOptionsNewIndi(newIndiClient, customerId);
-    const newIndiDb = await fetch(postNonCorpClientUrl, options);
-    const newIndiObj = await newIndiDb.json();
-    console.log(newIndiObj);
   };
   return (
     <>

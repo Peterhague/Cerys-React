@@ -26,7 +26,7 @@ const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
     };
     populateNewDirectorship(directorship);
     console.log(directorship);
-    session["newIndiClientPrelim"]["_clientDirectorships"].push(directorship);
+    session["newIndiPrelim"]["_clientDirectorships"].push(directorship);
     console.log(session);
     updateSession(session);
     //const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
