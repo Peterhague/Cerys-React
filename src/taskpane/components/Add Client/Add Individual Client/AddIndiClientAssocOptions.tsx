@@ -18,7 +18,6 @@ const AddIndiClientAssocOptions: React.FC<addIndiClientAssocOptionsProps> = ({
     const newIndi = session["newIndiPrelim"];
     console.log(newIndi);
     delete session["newIndiPrelim"];
-    //updateSession(session);
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;

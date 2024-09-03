@@ -1,0 +1,19 @@
+import * as React from "react";
+import CerysButton from "./CerysButton";
+
+interface userAssignmentsHomeProps {
+  updateSession: (update) => void;
+  handleView: (view) => void;
+  session: {};
+}
+
+const UserAssignmentsHome: React.FC<userAssignmentsHomeProps> = (props: userAssignmentsHomeProps) => {
+  return (
+    <>
+      <CerysButton buttonText={"NEW ASSIGNMENT"} handleView={() => props.handleView("newAssignmentDtls")} />
+      <CerysButton buttonText={"CONTINUE ASSIGNMENT"} handleView={() => props.handleView("customerSignUp")} />
+    </>
+  );
+};
+
+export default UserAssignmentsHome;

@@ -17,13 +17,15 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     e.preventDefault();
     const userDetails = { email, password };
     const options = fetchOptionsGetUser(userDetails);
-    const userFromDb = await fetch("http://localhost:4000/api/user/get-user", options);
-    if (userFromDb) await processUser(userFromDb);
+    const userAndCustomerFromDb = await fetch("http://localhost:4000/api/user/get-user", options);
+    if (userAndCustomerFromDb) await processUser(userAndCustomerFromDb);
   };
 
-  const processUser = async (userFromDb) => {
-    const userObject = await userFromDb.json();
-    session["user"] = userObject;
+  const processUser = async (userAndCustomerFromDb) => {
+      const userAndCustomerObject = await userAndCustomerFromDb.json();
+      console.log(userAndCustomerObject);
+    session["user"] = userAndCustomerObject.user;
+    session["customer"] = userAndCustomerObject.customer;
     updateSession(session);
     handleView("userDashHome");
   };

@@ -29,6 +29,8 @@ import AddIndiClientAssocDir from "./Add Client/Add Individual Client/AddIndiCli
 import AddIndiClientAssocSH from "./Add Client/Add Individual Client/AddIndiClientAssocSH";
 import CustomerIndisHome from "./CustomerIndisHome";
 import AddIndiDtls from "./Add Non-client Individual/AddIndiDtls";
+import UserAssignmentsHome from "./UserAssignmentsHome";
+import NewAssignmentDtls from "./New Assignment/NewAssignmentDtls";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -104,6 +106,10 @@ const AppBody: React.FC = () => {
         return <CustomerIndisHome handleView={handleView} updateSession={updateSession} session={session} />;
       case "addIndiDtls":
         return <AddIndiDtls handleView={handleView} updateSession={updateSession} session={session} />;
+      case "userAssignmentsHome":
+        return <UserAssignmentsHome handleView={handleView} updateSession={updateSession} session={session} />;
+      case "newAssignmentDtls":
+        return <NewAssignmentDtls handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

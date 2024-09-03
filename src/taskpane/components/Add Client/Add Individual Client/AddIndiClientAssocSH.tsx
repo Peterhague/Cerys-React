@@ -16,7 +16,7 @@ const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
   const [shareClasses, setShareClasses] = useState(null);
   const [showShareClasses, setShowShareClasses] = useState(false);
 
-  const prelimClient = session["newIndiPrelim"];
+  //const prelimClient = session["newIndiPrelim"];
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -45,24 +45,59 @@ const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
 
   const handleShareAllocation = (value, shareClassId) => {
     shareClasses.forEach((sClass) => {
+      console.log(sClass);
       if (sClass._id === shareClassId && sClass.issuedNotAllocated >= value) {
         sClass["prelimAllocation"] = parseInt(value);
-        sClass.issuedNotAllocated -= parseInt(value);
         const allocation = {
           clientName: clientId["clientName"],
-            clientCode: clientId["clientCode"],
-            clientId: clientId["_id"],
+          clientCode: clientId["clientCode"],
+          clientId: clientId["_id"],
           shareClassId: sClass._id,
           shareClassName: sClass.shareClassName,
+          shareClassNumber: sClass.shareClassNumber,
           interest: parseInt(value),
         };
-        prelimClient._clientShareholdings.push(allocation);
-        console.log(prelimClient);
+        let allocationUpdated = false;
+        session["newIndiPrelim"]._clientShareholdings.forEach((interest) => {
+          if (interest.shareClassId === shareClassId) {
+            interest.interest = parseInt(value);
+            allocationUpdated = true;
+          }
+        });
+        !allocationUpdated && session["newIndiPrelim"]._clientShareholdings.push(allocation);
+        console.log(session["newIndiPrelim"]);
       } else {
         console.log("There aren't enough shares available for this allocation");
       }
     });
   };
+
+  //const handleShareAllocation = (value, shareClassNumber) => {
+  //  session["newClientPrelim"]["shareClasses"].forEach((sClass) => {
+  //    if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= value) {
+  //      sClass["prelimAllocation"] = parseInt(value);
+  //      const allocation = {
+  //        key: shareClassNumber,
+  //        clientName: session["newClientPrelim"]["clientName"],
+  //        clientCode: session["newClientPrelim"]["clientCode"],
+  //        clientId: session["newClientPrelim"]["_id"],
+  //        shareClassName: sClass.shareClassName,
+  //        shareClassNumber,
+  //        interest: parseInt(value),
+  //      };
+  //      const updatedShareAllocations = [allocation];
+  //      newShareAllocations.forEach((item) => {
+  //        if (item.key !== shareClassNumber) {
+  //          updatedShareAllocations.push(item);
+  //        }
+  //      });
+  //      newShareAllocations = updatedShareAllocations;
+  //      setShareAllocations(newShareAllocations);
+  //    } else {
+  //      console.log("There aren't enough shares available for this allocation");
+  //    }
+  //  });
+  //};
 
   const finishSharesAllocation = () => {
     setShowShareClasses(false);
@@ -102,7 +137,7 @@ const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
                     </tr>
                     <tr>
                       <td>
-                        Allocate to {prelimClient.firstName} {prelimClient.lastName}
+                        Allocate to {session["newIndiPrelim"].firstName} {session["newIndiPrelim"].lastName}
                       </td>
                       <td>
                         <input type="number" onChange={(e) => handleShareAllocation(e.target.value, sC._id)}></input>
