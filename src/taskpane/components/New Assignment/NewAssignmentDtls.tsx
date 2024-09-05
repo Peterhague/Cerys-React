@@ -35,9 +35,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
     console.log(clientObj);
     const prelimAssignment = { clientObj, assType, senior, manager, rI, software, transactionsPosted: false };
     console.log(prelimAssignment);
+    populateStaffObjs(prelimAssignment);
     //session["prelimAssignment"] = prelimAssignment;
     const activeAssignment = await processNewAssignment(prelimAssignment);
-    populateStaffObjs(activeAssignment);
+    //populateStaffObjs(activeAssignment);
     session["activeAssignment"] = activeAssignment;
     updateSession(session);
     console.log(session);
@@ -54,13 +55,13 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
     return obj;
   };
 
-  const populateStaffObjs = (activeAssignment) => {
-    const seniorObj = populateUser(session, activeAssignment._senior);
-    activeAssignment.senior = seniorObj;
-    const managerObj = populateUser(session, activeAssignment._manager);
-    activeAssignment.manager = managerObj;
-    const rIObj = populateUser(session, activeAssignment._responsibleIndividual);
-    activeAssignment.rI = rIObj;
+  const populateStaffObjs = (prelimAssignment) => {
+    const seniorObj = populateUser(session, prelimAssignment.senior);
+    prelimAssignment.senior = seniorObj;
+    const managerObj = populateUser(session, prelimAssignment.manager);
+    prelimAssignment.manager = managerObj;
+    const rIObj = populateUser(session, prelimAssignment.rI);
+    prelimAssignment.rI = rIObj;
   };
 
   return (

@@ -99,39 +99,69 @@ export async function getCerysNomDetail(code, activeAssignment) {
   return detail;
 }
 
-export async function getCerysNomDetailPL(category, activeAssignment) {
-  const detail = await Excel.run(async (context) => {
-    let cat = category;
-    if (category === "Turnover") {
-      cat = "Sales";
-    } else if (category === "Taxation on profit") {
-      cat = "Taxation";
-    } else if (category === "Interest receivable and other income") {
-      cat = "Interest receivable";
-    } else if (category === "Interest payable and similar expenses") {
-      cat = "Interest payable";
+//export async function getCerysNomDetailPL(category, activeAssignment) {
+//  const detail = await Excel.run(async (context) => {
+//    let cat = category;
+//    if (category === "Turnover") {
+//      cat = "Sales";
+//    } else if (category === "Taxation on profit") {
+//      cat = "Taxation";
+//    } else if (category === "Interest receivable and other income") {
+//      cat = "Interest receivable";
+//    } else if (category === "Interest payable and similar expenses") {
+//      cat = "Interest payable";
+//    }
+//    let selection;
+//    activeAssignment.activeCategoriesDetails.forEach((obj) => {
+//      if (obj.category === cat) {
+//        selection = obj.codes;
+//      }
+//    });
+//    let selectionArray = [];
+//    selection.forEach((code) => {
+//      let arr = [];
+//      activeAssignment.transactions.forEach((transaction) => {
+//        if (transaction.cerysCode === code) {
+//          arr.push(transaction);
+//        }
+//      });
+//      selectionArray.push(arr);
+//    });
+
+//    await context.sync();
+//    return selectionArray;
+//  });
+//  return detail;
+//}
+
+export function getCerysNomDetailPL(category, activeAssignment) {
+  let cat = category;
+  if (category === "Turnover") {
+    cat = "Sales";
+  } else if (category === "Taxation on profit") {
+    cat = "Taxation";
+  } else if (category === "Interest receivable and other income") {
+    cat = "Interest receivable";
+  } else if (category === "Interest payable and similar expenses") {
+    cat = "Interest payable";
+  }
+  let selection;
+  activeAssignment.activeCategoriesDetails.forEach((obj) => {
+    if (obj.category === cat || obj.category === category) {
+      selection = obj.codes;
     }
-    let selection;
-    activeAssignment.activeCategoriesObjs.forEach((obj) => {
-      if (obj.category === cat) {
-        selection = obj.codes;
+  });
+  let selectionArray = [];
+  selection.forEach((code) => {
+    let arr = [];
+    activeAssignment.transactions.forEach((transaction) => {
+      if (transaction.cerysCode === code) {
+        arr.push(transaction);
       }
     });
-    let selectionArray = [];
-    selection.forEach((code) => {
-      let arr = [];
-      activeAssignment.transactions.forEach((transaction) => {
-        if (transaction.cerysCode === code) {
-          arr.push(transaction);
-        }
-      });
-      selectionArray.push(arr);
-    });
-
-    await context.sync();
-    return selectionArray;
+    selectionArray.push(arr);
   });
-  return detail;
+  return selectionArray;
 }
 
 export async function getCerysNomDetailBS(category, activeAssignment) {

@@ -27,7 +27,10 @@ function convertDataForWbook(session) {
   newArray.push(["Client software", activeAssignment.clientSoftware]);
   newArray.push(["Prepared by", `${activeAssignment.senior.firstName} ${activeAssignment.senior.lastName}`]);
   newArray.push(["Reviewed by", `${activeAssignment.manager.firstName} ${activeAssignment.manager.lastName}`]);
-  newArray.push(["Responsible individual", `${activeAssignment.rI.firstName} ${activeAssignment.rI.lastName}`]);
+  newArray.push([
+    "Responsible individual",
+    `${activeAssignment.responsibleIndividual.firstName} ${activeAssignment.responsibleIndividual.lastName}`,
+  ]);
   return newArray;
 }
 
