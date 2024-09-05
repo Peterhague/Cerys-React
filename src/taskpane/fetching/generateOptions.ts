@@ -416,6 +416,7 @@ export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
       _manager: prelimAssignment.manager,
       _responsibleIndividual: prelimAssignment.rI,
       clientSoftware: prelimAssignment.software,
+      transactionsPosted: prelimAssignment.transactionsPosted,
       customerId: customerId,
       clientId: prelimAssignment.clientObj._id,
     }),

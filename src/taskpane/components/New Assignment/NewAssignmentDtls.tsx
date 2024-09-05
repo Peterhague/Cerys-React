@@ -33,7 +33,7 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
       }
     });
     console.log(clientObj);
-    const prelimAssignment = { clientObj, assType, senior, manager, rI, software };
+    const prelimAssignment = { clientObj, assType, senior, manager, rI, software, transactionsPosted: false };
     console.log(prelimAssignment);
     //session["prelimAssignment"] = prelimAssignment;
     const activeAssignment = await processNewAssignment(prelimAssignment);

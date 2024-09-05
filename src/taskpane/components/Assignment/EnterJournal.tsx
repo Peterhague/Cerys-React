@@ -4,6 +4,7 @@ import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
 import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
 import { postJournalBatch } from "../../fetching/apiEndpoints";
+import { postTbToWbook, tbForPosting } from "../../utils.ts/trial-balance/tb-maintenance";
 
 interface enterJournalProps {
   updateSession: (update) => void;
@@ -45,6 +46,10 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
     const objsDb = await fetch(postJournalBatch, options);
     const objs = await objsDb.json();
     console.log(objs);
+    session["customer"] = objs.customer;
+    session["activeAssignment"] = objs.assignment;
+    const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
+    postTbToWbook(tbArray);
     session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     updateSession(session);
     handleView("assignmentDashHome");
