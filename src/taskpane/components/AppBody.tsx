@@ -31,6 +31,9 @@ import CustomerIndisHome from "./CustomerIndisHome";
 import AddIndiDtls from "./Add Non-client Individual/AddIndiDtls";
 import UserAssignmentsHome from "./UserAssignmentsHome";
 import NewAssignmentDtls from "./New Assignment/NewAssignmentDtls";
+import AssignmentDashHome from "./Assignment/AssignmentDashHome";
+import EnterClientDataHome from "./Assignment/EnterClientDataHome";
+import EnterJournal from "./Assignment/EnterJournal";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -110,6 +113,12 @@ const AppBody: React.FC = () => {
         return <UserAssignmentsHome handleView={handleView} updateSession={updateSession} session={session} />;
       case "newAssignmentDtls":
         return <NewAssignmentDtls handleView={handleView} updateSession={updateSession} session={session} />;
+      case "assignmentDashHome":
+        return <AssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+      case "enterClientDataHome":
+        return <EnterClientDataHome handleView={handleView} updateSession={updateSession} session={session} />;
+      case "enterJournal":
+        return <EnterJournal handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

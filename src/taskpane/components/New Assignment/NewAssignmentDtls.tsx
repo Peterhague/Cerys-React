@@ -1,6 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../CerysButton";
+import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
+import { assignmentUrl } from "../../fetching/apiEndpoints";
+import { addPrimarySheets } from "../../assignment/assignmentInit";
+import { populateUser } from "../../utils.ts/helperFunctions";
 interface newAssignmentDtlsProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -21,18 +25,42 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newClientDtls = { senior, manager, rI };
-    //session["newCorpClientDtls"] = newClientDtls;
-    //session["newCorpClientShareClasses"] = [];
-    session["newClientPrelim"] = newClientDtls;
-    session["newClientPrelim"]["shareClasses"] = [];
-    session["newClientPrelim"]["directors"] = [];
-    session["newClientPrelim"]["shareholders"] = [];
-    session["newClientPrelim"]["newIndividuals"] = [];
-    session["newClientPrelim"]["existingIndividuals"] = [];
+    console.log(clientId);
+    let clientObj;
+    session["customer"]["clients"].forEach((client) => {
+      if (client._id === clientId) {
+        clientObj = client;
+      }
+    });
+    console.log(clientObj);
+    const prelimAssignment = { clientObj, assType, senior, manager, rI, software };
+    console.log(prelimAssignment);
+    //session["prelimAssignment"] = prelimAssignment;
+    const activeAssignment = await processNewAssignment(prelimAssignment);
+    populateStaffObjs(activeAssignment);
+    session["activeAssignment"] = activeAssignment;
     updateSession(session);
     console.log(session);
-    handleView("addCorpClientShares");
+    addPrimarySheets(session);
+    handleView("assignmentDashHome");
+  };
+
+  const processNewAssignment = async (prelimAssignment) => {
+    const customerId = session["customer"]["_id"];
+    const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
+    const objDb = await fetch(assignmentUrl, options);
+    const obj = await objDb.json();
+    console.log(obj);
+    return obj;
+  };
+
+  const populateStaffObjs = (activeAssignment) => {
+    const seniorObj = populateUser(session, activeAssignment._senior);
+    activeAssignment.senior = seniorObj;
+    const managerObj = populateUser(session, activeAssignment._manager);
+    activeAssignment.manager = managerObj;
+    const rIObj = populateUser(session, activeAssignment._responsibleIndividual);
+    activeAssignment.rI = rIObj;
   };
 
   return (

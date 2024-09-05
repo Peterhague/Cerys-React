@@ -11,7 +11,7 @@ const UserAssignmentsHome: React.FC<userAssignmentsHomeProps> = (props: userAssi
   return (
     <>
       <CerysButton buttonText={"NEW ASSIGNMENT"} handleView={() => props.handleView("newAssignmentDtls")} />
-      <CerysButton buttonText={"CONTINUE ASSIGNMENT"} handleView={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"CONTINUE ASSIGNMENT"} handleView={() => props.handleView("assignmentDashHome")} />
     </>
   );
 };

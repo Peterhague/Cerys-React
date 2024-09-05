@@ -63,3 +63,5 @@ export const updateIFARStatus = "http://localhost:4000/api/ifa/update-ifar-statu
 export const updateTFARStatus = "http://localhost:4000/api/tfa/update-tfar-status";
 
 export const updateIPRStatus = "http://localhost:4000/api/ip/update-ipr-status";
+
+export const postJournalBatch = "http://localhost:4000/api/post-transaction/batch";

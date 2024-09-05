@@ -22,10 +22,12 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
   };
 
   const processUser = async (userAndCustomerFromDb) => {
-      const userAndCustomerObject = await userAndCustomerFromDb.json();
-      console.log(userAndCustomerObject);
+    const userAndCustomerObject = await userAndCustomerFromDb.json();
+    console.log(userAndCustomerObject);
     session["user"] = userAndCustomerObject.user;
     session["customer"] = userAndCustomerObject.customer;
+    const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+    session["activeJournal"] = activeJournal;
     updateSession(session);
     handleView("userDashHome");
   };
