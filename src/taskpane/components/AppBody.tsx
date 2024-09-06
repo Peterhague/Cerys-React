@@ -34,6 +34,9 @@ import NewAssignmentDtls from "./New Assignment/NewAssignmentDtls";
 import AssignmentDashHome from "./Assignment/AssignmentDashHome";
 import EnterClientDataHome from "./Assignment/EnterClientDataHome";
 import EnterJournal from "./Assignment/EnterJournal";
+import PromptIFARCreation from "./Assignment/Asset-Registers/PromptIFARCreation";
+import PromptTFARCreation from "./Assignment/Asset-Registers/PromptTFARCreation";
+import PromptIPRCreation from "./Assignment/Asset-Registers/PromptIPRCreation";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -119,6 +122,12 @@ const AppBody: React.FC = () => {
         return <EnterClientDataHome handleView={handleView} updateSession={updateSession} session={session} />;
       case "enterJournal":
         return <EnterJournal handleView={handleView} updateSession={updateSession} session={session} />;
+      case "promptIFARCreation":
+        return <PromptIFARCreation handleView={handleView} updateSession={updateSession} session={session} />;
+      case "promptTFARCreation":
+        return <PromptTFARCreation handleView={handleView} updateSession={updateSession} session={session} />;
+      case "promptIPRCreation":
+        return <PromptIPRCreation handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

@@ -5,7 +5,7 @@ import { wsPLAccount } from "../../workbook views/workbook-templates/financial-s
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
-export const processTransBatch = async (session) => {
+export const processTransBatch = async (session, handleView) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
@@ -42,4 +42,25 @@ export const processTransBatch = async (session) => {
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+  checkAssetRegStatus(session, handleView);
+};
+
+export const checkAssetRegStatus = (session, handleView) => {
+    console.log("Helllloooo!");
+  if (
+    !session["activeAssignment"]["IFARegisterCreated"] &&
+    session["activeAssignment"]["activeCategories"].includes("Intangible assets")
+  ) {
+    handleView("promptIFARCreation");
+  } else if (
+    !session["activeAssignment"]["TFARegisterCreated"] &&
+    session["activeAssignment"]["activeCategories"].includes("Tangible assets")
+  ) {
+    handleView("promptTFARCreation");
+  } else if (
+    !session["activeAssignment"]["IPRegisterCreated"] &&
+    session["activeAssignment"]["activeCategories"].includes("Investment property")
+  ) {
+    handleView("promptIPRCreation");
+  }
 };
