@@ -85,18 +85,15 @@ export async function cerysCodeToCerysObject(cerysCode) {
 
 // takes a Cerys code and the Cerys NL object and returns an array with all the
 // nominal activity.
-export async function getCerysNomDetail(code, activeAssignment) {
-  const detail = await Excel.run(async (context) => {
-    const selection = [];
-    activeAssignment.transactions.forEach((transaction) => {
-      if (transaction.cerysCode === code) {
-        selection.push(transaction);
-      }
-    });
-    await context.sync();
-    return selection;
+export async function getCerysNomDetail(context, code, activeAssignment) {
+  const selection = [];
+  activeAssignment.transactions.forEach((transaction) => {
+    if (transaction.cerysCode === code) {
+      selection.push(transaction);
+    }
   });
-  return detail;
+  await context.sync();
+  return selection;
 }
 
 //export async function getCerysNomDetailPL(category, activeAssignment) {
