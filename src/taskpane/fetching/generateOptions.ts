@@ -510,7 +510,7 @@ export function fetchOptionsTBModify(cerysObject) {
 //     };
 //   }
 
-export function fetchOptionsPostClientNL(clientNL, workbookId) {
+export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
   return {
     method: "POST",
     headers: {
@@ -518,7 +518,8 @@ export function fetchOptionsPostClientNL(clientNL, workbookId) {
     },
     body: JSON.stringify({
       clientNL,
-      workbookId: workbookId,
+      workbookId,
+      customerId,
     }),
   };
 }
