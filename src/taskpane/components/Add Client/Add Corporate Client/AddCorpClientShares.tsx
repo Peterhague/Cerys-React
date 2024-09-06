@@ -1,8 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-//import { fetchOptionsAddClientPrelim } from "../../../fetching/generateOptions";
-//import { addClientPrelimUrl } from "../../../fetching/apiEndpoints";
+
 interface addCorpClientSharesProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -16,9 +15,7 @@ const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({
 }: addCorpClientSharesProps) => {
   const [shareClassName, setShareClassName] = useState("");
   const [numberIssued, setNumberIssued] = useState(0);
-  //const [numberIssuedEntered, setNumberIssuedEntered] = useState(false);
   const [nomValue, setNomValue] = useState(0);
-  //const [nomValueEntered, setNomValueEntered] = useState(false);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -27,27 +24,10 @@ const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({
     newClientShares["issuedNotAllocated"] = newClientShares["numberIssued"];
     newClientShares["prelimAllocation"] = 0;
     session["newClientPrelim"]["shareClasses"].push(newClientShares);
-    //session["newCorpClientShareClasses"].push(newClientShares);
-    //const newClientPrelim = {};
-    //newClientPrelim["details"] = session["newCorpClientDtls"];
-    //newClientPrelim["shareClasses"] = session["newCorpClientShareClasses"];
-    //const newClientPrelimDb = await processNewClientPrelim(newClientPrelim);
-    //session["newClientPrelim"] = newClientPrelimDb;
-    //delete session["newCorpClientDtls"];
-    //delete session["newCorpClientShareClasses"];
     updateSession(session);
     console.log(session);
     handleView("addCorpClientOptions");
   };
-
-  /*const processNewClientPrelim = async (newClientPrelim) => {
-    const options = fetchOptionsAddClientPrelim(newClientPrelim, session["customer"]["_id"]);
-    console.log(options);
-    const newClientPrelimFromDb = await fetch(addClientPrelimUrl, options);
-    const newClient = await newClientPrelimFromDb.json();
-    console.log(newClient);
-    return newClient;
-  };*/
 
   return (
     <>

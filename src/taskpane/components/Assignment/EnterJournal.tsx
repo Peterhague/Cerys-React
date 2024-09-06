@@ -2,16 +2,6 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
-import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
-import { postJournalBatch } from "../../fetching/apiEndpoints";
-import { postTbToWbook, tbForPosting } from "../../utils.ts/trial-balance/tb-maintenance";
-import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
-import {
-  addBsClickListener,
-  addPlClickListener,
-  addTbClickListener,
-} from "../../utils.ts/worksheet-drilling/cerys-drilling";
-import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { processTransBatch } from "../../utils.ts/transactions/transactions";
 
 interface enterJournalProps {

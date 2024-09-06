@@ -1,8 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { fetchOptionsUpdateClientAmort } from "../../../fetching/generateOptions";
-import { addClientPrelimAmortUrl } from "../../../fetching/apiEndpoints";
 interface addCorpClientAmortProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -60,17 +58,6 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({
     console.log(session);
     handleView("addCorpClientOptions");
   };
-
-  /*const updateClientDb = async (amortPols) => {
-    const options = fetchOptionsUpdateClientAmort(
-      amortPols,
-      session["customer"]["_id"],
-      session["newClientPrelim"]["_id"]
-    );
-    const updatedClientDb = await fetch(addClientPrelimAmortUrl, options);
-    const updatedClient = updatedClientDb.json();
-    return updatedClient;
-  };*/
 
   return (
     <>

@@ -37,9 +37,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
     console.log(prelimAssignment);
     populateStaffObjs(prelimAssignment);
     //session["prelimAssignment"] = prelimAssignment;
-    const activeAssignment = await processNewAssignment(prelimAssignment);
+    const updatedCustAndNewAss = await processNewAssignment(prelimAssignment);
     //populateStaffObjs(activeAssignment);
-    session["activeAssignment"] = activeAssignment;
+    session["customer"] = updatedCustAndNewAss.customer;
+    session["activeAssignment"] = updatedCustAndNewAss.assignment;
     updateSession(session);
     console.log(session);
     addPrimarySheets(session);
@@ -49,10 +50,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   const processNewAssignment = async (prelimAssignment) => {
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
-    const objDb = await fetch(assignmentUrl, options);
-    const obj = await objDb.json();
-    console.log(obj);
-    return obj;
+    const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
+    const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
+    console.log(updatedCustAndNewAss);
+    return updatedCustAndNewAss;
   };
 
   const populateStaffObjs = (prelimAssignment) => {

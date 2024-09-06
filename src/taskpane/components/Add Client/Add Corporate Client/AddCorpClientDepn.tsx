@@ -1,8 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { addClientPrelimDepnUrl } from "../../../fetching/apiEndpoints";
-import { fetchOptionsUpdateClientDepn } from "../../../fetching/generateOptions";
 interface addCorpClientDepnProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -83,26 +81,11 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
       depnBasisOfficeEquip,
       depnRateOfficeEquip,
     };
-    //const updatedClient = await updateClientDb(depnPols);
-    //console.log(updatedClient);
-    //session["newClientPrelim"] = updatedClient;
     const updatedObj = { ...session["newClientPrelim"], ...depnPols };
     session["newClientPrelim"] = updatedObj;
     updateSession(session);
     handleView("addCorpClientOptions");
   };
-
-  /*const updateClientDb = async (depnPols) => {
-    console.log(depnPols);
-    const options = fetchOptionsUpdateClientDepn(
-      depnPols,
-      session["customer"]["_id"],
-      session["newClientPrelim"]["_id"]
-    );
-    const updatedClientDb = await fetch(addClientPrelimDepnUrl, options);
-    const updatedClient = updatedClientDb.json();
-    return updatedClient;
-  };*/
 
   return (
     <>

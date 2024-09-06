@@ -15,8 +15,8 @@ export async function updateAssignmentDb(session, target) {
   const workbookId = session.activeAssignment._id;
   const customerId = session.customer._id;
   const options = fetchOptionsUpdateAssignment(customerId, workbookId, target);
-  const dbAss = await fetch(updateAssignmentUrl, options);
-  const assignment = await dbAss.json();
-  console.log(assignment);
+  const updatedCustAndAssDb = await fetch(updateAssignmentUrl, options);
+  const updatedCustAndAss = await updatedCustAndAssDb.json();
+  return updatedCustAndAss;
   //promptRegistersCreation(session);
 }

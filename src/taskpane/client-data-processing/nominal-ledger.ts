@@ -2,15 +2,20 @@ import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 import { updateAssignmentDb } from "../utils.ts/helperFunctions";
 
-export async function enterNL(session) {
+export async function enterNL(session, updateSession) {
   try {
     await Excel.run(async (context) => {
       const clientNL = await createClientNLObject(context);
       session.activeAssignment.clientNL = clientNL;
       //writeNLToWbook(context, session);
       session.activeAssignment.clientNL = clientNL;
-      postCltNltoDb(session);
-      await updateAssignmentDb(session, "NLEntered");
+      const updatedCustAndAss = await postCltNltoDb(session);
+      session["customer"] = updatedCustAndAss.customer;
+      session["activeAssignment"] = updatedCustAndAss.assignment;
+      const additionalUpdates = await updateAssignmentDb(session, "NLEntered");
+      session["customer"] = additionalUpdates.customer;
+      session["activeAssignment"] = additionalUpdates.assignment;
+      updateSession(session);
       await context.sync();
       //if (options.createIFAR) {
       //  console.log("IFAR creation recognised");
@@ -65,5 +70,8 @@ export async function postCltNltoDb(session) {
   let customerId = session.customer._id;
   let clientNL = session.activeAssignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
-  await fetch(postClientNLUrl, options);
+  const updatedCustAndAssDb = await fetch(postClientNLUrl, options);
+  const updatedCustAndAss = await updatedCustAndAssDb.json();
+  console.log(updatedCustAndAss);
+  return updatedCustAndAss;
 }

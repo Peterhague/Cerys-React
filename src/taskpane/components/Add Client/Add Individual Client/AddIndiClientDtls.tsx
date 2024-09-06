@@ -49,9 +49,11 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({
   const processNewIndi = async (newIndi) => {
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsNewIndi(newIndi, customerId);
-    const newIndiDb = await fetch(postNonCorpClientUrl, options);
-    const newIndiObj = await newIndiDb.json();
-    console.log(newIndiObj);
+    const newIndiAndCustomerDb = await fetch(postNonCorpClientUrl, options);
+    const newIndiAndCustomer = await newIndiAndCustomerDb.json();
+    session["customer"] = newIndiAndCustomer.customer;
+    updateSession(session);
+    console.log(newIndiAndCustomer);
   };
 
   return (
