@@ -1,0 +1,597 @@
+import { addWorksheet, deleteWorksheet } from "../../../utils.ts/worksheet";
+import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
+
+export async function wsBalanceSheet(session) {
+  try {
+    await Excel.run(async (context) => {
+      const check = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
+      check.load("values");
+      await context.sync();
+      if (!check.isNullObject) deleteWorksheet(context, "Balance Sheet");
+      const ws = addWorksheet(context, "Balance Sheet");
+      const headerValues = worksheetHeader(session, "Balance Sheet");
+      applyWorkhseetHeader(ws, headerValues);
+      const pound = "£";
+      console.log(pound);
+      const values = [
+        ["", "", "", "", "£", "£"],
+        ["", "", "", "", "", ""],
+      ];
+      console.log(values);
+      if (
+        session.activeAssignment.activeCategories.includes("Intangible assets") ||
+        session.activeAssignment.activeCategories.includes("Tangible assets") ||
+        session.activeAssignment.activeCategories.includes("Fixed asset investments") ||
+        session.activeAssignment.activeCategories.includes("Investment property")
+      ) {
+        const nextArrays = displayFixedAssets(session.activeAssignment);
+        nextArrays.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      if (
+        session.activeAssignment.activeCategories.includes("Stocks") ||
+        session.activeAssignment.activeCategories.includes("Debtors") ||
+        session.activeAssignment.activeCategories.includes("Financial assets") ||
+        session.activeAssignment.activeCategories.includes("Cash")
+      ) {
+        const arrays = displayCurrentAssets(session.activeAssignment);
+        arrays.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      if (session.activeAssignment.activeCategories.includes("Creditors < 1 year")) {
+        const nextArrays = displayCurrentLiabilities(session.activeAssignment);
+        nextArrays.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      values.push(["", "", "", "", "", ""]);
+      const netCA = calculateNCA(session.activeAssignment);
+      if (netCA) {
+        if (netCA > 0) {
+          values.push(["Net current assets", "", "", "", "", netCA]);
+        } else {
+          values.push(["Net current liabilities", "", "", "", "", netCA]);
+        }
+      }
+      values.push(["", "", "", "", "", ""]);
+      const tALCL = totalAssetsLessCL(session.activeAssignment);
+      if (tALCL >= 0) {
+        values.push(["Total assets less current liabilities", "", "", "", "", tALCL.toString()]);
+      } else {
+        values.push(["Current liabilities less total assets", "", "", "", "", tALCL.toString()]);
+      }
+      if (session.activeAssignment.activeCategories.includes("Creditors > 1 year")) {
+        const nextArrays = displayNonCurrentLiabilities(session.activeAssignment);
+        nextArrays.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      if (session.activeAssignment.activeCategories.includes("Provisions for liabilities")) {
+        const nextArrays = displayProvisions(session.activeAssignment);
+        nextArrays.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      values.push(["", "", "", "", "", ""]);
+      const netAssets = calculateNetAssets(session.activeAssignment);
+      if (netAssets >= 0) {
+        values.push(["Net assets", "", "", "", "", netAssets.toString()]);
+      } else {
+        values.push(["Net liabilities", "", "", "", "", netAssets.toString()]);
+      }
+      if (netAssets !== 0) {
+        const arrs = [
+          ["", "", "", "", "", ""],
+          ["", "", "", "", "", ""],
+          ["Capital and reserves", "", "", "", "", ""],
+          ["", "", "", "", "", ""],
+        ];
+        arrs.forEach((arr) => {
+          values.push(arr);
+        });
+      }
+      let plResPosted = 0;
+      session.activeAssignment.tb.forEach((line) => {
+        let sCapMatched = false;
+        let sPremMatched = false;
+        let profit = true;
+        let pLReserve = false;
+        let capRedRes = false;
+        let otherRes = false;
+        let fVRes = false;
+        let otherRes2 = false;
+        let otherRes3 = false;
+        let otherRes4 = false;
+        let otherRes5 = false;
+        let minorityInt = false;
+        if (!sCapMatched && line.code > 8499 && line.code < 8800) {
+          const arr = displayShareCapital(session.activeAssignment);
+          sCapMatched = true;
+          values.push(arr);
+        }
+        if (!sPremMatched && line.code > 8799 && line.code < 9000) {
+          const arr = displaySharePremium(session.activeAssignment);
+          sPremMatched = true;
+          values.push(arr);
+        }
+        if (!pLReserve && line.code > 8999 && line.code < 9050) {
+          const arr = displayPLRes(session.activeAssignment);
+          pLReserve = true;
+          //profit = false;
+          values.push(arr);
+        }
+        if (!pLReserve && plResPosted === 0 && session.activeAssignment.profit !== 0) {
+          const arr = ["Profit & loss reserve", "", "", "", "", (session.activeAssignment.profit / 100).toString()];
+          values.push(arr);
+          plResPosted += 1;
+        }
+        if (!capRedRes && line.code > 9049 && line.code < 9100) {
+          const arr = displayCRR(session.activeAssignment);
+          capRedRes = true;
+          values.push(arr);
+        }
+        if (!otherRes && line.code > 9099 && line.code < 9150) {
+          const arr = displayOtherRes(session.activeAssignment);
+          otherRes = true;
+          values.push(arr);
+        }
+        if (!fVRes && line.code > 9149 && line.code < 9200) {
+          const arr = displayFVRes(session.activeAssignment);
+          fVRes = true;
+          values.push(arr);
+        }
+        if (!otherRes2 && line.code > 9199 && line.code < 9250) {
+          const arr = displayOtherRes2(session.activeAssignment);
+          otherRes2 = true;
+          values.push(arr);
+        }
+        if (!otherRes3 && line.code > 9249 && line.code < 9300) {
+          const arr = displayOtherRes3(session.activeAssignment);
+          otherRes3 = true;
+          values.push(arr);
+        }
+        if (!otherRes4 && line.code > 9299 && line.code < 9350) {
+          const arr = displayOtherRes4(session.activeAssignment);
+          otherRes4 = true;
+          values.push(arr);
+        }
+        if (!otherRes5 && line.code > 9349 && line.code < 9500) {
+          const arr = displayOtherRes5(session.activeAssignment);
+          otherRes5 = true;
+          values.push(arr);
+        }
+        if (!minorityInt && line.code > 9499) {
+          const arr = displayMinorityInt(session.activeAssignment);
+          minorityInt = true;
+          values.push(arr);
+        }
+      });
+      values.push(["", "", "", "", "", ""]);
+      let equity = 0;
+      session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+        if (obj.category === "Capital & reserves") equity = obj.value / 100;
+      });
+      session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+        if (obj.category === "Profit & loss reserve") equity += obj.value / 100;
+      });
+      values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
+      const range = ws.getRange(`a9:f${values.length + 8}`);
+      const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
+      numbersRange.numberFormat = "#,##0;(#,##0);-";
+      const cleansedValues = cleanseValues(values);
+      range.values = cleansedValues;
+      const currencyRange = ws.getRange("E9:F9");
+      currencyRange.format.horizontalAlignment = "Right";
+      currencyRange.format.font.bold = true;
+      wsBSAccountFormat(ws, values);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function wsBSAccountFormat(ws, values) {
+  let bold = [];
+  let italic = [];
+  const topBorder = [];
+  const botttomBorder = [];
+  const totalBorders = [];
+  //let fATotal = false;
+  for (let i = 0; i < values.length; i++) {
+    if (values[i][0] === "Fixed assets") {
+      bold.push(i);
+      italic.push(i);
+      //fATotal = true;
+    } else if (values[i][0] === "Current assets") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Current liabilities") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Net current assets") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Total assets less current liabilities") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Creditors due in > 1 year") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Provisions for liabilities") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Net assets") {
+      bold.push(i);
+      italic.push(i);
+      totalBorders.push(i);
+    } else if (values[i][0] === "Capital and reserves") {
+      bold.push(i);
+      italic.push(i);
+    } else if (values[i][0] === "Total equity") {
+      bold.push(i);
+      italic.push(i);
+      totalBorders.push(i);
+    } else if (values[i][0] === "subtotal") {
+      topBorder.push(i);
+    } else if (values[i][0] === "subtotalBottom") {
+      botttomBorder.push(i);
+    }
+  }
+  bold.forEach((i) => {
+    const aCell = ws.getRange(`A${i + 9}:A${i + 9}`);
+    aCell.format.font.bold = true;
+  });
+  italic.forEach((i) => {
+    const aCell = ws.getRange(`A${i + 9}:A${i + 9}`);
+    aCell.format.font.italic = true;
+  });
+  topBorder.forEach((i) => {
+    const fCell = ws.getRange(`F${i + 9}:F${i + 9}`);
+    const edgeTop = fCell.format.borders.getItem("EdgeTop");
+    edgeTop.style = "Continuous";
+  });
+  botttomBorder.forEach((i) => {
+    const eCell = ws.getRange(`E${i + 9}:E${i + 9}`);
+    const edgeBottom = eCell.format.borders.getItem("EdgeBottom");
+    edgeBottom.style = "Continuous";
+  });
+  totalBorders.forEach((i) => {
+    const fCell = ws.getRange(`F${i + 9}:F${i + 9}`);
+    const edgeTop = fCell.format.borders.getItem("EdgeTop");
+    edgeTop.style = "Continuous";
+    const edgeBottom = fCell.format.borders.getItem("EdgeBottom");
+    edgeBottom.style = "Double";
+  });
+}
+
+export function cleanseValues(values) {
+  const cleansedValues = [];
+  values.forEach((arr) => {
+    const newArr = [];
+    arr.forEach((i) => {
+      if (i === "subtotal" || i === "subtotalBottom") {
+        newArr.push("");
+      } else {
+        newArr.push(i);
+      }
+    });
+    cleansedValues.push(newArr);
+  });
+  return cleansedValues;
+}
+
+function calculateNCA(activeAssignment) {
+  if (activeAssignment.tCA && activeAssignment.tCL) {
+    return activeAssignment.tCA + activeAssignment.tCL;
+  } else if (activeAssignment.tCA && !activeAssignment.tCL) {
+    return activeAssignment.tCA;
+  } else if (activeAssignment.tCL && !activeAssignment.tCA) {
+    return activeAssignment.tCL;
+  } else {
+    return;
+  }
+}
+
+function totalAssetsLessCL(activeAssignment) {
+  let fig = 0;
+  if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
+  if (activeAssignment.tCA) fig += activeAssignment.tCA;
+  if (activeAssignment.tCL) fig += activeAssignment.tCL;
+  return fig;
+}
+
+function calculateNetAssets(activeAssignment) {
+  let fig = 0;
+  if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
+  if (activeAssignment.tCA) fig += activeAssignment.tCA;
+  if (activeAssignment.tCL) fig += activeAssignment.tCL;
+  if (activeAssignment.nonCL) fig += activeAssignment.nonCL;
+  if (activeAssignment.provisions) fig += activeAssignment.provisions;
+  return fig;
+}
+
+function displayFixedAssets(activeAssignment) {
+  const arrays = [
+    ["Fixed assets", "", "", "", "", ""],
+    ["", "", "", "", "", ""],
+  ];
+  let subtotal = 0;
+  if (activeAssignment.activeCategories.includes("Intangible assets")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Intangible assets") {
+        value = cat.value;
+      }
+    });
+    const iARow = ["Intangible assets", "", "", "", "", (value / 100).toString()];
+    arrays.push(iARow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Tangible assets")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Tangible assets") {
+        value = cat.value;
+      }
+    });
+    const tARow = ["Tangible assets", "", "", "", "", (value / 100).toString()];
+    arrays.push(tARow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Fixed asset investments")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Fixed asset investments") {
+        value = cat.value;
+      }
+    });
+    const fAIRow = ["Fixed asset investments", "", "", "", "", (value / 100).toString()];
+    arrays.push(fAIRow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Investment property")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Investment property") {
+        value = cat.value;
+      }
+    });
+    const iPRow = ["Investment property", "", "", "", "", (value / 100).toString()];
+    arrays.push(iPRow);
+    subtotal += value;
+  }
+  arrays.push(["", "", "", "", "", ""]);
+  arrays.push(["subtotal", "", "", "", "", (subtotal / 100).toString()]);
+  activeAssignment.nonCA = subtotal / 100;
+  return arrays;
+}
+
+function displayCurrentAssets(activeAssignment) {
+  const arrays = [
+    ["Current assets", "", "", "", "", ""],
+    ["", "", "", "", "", ""],
+  ];
+  let subtotal = 0;
+  if (activeAssignment.activeCategories.includes("Stocks")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Stocks") {
+        value = cat.value;
+      }
+    });
+    const stocksRow = ["Stocks", "", "", "", (value / 100).toString(), ""];
+    arrays.push(stocksRow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Debtors")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Debtors") {
+        value = cat.value;
+      }
+    });
+    const debtorsRow = ["Debtors", "", "", "", (value / 100).toString(), ""];
+    arrays.push(debtorsRow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Financial assets")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Financial assets") {
+        value = cat.value;
+      }
+    });
+    const finAssetsRow = ["Financial assets", "", "", "", (value / 100).toString(), ""];
+    arrays.push(finAssetsRow);
+    subtotal += value;
+  }
+  if (activeAssignment.activeCategories.includes("Cash")) {
+    let value = 0;
+    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+      if (cat.category === "Cash") {
+        value = cat.value;
+      }
+    });
+    const cashRow = ["Cash at bank and in hand", "", "", "", (value / 100).toString(), ""];
+    arrays.push(cashRow);
+    subtotal += value;
+  }
+  arrays.push(["subtotalBottom", "", "", "", "", (subtotal / 100).toString()]);
+  activeAssignment.tCA = subtotal / 100;
+  return arrays;
+}
+
+function displayCurrentLiabilities(activeAssignment) {
+  const arrays = [
+    ["Current liabilities", "", "", "", "", ""],
+    ["", "", "", "", "", ""],
+  ];
+  let subtotal = 0;
+  let value = 0;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Creditors < 1 year") {
+      value = cat.value;
+    }
+  });
+  const curCredRow = ["Creditors due in < 1 year", "", "", "", (value / 100).toString(), ""];
+  arrays.push(curCredRow);
+  subtotal += value;
+  arrays.push(["subtotalBottom", "", "", "", "", (subtotal / 100).toString()]);
+  activeAssignment.tCL = subtotal / 100;
+  return arrays;
+}
+
+function displayNonCurrentLiabilities(activeAssignment) {
+  const arrays = [["", "", "", "", "", ""]];
+  let subtotal = 0;
+  let value = 0;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Creditors > 1 year") {
+      value = cat.value;
+    }
+  });
+  const nonCurCredRow = ["Creditors due in > 1 year", "", "", "", "", (value / 100).toString()];
+  arrays.push(nonCurCredRow);
+  subtotal += value;
+  activeAssignment.nonCL = subtotal / 100;
+  return arrays;
+}
+
+function displayProvisions(activeAssignment) {
+  const arrays = [["", "", "", "", "", ""]];
+  let subtotal = 0;
+  let value = 0;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Provisions for liabilities") {
+      value = cat.value;
+    }
+  });
+  const provisionsRow = ["Provisions for liabilities", "", "", "", "", (value / 100).toString()];
+  arrays.push(provisionsRow);
+  subtotal += value;
+  activeAssignment.provisions = subtotal / 100;
+  return arrays;
+}
+
+function displayShareCapital(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 8499 && line.code < 8800) {
+      value += line.value;
+    }
+  });
+  const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
+  return shareCapRow;
+}
+
+function displaySharePremium(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 8799 && line.code < 9000) {
+      value += line.value;
+    }
+  });
+  const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
+  return sharePremRow;
+}
+
+function displayPLRes(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 8999 && line.code < 9050) {
+      value += line.value;
+    }
+  });
+  const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((-value + activeAssignment.profit) / 100).toString()];
+  return pLReserveRow;
+}
+
+function displayCRR(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9049 && line.code < 9100) {
+      value += line.value;
+    }
+  });
+  const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
+  return crrRow;
+}
+
+function displayOtherRes(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9099 && line.code < 9150) {
+      value += line.value;
+    }
+  });
+  const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
+  return otherResRow;
+}
+
+function displayFVRes(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9149 && line.code < 9200) {
+      value += line.value;
+    }
+  });
+  const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
+  return fVRow;
+}
+
+function displayOtherRes2(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9199 && line.code < 9250) {
+      value += line.value;
+    }
+  });
+  const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
+  return otherRes2Row;
+}
+
+function displayOtherRes3(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9249 && line.code < 9300) {
+      value += line.value;
+    }
+  });
+  const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
+  return otherRes3Row;
+}
+
+function displayOtherRes4(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9299 && line.code < 9350) {
+      value += line.value;
+    }
+  });
+  const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
+  return otherRes4Row;
+}
+
+function displayOtherRes5(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9349 && line.code < 9500) {
+      value += line.value;
+    }
+  });
+  const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
+  return otherRes5Row;
+}
+
+function displayMinorityInt(activeAssignment) {
+  let value = 0;
+  activeAssignment.tb.forEach((line) => {
+    if (line.code > 9499) {
+      value += line.value;
+    }
+  });
+  const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
+  return minIntRow;
+}

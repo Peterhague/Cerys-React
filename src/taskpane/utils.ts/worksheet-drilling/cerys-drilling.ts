@@ -1,4 +1,4 @@
-import { getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
+import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 
@@ -15,6 +15,7 @@ export async function addPlClickListener(activeAssignment) {
     console.error(e);
   }
 }
+
 export async function showNominalDetailPL(e, activeAssignment, context) {
   const address = e.address;
   console.log("working");
@@ -31,7 +32,60 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
   console.log(detail);
   cerysNomDetailViewPL(context, detail, activeAssignment);
 }
+
 export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
+  addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
+  await context.sync();
+  const ws = getWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
+  const valuesToPost = [];
+  detail.forEach((code) => {
+    valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
+    valuesToPost.push(["", "", "", ""]);
+    code.forEach((line) => {
+      let arr = [];
+      arr.push(line.transactionType);
+      line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
+      arr.push(line.narrative);
+      arr.push(line.value / 100);
+      valuesToPost.push(arr);
+    });
+    valuesToPost.push(["", "", "", ""]);
+  });
+  const range = ws.getRange(`A1:D${valuesToPost.length}`);
+  range.values = valuesToPost;
+  ws.activate();
+  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
+  await context.sync();
+}
+
+export async function addBsClickListener(activeAssignment) {
+  try {
+    await Excel.run(async (context) => {
+      const ws = context.workbook.worksheets.getItem("Balance sheet");
+      ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, e, activeAssignment));
+      activeAssignment.bSListenerAdded = true;
+
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
+export async function showNominalDetailBS(context, e, activeAssignment) {
+  const address = e.address;
+  if (address[0] !== "A") return;
+  const ws = context.workbook.worksheets.getItem("Balance sheet");
+  const range = ws.getRange(`${address}:${address}`);
+  const values = range.load("values");
+  await context.sync();
+  const innerValues = values.values;
+  const category = innerValues[0][0];
+  const detail = await getCerysNomDetailBS(context, category, activeAssignment);
+  cerysNomDetailViewBS(context, detail, activeAssignment);
+}
+
+async function cerysNomDetailViewBS(context, detail, activeAssignment) {
   addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
   await context.sync();
   const ws = getWorksheet(context, `${detail[0][0].cerysCategory} analysis`);

@@ -6,7 +6,8 @@ import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
 import { postJournalBatch } from "../../fetching/apiEndpoints";
 import { postTbToWbook, tbForPosting } from "../../utils.ts/trial-balance/tb-maintenance";
 import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
-import { addPlClickListener } from "../../utils.ts/worksheet-drilling/cerys-drilling";
+import { addBsClickListener, addPlClickListener } from "../../utils.ts/worksheet-drilling/cerys-drilling";
+import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 
 interface enterJournalProps {
   updateSession: (update) => void;
@@ -54,9 +55,9 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
     const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
     postTbToWbook(tbArray);
     await wsPLAccount(session);
-    //wsBalanceSheet(session);
+    await wsBalanceSheet(session);
     addPlClickListener(session["activeAssignment"]);
-    //addBsClickListener(session.activeAssignment);
+    addBsClickListener(session["activeAssignment"]);
     session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     updateSession(session);
     handleView("assignmentDashHome");

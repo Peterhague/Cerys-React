@@ -164,35 +164,32 @@ export function getCerysNomDetailPL(category, activeAssignment) {
   return selectionArray;
 }
 
-export async function getCerysNomDetailBS(category, activeAssignment) {
-  const detail = await Excel.run(async (context) => {
-    let cat = category;
-    if (category === "Cash at bank and in hand") {
-      cat = "Cash";
-    } else if (category === "Creditors due in < 1 year") {
-      cat = "Creditors < 1 year";
-    } else if (category === "Creditors due in > 1 year") {
-      cat = "Creditors > 1 year";
+export async function getCerysNomDetailBS(context, category, activeAssignment) {
+  let cat = category;
+  if (category === "Cash at bank and in hand") {
+    cat = "Cash";
+  } else if (category === "Creditors due in < 1 year") {
+    cat = "Creditors < 1 year";
+  } else if (category === "Creditors due in > 1 year") {
+    cat = "Creditors > 1 year";
+  }
+  let selection;
+  activeAssignment.activeCategoriesDetails.forEach((obj) => {
+    if (obj.category === cat || obj.category === category) {
+      selection = obj.codes;
     }
-    let selection;
-    activeAssignment.activeCategoriesObjs.forEach((obj) => {
-      if (obj.category === cat) {
-        selection = obj.codes;
+  });
+  let selectionArray = [];
+  selection.forEach((code) => {
+    let arr = [];
+    activeAssignment.transactions.forEach((transaction) => {
+      if (transaction.cerysCode === code) {
+        arr.push(transaction);
       }
     });
-    let selectionArray = [];
-    selection.forEach((code) => {
-      let arr = [];
-      activeAssignment.transactions.forEach((transaction) => {
-        if (transaction.cerysCode === code) {
-          arr.push(transaction);
-        }
-      });
-      selectionArray.push(arr);
-    });
-
-    await context.sync();
-    return selectionArray;
+    selectionArray.push(arr);
   });
-  return detail;
+
+  await context.sync();
+  return selectionArray;
 }
