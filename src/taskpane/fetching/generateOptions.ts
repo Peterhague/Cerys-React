@@ -537,41 +537,49 @@ export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
 //     };
 //   }
 
-export function fetchOptionsIFA(ifa, session) {
+//export function fetchOptionsIFA(ifa, session) {
+//  return {
+//    method: "POST",
+//    headers: {
+//      "Content-Type": "application/json",
+//    },
+//    body: JSON.stringify({
+//      narrative: ifa.narrative,
+//      assetNarrative: ifa.assetNarrative,
+//      transDateClt: ifa.transactionDateClt,
+//      transDateUser: ifa.transactionDate,
+//      cerysCategory: ifa.cerysCategory,
+//      cost: ifa.value,
+//      customerId: session.customer._id,
+//      workbookId: session.activeAssignment.workbookId,
+//    }),
+//  };
+//}
+
+export function fetchOptionsIFA(session) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      narrative: ifa.narrative,
-      assetNarrative: ifa.assetNarrative,
-      transDateClt: ifa.transactionDateClt,
-      transDateUser: ifa.transactionDate,
-      cerysCategory: ifa.cerysCategory,
-      cost: ifa.value,
+      assets: session.IFATransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment.workbookId,
+      workbookId: session.activeAssignment._id,
     }),
   };
 }
 
-export function fetchOptionsTFA(tfa, session) {
+export function fetchOptionsTFA(session) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      //transDate: tfa.transDate,
-      narrative: tfa.narrative,
-      assetNarrative: tfa.assetNarrative,
-      transDateClt: tfa.transactionDateClt,
-      transDateUser: tfa.transactionDate,
-      cerysCategory: tfa.cerysCategory,
-      cost: tfa.value,
+      assets: session.TFATransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment.workbookId,
+      workbookId: session.activeAssignment._id,
     }),
   };
 }

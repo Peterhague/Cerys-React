@@ -20,3 +20,16 @@ export async function updateAssignmentDb(session, target) {
   return updatedCustAndAss;
   //promptRegistersCreation(session);
 }
+
+export function updateNomCode(e, transToPost, eRowNumber) {
+  const updatedTransToPost = [];
+  transToPost.forEach((i) => {
+    if (i.rowNumber === eRowNumber) {
+      i.cerysCode = e.details.valueAfter;
+      updatedTransToPost.push(i);
+    } else {
+      updatedTransToPost.push(i);
+    }
+  });
+  return updatedTransToPost;
+}
