@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { createRelTransIP } from "../../../utils.ts/transactions/ipr-generation";
+import { createIPR, createRelTransIP } from "../../../utils.ts/transactions/ipr-generation";
 
 interface promptIPRCreationprops {
   updateSession: (update) => void;
@@ -51,7 +51,7 @@ const PromptIPRCreation: React.FC<promptIPRCreationprops> = ({
           <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleView={() => handleNLImport()} />
         </>
       )}
-      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleView("userLogin")} />}
+      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => createIPR(session)} />}
 
       <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleView={() => handleView("userLogin")} />
       <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("customerSignUp")} />

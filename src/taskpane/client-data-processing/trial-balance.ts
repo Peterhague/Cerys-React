@@ -4,9 +4,8 @@ import { processTransBatch } from "../utils.ts/transactions/transactions";
 export async function enterTB(session, updateSession, handleView) {
   try {
     await Excel.run(async (context) => {
-      console.log(session);
+      session["nextView"] = "enterClientDataHome";
       const journals = await handleTBData(context);
-      console.log(journals);
       let check = 0;
       const transactions = [];
       journals.forEach((jnl) => {
@@ -18,7 +17,6 @@ export async function enterTB(session, updateSession, handleView) {
         transactions.push(obj);
       });
       if (check !== 0) return;
-      console.log(transactions);
       session["activeJournal"]["journals"] = transactions;
       session["activeJournal"]["journalType"] = "clientTB";
       session["activeJournal"]["journal"] = false;

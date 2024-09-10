@@ -584,21 +584,16 @@ export function fetchOptionsTFA(session) {
   };
 }
 
-export function fetchOptionsIP(ip, session) {
+export function fetchOptionsIP(session) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      narrative: ip.narrative,
-      assetNarrative: ip.assetNarrative,
-      transDateClt: ip.transactionDateClt,
-      transDateUser: ip.transactionDate,
-      cerysCategory: ip.cerysCategory,
-      cost: ip.value,
+      assets: session.IPTransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment.workbookId,
+      workbookId: session.activeAssignment._id,
     }),
   };
 }

@@ -28,12 +28,8 @@ export const processTransBatch = async (session, handleView) => {
     transactions.push(trans);
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
-  const options = fetchOptionsTransBatch(transactions, transDtls);
-  const objsDb = await fetch(postJournalBatch, options);
-  const objs = await objsDb.json();
-  console.log(objs);
-  session["customer"] = objs.customer;
-  session["activeAssignment"] = objs.assignment;
+  postTransactionsMem(session, transactions);
+  postTransactionsDb(session, transactions, transDtls);
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
   await postTbToWbook(tbArray);
   await wsPLAccount(session);
@@ -46,7 +42,6 @@ export const processTransBatch = async (session, handleView) => {
 };
 
 export const checkAssetRegStatus = (session, handleView) => {
-    console.log("Helllloooo!");
   if (
     !session["activeAssignment"]["IFARegisterCreated"] &&
     session["activeAssignment"]["activeCategories"].includes("Intangible assets")
@@ -62,5 +57,83 @@ export const checkAssetRegStatus = (session, handleView) => {
     session["activeAssignment"]["activeCategories"].includes("Investment property")
   ) {
     handleView("promptIPRCreation");
-  }
+  } else handleView(session["nextView"]);
+  session["nextView"] = "";
 };
+
+const postTransactionsDb = async (session, transactions, transDtls) => {
+  const options = fetchOptionsTransBatch(transactions, transDtls);
+  const objsDb = await fetch(postJournalBatch, options);
+  const objs = await objsDb.json();
+  console.log(objs);
+  session["customer"] = objs.customer;
+  session["activeAssignment"] = objs.assignment;
+  console.log("updated");
+  console.log(session);
+};
+
+const postTransactionsMem = (session, transactions) => {
+  const actAss = session["activeAssignment"];
+  actAss.transactions.push(...transactions);
+  actAss.transactionsPosted = true;
+  const tb = tbCreator(actAss.transactions);
+  actAss.tb = tb;
+  const activeCats = setActiveCategories(tb);
+  actAss.activeCategoriesDetails = activeCats.arrCats;
+  actAss.activeCategories = activeCats.categories;
+  session["activeAssignment"] = actAss;
+  console.log("Yoooooo!!!!!");
+  console.log(session);
+};
+
+function tbCreator(transactions) {
+  const tbCodes = [];
+  transactions.forEach((tran) => {
+    if (!tbCodes.includes(tran.cerysCode)) {
+      tbCodes.push(tran.cerysCode);
+    }
+  });
+  const tb = [];
+  populateTransactions(transactions, tbCodes, tb);
+  return tb;
+}
+
+function populateTransactions(transactions, tbCodes, tb) {
+  tbCodes.forEach((code) => {
+    const obj = {};
+    obj["code"] = code;
+    obj["value"] = 0;
+    transactions.forEach((tran) => {
+      if (tran.cerysCode === code) {
+        obj["name"] = tran.cerysName;
+        obj["value"] += tran.value;
+        obj["category"] = tran.cerysCategory;
+      }
+    });
+    tb.push(obj);
+  });
+}
+
+function setActiveCategories(tb) {
+  const categories = [];
+  tb.forEach((line) => {
+    if (!categories.includes(line.category)) {
+      categories.push(line.category);
+    }
+  });
+  const arrCats = [];
+  categories.forEach((cat) => {
+    const obj = {};
+    obj["category"] = cat;
+    obj["value"] = 0;
+    obj["codes"] = [];
+    tb.forEach((line) => {
+      if (line.category === cat) {
+        obj["value"] += line.value;
+        obj["codes"].push(line.code);
+      }
+    });
+    arrCats.push(obj);
+  });
+  return { arrCats, categories };
+}

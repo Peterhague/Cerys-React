@@ -330,7 +330,7 @@ export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
           assetLine.push(tran.transactionDateUser);
         }
         assetLine.push(tran.assetNarrative);
-        assetLine.push("placeholder");
+        assetLine.push(`=(B3-A${rowNumber})`);
         assetLine.push(0);
         assetLine.push(tran.value / 100);
         assetLine.push("placeholder");

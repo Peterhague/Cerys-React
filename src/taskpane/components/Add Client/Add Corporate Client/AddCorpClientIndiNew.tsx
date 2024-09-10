@@ -123,39 +123,6 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
     console.log(newIndi);
   };
 
-  /*const updateClient = async (newIndiDb) => {
-    newIndiDb.clientId = session["newClientPrelim"]["_id"];
-    newIndiDb._clientDirectorships.length > 0 && constructDirectorObjDb(newIndiDb);
-    newIndiDb._clientShareholdings.length > 0 && constructShareholderObjDb(newIndiDb);
-    console.log(newIndiDb);
-    const options = fetchOptionsUpdateClientPrelim(newIndiDb, session["customer"]["_id"]);
-    const updatedCustomerDb = await fetch(clientAddPersonsUrl, options);
-    const updatedCustomerObj = await updatedCustomerDb.json();
-    console.log(updatedCustomerObj);
-    return updatedCustomerObj.client;
-  };
-
-  const constructDirectorObjDb = (newIndiDb) => {
-    newIndiDb._clientDirectorships[0].firstName = newIndiDb.firstName;
-    newIndiDb._clientDirectorships[0].lastName = newIndiDb.lastName;
-    newIndiDb._clientDirectorships[0].email = newIndiDb.email;
-    newIndiDb._clientDirectorships[0].personId = newIndiDb._id;
-  };
-
-  const constructShareholderObjDb = (newIndiDb) => {
-    newIndiDb._clientShareholdings[0].firstName = newIndiDb.firstName;
-    newIndiDb._clientShareholdings[0].lastName = newIndiDb.lastName;
-    newIndiDb._clientShareholdings[0].email = newIndiDb.email;
-    newIndiDb._clientShareholdings[0].personId = newIndiDb._id;
-    newIndiDb._clientShareholdings[0].shareholdings = [
-      {
-        numberSubscribed: newIndiDb._clientShareholdings[0].interest,
-        shareClassId: newIndiDb._clientShareholdings[0].shareClassId,
-        shareClassName: newIndiDb._clientShareholdings[0].shareClassName,
-      },
-    ];
-  };*/
-
   return (
     <>
       <form onSubmit={handleSubmit} id="addClientForm" action="">

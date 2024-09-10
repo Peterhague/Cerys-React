@@ -26,4 +26,6 @@ export function applyWorkhseetHeader(ws, headerValues) {
   const sheetNameRange = ws.getRange("A7:A7");
   sheetNameRange.values = headerValues[6][0];
   sheetNameRange.format.font.italic = true;
+  const dateRange = ws.getRange("B3:B3");
+  dateRange.numberFormat = "dd/mm/yyyy";
 }

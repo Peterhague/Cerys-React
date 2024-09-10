@@ -18,15 +18,15 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    session["nextView"] = "assignmentDashHome";
     await processTransBatch(session, handleView);
     updateSession(session);
-    handleView("assignmentDashHome");
   };
 
   const handleJournal = async (e) => {
     e.preventDefault();
     const cerysObj = await cerysCodeToCerysObject(nominalCode);
-    const journalDtls = { ...cerysObj, journalValue: parseInt(journalValue), narrative, journalDate };
+    const journalDtls = { ...cerysObj, journalValue: parseInt(journalValue) * 100, narrative, journalDate };
     session["activeJournal"].journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.journalValue;
     updateSession(session);
@@ -84,7 +84,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
           ></input>
         </div>
         {session["activeJournal"].netValue !== 0 && (
-          <p>Your journals are out of balance by {session["activeJournal"].netValue}</p>
+          <p>Your journals are out of balance by {session["activeJournal"].netValue / 100}</p>
         )}
         <div>
           <button onClick={handleJournal}>Next</button>

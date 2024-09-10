@@ -1,33 +1,25 @@
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
-import { updateAssignmentDb } from "../utils.ts/helperFunctions";
 
 export async function enterNL(session, updateSession) {
   try {
     await Excel.run(async (context) => {
-      const clientNL = await createClientNLObject(context);
-      session.activeAssignment.clientNL = clientNL;
-      //writeNLToWbook(context, session);
-      session.activeAssignment.clientNL = clientNL;
-      const updatedCustAndAss = await postCltNltoDb(session);
-      session["customer"] = updatedCustAndAss.customer;
-      session["activeAssignment"] = updatedCustAndAss.assignment;
-      const additionalUpdates = await updateAssignmentDb(session, "NLEntered");
-      session["customer"] = additionalUpdates.customer;
-      session["activeAssignment"] = additionalUpdates.assignment;
+      await postClientNLMem(session, context);
+      postCltNltoDb(session);
       updateSession(session);
       await context.sync();
-      //if (options.createIFAR) {
-      //  console.log("IFAR creation recognised");
-      //} else if (options.createTFAR) {
-      //  console.log("TFAR creation recognised");
-      //  createRelTransTFA(session, options);
-      //}
     });
   } catch (e) {
     console.error(e);
   }
 }
+
+const postClientNLMem = async (session, context) => {
+  session.awaitMem = true;
+  const clientNL = await createClientNLObject(context);
+  updateSessionMem(session, clientNL);
+  session.awaitMem = false;
+};
 
 export async function createClientNLObject(context) {
   const clientNL = [];
@@ -65,13 +57,32 @@ export async function createClientNLObject(context) {
   }
 }
 
+const updateSessionMem = (session, clientNL) => {
+  if (!session.awaitDb) {
+    session.activeAssignment.clientNL = clientNL;
+    session.activeAssignment.NLentered = true;
+  } else {
+    updateSessionMem(session, clientNL);
+  }
+};
+
 export async function postCltNltoDb(session) {
+  session.awaitDb = true;
   let assignmentId = session.activeAssignment._id;
   let customerId = session.customer._id;
   let clientNL = session.activeAssignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
   const updatedCustAndAssDb = await fetch(postClientNLUrl, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
-  console.log(updatedCustAndAss);
-  return updatedCustAndAss;
+  updateSessionCustAndAss(session, updatedCustAndAss);
+  session.awaitDb = false;
 }
+
+const updateSessionCustAndAss = (session, updatedCustAndAss) => {
+  if (!session.awaitMem) {
+    session["customer"] = updatedCustAndAss.customer;
+    session["assignment"] = updatedCustAndAss.assignment;
+  } else {
+    updateSessionCustAndAss(session, updatedCustAndAss);
+  }
+};

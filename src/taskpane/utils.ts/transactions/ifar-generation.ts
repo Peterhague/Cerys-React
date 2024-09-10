@@ -19,14 +19,12 @@ export async function createIFATransSumm(session, relevantTrans) {
     await Excel.run(async (context) => {
       const ws = addWorksheet(context, "IFA Transactions");
       let activeClient;
-      // this should run when session.activeAssignment is defined
       session.customer.clients.forEach((client) => {
         if (client._id === session.activeAssignment.clientId) {
           activeClient = client;
         }
       });
       const bodyContent = [];
-      //let transToPost = [];
       session["IFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
@@ -137,19 +135,8 @@ export async function createIFATransSumm(session, relevantTrans) {
       const rangeJK = ws.getRange(`J3:K${bodyContent.length + 2}`);
       rangeD.format.fill.color = "yellow";
       rangeJK.format.fill.color = "yellow";
-      // CHANGE CODE BELOW:
       ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
       await context.sync();
-      //const submitBtn = buttonGenerator(
-      //  "submitIFARTrans",
-      //  ["noclass"],
-      //  "CREATE IFA REGISTER",
-      //  createIFAR,
-      //  context,
-      //  session,
-      //  transToPost
-      //);
-      //div.appendChild(submitBtn);
     });
   } catch (e) {
     console.error(e);
@@ -200,7 +187,6 @@ export async function createIFAR(session) {
   try {
     await Excel.run(async (context) => {
       await postIFAtoDB(session);
-      console.log(context);
       createIFARWs(context, session);
     });
   } catch (e) {
@@ -212,7 +198,6 @@ export async function postIFAtoDB(session) {
   const options = fetchOptionsIFA(session);
   const updatedCustAndAssDb = await fetch(postIFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
-  console.log(updatedCustAndAss);
   session["customer"] = updatedCustAndAss.customer;
   session["activeAssignment"] = updatedCustAndAss.assignment;
 }
@@ -309,7 +294,7 @@ export async function populateIFARWs(context, IFAActiveCats, transToPost, ws) {
           assetLine.push(tran.transactionDateUser);
         }
         assetLine.push(tran.assetNarrative);
-        assetLine.push("placeholder");
+        assetLine.push(`=(B3-A${rowNumber})`);
         assetLine.push(0);
         assetLine.push(tran.value / 100);
         assetLine.push("placeholder");
