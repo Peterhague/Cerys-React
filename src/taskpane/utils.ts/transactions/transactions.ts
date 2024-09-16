@@ -29,9 +29,9 @@ export const processTransBatch = async (session, handleView) => {
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
   postTransactionsMem(session, transactions);
-  postTransactionsDb(session, transactions, transDtls);
+  postTransactionsDb(transactions, transDtls);
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
-  await postTbToWbook(tbArray);
+  await postTbToWbook(session, tbArray);
   await wsPLAccount(session);
   await wsBalanceSheet(session);
   addTbClickListener(session["activeAssignment"]);
@@ -61,15 +61,11 @@ export const checkAssetRegStatus = (session, handleView) => {
   session["nextView"] = "";
 };
 
-const postTransactionsDb = async (session, transactions, transDtls) => {
+const postTransactionsDb = async (transactions, transDtls) => {
   const options = fetchOptionsTransBatch(transactions, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
   console.log(objs);
-  session["customer"] = objs.customer;
-  session["activeAssignment"] = objs.assignment;
-  console.log("updated");
-  console.log(session);
 };
 
 const postTransactionsMem = (session, transactions) => {
@@ -82,7 +78,6 @@ const postTransactionsMem = (session, transactions) => {
   actAss.activeCategoriesDetails = activeCats.arrCats;
   actAss.activeCategories = activeCats.categories;
   session["activeAssignment"] = actAss;
-  console.log("Yoooooo!!!!!");
   console.log(session);
 };
 

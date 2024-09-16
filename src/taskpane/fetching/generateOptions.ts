@@ -423,6 +423,19 @@ export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
   };
 }
 
+export function fetchOptionsIterateAssignment(actAss, customerId) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      actAss,
+      customerId,
+    }),
+  };
+}
+
 export function fetchOptionsNewPerson(person) {
   return {
     method: "POST",

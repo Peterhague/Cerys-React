@@ -42,7 +42,7 @@ export async function createIFATransSumm(session, relevantTrans) {
               trans["clientNominalCode"] = i.clientNominalCode;
               trans["narrative"] = i.narrative;
               trans["transactionType"] = i.transactionType;
-              trans["value"] = i.value;
+              //trans["cost"] = i.value;
               trans["transactionDateClt"] = tran.date;
               trans["clientNominalCode"] = tran.code;
               trans["clientNominalName"] = tran.name;
@@ -186,7 +186,10 @@ export function updateAmortRate(e, transToPost, eRowNumber) {
 export async function createIFAR(session) {
   try {
     await Excel.run(async (context) => {
-      await postIFAtoDB(session);
+      console.log(session);
+      await postIFAtoMem(session);
+      console.log(session);
+      postIFAtoDB(session);
       createIFARWs(context, session);
     });
   } catch (e) {
@@ -194,12 +197,38 @@ export async function createIFAR(session) {
   }
 }
 
+const postIFAtoMem = async (session) => {
+  const intAssets = [];
+  session["IFATransactions"].forEach((asset) => {
+    const intAss = {
+      narrative: asset.narrative,
+      assetNarrative: asset.assetNarrative,
+      cerysCategory: asset.cerysCategory,
+      cost: asset.value,
+      transDateUser: asset.transactionDate,
+      transDateClt: asset.transactionDateClt,
+    };
+    intAssets.push(intAss);
+  });
+  updateIFAMem(session, intAssets);
+};
+
+const updateIFAMem = (session, intAssets) => {
+  session["activeAssignment"].IFAR.push(...intAssets);
+  session["activeAssignment"].IFARegisterCreated = true;
+  session["customer"]["assignments"].forEach((ass) => {
+    if (ass._id === session["activeAssignment"]._id) {
+      ass.IFAR.push(...intAssets);
+      ass.IFARegistered = true;
+    }
+  });
+};
+
 export async function postIFAtoDB(session) {
   const options = fetchOptionsIFA(session);
   const updatedCustAndAssDb = await fetch(postIFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
-  session["customer"] = updatedCustAndAss.customer;
-  session["activeAssignment"] = updatedCustAndAss.assignment;
+  console.log(updatedCustAndAss);
 }
 
 export async function createIFARWs(context, session) {

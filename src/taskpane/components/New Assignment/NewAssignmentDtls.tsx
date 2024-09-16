@@ -25,24 +25,18 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    console.log(clientId);
     let clientObj;
     session["customer"]["clients"].forEach((client) => {
       if (client._id === clientId) {
         clientObj = client;
       }
     });
-    console.log(clientObj);
     const prelimAssignment = { clientObj, assType, senior, manager, rI, software, transactionsPosted: false };
-    console.log(prelimAssignment);
     populateStaffObjs(prelimAssignment);
-    //session["prelimAssignment"] = prelimAssignment;
     const updatedCustAndNewAss = await processNewAssignment(prelimAssignment);
-    //populateStaffObjs(activeAssignment);
     session["customer"] = updatedCustAndNewAss.customer;
     session["activeAssignment"] = updatedCustAndNewAss.assignment;
     updateSession(session);
-    console.log(session);
     addPrimarySheets(session);
     handleView("assignmentDashHome");
   };

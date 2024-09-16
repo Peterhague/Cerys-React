@@ -1,15 +1,11 @@
-import { addWorksheets, deleteWorksheet } from "../utils.ts/worksheet";
-import { worksheetHeader } from "../workbook views/components/schedule-header";
+import { addWorksheets } from "../utils.ts/worksheet";
 
 export async function addPrimarySheets(session) {
   try {
     await Excel.run(async (context) => {
-      console.log("working here");
-      addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR", "Trial Balance"]);
-      //deleteWorksheet(context, "Sheet1");
+      addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"]);
       const arrForDATA = convertDataForWbook(session);
       await writeToDATA(context, arrForDATA);
-      initialiseTrialBalanceSheet(session, context);
       await context.sync();
     });
   } catch (e) {
@@ -39,23 +35,4 @@ async function writeToDATA(context, dataSpread) {
   const range = ws.getRange("A1:B8");
   range.values = dataSpread;
   range.format.autofitColumns();
-}
-
-export async function initialiseTrialBalanceSheet(session, context) {
-  const ws = context.workbook.worksheets.getItem("Trial Balance");
-  //ws.onSingleClicked.add(async (e) => showNominalDetail(e));
-  const range = ws.getRange("A9:C10");
-  const headers = [
-    ["Nominal", "Nominal", "Debit/"],
-    ["Code", "Name", "(Credit)"],
-  ];
-  range.values = headers;
-  const headerValues = worksheetHeader(session, "Trial Balance");
-  const headerRange = ws.getRange("A1:B7");
-  headerRange.values = headerValues;
-  const headerRangeA = ws.getRange("A1:A7");
-  headerRangeA.format.font.bold = true;
-  const sheetNameRange = ws.getRange("A7:A7");
-  sheetNameRange.format.font.italic = true;
-  headerRange.format.autofitColumns();
 }

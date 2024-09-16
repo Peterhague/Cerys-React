@@ -1,4 +1,5 @@
-import { getWorksheet } from "../worksheet";
+import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
+import { addWorksheet, deleteWorksheet } from "../worksheet";
 
 export function tbForPosting(tb) {
   const tbArray = [];
@@ -14,20 +15,22 @@ export function tbForPosting(tb) {
   });
   return tbArray;
 }
-export async function postTbToWbook(tbExcel) {
+export async function postTbToWbook(session, tbExcel) {
   try {
     await Excel.run(async (context) => {
-      const ws = getWorksheet(context, "Trial Balance");
-      //const usedRange = ws.getUsedRange();
-      //usedRange.delete(Excel.DeleteShiftDirection.up);
-      //addTbHeadingWs(session, ws);
-      //await context.sync();
+      const check = context.workbook.worksheets.getItemOrNullObject("Trial Balance");
+      check.load("values");
+      await context.sync();
+      if (!check.isNullObject) deleteWorksheet(context, "Trial Balance");
+      const ws = addWorksheet(context, "Trial Balance");
+      const headerValues = worksheetHeader(session, "Trial Balance");
+      applyWorkhseetHeader(ws, headerValues);
       const headersRange = ws.getRange("A9:C10");
-      //const headers = [
-      //  ["Nominal", "Nominal", "Debit/"],
-      //  ["Code", "Name", "(Credit)"],
-      //];
-      //headersRange.values = headers;
+      const headers = [
+        ["Nominal", "Nominal", "Debit/"],
+        ["Code", "Name", "(Credit)"],
+      ];
+      headersRange.values = headers;
       headersRange.format.font.bold = true;
       const range = ws.getRange(`A11:C${tbExcel.length + 10}`);
       range.format.font.bold = false;

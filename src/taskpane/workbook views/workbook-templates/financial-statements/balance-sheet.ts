@@ -92,82 +92,129 @@ export async function wsBalanceSheet(session) {
           values.push(arr);
         });
       }
-      let plResPosted = 0;
-      session.activeAssignment.tb.forEach((line) => {
-        let sCapMatched = false;
-        let sPremMatched = false;
-        let profit = true;
-        let pLReserve = false;
-        let capRedRes = false;
-        let otherRes = false;
-        let fVRes = false;
-        let otherRes2 = false;
-        let otherRes3 = false;
-        let otherRes4 = false;
-        let otherRes5 = false;
-        let minorityInt = false;
-        if (!sCapMatched && line.code > 8499 && line.code < 8800) {
-          const arr = displayShareCapital(session.activeAssignment);
-          sCapMatched = true;
-          values.push(arr);
-        }
-        if (!sPremMatched && line.code > 8799 && line.code < 9000) {
-          const arr = displaySharePremium(session.activeAssignment);
-          sPremMatched = true;
-          values.push(arr);
-        }
-        if (!pLReserve && line.code > 8999 && line.code < 9050) {
-          const arr = displayPLRes(session.activeAssignment);
-          pLReserve = true;
-          //profit = false;
-          values.push(arr);
-        }
-        if (!pLReserve && plResPosted === 0 && session.activeAssignment.profit !== 0) {
-          const arr = ["Profit & loss reserve", "", "", "", "", (session.activeAssignment.profit / 100).toString()];
-          values.push(arr);
-          plResPosted += 1;
-        }
-        if (!capRedRes && line.code > 9049 && line.code < 9100) {
-          const arr = displayCRR(session.activeAssignment);
-          capRedRes = true;
-          values.push(arr);
-        }
-        if (!otherRes && line.code > 9099 && line.code < 9150) {
-          const arr = displayOtherRes(session.activeAssignment);
-          otherRes = true;
-          values.push(arr);
-        }
-        if (!fVRes && line.code > 9149 && line.code < 9200) {
-          const arr = displayFVRes(session.activeAssignment);
-          fVRes = true;
-          values.push(arr);
-        }
-        if (!otherRes2 && line.code > 9199 && line.code < 9250) {
-          const arr = displayOtherRes2(session.activeAssignment);
-          otherRes2 = true;
-          values.push(arr);
-        }
-        if (!otherRes3 && line.code > 9249 && line.code < 9300) {
-          const arr = displayOtherRes3(session.activeAssignment);
-          otherRes3 = true;
-          values.push(arr);
-        }
-        if (!otherRes4 && line.code > 9299 && line.code < 9350) {
-          const arr = displayOtherRes4(session.activeAssignment);
-          otherRes4 = true;
-          values.push(arr);
-        }
-        if (!otherRes5 && line.code > 9349 && line.code < 9500) {
-          const arr = displayOtherRes5(session.activeAssignment);
-          otherRes5 = true;
-          values.push(arr);
-        }
-        if (!minorityInt && line.code > 9499) {
-          const arr = displayMinorityInt(session.activeAssignment);
-          minorityInt = true;
-          values.push(arr);
-        }
-      });
+      if (session.activeAssignment.activeCategories.includes("Share capital")) {
+        const arr = displayShareCapital(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Share premium")) {
+        const arr = displaySharePremium(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Capital redemption reserve")) {
+        const arr = displayCRR(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Other reserves 1")) {
+        const arr = displayOtherRes(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Fair value reserve")) {
+        const arr = displayFVRes(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Other reserves 2")) {
+        const arr = displayOtherRes2(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Other reserves 3")) {
+        const arr = displayOtherRes3(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Other reserves 4")) {
+        const arr = displayOtherRes4(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Other reserves 5")) {
+        const arr = displayOtherRes5(session.activeAssignment);
+        values.push(arr);
+      }
+      if (session.activeAssignment.activeCategories.includes("Minority interest")) {
+        const arr = displayMinorityInt(session.activeAssignment);
+        values.push(arr);
+      }
+      if (
+        session.activeAssignment.activeCategories.includes("Profit & loss reserve") ||
+        session.activeAssignment.profit !== 0
+      ) {
+        const arr = displayPLRes(session.activeAssignment);
+        values.push(arr);
+      }
+      //let plResPosted = 0;
+      //session.activeAssignment.tb.forEach((line) => {
+      //  let sCapMatched = false;
+      //  let sPremMatched = false;
+      //  let profit = true;
+      //  let pLReserve = false;
+      //  let capRedRes = false;
+      //  let otherRes = false;
+      //  let fVRes = false;
+      //  let otherRes2 = false;
+      //  let otherRes3 = false;
+      //  let otherRes4 = false;
+      //  let otherRes5 = false;
+      //  let minorityInt = false;
+      //  if (!sCapMatched && line.code > 8499 && line.code < 8800) {
+      //    const arr = displayShareCapital(session.activeAssignment);
+      //    sCapMatched = true;
+      //    values.push(arr);
+      //  }
+      //  if (!sPremMatched && line.code > 8799 && line.code < 9000) {
+      //    const arr = displaySharePremium(session.activeAssignment);
+      //    sPremMatched = true;
+      //    values.push(arr);
+      //  }
+      //  if (!pLReserve && line.code > 8999 && line.code < 9050) {
+      //    const arr = displayPLRes(session.activeAssignment);
+      //    pLReserve = true;
+      //    //profit = false;
+      //    values.push(arr);
+      //  }
+      //  if (!pLReserve && plResPosted === 0 && session.activeAssignment.profit !== 0) {
+      //    const arr = ["Profit & loss reserve", "", "", "", "", (session.activeAssignment.profit / 100).toString()];
+      //    values.push(arr);
+      //    plResPosted += 1;
+      //  }
+      //  if (!capRedRes && line.code > 9049 && line.code < 9100) {
+      //    const arr = displayCRR(session.activeAssignment);
+      //    capRedRes = true;
+      //    values.push(arr);
+      //  }
+      //  if (!otherRes && line.code > 9099 && line.code < 9150) {
+      //    const arr = displayOtherRes(session.activeAssignment);
+      //    otherRes = true;
+      //    values.push(arr);
+      //  }
+      //  if (!fVRes && line.code > 9149 && line.code < 9200) {
+      //    const arr = displayFVRes(session.activeAssignment);
+      //    fVRes = true;
+      //    values.push(arr);
+      //  }
+      //  if (!otherRes2 && line.code > 9199 && line.code < 9250) {
+      //    const arr = displayOtherRes2(session.activeAssignment);
+      //    otherRes2 = true;
+      //    values.push(arr);
+      //  }
+      //  if (!otherRes3 && line.code > 9249 && line.code < 9300) {
+      //    const arr = displayOtherRes3(session.activeAssignment);
+      //    otherRes3 = true;
+      //    values.push(arr);
+      //  }
+      //  if (!otherRes4 && line.code > 9299 && line.code < 9350) {
+      //    const arr = displayOtherRes4(session.activeAssignment);
+      //    otherRes4 = true;
+      //    values.push(arr);
+      //  }
+      //  if (!otherRes5 && line.code > 9349 && line.code < 9500) {
+      //    const arr = displayOtherRes5(session.activeAssignment);
+      //    otherRes5 = true;
+      //    values.push(arr);
+      //  }
+      //  if (!minorityInt && line.code > 9499) {
+      //    const arr = displayMinorityInt(session.activeAssignment);
+      //    minorityInt = true;
+      //    values.push(arr);
+      //  }
+      //});
       values.push(["", "", "", "", "", ""]);
       let equity = 0;
       session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
@@ -476,122 +523,300 @@ function displayProvisions(activeAssignment) {
 }
 
 function displayShareCapital(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 8499 && line.code < 8800) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Share capital") {
+      value = cat.value;
     }
   });
   const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(shareCapRow);
+  subtotal += value;
+  activeAssignment.shareCapital = subtotal / 100;
   return shareCapRow;
 }
 
+//function displayShareCapital(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 8499 && line.code < 8800) {
+//      value += line.value;
+//    }
+//  });
+//  const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
+//  return shareCapRow;
+//}
+
 function displaySharePremium(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 8799 && line.code < 9000) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Share premium") {
+      value = cat.value;
     }
   });
   const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(sharePremRow);
+  subtotal += value;
+  activeAssignment.sharePremium = subtotal / 100;
   return sharePremRow;
 }
 
+//function displaySharePremium(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 8799 && line.code < 9000) {
+//      value += line.value;
+//    }
+//  });
+//  const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
+//  return sharePremRow;
+//}
+
 function displayPLRes(activeAssignment) {
+  //const arrays = [];
+  const profit = activeAssignment.profit;
+  console.log("profit =" + profit);
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 8999 && line.code < 9050) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Profit & loss reserve") {
+      value = cat.value;
     }
   });
-  const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((-value + activeAssignment.profit) / 100).toString()];
+  const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((profit - value) / 100).toString()];
+  //arrays.push(pLReserveRow);
+  subtotal += value;
+  activeAssignment.profLossRes = subtotal / 100;
   return pLReserveRow;
 }
 
+//function displayPLRes(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 8999 && line.code < 9050) {
+//      value += line.value;
+//    }
+//  });
+//  const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((-value + activeAssignment.profit) / 100).toString()];
+//  return pLReserveRow;
+//}
+
 function displayCRR(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9049 && line.code < 9100) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Capital redemption reserve") {
+      value = cat.value;
     }
   });
   const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(crrRow);
+  subtotal += value;
+  activeAssignment.capRedRes = subtotal / 100;
   return crrRow;
 }
 
+//function displayCRR(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9049 && line.code < 9100) {
+//      value += line.value;
+//    }
+//  });
+//  const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
+//  return crrRow;
+//}
+
 function displayOtherRes(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9099 && line.code < 9150) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Other reserves 1") {
+      value = cat.value;
     }
   });
   const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(otherResRow);
+  subtotal += value;
+  activeAssignment.otherRes = subtotal / 100;
   return otherResRow;
 }
 
+//function displayOtherRes(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9099 && line.code < 9150) {
+//      value += line.value;
+//    }
+//  });
+//  const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
+//  return otherResRow;
+//}
+
 function displayFVRes(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9149 && line.code < 9200) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Fair value reserve") {
+      value = cat.value;
     }
   });
   const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(fVRow);
+  subtotal += value;
+  activeAssignment.fVRes = subtotal / 100;
   return fVRow;
 }
 
+//function displayFVRes(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9149 && line.code < 9200) {
+//      value += line.value;
+//    }
+//  });
+//  const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
+//  return fVRow;
+//}
+
 function displayOtherRes2(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9199 && line.code < 9250) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Other reserves 2") {
+      value = cat.value;
     }
   });
   const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(otherRes2Row);
+  subtotal += value;
+  activeAssignment.otherRes2 = subtotal / 100;
   return otherRes2Row;
 }
 
+//function displayOtherRes2(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9199 && line.code < 9250) {
+//      value += line.value;
+//    }
+//  });
+//  const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
+//  return otherRes2Row;
+//}
+
 function displayOtherRes3(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9249 && line.code < 9300) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Other reserves 3") {
+      value = cat.value;
     }
   });
   const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(otherRes3Row);
+  subtotal += value;
+  activeAssignment.otherRes3 = subtotal / 100;
   return otherRes3Row;
 }
 
+//function displayOtherRes3(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9249 && line.code < 9300) {
+//      value += line.value;
+//    }
+//  });
+//  const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
+//  return otherRes3Row;
+//}
+
 function displayOtherRes4(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9299 && line.code < 9350) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Other reserves 4") {
+      value = cat.value;
     }
   });
   const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(otherRes4Row);
+  subtotal += value;
+  activeAssignment.otherRes4 = subtotal / 100;
   return otherRes4Row;
 }
 
+//function displayOtherRes4(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9299 && line.code < 9350) {
+//      value += line.value;
+//    }
+//  });
+//  const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
+//  return otherRes4Row;
+//}
+
 function displayOtherRes5(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9349 && line.code < 9500) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Other reserves 5") {
+      value = cat.value;
     }
   });
   const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(otherRes5Row);
+  subtotal += value;
+  activeAssignment.otherRes5 = subtotal / 100;
   return otherRes5Row;
 }
 
+//function displayOtherRes5(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9349 && line.code < 9500) {
+//      value += line.value;
+//    }
+//  });
+//  const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
+//  return otherRes5Row;
+//}
+
 function displayMinorityInt(activeAssignment) {
+  //const arrays = [];
+  let subtotal = 0;
   let value = 0;
-  activeAssignment.tb.forEach((line) => {
-    if (line.code > 9499) {
-      value += line.value;
+  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    if (cat.category === "Minority interest") {
+      value = cat.value;
     }
   });
   const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
+  //arrays.push(minIntRow);
+  subtotal += value;
+  activeAssignment.minorityInt = subtotal / 100;
   return minIntRow;
 }
+
+//function displayMinorityInt(activeAssignment) {
+//  let value = 0;
+//  activeAssignment.tb.forEach((line) => {
+//    if (line.code > 9499) {
+//      value += line.value;
+//    }
+//  });
+//  const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
+//  return minIntRow;
+//}

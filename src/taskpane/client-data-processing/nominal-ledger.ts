@@ -15,10 +15,9 @@ export async function enterNL(session, updateSession) {
 }
 
 const postClientNLMem = async (session, context) => {
-  session.awaitMem = true;
   const clientNL = await createClientNLObject(context);
-  updateSessionMem(session, clientNL);
-  session.awaitMem = false;
+  session.activeAssignment.clientNL = clientNL;
+  session.activeAssignment.NLentered = true;
 };
 
 export async function createClientNLObject(context) {
@@ -57,32 +56,12 @@ export async function createClientNLObject(context) {
   }
 }
 
-const updateSessionMem = (session, clientNL) => {
-  if (!session.awaitDb) {
-    session.activeAssignment.clientNL = clientNL;
-    session.activeAssignment.NLentered = true;
-  } else {
-    updateSessionMem(session, clientNL);
-  }
-};
-
 export async function postCltNltoDb(session) {
-  session.awaitDb = true;
   let assignmentId = session.activeAssignment._id;
   let customerId = session.customer._id;
   let clientNL = session.activeAssignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
   const updatedCustAndAssDb = await fetch(postClientNLUrl, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
-  updateSessionCustAndAss(session, updatedCustAndAss);
-  session.awaitDb = false;
+  console.log(updatedCustAndAss);
 }
-
-const updateSessionCustAndAss = (session, updatedCustAndAss) => {
-  if (!session.awaitMem) {
-    session["customer"] = updatedCustAndAss.customer;
-    session["assignment"] = updatedCustAndAss.assignment;
-  } else {
-    updateSessionCustAndAss(session, updatedCustAndAss);
-  }
-};
