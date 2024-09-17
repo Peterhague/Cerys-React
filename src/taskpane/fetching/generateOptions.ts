@@ -505,24 +505,6 @@ export function fetchOptionsTBModify(cerysObject) {
   };
 }
 
-// export function fetchOptionsPostClientNL(clientNLLine, workbookId) {
-//     return {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({
-//             code: clientNLLine.code,
-//             name: clientNLLine.name,
-//             number: clientNLLine.number,
-//             detail: clientNLLine.detail,
-//             date: clientNLLine.date,
-//             value: clientNLLine.value,
-//             workbookId: workbookId
-//         })
-//     };
-//   }
-
 export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
   return {
     method: "POST",
@@ -536,38 +518,6 @@ export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
     }),
   };
 }
-
-//   export function fetchOptionsPostClientNL(clientNL, workbookId) {
-//     return {
-//         method: 'POST',
-//         headers: {
-//             'Content-Type': 'application/json'
-//         },
-//         body: JSON.stringify({
-//             clientNL: clientNL,
-//             workbookId: workbookId
-//         })
-//     };
-//   }
-
-//export function fetchOptionsIFA(ifa, session) {
-//  return {
-//    method: "POST",
-//    headers: {
-//      "Content-Type": "application/json",
-//    },
-//    body: JSON.stringify({
-//      narrative: ifa.narrative,
-//      assetNarrative: ifa.assetNarrative,
-//      transDateClt: ifa.transactionDateClt,
-//      transDateUser: ifa.transactionDate,
-//      cerysCategory: ifa.cerysCategory,
-//      cost: ifa.value,
-//      customerId: session.customer._id,
-//      workbookId: session.activeAssignment.workbookId,
-//    }),
-//  };
-//}
 
 export function fetchOptionsIFA(session) {
   return {

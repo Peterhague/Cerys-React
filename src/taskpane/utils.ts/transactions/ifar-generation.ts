@@ -42,7 +42,6 @@ export async function createIFATransSumm(session, relevantTrans) {
               trans["clientNominalCode"] = i.clientNominalCode;
               trans["narrative"] = i.narrative;
               trans["transactionType"] = i.transactionType;
-              //trans["cost"] = i.value;
               trans["transactionDateClt"] = tran.date;
               trans["clientNominalCode"] = tran.code;
               trans["clientNominalName"] = tran.name;
@@ -251,6 +250,9 @@ export async function createIFARWs(context, session) {
 }
 
 export async function populateIFARWs(context, IFAActiveCats, transToPost, ws) {
+  console.log("populating...");
+  console.log(IFAActiveCats);
+  console.log(transToPost);
   const iFARBodyVals = [];
   const underlineA = [];
   const underlineAO = [];
@@ -323,7 +325,7 @@ export async function populateIFARWs(context, IFAActiveCats, transToPost, ws) {
           assetLine.push(tran.transactionDateUser);
         }
         assetLine.push(tran.assetNarrative);
-        assetLine.push(`=(B3-A${rowNumber})`);
+        assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
         assetLine.push(0);
         assetLine.push(tran.value / 100);
         assetLine.push("placeholder");
@@ -354,6 +356,8 @@ export async function populateIFARWs(context, IFAActiveCats, transToPost, ws) {
   iFARBodyRange.values = iFARBodyVals;
   const rangeA = ws.getRange("A:A");
   rangeA.numberFormat = "dd/mm/yyyy";
+  const rangeC = ws.getRange("C:C");
+  rangeC.numberFormat = "0";
   const numbersRange = ws.getRange("D:O");
   numbersRange.numberFormat = "#,##0.00;(#,##0.00);-";
   underlineA.forEach((row) => {

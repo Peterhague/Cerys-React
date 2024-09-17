@@ -9,7 +9,11 @@ export const processTransBatch = async (session, handleView) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
+    const newDate = session.activeAssignment.reportingDateConverted.split("/");
+    const jnlDate = `${newDate[2]}-${newDate[1]}-${newDate[0]}`;
     const trans = {};
+    if (jnl.narrative === "") jnl.narrative = "No narrative";
+    if (jnl.journalDate === "") jnl.journalDate = jnlDate;
     (trans["cerysCode"] = jnl.code),
       (trans["cerysCategory"] = jnl.category),
       (trans["cerysSubCategory"] = jnl.subCategory),
@@ -37,7 +41,6 @@ export const processTransBatch = async (session, handleView) => {
   addTbClickListener(session["activeAssignment"]);
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
-  session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   checkAssetRegStatus(session, handleView);
 };
 
@@ -57,7 +60,10 @@ export const checkAssetRegStatus = (session, handleView) => {
     session["activeAssignment"]["activeCategories"].includes("Investment property")
   ) {
     handleView("promptIPRCreation");
-  } else handleView(session["nextView"]);
+  } else {
+    handleView(session["nextView"]);
+    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+  }
   session["nextView"] = "";
 };
 

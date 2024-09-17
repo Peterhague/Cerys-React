@@ -17,6 +17,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationprops> = ({
 }: promptTFARCreationprops) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const [view, setView] = useState("main");
+  const journal = session["activeJournal"]["journal"];
 
   const handleCreateRequest = () => {
     if (nLEntered) {
@@ -31,6 +32,16 @@ const PromptTFARCreation: React.FC<promptTFARCreationprops> = ({
     await enterNL(session, updateSession);
     createRelTransTFA(session);
     setView("confirm");
+  };
+
+  const handleAbort = (view) => {
+    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+    handleView(view);
+  };
+
+  const handleSubmit = () => {
+    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+    createTFAR(session);
   };
 
   return (
@@ -51,10 +62,12 @@ const PromptTFARCreation: React.FC<promptTFARCreationprops> = ({
           <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleView={() => handleNLImport()} />
         </>
       )}
-      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => createTFAR(session)} />}
+      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleSubmit()} />}
+      {journal && (
+        <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleView={() => handleAbort("enterJournal")} />
+      )}
 
-      <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleView={() => handleView("userLogin")} />
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("customerSignUp")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleAbort("assignmentDashHome")} />
     </>
   );
 };

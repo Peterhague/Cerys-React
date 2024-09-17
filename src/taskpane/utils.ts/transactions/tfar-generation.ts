@@ -27,7 +27,6 @@ export async function createTFATransSumm(session, relevantTrans) {
       });
       const bodyContent = [];
       session["TFATransactions"] = [];
-      console.log(relevantTrans);
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
           const trans = {};
@@ -61,9 +60,7 @@ export async function createTFATransSumm(session, relevantTrans) {
           session["TFATransactions"].push(i);
         }
       });
-      console.log(activeClient);
       session["TFATransactions"].forEach((tran) => {
-        console.log(tran);
         const transVals = [];
         if (tran.transactionDate) {
           const dateString = tran.transactionDate.split("T")[0];
@@ -263,7 +260,6 @@ export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
   const formatTotal = [];
   let rowNumber = 10;
   TFAActiveCats.forEach((cat) => {
-    //rowNumber ++;
     let additionsTotal = 0;
     const catHeader = [];
     catHeader.push(cat.assetCategory);
@@ -330,7 +326,7 @@ export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
           assetLine.push(tran.transactionDateUser);
         }
         assetLine.push(tran.assetNarrative);
-        assetLine.push(`=(B3-A${rowNumber})`);
+        assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
         assetLine.push(0);
         assetLine.push(tran.value / 100);
         assetLine.push("placeholder");
@@ -361,6 +357,8 @@ export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
   tFARBodyRange.values = tFARBodyVals;
   const rangeA = ws.getRange("A:A");
   rangeA.numberFormat = "dd/mm/yyyy";
+  const rangeC = ws.getRange("C:C");
+  rangeC.numberFormat = "0";
   const numbersRange = ws.getRange("D:O");
   numbersRange.numberFormat = "#,##0.00;(#,##0.00);-";
   underlineA.forEach((row) => {

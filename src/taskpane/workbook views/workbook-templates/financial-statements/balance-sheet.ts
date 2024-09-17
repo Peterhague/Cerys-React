@@ -11,13 +11,10 @@ export async function wsBalanceSheet(session) {
       const ws = addWorksheet(context, "Balance Sheet");
       const headerValues = worksheetHeader(session, "Balance Sheet");
       applyWorkhseetHeader(ws, headerValues);
-      const pound = "£";
-      console.log(pound);
       const values = [
         ["", "", "", "", "£", "£"],
         ["", "", "", "", "", ""],
       ];
-      console.log(values);
       if (
         session.activeAssignment.activeCategories.includes("Intangible assets") ||
         session.activeAssignment.activeCategories.includes("Tangible assets") ||
@@ -245,12 +242,10 @@ export async function wsBSAccountFormat(ws, values) {
   const topBorder = [];
   const botttomBorder = [];
   const totalBorders = [];
-  //let fATotal = false;
   for (let i = 0; i < values.length; i++) {
     if (values[i][0] === "Fixed assets") {
       bold.push(i);
       italic.push(i);
-      //fATotal = true;
     } else if (values[i][0] === "Current assets") {
       bold.push(i);
       italic.push(i);
@@ -523,7 +518,6 @@ function displayProvisions(activeAssignment) {
 }
 
 function displayShareCapital(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -532,25 +526,12 @@ function displayShareCapital(activeAssignment) {
     }
   });
   const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(shareCapRow);
   subtotal += value;
   activeAssignment.shareCapital = subtotal / 100;
   return shareCapRow;
 }
 
-//function displayShareCapital(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 8499 && line.code < 8800) {
-//      value += line.value;
-//    }
-//  });
-//  const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
-//  return shareCapRow;
-//}
-
 function displaySharePremium(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -559,27 +540,13 @@ function displaySharePremium(activeAssignment) {
     }
   });
   const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(sharePremRow);
   subtotal += value;
   activeAssignment.sharePremium = subtotal / 100;
   return sharePremRow;
 }
 
-//function displaySharePremium(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 8799 && line.code < 9000) {
-//      value += line.value;
-//    }
-//  });
-//  const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
-//  return sharePremRow;
-//}
-
 function displayPLRes(activeAssignment) {
-  //const arrays = [];
   const profit = activeAssignment.profit;
-  console.log("profit =" + profit);
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -588,25 +555,12 @@ function displayPLRes(activeAssignment) {
     }
   });
   const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((profit - value) / 100).toString()];
-  //arrays.push(pLReserveRow);
   subtotal += value;
   activeAssignment.profLossRes = subtotal / 100;
   return pLReserveRow;
 }
 
-//function displayPLRes(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 8999 && line.code < 9050) {
-//      value += line.value;
-//    }
-//  });
-//  const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((-value + activeAssignment.profit) / 100).toString()];
-//  return pLReserveRow;
-//}
-
 function displayCRR(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -615,25 +569,12 @@ function displayCRR(activeAssignment) {
     }
   });
   const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(crrRow);
   subtotal += value;
   activeAssignment.capRedRes = subtotal / 100;
   return crrRow;
 }
 
-//function displayCRR(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9049 && line.code < 9100) {
-//      value += line.value;
-//    }
-//  });
-//  const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
-//  return crrRow;
-//}
-
 function displayOtherRes(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -642,25 +583,12 @@ function displayOtherRes(activeAssignment) {
     }
   });
   const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(otherResRow);
   subtotal += value;
   activeAssignment.otherRes = subtotal / 100;
   return otherResRow;
 }
 
-//function displayOtherRes(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9099 && line.code < 9150) {
-//      value += line.value;
-//    }
-//  });
-//  const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
-//  return otherResRow;
-//}
-
 function displayFVRes(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -669,25 +597,12 @@ function displayFVRes(activeAssignment) {
     }
   });
   const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(fVRow);
   subtotal += value;
   activeAssignment.fVRes = subtotal / 100;
   return fVRow;
 }
 
-//function displayFVRes(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9149 && line.code < 9200) {
-//      value += line.value;
-//    }
-//  });
-//  const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
-//  return fVRow;
-//}
-
 function displayOtherRes2(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -696,25 +611,12 @@ function displayOtherRes2(activeAssignment) {
     }
   });
   const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(otherRes2Row);
   subtotal += value;
   activeAssignment.otherRes2 = subtotal / 100;
   return otherRes2Row;
 }
 
-//function displayOtherRes2(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9199 && line.code < 9250) {
-//      value += line.value;
-//    }
-//  });
-//  const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
-//  return otherRes2Row;
-//}
-
 function displayOtherRes3(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -723,25 +625,12 @@ function displayOtherRes3(activeAssignment) {
     }
   });
   const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(otherRes3Row);
   subtotal += value;
   activeAssignment.otherRes3 = subtotal / 100;
   return otherRes3Row;
 }
 
-//function displayOtherRes3(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9249 && line.code < 9300) {
-//      value += line.value;
-//    }
-//  });
-//  const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
-//  return otherRes3Row;
-//}
-
 function displayOtherRes4(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -750,25 +639,12 @@ function displayOtherRes4(activeAssignment) {
     }
   });
   const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(otherRes4Row);
   subtotal += value;
   activeAssignment.otherRes4 = subtotal / 100;
   return otherRes4Row;
 }
 
-//function displayOtherRes4(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9299 && line.code < 9350) {
-//      value += line.value;
-//    }
-//  });
-//  const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
-//  return otherRes4Row;
-//}
-
 function displayOtherRes5(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -777,25 +653,12 @@ function displayOtherRes5(activeAssignment) {
     }
   });
   const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(otherRes5Row);
   subtotal += value;
   activeAssignment.otherRes5 = subtotal / 100;
   return otherRes5Row;
 }
 
-//function displayOtherRes5(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9349 && line.code < 9500) {
-//      value += line.value;
-//    }
-//  });
-//  const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
-//  return otherRes5Row;
-//}
-
 function displayMinorityInt(activeAssignment) {
-  //const arrays = [];
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -804,19 +667,7 @@ function displayMinorityInt(activeAssignment) {
     }
   });
   const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
-  //arrays.push(minIntRow);
   subtotal += value;
   activeAssignment.minorityInt = subtotal / 100;
   return minIntRow;
 }
-
-//function displayMinorityInt(activeAssignment) {
-//  let value = 0;
-//  activeAssignment.tb.forEach((line) => {
-//    if (line.code > 9499) {
-//      value += line.value;
-//    }
-//  });
-//  const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
-//  return minIntRow;
-//}

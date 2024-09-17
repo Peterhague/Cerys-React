@@ -129,6 +129,7 @@ export async function showNominalDetailBS(context, e, activeAssignment) {
   await context.sync();
   const innerValues = values.values;
   const category = innerValues[0][0];
+  console.log(activeAssignment);
   const detail = await getCerysNomDetailBS(context, category, activeAssignment);
   cerysNomDetailViewBS(context, detail, activeAssignment);
 }
@@ -151,6 +152,13 @@ async function cerysNomDetailViewBS(context, detail, activeAssignment) {
     });
     valuesToPost.push(["", "", "", ""]);
   });
+  if (detail[0][0].cerysCategory === "Profit & loss reserve") {
+    if (activeAssignment.profit > 0) {
+      valuesToPost.push(["Profit for the period", "", "", activeAssignment.profit]);
+    } else if (activeAssignment.profit < 0) {
+      valuesToPost.push(["Loss for the period", "", "", activeAssignment.profit]);
+    }
+  }
   const range = ws.getRange(`A1:D${valuesToPost.length}`);
   range.values = valuesToPost;
   ws.activate();
