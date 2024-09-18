@@ -16,11 +16,12 @@ const PromptIFARCreation: React.FC<promptIFARCreationprops> = ({
   updateSession,
 }: promptIFARCreationprops) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
+  const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState("main");
   const journal = session["activeJournal"]["journal"];
 
   const handleCreateRequest = () => {
-    if (nLEntered) {
+    if (nLEntered || !tBEntered) {
       createRelTransIFA(session);
       setView("confirm");
     } else {

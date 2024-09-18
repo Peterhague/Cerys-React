@@ -16,11 +16,12 @@ const PromptIPRCreation: React.FC<promptIPRCreationprops> = ({
   updateSession,
 }: promptIPRCreationprops) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
+  const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState("main");
   const journal = session["activeJournal"]["journal"];
 
   const handleCreateRequest = () => {
-    if (nLEntered) {
+    if (nLEntered || !tBEntered) {
       createRelTransIP(session);
       setView("confirm");
     } else {

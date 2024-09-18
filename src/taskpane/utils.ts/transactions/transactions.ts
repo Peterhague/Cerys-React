@@ -12,12 +12,17 @@ export const processTransBatch = async (session, handleView) => {
     const newDate = session.activeAssignment.reportingDateConverted.split("/");
     const jnlDate = `${newDate[2]}-${newDate[1]}-${newDate[0]}`;
     const trans = {};
+    console.log(jnl);
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.journalDate === "") jnl.journalDate = jnlDate;
     (trans["cerysCode"] = jnl.code),
       (trans["cerysCategory"] = jnl.category),
       (trans["cerysSubCategory"] = jnl.subCategory),
       (trans["assetCategory"] = jnl.assetCategory),
+      (trans["assetSubCategory"] = jnl.assetSubCategory),
+      (trans["assetSubCatCode"] = jnl.assetSubCatCode),
+      (trans["regColNameOne"] = jnl.regColNameOne),
+      (trans["regColNameTwo"] = jnl.regColNameTwo),
       (trans["assetCategoryNo"] = jnl.assetCategoryNo),
       (trans["cerysName"] = jnl.name),
       (trans["cerysShortName"] = jnl.shortName),
@@ -83,6 +88,7 @@ const postTransactionsMem = (session, transactions) => {
   const activeCats = setActiveCategories(tb);
   actAss.activeCategoriesDetails = activeCats.arrCats;
   actAss.activeCategories = activeCats.categories;
+  if (session.activeJournal.journalType === "clientTB") actAss.TBEntered = true;
   session["activeAssignment"] = actAss;
   console.log(session);
 };
