@@ -273,8 +273,6 @@ export async function postTFAtoDB(session) {
   const updatedCustAndAssDb = await fetch(postTFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
   console.log(updatedCustAndAss);
-  session["customer"] = updatedCustAndAss.customer;
-  session["activeAssignment"] = updatedCustAndAss.assignment;
 }
 
 export async function createTFARWs(context, session) {
@@ -300,163 +298,6 @@ export async function createTFARWs(context, session) {
   await context.sync();
   populateTFARWs(context, TFAActiveCats, transToPost, ws);
 }
-
-//export async function createTFARWs(context, session) {
-//  const transToPost = session["TFATransactions"];
-//  const TFAActiveCats = [];
-//  transToPost.forEach((i) => {
-//    if (!TFAActiveCats.includes(i.assetCategory)) {
-//      TFAActiveCats.push(i);
-//    }
-//  });
-//  TFAActiveCats.sort((a, b) => {
-//    return a.assetCategoryNo - b.assetCategoryNo;
-//  });
-//  const wsName = "TFA Register";
-//  const ws = addWorksheet(context, wsName);
-//  const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
-//  applyWorkhseetHeader(ws, wsHeaders);
-//  await context.sync();
-//  populateTFARWs(context, TFAActiveCats, transToPost, ws);
-//}
-
-//export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
-//  const tFARBodyVals = [];
-//  const underlineA = [];
-//  const underlineAO = [];
-//  const formatTotal = [];
-//  let rowNumber = 10;
-//  TFAActiveCats.forEach((cat) => {
-//    let additionsTotal = 0;
-//    const catHeader = [];
-//    catHeader.push(cat.assetCategory);
-//    for (let i = 0; i < 14; i++) {
-//      catHeader.push("");
-//    }
-//    tFARBodyVals.push(catHeader);
-//    underlineA.push(rowNumber);
-//    rowNumber++;
-//    const blankLine = [];
-//    for (let i = 0; i < 15; i++) {
-//      blankLine.push("");
-//    }
-//    tFARBodyVals.push(blankLine);
-//    rowNumber++;
-//    const registerColNamesOne = [
-//      "Date",
-//      "Description",
-//      "Days of",
-//      "Cost",
-//      "Cost of",
-//      "Cost of",
-//      "Cost",
-//      "",
-//      "Dep'n",
-//      "Dep'n",
-//      "Dep'n Elim",
-//      "Dep'n",
-//      "",
-//      "NBV",
-//      "NBV",
-//    ];
-//    const registerColNamesTwo = [
-//      "",
-//      "",
-//      "Year Held",
-//      "B/Fwd",
-//      "Additions",
-//      "Disposals",
-//      "C/Fwd",
-//      "",
-//      "B/Fwd",
-//      "Charge",
-//      "on Disposal",
-//      "C/Fwd",
-//      "",
-//      "C/Fwd",
-//      "B/Fwd",
-//    ];
-//    tFARBodyVals.push(registerColNamesOne);
-//    underlineAO.push(rowNumber);
-//    rowNumber++;
-//    tFARBodyVals.push(registerColNamesTwo);
-//    underlineAO.push(rowNumber);
-//    rowNumber++;
-//    tFARBodyVals.push(blankLine);
-//    rowNumber++;
-//    transToPost.forEach((tran) => {
-//      if (tran.assetCategory === cat.assetCategory) {
-//        const assetLine = [];
-//        if (tran.transactionDateClt) {
-//          assetLine.push(tran.transactionDateClt);
-//        } else if (tran.transactionDateUser) {
-//          assetLine.push(tran.transactionDateUser);
-//        }
-//        assetLine.push(tran.assetNarrative);
-//        assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
-//        assetLine.push(0);
-//        assetLine.push(tran.value / 100);
-//        assetLine.push("placeholder");
-//        assetLine.push(tran.value / 100);
-//        assetLine.push("");
-//        assetLine.push(0);
-//        assetLine.push(0);
-//        assetLine.push(0);
-//        assetLine.push(0);
-//        assetLine.push("");
-//        assetLine.push(0);
-//        assetLine.push(0);
-//        tFARBodyVals.push(assetLine);
-//        rowNumber++;
-//        additionsTotal += tran.value / 100;
-//      }
-//    });
-//    tFARBodyVals.push(blankLine);
-//    rowNumber++;
-//    const catTotalsLine = ["", "", "", 0, additionsTotal, 0, additionsTotal, "", 0, 0, 0, 0, "", additionsTotal, 0];
-//    tFARBodyVals.push(catTotalsLine);
-//    formatTotal.push(rowNumber);
-//    rowNumber++;
-//    tFARBodyVals.push(blankLine);
-//    rowNumber++;
-//  });
-//  const tFARBodyRange = ws.getRange(`A10:O${tFARBodyVals.length + 9}`);
-//  tFARBodyRange.values = tFARBodyVals;
-//  const rangeA = ws.getRange("A:A");
-//  rangeA.numberFormat = "dd/mm/yyyy";
-//  const rangeC = ws.getRange("C:C");
-//  rangeC.numberFormat = "0";
-//  const numbersRange = ws.getRange("D:O");
-//  numbersRange.numberFormat = "#,##0.00;(#,##0.00);-";
-//  underlineA.forEach((row) => {
-//    const range = ws.getRange(`A${row}:A${row}`);
-//    range.format.font.underline = "single";
-//  });
-//  underlineAO.forEach((row) => {
-//    const range = ws.getRange(`A${row}:O${row}`);
-//    range.format.font.underline = "single";
-//  });
-//  formatTotal.forEach((row) => {
-//    const range = ws.getRange(`A${row}:O${row}`);
-//    range.format.font.bold = true;
-//    const totalRanges = [];
-//    const totalRangeOne = ws.getRange(`C${row}:G${row}`);
-//    totalRanges.push(totalRangeOne);
-//    const totalRangeTwo = ws.getRange(`I${row}:L${row}`);
-//    totalRanges.push(totalRangeTwo);
-//    const totalRangeThree = ws.getRange(`N${row}:O${row}`);
-//    totalRanges.push(totalRangeThree);
-//    totalRanges.forEach((range) => {
-//      const edgeTop = range.format.borders.getItem("EdgeTop");
-//      edgeTop.style = "Continuous";
-//      const edgeBottom = range.format.borders.getItem("EdgeBottom");
-//      edgeBottom.style = "Double";
-//    });
-//  });
-//  const colsRange = ws.getRange("B:O");
-//  colsRange.format.autofitColumns();
-//  await context.sync();
-//}
 
 export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
   console.log(transToPost);
@@ -672,8 +513,8 @@ export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {
     finalTotal.splice(col.number - 1, 1, formula);
   });
   tFARBodyVals.push(finalTotal);
-  const iFARBodyRange = ws.getRange(`A10:${numberColsAsLetter}${tFARBodyVals.length + 9}`);
-  iFARBodyRange.values = tFARBodyVals;
+  const tFARBodyRange = ws.getRange(`A10:${numberColsAsLetter}${tFARBodyVals.length + 9}`);
+  tFARBodyRange.values = tFARBodyVals;
   const rangeA = ws.getRange("A:A");
   rangeA.numberFormat = "dd/mm/yyyy";
   const rangeC = ws.getRange("C:C");

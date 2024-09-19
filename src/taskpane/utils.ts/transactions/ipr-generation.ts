@@ -1,7 +1,7 @@
 import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { updateNomCode } from "../helperFunctions";
+import { colNumToLetter, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 
 export function createRelTransIP(session) {
@@ -33,8 +33,12 @@ export async function createIPTransSumm(session, relevantTrans) {
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
               trans["cerysCategory"] = i.cerysCategory;
-              //trans.assetCategory = i.assetCategory;
-              //trans.assetCategoryNo = i.assetCategoryNo;
+              trans["assetCategoryNo"] = i.assetCategoryNo;
+              trans["assetCategory"] = i.assetCategory;
+              trans["assetSubCategory"] = i.assetSubCategory;
+              trans["assetSubCatCode"] = i.assetSubCatCode;
+              trans["regColNameOne"] = i.regColNameOne;
+              trans["regColNameTwo"] = i.regColNameTwo;
               trans["cerysName"] = i.cerysName;
               trans["cerysCode"] = i.cerysCode;
               trans["cerysShortName"] = i.cerysShortName;
@@ -189,10 +193,22 @@ export async function captureIPRSummChange(context, e, transToPost, ws) {
 //  return updatedTransToPost;
 //}
 
+//export async function createIPR(session) {
+//  try {
+//    await Excel.run(async (context) => {
+//      await postIPtoDB(session);
+//      createIPRWs(context, session);
+//    });
+//  } catch (e) {
+//    console.error(e);
+//  }
+//}
+
 export async function createIPR(session) {
   try {
     await Excel.run(async (context) => {
-      await postIPtoDB(session);
+      await postIPtoMem(session);
+      postIPtoDB(session);
       createIPRWs(context, session);
     });
   } catch (e) {
@@ -200,143 +216,332 @@ export async function createIPR(session) {
   }
 }
 
+const postIPtoMem = async (session) => {
+  const iPAssets = [];
+  session["IPTransactions"].forEach((asset) => {
+    const iPAss = {
+      narrative: asset.narrative,
+      assetNarrative: asset.assetNarrative,
+      cerysCategory: asset.cerysCategory,
+      cost: asset.value,
+      transDateUser: asset.transactionDate,
+      transDateClt: asset.transactionDateClt,
+    };
+    iPAssets.push(iPAss);
+  });
+  updateIPMem(session, iPAssets);
+};
+
+const updateIPMem = (session, iPAssets) => {
+  session["activeAssignment"].IPR.push(...iPAssets);
+  session["activeAssignment"].IPRegisterCreated = true;
+  session["customer"]["assignments"].forEach((ass) => {
+    if (ass._id === session["activeAssignment"]._id) {
+      ass.IPR.push(...iPAssets);
+      ass.IPRegistered = true;
+    }
+  });
+};
+
 export async function postIPtoDB(session) {
   const options = fetchOptionsIP(session);
   const updatedCustAndAssDb = await fetch(postTFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
   console.log(updatedCustAndAss);
-  session["customer"] = updatedCustAndAss.customer;
-  session["activeAssignment"] = updatedCustAndAss.assignment;
 }
 
 export async function createIPRWs(context, session) {
   const transToPost = session["IPTransactions"];
+  const activeCatsNames = [];
+  const IPActiveCats = [];
+  transToPost.forEach((i) => {
+    if (!activeCatsNames.includes(i.assetCategory)) {
+      activeCatsNames.push(i.assetCategory);
+      IPActiveCats.push({
+        assetCategory: i.assetCategory,
+        assetCategoryNo: i.assetCategoryNo,
+      });
+    }
+  });
+  IPActiveCats.sort((a, b) => {
+    return a.assetCategoryNo - b.assetCategoryNo;
+  });
   const wsName = "IP Register";
   const ws = addWorksheet(context, wsName);
   const wsHeaders = worksheetHeader(session, "Investment property register");
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
-  populateIPRWs(context, transToPost, ws);
+  populateIPRWs(context, IPActiveCats, transToPost, ws);
 }
 
-export async function populateIPRWs(context, transToPost, ws) {
+export async function populateIPRWs(context, IPActiveCats, transToPost, ws) {
+  console.log(transToPost);
+  const IPActiveSubCats = [];
+  const subCatNames = [];
+  transToPost.forEach((i) => {
+    if (!subCatNames.includes(i.assetSubCategory)) {
+      const obj = {
+        assetSubCategory: i.assetSubCategory,
+        assetSubCatCode: i.assetSubCatCode,
+        regColNameOne: i.regColNameOne,
+        regColNameTwo: i.regColNameTwo,
+      };
+      subCatNames.push(i.assetSubCategory);
+      IPActiveSubCats.push(obj);
+    }
+  });
+  IPActiveSubCats.sort((a, b) => {
+    return a.assetSubCatCode - b.assetSubCatCode;
+  });
+  const regColIndex = {
+    costCFNum: 0,
+    costCFLetter: "",
+    depnBFNum: 0,
+    depnBFLetter: "",
+    depnCFNum: 0,
+    depnCFLetter: "",
+    nBVCFNum: 0,
+    nBVCFLetter: "",
+    nBVBFNum: 0,
+    nBVBFLetter: "",
+    costTotalEndLetter: "",
+    depnTotalEndLetter: "",
+    blankCellOneNum: 0,
+    blankCellOneLetter: "",
+    blankCellTwoNum: 0,
+    blankCellTwoLetter: "",
+    colsToTotal: [{ number: 4, letter: "D" }],
+  };
+  const registerColNamesOne = ["Date", "Description", "Days of"];
+  IPActiveSubCats.forEach((sub) => {
+    if (sub.assetSubCatCode < 11) {
+      registerColNamesOne.push(sub.regColNameOne);
+      sub.regCol = registerColNamesOne.length;
+    }
+  });
+  registerColNamesOne.push("Cost", "");
+  regColIndex.costCFNum = registerColNamesOne.length - 1;
+  IPActiveSubCats.forEach((sub) => {
+    if (sub.assetSubCatCode > 10) {
+      registerColNamesOne.push(sub.regColNameOne);
+      sub.regCol = registerColNamesOne.length;
+    }
+  });
+  console.log(IPActiveSubCats);
+  registerColNamesOne.push("Depn");
+  regColIndex.depnCFNum = registerColNamesOne.length;
+  registerColNamesOne.push("", "NBV", "NBV");
+  regColIndex.nBVCFNum = registerColNamesOne.length - 1;
+  regColIndex.nBVBFNum = registerColNamesOne.length;
+  const numberCols = registerColNamesOne.length;
+  const numberColsAsLetter = colNumToLetter(numberCols);
+  const costCFLetter = colNumToLetter(regColIndex.costCFNum);
+  regColIndex.costCFLetter = costCFLetter;
+  regColIndex.depnBFNum = regColIndex.costCFNum + 2;
+  const depnBFLetter = colNumToLetter(regColIndex.depnBFNum);
+  regColIndex.depnBFLetter = depnBFLetter;
+  const depnCFLetter = colNumToLetter(regColIndex.depnCFNum);
+  regColIndex.depnCFLetter = depnCFLetter;
+  const nBVCFLetter = colNumToLetter(regColIndex.nBVCFNum);
+  regColIndex.nBVCFLetter = nBVCFLetter;
+  const nBVBFLetter = colNumToLetter(regColIndex.nBVBFNum);
+  regColIndex.nBVBFLetter = nBVBFLetter;
+  const costTotalEndLetter = colNumToLetter(regColIndex.costCFNum - 1);
+  regColIndex.costTotalEndLetter = costTotalEndLetter;
+  const depnTotalEndLetter = colNumToLetter(regColIndex.depnCFNum - 1);
+  regColIndex.depnTotalEndLetter = depnTotalEndLetter;
+  regColIndex.blankCellOneNum = regColIndex.costCFNum + 1;
+  regColIndex.blankCellOneLetter = colNumToLetter(regColIndex.blankCellOneNum);
+  regColIndex.blankCellTwoNum = regColIndex.depnCFNum + 1;
+  regColIndex.blankCellTwoLetter = colNumToLetter(regColIndex.blankCellTwoNum);
+  for (let i = 5; i < regColIndex.costCFNum + 1; i++) {
+    const letter = colNumToLetter(i);
+    regColIndex.colsToTotal.push({ number: i, letter });
+  }
+  for (let i = regColIndex.depnBFNum; i < regColIndex.depnCFNum + 1; i++) {
+    const letter = colNumToLetter(i);
+    regColIndex.colsToTotal.push({ number: i, letter });
+  }
+  for (let i = regColIndex.nBVCFNum; i < regColIndex.nBVBFNum + 1; i++) {
+    const letter = colNumToLetter(i);
+    regColIndex.colsToTotal.push({ number: i, letter });
+  }
+  const registerColNamesTwo = ["", "", "Year Held"];
+  IPActiveSubCats.forEach((sub) => {
+    if (sub.assetSubCatCode < 10) {
+      sub.regColNameTwo ? registerColNamesTwo.push(sub.regColNameTwo) : registerColNamesTwo.push("");
+    }
+  });
+  registerColNamesTwo.push("C/Fwd", "");
+  IPActiveSubCats.forEach((sub) => {
+    if (sub.assetSubCatCode > 9) {
+      sub.regColNameTwo ? registerColNamesTwo.push(sub.regColNameTwo) : registerColNamesTwo.push("");
+    }
+  });
+  registerColNamesTwo.push("C/Fwd");
+  registerColNamesTwo.push("", "C/Fwd", "B/Fwd");
+  transToPost.forEach((trans) => {
+    IPActiveSubCats.forEach((subCat) => {
+      if (trans.assetSubCatCode === subCat.assetSubCatCode) {
+        trans.regCol = subCat.regCol;
+      }
+    });
+  });
   const iPRBodyVals = [];
   const underlineA = [];
   const underlineAO = [];
   const formatTotal = [];
   let rowNumber = 10;
-  let additionsTotal = 0;
-  const blankLine = [];
-  for (let i = 0; i < 15; i++) {
-    blankLine.push("");
-  }
-  const registerColNamesOne = [
-    "Date",
-    "Description",
-    "Days of",
-    "Cost",
-    "Cost of",
-    "Cost of",
-    "Cost",
-    "",
-    "FV Adjustment",
-    "FV Adjustment",
-    "FV Adjustment",
-    "FV Adjustment",
-    "",
-    "NBV",
-    "NBV",
-  ];
-  const registerColNamesTwo = [
-    "",
-    "",
-    "Year Held",
-    "B/Fwd",
-    "Additions",
-    "Disposals",
-    "C/Fwd",
-    "",
-    "B/Fwd",
-    "in Year",
-    "Elim on Disposal",
-    "C/Fwd",
-    "",
-    "C/Fwd",
-    "B/Fwd",
-  ];
-  iPRBodyVals.push(registerColNamesOne);
-  underlineAO.push(rowNumber);
-  rowNumber++;
-  iPRBodyVals.push(registerColNamesTwo);
-  underlineAO.push(rowNumber);
-  rowNumber++;
-  iPRBodyVals.push(blankLine);
-  rowNumber++;
-  transToPost.forEach((tran) => {
-    const assetLine = [];
-    if (tran.transactionDateClt) {
-      assetLine.push(tran.transactionDateClt);
-    } else if (tran.transactionDateUser) {
-      assetLine.push(tran.transactionDateUser);
+  const subTotalRows = [];
+  IPActiveCats.forEach((cat) => {
+    const catHeader = [];
+    catHeader.push(cat.assetCategory);
+    for (let i = 0; i < numberCols - 1; i++) {
+      catHeader.push("");
     }
-    assetLine.push(tran.assetNarrative);
-    assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
-    assetLine.push(0);
-    assetLine.push(tran.value / 100);
-    assetLine.push("placeholder");
-    assetLine.push(tran.value / 100);
-    assetLine.push("");
-    assetLine.push(0);
-    assetLine.push(0);
-    assetLine.push(0);
-    assetLine.push(0);
-    assetLine.push("");
-    assetLine.push(0);
-    assetLine.push(0);
-    iPRBodyVals.push(assetLine);
+    iPRBodyVals.push(catHeader);
+    underlineA.push(rowNumber);
     rowNumber++;
-    additionsTotal += tran.value / 100;
+    const blankLine = [];
+    for (let i = 0; i < numberCols; i++) {
+      blankLine.push("");
+    }
+    iPRBodyVals.push(blankLine);
+    rowNumber++;
+    iPRBodyVals.push(registerColNamesOne);
+    underlineAO.push(rowNumber);
+    rowNumber++;
+    iPRBodyVals.push(registerColNamesTwo);
+    underlineAO.push(rowNumber);
+    rowNumber++;
+    iPRBodyVals.push(blankLine);
+    rowNumber++;
+    const totalStartRowNumber = rowNumber;
+    console.log(transToPost);
+    transToPost.forEach((tran) => {
+      if (tran.assetCategory === cat.assetCategory) {
+        const assetLine = [];
+        if (tran.transactionDateClt) {
+          assetLine.push(tran.transactionDateClt);
+        } else if (tran.transactionDateUser) {
+          assetLine.push(tran.transactionDateUser);
+        }
+        assetLine.push(tran.assetNarrative);
+        assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
+        for (let i = 0; i < numberCols - 3; i++) {
+          assetLine.push(0);
+        }
+        assetLine.splice(tran.regCol - 1, 1, tran.value / 100);
+        assetLine.splice(
+          regColIndex.costCFNum - 1,
+          1,
+          `=sum(D${rowNumber}:${regColIndex.costTotalEndLetter}${rowNumber})`
+        );
+        assetLine.splice(
+          regColIndex.depnCFNum - 1,
+          1,
+          `=sum(${regColIndex.depnBFLetter}${rowNumber}:${regColIndex.depnTotalEndLetter}${rowNumber})`
+        );
+        assetLine.splice(
+          regColIndex.nBVCFNum - 1,
+          1,
+          `=${regColIndex.costCFLetter}${rowNumber}-${regColIndex.depnCFLetter}${rowNumber}`
+        );
+        if (subCatNames.includes("Cost bfwd")) {
+          assetLine.splice(regColIndex.nBVBFNum - 1, 1, `=D${rowNumber}-${regColIndex.depnBFLetter}${rowNumber}`);
+        }
+        assetLine.splice(regColIndex.blankCellOneNum - 1, 1, "");
+        assetLine.splice(regColIndex.blankCellTwoNum - 1, 1, "");
+        iPRBodyVals.push(assetLine);
+        rowNumber++;
+      }
+    });
+    iPRBodyVals.push(blankLine);
+    rowNumber++;
+    const catTotalsLine = [];
+    for (let i = 0; i < numberCols; i++) {
+      catTotalsLine.push("");
+    }
+    regColIndex.colsToTotal.forEach((col) => {
+      catTotalsLine.splice(
+        col.number - 1,
+        1,
+        `=sum(${col.letter}${totalStartRowNumber}:${col.letter}${rowNumber - 1})`
+      );
+    });
+    iPRBodyVals.push(catTotalsLine);
+    subTotalRows.push(rowNumber);
+    formatTotal.push(rowNumber);
+    rowNumber++;
+    iPRBodyVals.push(blankLine);
+    rowNumber++;
   });
-  iPRBodyVals.push(blankLine);
-  rowNumber++;
-  const totalsLine = ["", "", "", 0, additionsTotal, 0, additionsTotal, "", 0, 0, 0, 0, "", additionsTotal, 0];
-  iPRBodyVals.push(totalsLine);
-  formatTotal.push(rowNumber);
-  rowNumber++;
-  const iFARBodyRange = ws.getRange(`A10:O${iPRBodyVals.length + 9}`);
-  iFARBodyRange.values = iPRBodyVals;
+  const finalTotal = [];
+  const finalTotalRow = rowNumber;
+  for (let i = 0; i < numberCols; i++) {
+    finalTotal.push("");
+  }
+  regColIndex.colsToTotal.forEach((col) => {
+    let formula = `=${col.letter}${subTotalRows[0]}`;
+    for (let i = 1; i < subTotalRows.length; i++) {
+      formula = formula.concat(`+${col.letter}${subTotalRows[i]}`);
+    }
+    finalTotal.splice(col.number - 1, 1, formula);
+  });
+  iPRBodyVals.push(finalTotal);
+  const iPRBodyRange = ws.getRange(`A10:${numberColsAsLetter}${iPRBodyVals.length + 9}`);
+  iPRBodyRange.values = iPRBodyVals;
   const rangeA = ws.getRange("A:A");
   rangeA.numberFormat = "dd/mm/yyyy";
   const rangeC = ws.getRange("C:C");
   rangeC.numberFormat = "0";
-  const numbersRange = ws.getRange("D:O");
+  const numbersRange = ws.getRange(`D:${numberColsAsLetter}`);
   numbersRange.numberFormat = "#,##0.00;(#,##0.00);-";
   underlineA.forEach((row) => {
     const range = ws.getRange(`A${row}:A${row}`);
     range.format.font.underline = "single";
   });
   underlineAO.forEach((row) => {
-    const range = ws.getRange(`A${row}:O${row}`);
+    const range = ws.getRange(`A${row}:${numberColsAsLetter}${row}`);
     range.format.font.underline = "single";
   });
   formatTotal.forEach((row) => {
-    const range = ws.getRange(`A${row}:O${row}`);
-    range.format.font.bold = true;
+    //const range = ws.getRange(`A${row}:${numberColsAsLetter}${row}`);
+    //range.format.font.bold = true;
     const totalRanges = [];
-    const totalRangeOne = ws.getRange(`C${row}:G${row}`);
+    const totalRangeOne = ws.getRange(`D${row}:${regColIndex.costCFLetter}${row}`);
     totalRanges.push(totalRangeOne);
-    const totalRangeTwo = ws.getRange(`I${row}:L${row}`);
+    const totalRangeTwo = ws.getRange(`${regColIndex.depnBFLetter}${row}:${regColIndex.depnCFLetter}${row}`);
     totalRanges.push(totalRangeTwo);
-    const totalRangeThree = ws.getRange(`N${row}:O${row}`);
+    const totalRangeThree = ws.getRange(`${regColIndex.nBVCFLetter}${row}:${numberColsAsLetter}${row}`);
     totalRanges.push(totalRangeThree);
     totalRanges.forEach((range) => {
       const edgeTop = range.format.borders.getItem("EdgeTop");
       edgeTop.style = "Continuous";
       const edgeBottom = range.format.borders.getItem("EdgeBottom");
-      edgeBottom.style = "Double";
+      edgeBottom.style = "Continuous";
     });
   });
-  const colsRange = ws.getRange("B:O");
+  const finalTotalRange = ws.getRange(`A${finalTotalRow}:${numberColsAsLetter}${finalTotalRow}`);
+  finalTotalRange.format.font.bold = true;
+  const totalRanges = [];
+  const totalRangeOne = ws.getRange(`D${finalTotalRow}:${regColIndex.costCFLetter}${finalTotalRow}`);
+  totalRanges.push(totalRangeOne);
+  const totalRangeTwo = ws.getRange(
+    `${regColIndex.depnBFLetter}${finalTotalRow}:${regColIndex.depnCFLetter}${finalTotalRow}`
+  );
+  totalRanges.push(totalRangeTwo);
+  const totalRangeThree = ws.getRange(
+    `${regColIndex.nBVCFLetter}${finalTotalRow}:${numberColsAsLetter}${finalTotalRow}`
+  );
+  totalRanges.push(totalRangeThree);
+  totalRanges.forEach((range) => {
+    const edgeTop = range.format.borders.getItem("EdgeTop");
+    edgeTop.style = "Continuous";
+    const edgeBottom = range.format.borders.getItem("EdgeBottom");
+    edgeBottom.style = "Double";
+  });
+  const colsRange = ws.getRange(`B:${numberColsAsLetter}`);
   colsRange.format.autofitColumns();
   await context.sync();
 }
