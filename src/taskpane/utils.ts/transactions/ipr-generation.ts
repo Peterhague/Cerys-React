@@ -3,6 +3,7 @@ import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
+import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIP(session) {
   const relevantTrans = [];
@@ -271,7 +272,7 @@ export async function createIPRWs(context, session) {
   const wsHeaders = worksheetHeader(session, "Investment property register");
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
-  populateIPRWs(context, IPActiveCats, transToPost, ws);
+  populateAssetRegWs(context, IPActiveCats, transToPost, ws, "IP");
 }
 
 export async function populateIPRWs(context, IPActiveCats, transToPost, ws) {
@@ -327,7 +328,6 @@ export async function populateIPRWs(context, IPActiveCats, transToPost, ws) {
       sub.regCol = registerColNamesOne.length;
     }
   });
-  console.log(IPActiveSubCats);
   registerColNamesOne.push("Depn");
   regColIndex.depnCFNum = registerColNamesOne.length;
   registerColNamesOne.push("", "NBV", "NBV");

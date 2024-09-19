@@ -3,6 +3,7 @@ import { fetchOptionsTFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
+import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransTFA(session) {
   const relevantTrans = [];
@@ -296,7 +297,7 @@ export async function createTFARWs(context, session) {
   const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
-  populateTFARWs(context, TFAActiveCats, transToPost, ws);
+  populateAssetRegWs(context, TFAActiveCats, transToPost, ws, "TFA");
 }
 
 export async function populateTFARWs(context, TFAActiveCats, transToPost, ws) {

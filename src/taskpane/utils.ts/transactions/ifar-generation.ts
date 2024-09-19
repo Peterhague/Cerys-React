@@ -3,6 +3,7 @@ import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { updateNomCode, colNumToLetter } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
+import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIFA(session) {
   const relevantTrans = [];
@@ -253,7 +254,7 @@ export async function createIFARWs(context, session) {
   const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
-  populateIFARWs(context, IFAActiveCats, transToPost, ws);
+  populateAssetRegWs(context, IFAActiveCats, transToPost, ws, "IFA");
 }
 
 export async function populateIFARWs(context, IFAActiveCats, transToPost, ws) {
