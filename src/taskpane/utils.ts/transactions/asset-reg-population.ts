@@ -1,6 +1,11 @@
 import { colNumToLetter } from "../helperFunctions";
 
 export async function populateAssetRegWs(context, activeCats, transToPost, ws, regType) {
+  const baseDate = new Date("1899-12-30");
+  console.log(baseDate);
+  baseDate.setDate(baseDate.getDate() + 44926);
+  console.log(baseDate);
+  console.log(transToPost);
   const { activeSubCats, subCatNames } = populateActiveSubCats(transToPost);
   const { regColIndex, registerColNames } = buildRegColNames(activeSubCats, regType);
   const { numberCols, numberColsAsLetter } = populateRegisterColsIndex(regColIndex, registerColNames.namesOne);

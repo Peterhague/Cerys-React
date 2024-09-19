@@ -34,6 +34,16 @@ export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: 
   return updatedTransToPost;
 }
 
+export const calculateExcelYE = (client) => {
+  const date = new Date(client.reportingPeriod);
+  const baseDate = new Date("1899-12-30");
+  const utc1 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+  const utc2 = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+  const timeDiff = Math.abs(utc2 - utc1);
+  const reportingPeriodExcel = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  return reportingPeriodExcel;
+};
+
 export const colNumToLetter = (numberCols) => {
   switch (numberCols) {
     case 1:

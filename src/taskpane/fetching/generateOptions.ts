@@ -160,6 +160,7 @@ export function fetchOptionsAddClient(client, customer) {
       clientCode: client.clientCode,
       clientName: client.clientName,
       reportingDate: client.reportingPeriod,
+      reportingDateExcel: client.reportingPeriodExcel,
       companyNumber: client.companyNumber,
       customerId: customer,
       seniorResponsible: client.senior,

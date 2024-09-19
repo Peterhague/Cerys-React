@@ -12,7 +12,6 @@ export const processTransBatch = async (session, handleView) => {
     const newDate = session.activeAssignment.reportingDateConverted.split("/");
     const jnlDate = `${newDate[2]}-${newDate[1]}-${newDate[0]}`;
     const trans = {};
-    console.log(jnl);
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.journalDate === "") jnl.journalDate = jnlDate;
     (trans["cerysCode"] = jnl.code),
