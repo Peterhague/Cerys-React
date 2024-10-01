@@ -34,14 +34,24 @@ export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: 
   return updatedTransToPost;
 }
 
-export const calculateExcelYE = (client) => {
-  const date = new Date(client.reportingPeriod);
+export const calculateExcelDate = (inputDate) => {
+  const date = new Date(inputDate);
   const baseDate = new Date("1899-12-30");
   const utc1 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
   const utc2 = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
   const timeDiff = Math.abs(utc2 - utc1);
-  const reportingPeriodExcel = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
-  return reportingPeriodExcel;
+  const excelDate = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  return excelDate;
+};
+
+export const calculateDiffInDays = (inputDate1, inputDate2) => {
+  const date1 = new Date(inputDate1);
+  const date2 = new Date(inputDate2);
+  const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
+  const utc2 = Date.UTC(date2.getFullYear(), date2.getMonth(), date2.getDate());
+  const timeDiff = utc2 - utc1;
+  const daysDiff = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+  return daysDiff;
 };
 
 export const colNumToLetter = (numberCols) => {

@@ -12,45 +12,45 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
   handleView,
   session,
 }: addCorpClientDepnProps) => {
-  const [depnBasisFHProp, setDepnBasisFHProp] = useState("");
-  const [depnRateFHProp, setDepnRateFHProp] = useState("");
-  const [depnBasisShortLH, setDepnBasisShortLH] = useState("");
-  const [depnRateShortLH, setDepnRateShortLH] = useState("");
-  const [depnBasisLongLH, setDepnBasisLongLH] = useState("");
-  const [depnRateLongLH, setDepnRateLongLH] = useState("");
-  const [depnBasisPlant, setDepnBasisPlant] = useState("");
-  const [depnRatePlant, setDepnRatePlant] = useState("");
-  const [depnBasisFixFit, setDepnBasisFixFit] = useState("");
-  const [depnRateFixFit, setDepnRateFixFit] = useState("");
-  const [depnBasisMV, setDepnBasisMV] = useState("");
-  const [depnRateMV, setDepnRateMV] = useState("");
+  const [depnBasisFholdProp, setDepnBasisFholdProp] = useState("");
+  const [depnRateFholdProp, setDepnRateFholdProp] = useState("");
+  const [depnBasisShortLhold, setDepnBasisShortLhold] = useState("");
+  const [depnRateShortLhold, setDepnRateShortLhold] = useState("");
+  const [depnBasisLongLhold, setDepnBasisLongLhold] = useState("");
+  const [depnRateLongLhold, setDepnRateLongLhold] = useState("");
+  const [depnBasisPlantMachinery, setDepnBasisPlantMachinery] = useState("");
+  const [depnRatePlantMachinery, setDepnRatePlantMachinery] = useState("");
+  const [depnBasisFixFittings, setDepnBasisFixFittings] = useState("");
+  const [depnRateFixFittings, setDepnRateFixFittings] = useState("");
+  const [depnBasisMotorVehicles, setDepnBasisMotorVehicles] = useState("");
+  const [depnRateMotorVehicles, setDepnRateMotorVehicles] = useState("");
   const [depnBasisCompEquip, setDepnBasisCompEquip] = useState("");
   const [depnRateCompEquip, setDepnRateCompEquip] = useState("");
   const [depnBasisOfficeEquip, setDepnBasisOfficeEquip] = useState("");
   const [depnRateOfficeEquip, setDepnRateOfficeEquip] = useState("");
 
   const onDepnBasisFHPChange = (e) => {
-    setDepnBasisFHProp(e.target.value);
+    setDepnBasisFholdProp(e.target.value);
   };
 
   const onDepnBasisSLHChange = (e) => {
-    setDepnBasisShortLH(e.target.value);
+    setDepnBasisShortLhold(e.target.value);
   };
 
   const onDepnBasisLLHChange = (e) => {
-    setDepnBasisLongLH(e.target.value);
+    setDepnBasisLongLhold(e.target.value);
   };
 
   const onDepnBasisPMChange = (e) => {
-    setDepnBasisPlant(e.target.value);
+    setDepnBasisPlantMachinery(e.target.value);
   };
 
   const onDepnBasisFFChange = (e) => {
-    setDepnBasisFixFit(e.target.value);
+    setDepnBasisFixFittings(e.target.value);
   };
 
   const onDepnBasisMVChange = (e) => {
-    setDepnBasisMV(e.target.value);
+    setDepnBasisMotorVehicles(e.target.value);
   };
 
   const onDepnBasisCEChange = (e) => {
@@ -64,18 +64,18 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const depnPols = {
-      depnBasisFHProp,
-      depnRateFHProp,
-      depnBasisShortLH,
-      depnRateShortLH,
-      depnBasisLongLH,
-      depnRateLongLH,
-      depnBasisPlant,
-      depnRatePlant,
-      depnBasisFixFit,
-      depnRateFixFit,
-      depnBasisMV,
-      depnRateMV,
+      depnBasisFholdProp,
+      depnRateFholdProp,
+      depnBasisShortLhold,
+      depnRateShortLhold,
+      depnBasisLongLhold,
+      depnRateLongLhold,
+      depnBasisPlantMachinery,
+      depnRatePlantMachinery,
+      depnBasisFixFittings,
+      depnRateFixFittings,
+      depnBasisMotorVehicles,
+      depnRateMotorVehicles,
       depnBasisCompEquip,
       depnRateCompEquip,
       depnBasisOfficeEquip,
@@ -129,8 +129,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-fhprop"
                   className="form-control input-depn-rate"
-                  value={depnRateFHProp}
-                  onChange={(e) => setDepnRateFHProp(e.target.value)}
+                  value={depnRateFholdProp}
+                  onChange={(e) => setDepnRateFholdProp(e.target.value)}
                 ></input>
               </td>
             </tr>
@@ -164,8 +164,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-shortlh"
                   className="form-control input-depn-rate"
-                  value={depnRateShortLH}
-                  onChange={(e) => setDepnRateShortLH(e.target.value)}
+                  value={depnRateShortLhold}
+                  onChange={(e) => setDepnRateShortLhold(e.target.value)}
                 ></input>
               </td>
             </tr>
@@ -199,8 +199,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-longlh"
                   className="form-control input-depn-rate"
-                  value={depnRateLongLH}
-                  onChange={(e) => setDepnRateLongLH(e.target.value)}
+                  value={depnRateLongLhold}
+                  onChange={(e) => setDepnRateLongLhold(e.target.value)}
                 ></input>
               </td>
             </tr>
@@ -234,8 +234,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-plant"
                   className="form-control input-depn-rate"
-                  value={depnRatePlant}
-                  onChange={(e) => setDepnRatePlant(e.target.value)}
+                  value={depnRatePlantMachinery}
+                  onChange={(e) => setDepnRatePlantMachinery(e.target.value)}
                 ></input>
               </td>
             </tr>
@@ -269,8 +269,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-fixfit"
                   className="form-control input-depn-rate"
-                  value={depnRateFixFit}
-                  onChange={(e) => setDepnRateFixFit(e.target.value)}
+                  value={depnRateFixFittings}
+                  onChange={(e) => setDepnRateFixFittings(e.target.value)}
                 ></input>
               </td>
             </tr>
@@ -304,8 +304,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   type="number"
                   id="depn-rate-mv"
                   className="form-control input-depn-rate"
-                  value={depnRateMV}
-                  onChange={(e) => setDepnRateMV(e.target.value)}
+                  value={depnRateMotorVehicles}
+                  onChange={(e) => setDepnRateMotorVehicles(e.target.value)}
                 ></input>
               </td>
             </tr>

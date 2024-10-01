@@ -4,7 +4,7 @@ import CerysButton from "../CerysButton";
 import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
 import { addPrimarySheets } from "../../assignment/assignmentInit";
-import { populateUser } from "../../utils.ts/helperFunctions";
+import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunctions";
 interface newAssignmentDtlsProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -16,22 +16,103 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   handleView,
   session,
 }: newAssignmentDtlsProps) => {
+  const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
+  const [clientObject, setClientObject] = useState({});
   const [assType, setAssType] = useState("");
   const [senior, setSenior] = useState("");
   const [manager, setManager] = useState("");
   const [rI, setRI] = useState("");
   const [software, setSoftware] = useState("");
+  const [reportingDate, setReportingDate] = useState("");
+  const [periodStartConverted, setPeriodStartConverted] = useState("");
+  const [periodStart, setPeriodStart] = useState("");
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
+  const date = new Date();
+  const fullyear = date.getFullYear();
+
+  const handleClientSelection = (clientId) => {
+    setClientId(clientId);
     let clientObj;
     session["customer"]["clients"].forEach((client) => {
       if (client._id === clientId) {
         clientObj = client;
       }
     });
-    const prelimAssignment = { clientObj, assType, senior, manager, rI, software, transactionsPosted: false };
+    console.log(clientObj);
+    setClientObject(clientObj);
+    clientObj["_senior"] ? setSenior(clientObj["_senior"]) : setSenior("");
+    clientObj["_manager"] ? setManager(clientObj["_manager"]) : setManager("");
+    clientObj["_responsibleIndividual"] ? setRI(clientObj["_responsibleIndividual"]) : setRI("");
+    clientObj["clientSoftware"] ? setSoftware(clientObj["clientSoftware"]) : setSoftware("");
+    const dateEst = calculateDateEst(clientObj);
+    console.log(dateEst);
+    clientObj["accRefDate"] ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
+  };
+
+  const calculateDateEst = (clientObj) => {
+    if (clientObj.currentReportingPeriod) {
+      const periodEnd = clientObj.currentReportingPeriod.periodEnd.split("T")[0].split("-");
+      const currentYear = periodEnd[0];
+      const nextYear = parseInt(currentYear) + 1;
+      const iteratedPeriod = `${nextYear}-${periodEnd[1]}-${periodEnd[2]}`;
+      return iteratedPeriod;
+    } else {
+      let dateEst = `${fullyear}${clientObj["accRefDate"]}`;
+      const test = calculateDiffInDays(date, dateEst);
+      if (test > 0) dateEst = `${fullyear - 1}${clientObj["accRefDate"]}`;
+      const test2 = calculateDiffInDays(clientObj["incorpDate"], dateEst);
+      if (test2 < 0) dateEst = `${fullyear}${clientObj["accRefDate"]}`;
+      return dateEst;
+    }
+  };
+
+  const handleReportingDate = (date, clientObj) => {
+    setReportingDate(date);
+    const dayOne = calculatePeriodStart(date, clientObj);
+    const periodStartSplit = dayOne.split("/");
+    const periodStartJS = `${periodStartSplit[2]}-${periodStartSplit[1]}-${periodStartSplit[0]}`;
+    setPeriodStartConverted(dayOne);
+    setPeriodStart(periodStartJS);
+  };
+
+  const calculatePeriodStart = (date, clientObj) => {
+    const dateSplit = date.split("-");
+    const month = calculateMonth(dateSplit[1]);
+    const prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0]) - 1}`;
+    const splitPeriodStart = prelimPeriodStart.split("/");
+    const convertedPeriodStart = `${splitPeriodStart[2]}-${splitPeriodStart[1]}-${splitPeriodStart[0]}`;
+    const test = calculateDiffInDays(clientObj["incorpDate"], convertedPeriodStart);
+    const incorpDateSplit = clientObj["incorpDate"].split("T");
+    const furtherSplit = incorpDateSplit[0].split("-");
+    const incDateConverted = `${furtherSplit[2]}/${furtherSplit[1]}/${furtherSplit[0]}`;
+    return test < 0 ? incDateConverted : prelimPeriodStart;
+  };
+
+  const calculateMonth = (month) => {
+    let rawMonth = parseInt(month) + 1;
+    if (rawMonth > 12) rawMonth = 1;
+    return rawMonth < 10 ? `0${rawMonth}` : rawMonth;
+  };
+
+  const handleNext = (e) => {
+    setView("confirm");
+    e.preventDefault();
+  };
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const prelimAssignment = {
+      clientObject,
+      assType,
+      senior,
+      manager,
+      rI,
+      software,
+      reportingDate,
+      periodStart,
+      transactionsPosted: false,
+    };
     populateStaffObjs(prelimAssignment);
     const updatedCustAndNewAss = await processNewAssignment(prelimAssignment);
     session["customer"] = updatedCustAndNewAss.customer;
@@ -61,111 +142,167 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
 
   return (
     <>
-      <form onSubmit={handleSubmit} id="addClientForm" action="">
-        <h3>Enter Assignment Data</h3>
-        <div>
-          <label htmlFor="clientId">Select client</label>
-          <select
-            name="clientId"
-            id="clientId"
-            className="form-control"
-            value={clientId}
-            onChange={(e) => setClientId(e.target.value)}
-          >
-            {!clientId && <option>Please select</option>}
-            {session["customer"]["clients"].map((client) => (
-              <option key={client._id} value={client._id}>
-                {client.clientCode + " " + client.clientName}
-              </option>
-            ))}
-          </select>
-        </div>
-        <div>
-          <label htmlFor="assType">Job type</label>
-          <select
-            name="assType"
-            id="assType"
-            className="form-control"
-            value={assType}
-            onChange={(e) => setAssType(e.target.value)}
-          >
-            {!assType && <option>Please select</option>}
-            <option value="Annual accounts">Annual accounts</option>
-            <option value="Management accounts">Management accounts</option>
-          </select>
-        </div>
-        {session["customer"]["users"].length > 0 && (
-          <div>
-            <label htmlFor="senior">Senior</label>
-            <select
-              name="senior"
-              id="senior"
-              className="form-control"
-              value={senior}
-              onChange={(e) => setSenior(e.target.value)}
-            >
-              {!senior && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.firstName + " " + user.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {session["customer"]["users"].length > 0 && (
-          <div>
-            <label htmlFor="manager">Manager</label>
-            <select
-              name="manager"
-              id="manager"
-              className="form-control"
-              value={manager}
-              onChange={(e) => setManager(e.target.value)}
-            >
-              {!manager && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.firstName + " " + user.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        {session["customer"]["users"].length > 0 && (
-          <div>
-            <label htmlFor="RI">Partner</label>
-            <select name="RI" id="RI" className="form-control" value={rI} onChange={(e) => setRI(e.target.value)}>
-              {!rI && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
-                <option key={user._id} value={user._id}>
-                  {user.firstName + " " + user.lastName}
-                </option>
-              ))}
-            </select>
-          </div>
-        )}
-        <div>
-          <label htmlFor="software">Client software</label>
-          <select
-            name="software"
-            id="software"
-            className="form-control"
-            value={software}
-            onChange={(e) => setSoftware(e.target.value)}
-          >
-            {!software && <option>Please select</option>}
-            <option value="Sage Line 50">Sage Line 50</option>
-            <option value="Xero">Xero</option>
-            <option value="Quickbooks">Quickbooks</option>
-            <option value="Kashflow">Kashflow</option>
-            <option value="FreeAgent">FreeAgent</option>
-          </select>
-        </div>
+      <form id="addClientForm" action="">
+        {view === "main" && (
+          <>
+            <h3>Enter Assignment Data</h3>
+            <div>
+              <label htmlFor="clientId">Select client</label>
+              <select
+                name="clientId"
+                id="clientId"
+                className="form-control"
+                value={clientId}
+                onChange={(e) => handleClientSelection(e.target.value)}
+              >
+                {!clientId && <option>Please select</option>}
+                {session["customer"]["clients"].map((client) => (
+                  <option key={client._id} value={client._id}>
+                    {client.clientCode + " " + client.clientName}
+                  </option>
+                ))}
+              </select>
+            </div>
+            <div>
+              <label htmlFor="assType">Job type</label>
+              <select
+                name="assType"
+                id="assType"
+                className="form-control"
+                value={assType}
+                onChange={(e) => setAssType(e.target.value)}
+              >
+                {!assType && <option>Please select</option>}
+                <option value="Annual accounts">Annual accounts</option>
+                <option value="Management accounts">Management accounts</option>
+              </select>
+            </div>
+            {session["customer"]["users"].length > 0 && (
+              <div>
+                <label htmlFor="senior">Senior</label>
+                <select
+                  name="senior"
+                  id="senior"
+                  className="form-control"
+                  value={senior}
+                  onChange={(e) => setSenior(e.target.value)}
+                >
+                  {!senior && <option>Please select</option>}
+                  {session["customer"]["users"].map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.firstName + " " + user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {session["customer"]["users"].length > 0 && (
+              <div>
+                <label htmlFor="manager">Manager</label>
+                <select
+                  name="manager"
+                  id="manager"
+                  className="form-control"
+                  value={manager}
+                  onChange={(e) => setManager(e.target.value)}
+                >
+                  {!manager && <option>Please select</option>}
+                  {session["customer"]["users"].map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.firstName + " " + user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            {session["customer"]["users"].length > 0 && (
+              <div>
+                <label htmlFor="RI">Partner</label>
+                <select name="RI" id="RI" className="form-control" value={rI} onChange={(e) => setRI(e.target.value)}>
+                  {!rI && <option>Please select</option>}
+                  {session["customer"]["users"].map((user) => (
+                    <option key={user._id} value={user._id}>
+                      {user.firstName + " " + user.lastName}
+                    </option>
+                  ))}
+                </select>
+              </div>
+            )}
+            <div>
+              <label htmlFor="software">Client software</label>
+              <select
+                name="software"
+                id="software"
+                className="form-control"
+                value={software}
+                onChange={(e) => setSoftware(e.target.value)}
+              >
+                {!software && <option>Please select</option>}
+                <option value="Sage Line 50">Sage Line 50</option>
+                <option value="Xero">Xero</option>
+                <option value="Quickbooks">Quickbooks</option>
+                <option value="Kashflow">Kashflow</option>
+                <option value="FreeAgent">FreeAgent</option>
+              </select>
+            </div>
+            <div>
+              <label htmlFor="reportingDate">Reporting date</label>
+              <input
+                name="reportingDate"
+                type="date"
+                id="reportingDate"
+                className="form-control"
+                placeholder=""
+                value={reportingDate}
+                onChange={(e) => handleReportingDate(e.target.value, clientObject)}
+              ></input>
+            </div>
 
-        <div>
-          <button type="submit">Add share classes</button>
-        </div>
+            <div>
+              <button onClick={handleNext} type="button">
+                Next
+              </button>
+            </div>
+          </>
+        )}
+        {view === "confirm" && (
+          <>
+            <div>
+              <p>{periodStartConverted} will be entered as the first day of the accounting period. Is this correct?</p>
+            </div>
+            <div>
+              <button onClick={handleSubmit} type="button">
+                Yes
+              </button>
+              <button onClick={() => setView("nominate")} type="button">
+                No
+              </button>
+            </div>
+          </>
+        )}
+        {view === "nominate" && (
+          <>
+            <div>
+              <p>Please nominate the first day of the accounting period</p>
+            </div>
+            <div>
+              <input
+                name="nominatedDay"
+                type="date"
+                id="nominatedDay"
+                className="form-control"
+                placeholder=""
+                value={periodStart}
+                onChange={(e) => setPeriodStart(e.target.value)}
+              ></input>
+            </div>
+            <div>
+              <button onClick={handleSubmit} type="button">
+                Confirm
+              </button>
+            </div>
+          </>
+        )}
       </form>
       <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
     </>

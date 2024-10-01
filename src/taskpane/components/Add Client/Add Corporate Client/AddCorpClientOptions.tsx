@@ -2,7 +2,6 @@ import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { fetchOptionsAddClient } from "../../../fetching/generateOptions";
 import { addClientGlobalUrl } from "../../../fetching/apiEndpoints";
-import { calculateExcelYE } from "../../../utils.ts/helperFunctions";
 
 interface addCorpClientOptionsProps {
   updateSession: (update) => void;
@@ -17,7 +16,6 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
 }: addCorpClientOptionsProps) => {
   const handleSubmission = async () => {
     const client = session["newClientPrelim"];
-    client.reportingPeriodExcel = calculateExcelYE(client);
     console.log(client);
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsAddClient(client, customerId);

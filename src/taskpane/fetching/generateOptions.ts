@@ -157,44 +157,8 @@ export function fetchOptionsAddClient(client, customer) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      clientCode: client.clientCode,
-      clientName: client.clientName,
-      reportingDate: client.reportingPeriod,
-      reportingDateExcel: client.reportingPeriodExcel,
-      companyNumber: client.companyNumber,
+      client,
       customerId: customer,
-      seniorResponsible: client.senior,
-      managedBy: client.manager,
-      ownedBy: client.rI,
-      shareClasses: client.shareClasses,
-      directors: client.directors,
-      shareholders: client.shareholders,
-      newIndividuals: client.newIndividuals,
-      existingIndividuals: client.existingIndividuals,
-      amortBasisCompSware: client.amortBasisCompSware,
-      amortBasisDevCosts: client.amortBasisDevCosts,
-      amortBasisGwill: client.amortBasisGwill,
-      amortBasisPatsLics: client.amortBasisPatsLics,
-      amortRateCompSware: client.amortRateCompSware,
-      amortRateDevCosts: client.amortRateDevCosts,
-      amortRateGwill: client.amortRateGwill,
-      amortRatePatsLics: client.amortRatePatsLics,
-      depnBasisCompEquip: client.depnBasisCompEquip,
-      depnBasisFholdProp: client.depnBasisFHProp,
-      depnBasisFixFittings: client.depnBasisFixFit,
-      depnBasisLongLhold: client.depnBasisLongLH,
-      depnBasisMotorVehicles: client.depnBasisMV,
-      depnBasisOfficeEquip: client.depnBasisOfficeEquip,
-      depnBasisPlantMachinery: client.depnBasisPlant,
-      depnBasisShortLhold: client.depnBasisShortLH,
-      depnRateCompEquip: client.depnRateCompEquip,
-      depnRateFholdProp: client.depnRateFHProp,
-      depnRateFixFittings: client.depnRateFixFit,
-      depnRateLongLhold: client.depnRateLongLH,
-      depnRateMotorVehicles: client.depnRateMV,
-      depnRateOfficeEquip: client.depnRateOfficeEquip,
-      depnRatePlantMachinery: client.depnRatePlant,
-      depnRateShortLhold: client.depnRateShortLH,
     }),
   };
 }
@@ -402,16 +366,17 @@ export function fetchOptionsGetCustomerClients(customer) {
 //}
 
 export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
+  console.log(prelimAssignment);
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      clientCode: prelimAssignment.clientObj.clientCode,
-      clientName: prelimAssignment.clientObj.clientName,
-      reportingDate: prelimAssignment.clientObj.reportingDate,
-      reportingDateConverted: prelimAssignment.clientObj.reportingDateConverted,
+      clientCode: prelimAssignment.clientObject.clientCode,
+      clientName: prelimAssignment.clientObject.clientName,
+      reportingDate: prelimAssignment.reportingDate,
+      periodStart: prelimAssignment.periodStart,
       assignmentType: prelimAssignment.assType,
       _senior: prelimAssignment.senior,
       _manager: prelimAssignment.manager,
@@ -419,7 +384,7 @@ export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
       clientSoftware: prelimAssignment.software,
       transactionsPosted: prelimAssignment.transactionsPosted,
       customerId: customerId,
-      clientId: prelimAssignment.clientObj._id,
+      clientId: prelimAssignment.clientObject._id,
     }),
   };
 }

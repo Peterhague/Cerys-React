@@ -2,6 +2,7 @@ import { postJournalBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
 import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
+import { calculateExcelDate } from "../helperFunctions";
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
@@ -14,25 +15,26 @@ export const processTransBatch = async (session, handleView) => {
     const trans = {};
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.journalDate === "") jnl.journalDate = jnlDate;
-    (trans["cerysCode"] = jnl.code),
-      (trans["cerysCategory"] = jnl.category),
-      (trans["cerysSubCategory"] = jnl.subCategory),
-      (trans["assetCategory"] = jnl.assetCategory),
-      (trans["assetSubCategory"] = jnl.assetSubCategory),
-      (trans["assetSubCatCode"] = jnl.assetSubCatCode),
-      (trans["regColNameOne"] = jnl.regColNameOne),
-      (trans["regColNameTwo"] = jnl.regColNameTwo),
-      (trans["assetCategoryNo"] = jnl.assetCategoryNo),
-      (trans["cerysName"] = jnl.name),
-      (trans["cerysShortName"] = jnl.shortName),
-      (trans["narrative"] = jnl.narrative),
-      (trans["cerysId"] = jnl._id),
-      (trans["value"] = jnl.journalValue),
-      (trans["transactionDate"] = jnl.journalDate),
-      (trans["clientNominalCode"] = jnl.clientNominalCode),
-      (trans["transactionType"] = activeJournal.journalType),
-      (trans["clientTB"] = activeJournal.clientTB),
-      (trans["journal"] = activeJournal.journal);
+    trans["transactionDateExcel"] = calculateExcelDate(jnl.journalDate);
+    trans["cerysCode"] = jnl.code;
+    trans["cerysCategory"] = jnl.category;
+    trans["cerysSubCategory"] = jnl.subCategory;
+    trans["assetCategory"] = jnl.assetCategory;
+    trans["assetSubCategory"] = jnl.assetSubCategory;
+    trans["assetSubCatCode"] = jnl.assetSubCatCode;
+    trans["regColNameOne"] = jnl.regColNameOne;
+    trans["regColNameTwo"] = jnl.regColNameTwo;
+    trans["assetCategoryNo"] = jnl.assetCategoryNo;
+    trans["cerysName"] = jnl.name;
+    trans["cerysShortName"] = jnl.shortName;
+    trans["narrative"] = jnl.narrative;
+    trans["cerysId"] = jnl._id;
+    trans["value"] = jnl.journalValue;
+    trans["transactionDate"] = jnl.journalDate;
+    trans["clientNominalCode"] = jnl.clientNominalCode;
+    trans["transactionType"] = activeJournal.journalType;
+    trans["clientTB"] = activeJournal.clientTB;
+    trans["journal"] = activeJournal.journal;
     transactions.push(trans);
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
