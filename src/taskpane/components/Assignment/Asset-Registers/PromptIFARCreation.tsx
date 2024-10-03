@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { createIFAR, createRelTransIFA } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
+import { processTransBatch } from "../../../utils.ts/transactions/transactions";
 
 interface promptIFARCreationprops {
   updateSession: (update) => void;
@@ -36,13 +37,12 @@ const PromptIFARCreation: React.FC<promptIFARCreationprops> = ({
   };
 
   const handleAbort = (view) => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     handleView(view);
   };
 
-  const handleSubmit = () => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-    createIFAR(session);
+  const handleSubmit = async () => {
+    await createIFAR(session);
+    await processTransBatch(session, handleView);
   };
 
   return (

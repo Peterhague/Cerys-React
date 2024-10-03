@@ -1,3 +1,5 @@
+export const getChartUrl = "http://localhost:4000/api/chart";
+
 export const cerysObjectUrl = "http://localhost:4000/api/get-cerys-object";
 
 export const cerysCodeUrl = "http://localhost:4000/api/get-cerys-code";

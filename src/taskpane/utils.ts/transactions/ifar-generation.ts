@@ -87,6 +87,9 @@ export async function createIFATransSumm(session, relevantTrans) {
           session["IFATransactions"].push(i);
         }
       });
+      session.activeJournal.clientTB = false;
+      session.activeJournal.journal = false;
+      session.activeJournal.journalType = "auto-journal";
       session["IFATransactions"].forEach((tran) => {
         const transVals = [];
         if (tran.transactionDate) {
@@ -217,7 +220,6 @@ export function calculateAmortChg(session, tran) {
   const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod) * 100);
   tran.amortChg = charge;
   tran.assetSubCatCodes.push(11);
-  console.log(tran);
   const subTran = {
     assetSubCatCode: 11,
     assetSubCategory: "Amort chg",
@@ -226,7 +228,43 @@ export function calculateAmortChg(session, tran) {
     value: charge,
   };
   tran.subTransactions.push(subTran);
+  const jnls = buildAutoAmortJnls(session, tran);
+  session.activeJournal.journals.push(jnls.debit);
+  session.activeJournal.netValue += jnls["debit"]["journalValue"];
+  session.activeJournal.journals.push(jnls.credit);
+  session.activeJournal.netValue += jnls["credit"]["journalValue"];
 }
+
+export const buildAutoAmortJnls = (session, tran) => {
+  const catNo = tran.assetCategoryNo;
+  const jnls = setAutoAmortNominals(catNo);
+  session.chart.forEach((nom) => {
+    if (nom.code === jnls.debit) jnls.debit = nom;
+    if (nom.code === jnls.credit) jnls.credit = nom;
+  });
+  jnls.debit["journalValue"] = tran.amortChg;
+  jnls.credit["journalValue"] = tran.amortChg * -1;
+  jnls.debit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.credit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.debit["narrative"] = "Amortisation charged automatically";
+  jnls.credit["narrative"] = "Amortisation charged automatically";
+  return jnls;
+};
+
+export const setAutoAmortNominals = (catNo) => {
+  switch (catNo) {
+    case 1:
+      return { debit: 3891, credit: 5032 };
+    case 2:
+      return { debit: 3892, credit: 5052 };
+    case 3:
+      return { debit: 3893, credit: 5072 };
+    case 4:
+      return { debit: 3894, credit: 5092 };
+    default:
+      return { debit: 3890, credit: 5012 };
+  }
+};
 
 export async function captureIFARSummChange(context, e, transToPost, ws) {
   const eRowNumber = parseInt(e.address.substr(1));

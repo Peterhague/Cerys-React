@@ -8,6 +8,7 @@ import { addBsClickListener, addPlClickListener, addTbClickListener } from "../w
 
 export const processTransBatch = async (session, handleView) => {
   const activeJournal = session["activeJournal"];
+  console.log(activeJournal);
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
     const newDate = session.activeAssignment.reportingPeriod.reportingDateConverted.split("/");
@@ -41,6 +42,7 @@ export const processTransBatch = async (session, handleView) => {
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
   postTransactionsMem(session, transactions);
   postTransactionsDb(transactions, transDtls);
+  session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
   await postTbToWbook(session, tbArray);
   await wsPLAccount(session);
@@ -76,7 +78,6 @@ export const checkAssetRegStatus = (session, handleView) => {
     handleView("promptIPRCreation");
   } else {
     handleView(session["nextView"]);
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   }
   session["nextView"] = "";
 };

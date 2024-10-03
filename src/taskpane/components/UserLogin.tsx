@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
+import { getChartUrl } from "../fetching/apiEndpoints";
 
 interface userLoginProps {
   updateSession: (update) => void;
@@ -22,6 +23,9 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
   };
 
   const processUser = async (userAndCustomerFromDb) => {
+    const chartDB = await fetch(getChartUrl);
+    const chart = await chartDB.json();
+    session["chart"] = chart;
     const userAndCustomerObject = await userAndCustomerFromDb.json();
     session["user"] = userAndCustomerObject.user;
     session["customer"] = userAndCustomerObject.customer;
