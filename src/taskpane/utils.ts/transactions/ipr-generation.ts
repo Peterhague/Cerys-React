@@ -1,14 +1,17 @@
 import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { colNumToLetter, updateNomCode } from "../helperFunctions";
+import { updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIP(session) {
   const relevantTrans = [];
   session.activeAssignment.transactions.forEach((tran) => {
-    if (tran.cerysCategory === "Investment property") {
+    if (
+      tran.cerysCategory === "Investment property" &&
+      (tran.assetCodeType === "iPCostAddns" || tran.assetCodeType === "iPCostBF")
+    ) {
       relevantTrans.push(tran);
     }
   });
@@ -19,13 +22,6 @@ export async function createIPTransSumm(session, relevantTrans) {
   try {
     await Excel.run(async (context) => {
       const ws = addWorksheet(context, "IP Transactions");
-      //let activeClient;
-      // this should run when session.activeAssignment is defined
-      //session.customer.clients.forEach((client) => {
-      //  if (client._id === session.activeAssignment.clientId) {
-      //    activeClient = client;
-      //  }
-      //});
       const bodyContent = [];
       session["IPTransactions"] = [];
       relevantTrans.forEach((i) => {

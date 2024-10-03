@@ -1,14 +1,17 @@
 import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { updateNomCode } from "../helperFunctions";
+import { calculateDiffInDays, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIFA(session) {
   const relevantTrans = [];
   session.activeAssignment.transactions.forEach((tran) => {
-    if (tran.cerysCategory === "Intangible assets") {
+    if (
+      tran.cerysCategory === "Intangible assets" &&
+      (tran.assetCodeType === "iFACostAddns" || tran.assetCodeType === "iFACostBF")
+    ) {
       relevantTrans.push(tran);
     }
   });
@@ -29,36 +32,58 @@ export async function createIFATransSumm(session, relevantTrans) {
       session["IFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
-          const trans = {};
+          let trans = {};
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
-              trans["cerysCategory"] = i.cerysCategory;
-              trans["assetCategory"] = i.assetCategory;
-              trans["assetCategoryNo"] = i.assetCategoryNo;
-              trans["assetSubCategory"] = i.assetSubCategory;
-              trans["assetSubCatCode"] = i.assetSubCatCode;
-              trans["regColNameOne"] = i.regColNameOne;
-              trans["regColNameTwo"] = i.regColNameTwo;
-              trans["cerysName"] = i.cerysName;
-              trans["cerysCode"] = i.cerysCode;
-              trans["cerysShortName"] = i.cerysShortName;
-              trans["clientAdjustment"] = i.clientAdjustment;
-              trans["clientTB"] = i.clientTB;
-              trans["clientNominalCode"] = i.clientNominalCode;
-              trans["narrative"] = i.narrative;
-              trans["transactionType"] = i.transactionType;
-              trans["transactionDateClt"] = tran.date;
-              trans["clientNominalCode"] = tran.code;
-              trans["clientNominalName"] = tran.name;
+              //trans["cerysCategory"] = i.cerysCategory; // SAME
+              //trans["assetCategory"] = i.assetCategory; // SAME
+              //trans["assetCategoryNo"] = i.assetCategoryNo;  // SAME
+              //trans["assetSubCategory"] = i.assetSubCategory; // SAME
+              //trans["assetSubCatCode"] = i.assetSubCatCode; // SAME
+              //trans["regColNameOne"] = i.regColNameOne; // SAME
+              //trans["regColNameTwo"] = i.regColNameTwo; // SAME
+              //trans["cerysName"] = i.cerysName; // SAME
+              //trans["cerysCode"] = i.cerysCode; // SAME
+              //trans["cerysShortName"] = i.cerysShortName; // SAME
+              //trans["clientAdjustment"] = i.clientAdjustment; // SAME
+              //trans["clientTB"] = i.clientTB; // SAME
+              //trans["clientNominalCode"] = i.clientNominalCode; // SAME
+              //trans["narrative"] = i.narrative; // SAME
+              //trans["transactionType"] = i.transactionType; // SAME
+              trans = i;
+              trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+              trans["subTransactions"] = [
+                {
+                  assetSubCategory: i.assetSubCategory,
+                  assetSubCatCode: i.assetSubCatCode,
+                  regColNameOne: i.regColNameOne,
+                  regColNameTwo: i.regColNameTwo,
+                  value: tran.value,
+                },
+              ];
+              trans["transactionDateClt"] = tran.date; // DIFFERENT
+              trans["clientNominalCode"] = tran.code; // DIFFERENT
+              trans["clientNominalName"] = tran.name; // DIFFERENT
               trans["assetNarrative"] = tran.detail;
               trans["value"] = tran.value;
               trans["rowNumber"] = session["IFATransactions"].length + 3;
             }
           });
+          console.log(trans);
           session["IFATransactions"].push(trans);
         } else {
           i.rowNumber = session["IFATransactions"].length + 3;
           i.assetNarrative = i.narrative;
+          i.assetSubCatCodes = [i.assetSubCatCode];
+          i["subTransactions"] = [
+            {
+              assetSubCategory: i.assetSubCategory,
+              assetSubCatCode: i.assetSubCatCode,
+              regColNameOne: i.regColNameOne,
+              regColNameTwo: i.regColNameTwo,
+              value: i.value,
+            },
+          ];
           session["IFATransactions"].push(i);
         }
       });
@@ -108,31 +133,69 @@ export async function createIFATransSumm(session, relevantTrans) {
         if (tran.cerysName[0] === "G") {
           transVals.push(activeClient.amortBasisGwill);
           transVals.push(activeClient.amortRateGwill);
+          tran.amortBasis = activeClient.amortBasisGwill;
+          tran.amortRate = activeClient.amortRateGwill;
         } else if (tran.cerysName[0] === "P") {
           transVals.push(activeClient.amortBasisPatsLics);
           transVals.push(activeClient.amortRatePatsLics);
+          tran.amortBasis = activeClient.amortBasisPatsLics;
+          tran.amortRate = activeClient.amortRatePatsLics;
         } else if (tran.cerysName[0] === "D") {
           transVals.push(activeClient.amortBasisDevCosts);
           transVals.push(activeClient.amortRateDevCosts);
+          tran.amortBasis = activeClient.amortBasisDevCosts;
+          tran.amortRate = activeClient.amortRateDevCosts;
         } else if (tran.cerysName[0] === "C") {
           transVals.push(activeClient.amortBasisCompSware);
           transVals.push(activeClient.amortRateCompSware);
+          tran.amortBasis = activeClient.amortBasisCompSware;
+          tran.amortRate = activeClient.amortRateCompSware;
         }
+        calculateAmortChg(session, tran);
+        transVals.push(tran.amortChg / 100);
         bodyContent.push(transVals);
       });
       let bodyRange;
-      const headerRange = ws.getRange("A1:K2");
+      const headerRange = ws.getRange("A1:L2");
       headerRange.values = [
-        ["CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "AMORT", "AMORT"],
-        ["DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)", "BASIS", "RATE"],
+        [
+          "CERYS",
+          "CERYS",
+          "POSTING",
+          "CERYS",
+          "CERYS",
+          "CLIENT",
+          "CLIENT",
+          "CLIENT",
+          "DEBIT/",
+          "AMORT",
+          "AMORT",
+          "AMORT",
+        ],
+        [
+          "DATE",
+          "NARRATIVE",
+          "SOURCE",
+          "CODE",
+          "NOMINAL",
+          "NC",
+          "NOMINAL",
+          "NARRATIVE",
+          "(CREDIT)",
+          "BASIS",
+          "RATE",
+          "CHARGE",
+        ],
       ];
-      bodyRange = ws.getRange(`A3:K${bodyContent.length + 2}`);
+      bodyRange = ws.getRange(`A3:L${bodyContent.length + 2}`);
       headerRange.format.font.bold = true;
       bodyRange.values = bodyContent;
       const rangeA = ws.getRange("A:A");
       rangeA.numberFormat = "dd/mm/yyyy";
       const rangeI = ws.getRange("I:I");
       rangeI.numberFormat = "#,##0.00;(#,##0.00);-";
+      const rangeL = ws.getRange("L:L");
+      rangeL.numberFormat = "#,##0.00;(#,##0.00);-";
       const rangeAK = ws.getRange("A:K");
       rangeAK.format.autofitColumns();
       const rangeD = ws.getRange(`D3:D${bodyContent.length + 2}`);
@@ -145,6 +208,24 @@ export async function createIFATransSumm(session, relevantTrans) {
   } catch (e) {
     console.error(e);
   }
+}
+
+export function calculateAmortChg(session, tran) {
+  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
+  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
+  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod) * 100);
+  tran.amortChg = charge;
+  tran.assetSubCatCodes.push(11);
+  console.log(tran);
+  const subTran = {
+    assetSubCatCode: 11,
+    assetSubCategory: "Amort chg",
+    regColNameOne: "Amort",
+    regColNameTwo: "Charge",
+    value: charge,
+  };
+  tran.subTransactions.push(subTran);
 }
 
 export async function captureIFARSummChange(context, e, transToPost, ws) {
@@ -190,8 +271,11 @@ export function updateAmortRate(e, transToPost, eRowNumber) {
 export async function createIFAR(session) {
   try {
     await Excel.run(async (context) => {
-      await postIFAtoMem(session);
-      postIFAtoDB(session);
+      //await postIFAtoMem(session);
+      const { customer, assignment } = await postIFAtoDB(session);
+      session["customer"] = customer;
+      session["activeAssignment"] = assignment;
+      console.log(session);
       createIFARWs(context, session);
     });
   } catch (e) {
@@ -199,42 +283,43 @@ export async function createIFAR(session) {
   }
 }
 
-const postIFAtoMem = async (session) => {
-  const intAssets = [];
-  session["IFATransactions"].forEach((asset) => {
-    const intAss = {
-      narrative: asset.narrative,
-      assetNarrative: asset.assetNarrative,
-      cerysCategory: asset.cerysCategory,
-      cost: asset.value,
-      transDateUser: asset.transactionDate,
-      transDateClt: asset.transactionDateClt,
-    };
-    intAssets.push(intAss);
-  });
-  updateIFAMem(session, intAssets);
-};
+//const postIFAtoMem = async (session) => {
+//  const intAssets = [];
+//  session["IFATransactions"].forEach((asset) => {
+//    const intAss = {
+//      narrative: asset.narrative,
+//      assetNarrative: asset.assetNarrative,
+//      cerysCategory: asset.cerysCategory,
+//      cost: asset.value,
+//      transDateUser: asset.transactionDate,
+//      transDateClt: asset.transactionDateClt,
+//    };
+//    intAssets.push(intAss);
+//  });
+//  updateIFAMem(session, intAssets);
+//};
 
-const updateIFAMem = (session, intAssets) => {
-  session["activeAssignment"].IFAR.push(...intAssets);
-  session["activeAssignment"].IFARegisterCreated = true;
-  session["customer"]["assignments"].forEach((ass) => {
-    if (ass._id === session["activeAssignment"]._id) {
-      ass.IFAR.push(...intAssets);
-      ass.IFARegistered = true;
-    }
-  });
-};
+//const updateIFAMem = (session, intAssets) => {
+//  session["activeAssignment"].IFAR.push(...intAssets);
+//  session["activeAssignment"].IFARegisterCreated = true;
+//  session["customer"]["assignments"].forEach((ass) => {
+//    if (ass._id === session["activeAssignment"]._id) {
+//      ass.IFAR.push(...intAssets);
+//      ass.IFARegistered = true;
+//    }
+//  });
+//};
 
 export async function postIFAtoDB(session) {
   const options = fetchOptionsIFA(session);
   const updatedCustAndAssDb = await fetch(postIFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
-  console.log(updatedCustAndAss);
+  return updatedCustAndAss;
 }
 
 export async function createIFARWs(context, session) {
   const transToPost = session["IFATransactions"];
+  console.log(transToPost);
   const activeCatsNames = [];
   const IFAActiveCats = [];
   transToPost.forEach((i) => {

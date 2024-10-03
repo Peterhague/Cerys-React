@@ -3,7 +3,7 @@ export function worksheetHeader(session, wsName) {
   const headerValues = [];
   headerValues.push(["Client name", activeAssignment.clientName]);
   headerValues.push(["Client code", activeAssignment.clientCode]);
-  headerValues.push(["Period end", activeAssignment.reportingDateConverted]);
+  headerValues.push(["Period end", activeAssignment.reportingPeriod.reportingDateConverted]);
   headerValues.push(["Prepared by", `${activeAssignment.senior.firstName} ${activeAssignment.senior.lastName}`]);
   headerValues.push(["Reviewed by", `${activeAssignment.manager.firstName} ${activeAssignment.manager.lastName}`]);
   headerValues.push(["", ""]);

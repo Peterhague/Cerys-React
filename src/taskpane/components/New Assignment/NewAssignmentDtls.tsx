@@ -19,11 +19,11 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
   const [clientObject, setClientObject] = useState({});
-  const [assType, setAssType] = useState("");
-  const [senior, setSenior] = useState("");
-  const [manager, setManager] = useState("");
-  const [rI, setRI] = useState("");
-  const [software, setSoftware] = useState("");
+  const [assignmentType, setAssignmentType] = useState("");
+  const [_senior, set_Senior] = useState("");
+  const [_manager, set_Manager] = useState("");
+  const [_responsibleIndividual, set_ResponsibleIndividual] = useState("");
+  const [clientSoftware, setClientSoftware] = useState("");
   const [reportingDate, setReportingDate] = useState("");
   const [periodStartConverted, setPeriodStartConverted] = useState("");
   const [periodStart, setPeriodStart] = useState("");
@@ -41,10 +41,12 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
     });
     console.log(clientObj);
     setClientObject(clientObj);
-    clientObj["_senior"] ? setSenior(clientObj["_senior"]) : setSenior("");
-    clientObj["_manager"] ? setManager(clientObj["_manager"]) : setManager("");
-    clientObj["_responsibleIndividual"] ? setRI(clientObj["_responsibleIndividual"]) : setRI("");
-    clientObj["clientSoftware"] ? setSoftware(clientObj["clientSoftware"]) : setSoftware("");
+    clientObj["_senior"] ? set_Senior(clientObj["_senior"]) : set_Senior("");
+    clientObj["_manager"] ? set_Manager(clientObj["_manager"]) : set_Manager("");
+    clientObj["_responsibleIndividual"]
+      ? set_ResponsibleIndividual(clientObj["_responsibleIndividual"])
+      : set_ResponsibleIndividual("");
+    clientObj["clientSoftware"] ? setClientSoftware(clientObj["clientSoftware"]) : setClientSoftware("");
     const dateEst = calculateDateEst(clientObj);
     console.log(dateEst);
     clientObj["accRefDate"] ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
@@ -103,12 +105,14 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   const handleSubmit = async (e) => {
     e.preventDefault();
     const prelimAssignment = {
-      clientObject,
-      assType,
-      senior,
-      manager,
-      rI,
-      software,
+      clientId: clientObject["_id"],
+      clientCode: clientObject["clientCode"],
+      clientName: clientObject["clientName"],
+      assignmentType,
+      _senior,
+      _manager,
+      _responsibleIndividual,
+      clientSoftware,
       reportingDate,
       periodStart,
       transactionsPosted: false,
@@ -132,12 +136,12 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   };
 
   const populateStaffObjs = (prelimAssignment) => {
-    const seniorObj = populateUser(session, prelimAssignment.senior);
+    const seniorObj = populateUser(session, prelimAssignment._senior);
     prelimAssignment.senior = seniorObj;
-    const managerObj = populateUser(session, prelimAssignment.manager);
+    const managerObj = populateUser(session, prelimAssignment._manager);
     prelimAssignment.manager = managerObj;
-    const rIObj = populateUser(session, prelimAssignment.rI);
-    prelimAssignment.rI = rIObj;
+    const rIObj = populateUser(session, prelimAssignment._responsibleIndividual);
+    prelimAssignment.responsibleIndividual = rIObj;
   };
 
   return (
@@ -169,10 +173,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
                 name="assType"
                 id="assType"
                 className="form-control"
-                value={assType}
-                onChange={(e) => setAssType(e.target.value)}
+                value={assignmentType}
+                onChange={(e) => setAssignmentType(e.target.value)}
               >
-                {!assType && <option>Please select</option>}
+                {!assignmentType && <option>Please select</option>}
                 <option value="Annual accounts">Annual accounts</option>
                 <option value="Management accounts">Management accounts</option>
               </select>
@@ -184,10 +188,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
                   name="senior"
                   id="senior"
                   className="form-control"
-                  value={senior}
-                  onChange={(e) => setSenior(e.target.value)}
+                  value={_senior}
+                  onChange={(e) => set_Senior(e.target.value)}
                 >
-                  {!senior && <option>Please select</option>}
+                  {!_senior && <option>Please select</option>}
                   {session["customer"]["users"].map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
@@ -203,10 +207,10 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
                   name="manager"
                   id="manager"
                   className="form-control"
-                  value={manager}
-                  onChange={(e) => setManager(e.target.value)}
+                  value={_manager}
+                  onChange={(e) => set_Manager(e.target.value)}
                 >
-                  {!manager && <option>Please select</option>}
+                  {!_manager && <option>Please select</option>}
                   {session["customer"]["users"].map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
@@ -218,8 +222,14 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
             {session["customer"]["users"].length > 0 && (
               <div>
                 <label htmlFor="RI">Partner</label>
-                <select name="RI" id="RI" className="form-control" value={rI} onChange={(e) => setRI(e.target.value)}>
-                  {!rI && <option>Please select</option>}
+                <select
+                  name="RI"
+                  id="RI"
+                  className="form-control"
+                  value={_responsibleIndividual}
+                  onChange={(e) => set_ResponsibleIndividual(e.target.value)}
+                >
+                  {!_responsibleIndividual && <option>Please select</option>}
                   {session["customer"]["users"].map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
@@ -229,15 +239,15 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
               </div>
             )}
             <div>
-              <label htmlFor="software">Client software</label>
+              <label htmlFor="clientSoftware">Client software</label>
               <select
-                name="software"
-                id="software"
+                name="clientSoftware"
+                id="clientSoftware"
                 className="form-control"
-                value={software}
-                onChange={(e) => setSoftware(e.target.value)}
+                value={clientSoftware}
+                onChange={(e) => setClientSoftware(e.target.value)}
               >
-                {!software && <option>Please select</option>}
+                {!clientSoftware && <option>Please select</option>}
                 <option value="Sage Line 50">Sage Line 50</option>
                 <option value="Xero">Xero</option>
                 <option value="Quickbooks">Quickbooks</option>

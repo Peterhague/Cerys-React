@@ -1,14 +1,17 @@
 import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { colNumToLetter, updateNomCode } from "../helperFunctions";
+import { updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransTFA(session) {
   const relevantTrans = [];
   session.activeAssignment.transactions.forEach((tran) => {
-    if (tran.cerysCategory === "Tangible assets") {
+    if (
+      tran.cerysCategory === "Tangible assets" &&
+      (tran.assetCodeType === "tFACostAddns" || tran.assetCodeType === "tFACostBF")
+    ) {
       relevantTrans.push(tran);
     }
   });

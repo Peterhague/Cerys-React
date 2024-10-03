@@ -10,7 +10,7 @@ export const processTransBatch = async (session, handleView) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
-    const newDate = session.activeAssignment.reportingDateConverted.split("/");
+    const newDate = session.activeAssignment.reportingPeriod.reportingDateConverted.split("/");
     const jnlDate = `${newDate[2]}-${newDate[1]}-${newDate[0]}`;
     const trans = {};
     if (jnl.narrative === "") jnl.narrative = "No narrative";
@@ -22,6 +22,7 @@ export const processTransBatch = async (session, handleView) => {
     trans["assetCategory"] = jnl.assetCategory;
     trans["assetSubCategory"] = jnl.assetSubCategory;
     trans["assetSubCatCode"] = jnl.assetSubCatCode;
+    trans["assetCodeType"] = jnl.assetCodeType;
     trans["regColNameOne"] = jnl.regColNameOne;
     trans["regColNameTwo"] = jnl.regColNameTwo;
     trans["assetCategoryNo"] = jnl.assetCategoryNo;
@@ -51,19 +52,26 @@ export const processTransBatch = async (session, handleView) => {
 };
 
 export const checkAssetRegStatus = (session, handleView) => {
+  console.log(session);
   if (
     !session["activeAssignment"]["IFARegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Intangible assets")
+    session["activeAssignment"]["activeCategories"].includes("Intangible assets") &&
+    (session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostAddns") ||
+      session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostBF"))
   ) {
     handleView("promptIFARCreation");
   } else if (
     !session["activeAssignment"]["TFARegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Tangible assets")
+    session["activeAssignment"]["activeCategories"].includes("Tangible assets") &&
+    (session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostAddns") ||
+      session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostBF"))
   ) {
     handleView("promptTFARCreation");
   } else if (
     !session["activeAssignment"]["IPRegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Investment property")
+    session["activeAssignment"]["activeCategories"].includes("Investment property") &&
+    (session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostAddns") ||
+      session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostBF"))
   ) {
     handleView("promptIPRCreation");
   } else {
@@ -77,7 +85,6 @@ const postTransactionsDb = async (transactions, transDtls) => {
   const options = fetchOptionsTransBatch(transactions, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
-  console.log(objs);
 };
 
 const postTransactionsMem = (session, transactions) => {
@@ -89,9 +96,9 @@ const postTransactionsMem = (session, transactions) => {
   const activeCats = setActiveCategories(tb);
   actAss.activeCategoriesDetails = activeCats.arrCats;
   actAss.activeCategories = activeCats.categories;
+  actAss.activeAssetCodeTypes = setActiveAssetCodeTypes(tb);
   if (session.activeJournal.journalType === "clientTB") actAss.TBEntered = true;
   session["activeAssignment"] = actAss;
-  console.log(session);
 };
 
 function tbCreator(transactions) {
@@ -116,6 +123,7 @@ function populateTransactions(transactions, tbCodes, tb) {
         obj["name"] = tran.cerysName;
         obj["value"] += tran.value;
         obj["category"] = tran.cerysCategory;
+        obj["assetCodeType"] = tran.assetCodeType;
       }
     });
     tb.push(obj);
@@ -144,4 +152,14 @@ function setActiveCategories(tb) {
     arrCats.push(obj);
   });
   return { arrCats, categories };
+}
+
+function setActiveAssetCodeTypes(tb) {
+  const assetCodeTypes = [];
+  tb.forEach((line) => {
+    if (!assetCodeTypes.includes(line.assetCodeType)) {
+      line.assetCodeType && assetCodeTypes.push(line.assetCodeType);
+    }
+  });
+  return assetCodeTypes;
 }

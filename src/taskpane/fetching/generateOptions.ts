@@ -163,26 +163,6 @@ export function fetchOptionsAddClient(client, customer) {
   };
 }
 
-export function fetchOptionsAddClientPrelim(newClientPrelim, customer) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      clientCode: newClientPrelim.details.clientCode,
-      clientName: newClientPrelim.details.clientName,
-      reportingDate: newClientPrelim.details.reportingPeriod,
-      companyNumber: newClientPrelim.details.companyNumber,
-      customerId: customer,
-      seniorResponsible: newClientPrelim.details.senior,
-      managedBy: newClientPrelim.details.manager,
-      ownedBy: newClientPrelim.details.rI,
-      shareClasses: newClientPrelim.shareClasses,
-    }),
-  };
-}
-
 export function fetchOptionsUpdateClientPrelim(update, customer) {
   return {
     method: "POST",
@@ -342,49 +322,15 @@ export function fetchOptionsGetCustomerClients(customer) {
   };
 }
 
-//export function fetchOptionsNewAssignment(formData, workbookId, session, clientId) {
-//  return {
-//    method: "POST",
-//    headers: {
-//      "Content-Type": "application/json",
-//    },
-//    body: JSON.stringify({
-//      clientCode: formData.clientCode,
-//      clientName: formData.clientName,
-//      reportingDate: formData.reportingDate,
-//      reportingDateConverted: formData.reportingDateConverted,
-//      assignmentType: formData.assignmentType,
-//      _senior: formData._senior.userId,
-//      _manager: formData._manager.userId,
-//      _responsibleIndividual: formData._responsibleIndividual.userId,
-//      clientSoftware: formData.clientSoftware,
-//      workbookId: workbookId,
-//      customerId: session.customerId,
-//      clientId,
-//    }),
-//  };
-//}
-
 export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
-  console.log(prelimAssignment);
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      clientCode: prelimAssignment.clientObject.clientCode,
-      clientName: prelimAssignment.clientObject.clientName,
-      reportingDate: prelimAssignment.reportingDate,
-      periodStart: prelimAssignment.periodStart,
-      assignmentType: prelimAssignment.assType,
-      _senior: prelimAssignment.senior,
-      _manager: prelimAssignment.manager,
-      _responsibleIndividual: prelimAssignment.rI,
-      clientSoftware: prelimAssignment.software,
-      transactionsPosted: prelimAssignment.transactionsPosted,
-      customerId: customerId,
-      clientId: prelimAssignment.clientObject._id,
+      prelimAssignment,
+      customerId,
     }),
   };
 }

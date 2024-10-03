@@ -45,6 +45,8 @@ export const calculateExcelDate = (inputDate) => {
 };
 
 export const calculateDiffInDays = (inputDate1, inputDate2) => {
+  console.log(inputDate1);
+  console.log(inputDate2);
   const date1 = new Date(inputDate1);
   const date2 = new Date(inputDate2);
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
