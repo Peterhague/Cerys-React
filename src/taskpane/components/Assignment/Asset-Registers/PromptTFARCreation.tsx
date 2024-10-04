@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { createRelTransTFA, createTFAR } from "../../../utils.ts/transactions/tfar-generation";
+import { processTransBatch } from "../../../utils.ts/transactions/transactions";
 
 interface promptTFARCreationprops {
   updateSession: (update) => void;
@@ -36,13 +37,13 @@ const PromptTFARCreation: React.FC<promptTFARCreationprops> = ({
   };
 
   const handleAbort = (view) => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     handleView(view);
   };
 
-  const handleSubmit = () => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-    createTFAR(session);
+  const handleSubmit = async () => {
+    await createTFAR(session);
+    session["TFATransactions"] = [];
+    await processTransBatch(session, handleView);
   };
 
   return (

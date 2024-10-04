@@ -42,6 +42,7 @@ const PromptIFARCreation: React.FC<promptIFARCreationprops> = ({
 
   const handleSubmit = async () => {
     await createIFAR(session);
+    session["IFATransactions"] = [];
     await processTransBatch(session, handleView);
   };
 

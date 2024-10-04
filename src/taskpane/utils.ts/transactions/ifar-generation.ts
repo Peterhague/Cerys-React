@@ -32,7 +32,7 @@ export async function createIFATransSumm(session, relevantTrans) {
       session["IFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
-          let trans = {};
+          let trans;
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
               //trans["cerysCategory"] = i.cerysCategory; // SAME
@@ -61,9 +61,9 @@ export async function createIFATransSumm(session, relevantTrans) {
                   value: tran.value,
                 },
               ];
-              trans["transactionDateClt"] = tran.date; // DIFFERENT
-              trans["clientNominalCode"] = tran.code; // DIFFERENT
-              trans["clientNominalName"] = tran.name; // DIFFERENT
+              trans["transactionDateClt"] = tran.date;
+              trans["clientNominalCode"] = tran.code;
+              trans["clientNominalName"] = tran.name;
               trans["assetNarrative"] = tran.detail;
               trans["value"] = tran.value;
               trans["rowNumber"] = session["IFATransactions"].length + 3;
@@ -199,7 +199,7 @@ export async function createIFATransSumm(session, relevantTrans) {
       rangeI.numberFormat = "#,##0.00;(#,##0.00);-";
       const rangeL = ws.getRange("L:L");
       rangeL.numberFormat = "#,##0.00;(#,##0.00);-";
-      const rangeAK = ws.getRange("A:K");
+      const rangeAK = ws.getRange("A:L");
       rangeAK.format.autofitColumns();
       const rangeD = ws.getRange(`D3:D${bodyContent.length + 2}`);
       const rangeJK = ws.getRange(`J3:K${bodyContent.length + 2}`);
@@ -217,7 +217,7 @@ export function calculateAmortChg(session, tran) {
   const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
   const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
-  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod) * 100);
+  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod));
   tran.amortChg = charge;
   tran.assetSubCatCodes.push(11);
   const subTran = {

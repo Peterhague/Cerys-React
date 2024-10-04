@@ -1,7 +1,7 @@
 import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { updateNomCode } from "../helperFunctions";
+import { calculateDiffInDays, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
@@ -23,7 +23,6 @@ export async function createTFATransSumm(session, relevantTrans) {
     await Excel.run(async (context) => {
       const ws = addWorksheet(context, "TFA Transactions");
       let activeClient;
-      // this should run when session.activeAssignment is defined
       session.customer.clients.forEach((client) => {
         if (client._id === session.activeAssignment.clientId) {
           activeClient = client;
@@ -33,24 +32,35 @@ export async function createTFATransSumm(session, relevantTrans) {
       session["TFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
-          const trans = {};
+          let trans;
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
-              trans["cerysCategory"] = i.cerysCategory;
-              trans["assetCategory"] = i.assetCategory;
-              trans["assetCategoryNo"] = i.assetCategoryNo;
-              trans["assetSubCategory"] = i.assetSubCategory;
-              trans["assetSubCatCode"] = i.assetSubCatCode;
-              trans["regColNameOne"] = i.regColNameOne;
-              trans["regColNameTwo"] = i.regColNameTwo;
-              trans["cerysName"] = i.cerysName;
-              trans["cerysCode"] = i.cerysCode;
-              trans["cerysShortName"] = i.cerysShortName;
-              trans["clientAdjustment"] = i.clientAdjustment;
-              trans["clientTB"] = i.clientTB;
-              trans["clientNominalCode"] = i.clientNominalCode;
-              trans["narrative"] = i.narrative;
-              trans["transactionType"] = i.transactionType;
+              //trans["cerysCategory"] = i.cerysCategory;
+              //trans["assetCategory"] = i.assetCategory;
+              //trans["assetCategoryNo"] = i.assetCategoryNo;
+              //trans["assetSubCategory"] = i.assetSubCategory;
+              //trans["assetSubCatCode"] = i.assetSubCatCode;
+              //trans["regColNameOne"] = i.regColNameOne;
+              //trans["regColNameTwo"] = i.regColNameTwo;
+              //trans["cerysName"] = i.cerysName;
+              //trans["cerysCode"] = i.cerysCode;
+              //trans["cerysShortName"] = i.cerysShortName;
+              //trans["clientAdjustment"] = i.clientAdjustment;
+              //trans["clientTB"] = i.clientTB;
+              //trans["clientNominalCode"] = i.clientNominalCode;
+              //trans["narrative"] = i.narrative;
+              //trans["transactionType"] = i.transactionType;
+              trans = i;
+              trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+              trans["subTransactions"] = [
+                {
+                  assetSubCategory: i.assetSubCategory,
+                  assetSubCatCode: i.assetSubCatCode,
+                  regColNameOne: i.regColNameOne,
+                  regColNameTwo: i.regColNameTwo,
+                  value: tran.value,
+                },
+              ];
               trans["value"] = i.value;
               trans["transactionDateClt"] = tran.date;
               trans["clientNominalCode"] = tran.code;
@@ -64,10 +74,22 @@ export async function createTFATransSumm(session, relevantTrans) {
         } else {
           i.rowNumber = session["TFATransactions"].length + 3;
           i.assetNarrative = i.narrative;
-          //i.userDate = //convert i.transactionDate here
+          i.assetSubCatCodes = [i.assetSubCatCode];
+          i["subTransactions"] = [
+            {
+              assetSubCategory: i.assetSubCategory,
+              assetSubCatCode: i.assetSubCatCode,
+              regColNameOne: i.regColNameOne,
+              regColNameTwo: i.regColNameTwo,
+              value: i.value,
+            },
+          ];
           session["TFATransactions"].push(i);
         }
       });
+      session.activeJournal.clientTB = false;
+      session.activeJournal.journal = false;
+      session.activeJournal.journalType = "auto-journal";
       session["TFATransactions"].forEach((tran) => {
         const transVals = [];
         if (tran.transactionDate) {
@@ -111,63 +133,83 @@ export async function createTFATransSumm(session, relevantTrans) {
           transVals.push("NA");
         }
         transVals.push(tran.value / 100);
-        if (tran.cerysName[0] === "F" && tran.cerysName[1] === "r") {
+        if (tran.assetCategoryNo === 1) {
           tran.depnBasis = activeClient.depnBasisFholdProp;
           tran.depnRate = activeClient.depnRateFholdProp;
           transVals.push(activeClient.depnBasisFholdProp);
           transVals.push(activeClient.depnRateFholdProp);
-        } else if (tran.cerysName[0] === "S") {
+        } else if (tran.assetCategoryNo === 2) {
           tran.depnBasis = activeClient.depnBasisShortLhold;
           tran.depnRate = activeClient.depnRateShortLhold;
           transVals.push(activeClient.depnBasisShortLhold);
           transVals.push(activeClient.depnRateShortLhold);
-        } else if (tran.cerysName[0] === "L") {
+        } else if (tran.assetCategoryNo === 3) {
           tran.depnBasis = activeClient.depnBasisLongLhold;
           tran.depnRate = activeClient.depnRateLongLhold;
           transVals.push(activeClient.depnBasisLongLhold);
           transVals.push(activeClient.depnRateLongLhold);
-        } else if (tran.cerysName[0] === "P") {
+        } else if (tran.assetCategoryNo === 4) {
+          tran.depnBasis = activeClient.depnBasisImprovements;
+          tran.depnRate = activeClient.depnRateImprovements;
+          transVals.push(activeClient.depnBasisImprovements);
+          transVals.push(activeClient.depnRateImprovements);
+        } else if (tran.assetCategoryNo === 5) {
           tran.depnBasis = activeClient.depnBasisPlantMachinery;
           tran.depnRate = activeClient.depnRatePlantMachinery;
           transVals.push(activeClient.depnBasisPlantMachinery);
           transVals.push(activeClient.depnRatePlantMachinery);
-        } else if (tran.cerysName[0] === "F" && tran.cerysName[1] === "i") {
+        } else if (tran.assetCategoryNo === 6) {
           tran.depnBasis = activeClient.depnBasisFixFittings;
           tran.depnRate = activeClient.depnRateFixFittings;
           transVals.push(activeClient.depnBasisFixFittings);
           transVals.push(activeClient.depnRateFixFittings);
-        } else if (tran.cerysName[0] === "M") {
+        } else if (tran.assetCategoryNo === 7) {
           tran.depnBasis = activeClient.depnBasisMotorVehicles;
           tran.depnRate = activeClient.depnRateMotorVehicles;
           transVals.push(activeClient.depnBasisMotorVehicles);
           transVals.push(activeClient.depnRateMotorVehicles);
-        } else if (tran.cerysName[0] === "C") {
+        } else if (tran.assetCategoryNo === 8) {
           tran.depnBasis = activeClient.depnBasisCompEquip;
           tran.depnRate = activeClient.depnRateCompEquip;
           transVals.push(activeClient.depnBasisCompEquip);
           transVals.push(activeClient.depnRateCompEquip);
-        } else if (tran.cerysName[0] === "O") {
+        } else if (tran.assetCategoryNo === 9) {
           tran.depnBasis = activeClient.depnBasisOfficeEquip;
           tran.depnRate = activeClient.depnRateOfficeEquip;
           transVals.push(activeClient.depnBasisOfficeEquip);
           transVals.push(activeClient.depnRateOfficeEquip);
         }
+        calculateDepnChg(session, tran);
+        transVals.push(tran.depnChg / 100);
         bodyContent.push(transVals);
       });
       let bodyRange;
-      const headerRange = ws.getRange("A1:K2");
+      const headerRange = ws.getRange("A1:L2");
       headerRange.values = [
-        ["CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "DEPN", "DEPN"],
-        ["DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)", "BASIS", "RATE"],
+        ["CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "DEPN", "DEPN", "DEPN"],
+        [
+          "DATE",
+          "NARRATIVE",
+          "SOURCE",
+          "CODE",
+          "NOMINAL",
+          "NC",
+          "NOMINAL",
+          "NARRATIVE",
+          "(CREDIT)",
+          "BASIS",
+          "RATE",
+          "CHARGE",
+        ],
       ];
-      bodyRange = ws.getRange(`A3:K${bodyContent.length + 2}`);
+      bodyRange = ws.getRange(`A3:L${bodyContent.length + 2}`);
       headerRange.format.font.bold = true;
       bodyRange.values = bodyContent;
       const rangeA = ws.getRange("A:A");
       rangeA.numberFormat = "dd/mm/yyyy";
       const rangeI = ws.getRange("I:I");
       rangeI.numberFormat = "#,##0.00;(#,##0.00);-";
-      const rangeAK = ws.getRange("A:K");
+      const rangeAK = ws.getRange("A:l");
       rangeAK.format.autofitColumns();
       const rangeD = ws.getRange(`D3:D${bodyContent.length + 2}`);
       const rangeJK = ws.getRange(`J3:K${bodyContent.length + 2}`);
@@ -180,6 +222,71 @@ export async function createTFATransSumm(session, relevantTrans) {
     console.error(e);
   }
 }
+
+export function calculateDepnChg(session, tran) {
+  console.log(tran);
+  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
+  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
+  const charge = Math.round(tran.value * (parseInt(tran.depnRate) / 100) * (daysHeld / daysInPeriod));
+  console.log(charge);
+  tran.depnChg = charge;
+  tran.assetSubCatCodes.push(11);
+  const subTran = {
+    assetSubCatCode: 11,
+    assetSubCategory: "Depn chg",
+    regColNameOne: "Depn",
+    regColNameTwo: "Charge",
+    value: charge,
+  };
+  tran.subTransactions.push(subTran);
+  const jnls = buildAutoDepnJnls(session, tran);
+  session.activeJournal.journals.push(jnls.debit);
+  session.activeJournal.netValue += jnls["debit"]["journalValue"];
+  session.activeJournal.journals.push(jnls.credit);
+  session.activeJournal.netValue += jnls["credit"]["journalValue"];
+}
+
+export const buildAutoDepnJnls = (session, tran) => {
+  const catNo = tran.assetCategoryNo;
+  const jnls = setAutoDepnNominals(catNo);
+  session.chart.forEach((nom) => {
+    if (nom.code === jnls.debit) jnls.debit = nom;
+    if (nom.code === jnls.credit) jnls.credit = nom;
+  });
+  jnls.debit["journalValue"] = tran.depnChg;
+  jnls.credit["journalValue"] = tran.depnChg * -1;
+  jnls.debit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.credit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.debit["narrative"] = "Depreciation charged automatically";
+  jnls.credit["narrative"] = "Depreciation charged automatically";
+  return jnls;
+};
+
+export const setAutoDepnNominals = (catNo) => {
+  switch (catNo) {
+    case 1:
+      return { debit: 3901, credit: 5132 };
+    case 2:
+      return { debit: 3902, credit: 5152 };
+    case 3:
+      return { debit: 3903, credit: 5172 };
+    case 4:
+      return { debit: 3904, credit: 5192 };
+    case 5:
+      return { debit: 3905, credit: 5212 };
+    case 6:
+      return { debit: 3906, credit: 5232 };
+    case 7:
+      return { debit: 3907, credit: 5252 };
+    case 8:
+      return { debit: 3908, credit: 5272 };
+    case 9:
+      return { debit: 3909, credit: 5292 };
+    default:
+      return undefined;
+  }
+};
 
 export async function captureTFARSummChange(context, e, transToPost, ws) {
   const eRowNumber = parseInt(e.address.substr(1));
@@ -236,8 +343,10 @@ export function updateDepnRate(e, transToPost, eRowNumber) {
 export async function createTFAR(session) {
   try {
     await Excel.run(async (context) => {
-      await postTFAtoMem(session);
-      postTFAtoDB(session);
+      //await postTFAtoMem(session);
+      const { customer, assignment } = await postTFAtoDB(session);
+      session["customer"] = customer;
+      session["activeAssignment"] = assignment;
       createTFARWs(context, session);
     });
   } catch (e) {
@@ -245,38 +354,39 @@ export async function createTFAR(session) {
   }
 }
 
-const postTFAtoMem = async (session) => {
-  const tAssets = [];
-  session["TFATransactions"].forEach((asset) => {
-    const tAss = {
-      narrative: asset.narrative,
-      assetNarrative: asset.assetNarrative,
-      cerysCategory: asset.cerysCategory,
-      cost: asset.value,
-      transDateUser: asset.transactionDate,
-      transDateClt: asset.transactionDateClt,
-    };
-    tAssets.push(tAss);
-  });
-  updateTFAMem(session, tAssets);
-};
+//const postTFAtoMem = async (session) => {
+//  const tAssets = [];
+//  session["TFATransactions"].forEach((asset) => {
+//    const tAss = {
+//      narrative: asset.narrative,
+//      assetNarrative: asset.assetNarrative,
+//      cerysCategory: asset.cerysCategory,
+//      cost: asset.value,
+//      transDateUser: asset.transactionDate,
+//      transDateClt: asset.transactionDateClt,
+//    };
+//    tAssets.push(tAss);
+//  });
+//  updateTFAMem(session, tAssets);
+//};
 
-const updateTFAMem = (session, tAssets) => {
-  session["activeAssignment"].TFAR.push(...tAssets);
-  session["activeAssignment"].TFARegisterCreated = true;
-  session["customer"]["assignments"].forEach((ass) => {
-    if (ass._id === session["activeAssignment"]._id) {
-      ass.IFAR.push(...tAssets);
-      ass.IFARegistered = true;
-    }
-  });
-};
+//const updateTFAMem = (session, tAssets) => {
+//  session["activeAssignment"].TFAR.push(...tAssets);
+//  session["activeAssignment"].TFARegisterCreated = true;
+//  session["customer"]["assignments"].forEach((ass) => {
+//    if (ass._id === session["activeAssignment"]._id) {
+//      ass.IFAR.push(...tAssets);
+//      ass.IFARegistered = true;
+//    }
+//  });
+//};
 
 export async function postTFAtoDB(session) {
   const options = fetchOptionsTFA(session);
   const updatedCustAndAssDb = await fetch(postTFA, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
   console.log(updatedCustAndAss);
+  return updatedCustAndAss;
 }
 
 export async function createTFARWs(context, session) {

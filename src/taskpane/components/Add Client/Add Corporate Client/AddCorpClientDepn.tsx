@@ -18,6 +18,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
   const [depnRateShortLhold, setDepnRateShortLhold] = useState("");
   const [depnBasisLongLhold, setDepnBasisLongLhold] = useState("");
   const [depnRateLongLhold, setDepnRateLongLhold] = useState("");
+  const [depnBasisImprovements, setDepnBasisImprovements] = useState("");
+  const [depnRateImprovements, setDepnRateImprovements] = useState("");
   const [depnBasisPlantMachinery, setDepnBasisPlantMachinery] = useState("");
   const [depnRatePlantMachinery, setDepnRatePlantMachinery] = useState("");
   const [depnBasisFixFittings, setDepnBasisFixFittings] = useState("");
@@ -39,6 +41,10 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
 
   const onDepnBasisLLHChange = (e) => {
     setDepnBasisLongLhold(e.target.value);
+  };
+
+  const onDepnBasisItoPChange = (e) => {
+    setDepnBasisImprovements(e.target.value);
   };
 
   const onDepnBasisPMChange = (e) => {
@@ -70,6 +76,8 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
       depnRateShortLhold,
       depnBasisLongLhold,
       depnRateLongLhold,
+      depnBasisImprovements,
+      depnRateImprovements,
       depnBasisPlantMachinery,
       depnRatePlantMachinery,
       depnBasisFixFittings,
@@ -201,6 +209,41 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({
                   className="form-control input-depn-rate"
                   value={depnRateLongLhold}
                   onChange={(e) => setDepnRateLongLhold(e.target.value)}
+                ></input>
+              </td>
+            </tr>
+            <tr>
+              <td>Property improvements</td>
+              <td>
+                <label htmlFor="calc-basis-improvements-SL">SL</label>
+                <input
+                  name="calcBasisImprovements"
+                  type="radio"
+                  id="calc-basis-improvements-SL"
+                  className="form-control"
+                  value="SL"
+                  onChange={onDepnBasisItoPChange}
+                ></input>
+              </td>
+              <td>
+                <label htmlFor="calc-basis-improvements-RB">RB</label>
+                <input
+                  name="calcBasisImprovements"
+                  type="radio"
+                  id="calc-basis-improvements-RB"
+                  className="form-control"
+                  value="RB"
+                  onChange={onDepnBasisItoPChange}
+                ></input>
+              </td>
+              <td>
+                <input
+                  name="depnRateImprovements"
+                  type="number"
+                  id="depn-rate-improvements"
+                  className="form-control input-depn-rate"
+                  value={depnRateImprovements}
+                  onChange={(e) => setDepnRateImprovements(e.target.value)}
                 ></input>
               </td>
             </tr>
