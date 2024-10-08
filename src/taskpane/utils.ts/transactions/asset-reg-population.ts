@@ -1,10 +1,7 @@
 import { colNumToLetter } from "../helperFunctions";
 
 export async function populateAssetRegWs(context, activeCats, transToPost, ws, regType) {
-  console.log(transToPost);
   const { activeSubCats, subCatNames } = populateActiveSubCats(transToPost);
-  console.log(activeSubCats);
-  console.log(subCatNames);
   const { regColIndex, registerColNames } = buildRegColNames(activeSubCats, regType);
   const { numberCols, numberColsAsLetter } = populateRegisterColsIndex(regColIndex, registerColNames.namesOne);
   transToPost.forEach((trans) => {

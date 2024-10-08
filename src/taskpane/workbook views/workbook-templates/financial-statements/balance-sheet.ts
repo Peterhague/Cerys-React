@@ -136,89 +136,13 @@ export async function wsBalanceSheet(session) {
         const arr = displayPLRes(session.activeAssignment);
         values.push(arr);
       }
-      //let plResPosted = 0;
-      //session.activeAssignment.tb.forEach((line) => {
-      //  let sCapMatched = false;
-      //  let sPremMatched = false;
-      //  let profit = true;
-      //  let pLReserve = false;
-      //  let capRedRes = false;
-      //  let otherRes = false;
-      //  let fVRes = false;
-      //  let otherRes2 = false;
-      //  let otherRes3 = false;
-      //  let otherRes4 = false;
-      //  let otherRes5 = false;
-      //  let minorityInt = false;
-      //  if (!sCapMatched && line.code > 8499 && line.code < 8800) {
-      //    const arr = displayShareCapital(session.activeAssignment);
-      //    sCapMatched = true;
-      //    values.push(arr);
-      //  }
-      //  if (!sPremMatched && line.code > 8799 && line.code < 9000) {
-      //    const arr = displaySharePremium(session.activeAssignment);
-      //    sPremMatched = true;
-      //    values.push(arr);
-      //  }
-      //  if (!pLReserve && line.code > 8999 && line.code < 9050) {
-      //    const arr = displayPLRes(session.activeAssignment);
-      //    pLReserve = true;
-      //    //profit = false;
-      //    values.push(arr);
-      //  }
-      //  if (!pLReserve && plResPosted === 0 && session.activeAssignment.profit !== 0) {
-      //    const arr = ["Profit & loss reserve", "", "", "", "", (session.activeAssignment.profit / 100).toString()];
-      //    values.push(arr);
-      //    plResPosted += 1;
-      //  }
-      //  if (!capRedRes && line.code > 9049 && line.code < 9100) {
-      //    const arr = displayCRR(session.activeAssignment);
-      //    capRedRes = true;
-      //    values.push(arr);
-      //  }
-      //  if (!otherRes && line.code > 9099 && line.code < 9150) {
-      //    const arr = displayOtherRes(session.activeAssignment);
-      //    otherRes = true;
-      //    values.push(arr);
-      //  }
-      //  if (!fVRes && line.code > 9149 && line.code < 9200) {
-      //    const arr = displayFVRes(session.activeAssignment);
-      //    fVRes = true;
-      //    values.push(arr);
-      //  }
-      //  if (!otherRes2 && line.code > 9199 && line.code < 9250) {
-      //    const arr = displayOtherRes2(session.activeAssignment);
-      //    otherRes2 = true;
-      //    values.push(arr);
-      //  }
-      //  if (!otherRes3 && line.code > 9249 && line.code < 9300) {
-      //    const arr = displayOtherRes3(session.activeAssignment);
-      //    otherRes3 = true;
-      //    values.push(arr);
-      //  }
-      //  if (!otherRes4 && line.code > 9299 && line.code < 9350) {
-      //    const arr = displayOtherRes4(session.activeAssignment);
-      //    otherRes4 = true;
-      //    values.push(arr);
-      //  }
-      //  if (!otherRes5 && line.code > 9349 && line.code < 9500) {
-      //    const arr = displayOtherRes5(session.activeAssignment);
-      //    otherRes5 = true;
-      //    values.push(arr);
-      //  }
-      //  if (!minorityInt && line.code > 9499) {
-      //    const arr = displayMinorityInt(session.activeAssignment);
-      //    minorityInt = true;
-      //    values.push(arr);
-      //  }
-      //});
       values.push(["", "", "", "", "", ""]);
       let equity = 0;
       session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
-        if (obj.category === "Capital & reserves") equity = obj.value / 100;
+        if (obj.cerysCategory === "Capital & reserves") equity = obj.value / 100;
       });
       session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
-        if (obj.category === "Profit & loss reserve") equity += obj.value / 100;
+        if (obj.cerysCategory === "Profit & loss reserve") equity += obj.value / 100;
       });
       values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
       const range = ws.getRange(`a9:f${values.length + 8}`);
@@ -363,7 +287,7 @@ function displayFixedAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Intangible assets")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Intangible assets") {
+      if (cat.cerysCategory === "Intangible assets") {
         value = cat.value;
       }
     });
@@ -374,7 +298,7 @@ function displayFixedAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Tangible assets")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Tangible assets") {
+      if (cat.cerysCategory === "Tangible assets") {
         value = cat.value;
       }
     });
@@ -385,7 +309,7 @@ function displayFixedAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Fixed asset investments")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Fixed asset investments") {
+      if (cat.cerysCategory === "Fixed asset investments") {
         value = cat.value;
       }
     });
@@ -396,7 +320,7 @@ function displayFixedAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Investment property")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Investment property") {
+      if (cat.cerysCategory === "Investment property") {
         value = cat.value;
       }
     });
@@ -419,7 +343,7 @@ function displayCurrentAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Stocks")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Stocks") {
+      if (cat.cerysCategory === "Stocks") {
         value = cat.value;
       }
     });
@@ -430,7 +354,7 @@ function displayCurrentAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Debtors")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Debtors") {
+      if (cat.cerysCategory === "Debtors") {
         value = cat.value;
       }
     });
@@ -441,7 +365,7 @@ function displayCurrentAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Financial assets")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Financial assets") {
+      if (cat.cerysCategory === "Financial assets") {
         value = cat.value;
       }
     });
@@ -452,7 +376,7 @@ function displayCurrentAssets(activeAssignment) {
   if (activeAssignment.activeCategories.includes("Cash")) {
     let value = 0;
     activeAssignment.activeCategoriesDetails.forEach((cat) => {
-      if (cat.category === "Cash") {
+      if (cat.cerysCategory === "Cash") {
         value = cat.value;
       }
     });
@@ -473,7 +397,7 @@ function displayCurrentLiabilities(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Creditors < 1 year") {
+    if (cat.cerysCategory === "Creditors < 1 year") {
       value = cat.value;
     }
   });
@@ -490,7 +414,7 @@ function displayNonCurrentLiabilities(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Creditors > 1 year") {
+    if (cat.cerysCategory === "Creditors > 1 year") {
       value = cat.value;
     }
   });
@@ -506,7 +430,7 @@ function displayProvisions(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Provisions for liabilities") {
+    if (cat.cerysCategory === "Provisions for liabilities") {
       value = cat.value;
     }
   });
@@ -521,7 +445,7 @@ function displayShareCapital(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Share capital") {
+    if (cat.cerysCategory === "Share capital") {
       value = cat.value;
     }
   });
@@ -535,7 +459,7 @@ function displaySharePremium(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Share premium") {
+    if (cat.cerysCategory === "Share premium") {
       value = cat.value;
     }
   });
@@ -550,7 +474,7 @@ function displayPLRes(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Profit & loss reserve") {
+    if (cat.cerysCategory === "Profit & loss reserve") {
       value = cat.value;
     }
   });
@@ -564,7 +488,7 @@ function displayCRR(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Capital redemption reserve") {
+    if (cat.cerysCategory === "Capital redemption reserve") {
       value = cat.value;
     }
   });
@@ -578,7 +502,7 @@ function displayOtherRes(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Other reserves 1") {
+    if (cat.cerysCategory === "Other reserves 1") {
       value = cat.value;
     }
   });
@@ -592,7 +516,7 @@ function displayFVRes(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Fair value reserve") {
+    if (cat.cerysCategory === "Fair value reserve") {
       value = cat.value;
     }
   });
@@ -606,7 +530,7 @@ function displayOtherRes2(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Other reserves 2") {
+    if (cat.cerysCategory === "Other reserves 2") {
       value = cat.value;
     }
   });
@@ -620,7 +544,7 @@ function displayOtherRes3(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Other reserves 3") {
+    if (cat.cerysCategory === "Other reserves 3") {
       value = cat.value;
     }
   });
@@ -634,7 +558,7 @@ function displayOtherRes4(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Other reserves 4") {
+    if (cat.cerysCategory === "Other reserves 4") {
       value = cat.value;
     }
   });
@@ -648,7 +572,7 @@ function displayOtherRes5(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Other reserves 5") {
+    if (cat.cerysCategory === "Other reserves 5") {
       value = cat.value;
     }
   });
@@ -662,7 +586,7 @@ function displayMinorityInt(activeAssignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
-    if (cat.category === "Minority interest") {
+    if (cat.cerysCategory === "Minority interest") {
       value = cat.value;
     }
   });

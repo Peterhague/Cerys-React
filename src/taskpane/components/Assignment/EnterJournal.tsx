@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
-import { processTransBatch } from "../../utils.ts/transactions/transactions";
+import { checkAssetRegStatus, processTransBatch } from "../../utils.ts/transactions/transactions";
 
 interface enterJournalProps {
   updateSession: (update) => void;
@@ -12,28 +12,29 @@ interface enterJournalProps {
 
 const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, session }: enterJournalProps) => {
   const [nominalCode, setNominalCode] = useState("");
-  const [journalValue, setJournalValue] = useState("");
+  const [value, setValue] = useState("");
   const [narrative, setNarrative] = useState("");
-  const [journalDate, setJournalDate] = useState("");
+  const [transactionDate, setTransactionDate] = useState("");
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     session["nextView"] = "assignmentDashHome";
-    await processTransBatch(session, handleView);
+    await processTransBatch(session);
+    checkAssetRegStatus(session, handleView);
     updateSession(session);
   };
 
   const handleJournal = async (e) => {
     e.preventDefault();
     const cerysObj = await cerysCodeToCerysObject(nominalCode);
-    const journalDtls = { ...cerysObj, journalValue: parseInt(journalValue) * 100, narrative, journalDate };
+    const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
     session["activeJournal"].journals.push(journalDtls);
-    session["activeJournal"].netValue += journalDtls.journalValue;
+    session["activeJournal"].netValue += journalDtls.value;
     updateSession(session);
     setNominalCode("");
-    setJournalValue("");
+    setValue("");
     setNarrative("");
-    setJournalDate("");
+    setTransactionDate("");
   };
 
   return (
@@ -53,13 +54,13 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
         </div>
         <div>
           <input
-            name="journalValue"
+            name="value"
             type="number"
-            id="journalValue"
+            id="value"
             className="form-control"
             placeholder="Enter journal value"
-            value={journalValue}
-            onChange={(e) => setJournalValue(e.target.value)}
+            value={value}
+            onChange={(e) => setValue(e.target.value)}
           ></input>
         </div>
         <div>
@@ -75,12 +76,12 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
         </div>
         <div>
           <input
-            name="journalDate"
+            name="transactionDate"
             type="date"
-            id="journalDate"
+            id="transactionDate"
             className="form-control"
-            value={journalDate}
-            onChange={(e) => setJournalDate(e.target.value)}
+            value={transactionDate}
+            onChange={(e) => setTransactionDate(e.target.value)}
           ></input>
         </div>
         {session["activeJournal"].netValue !== 0 && (

@@ -71,7 +71,7 @@ export function fetchOptionsNC(nominalCode) {
 //  };
 //}
 
-export function fetchOptionsTransBatch(journals, transDtls) {
+export function fetchOptionsTransBatch(journals, transDtls, transactionType) {
   return {
     method: "POST",
     headers: {
@@ -81,6 +81,7 @@ export function fetchOptionsTransBatch(journals, transDtls) {
       journals,
       customerId: transDtls.customerId,
       assignmentId: transDtls.assignmentId,
+      transactionType,
     }),
   };
 }

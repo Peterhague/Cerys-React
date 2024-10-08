@@ -4,17 +4,17 @@ import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { createIPR, createRelTransIP } from "../../../utils.ts/transactions/ipr-generation";
 
-interface promptIPRCreationprops {
+interface promptIPRCreationProps {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const PromptIPRCreation: React.FC<promptIPRCreationprops> = ({
+const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
   handleView,
   session,
   updateSession,
-}: promptIPRCreationprops) => {
+}: promptIPRCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState("main");

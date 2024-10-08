@@ -1,11 +1,11 @@
 import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { calculateDiffInDays, updateNomCode } from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
-export function createRelTransTFA(session) {
+export function createRelTransTFA(session, setView) {
   const relevantTrans = [];
   session.activeAssignment.transactions.forEach((tran) => {
     if (
@@ -15,12 +15,29 @@ export function createRelTransTFA(session) {
       relevantTrans.push(tran);
     }
   });
-  createTFATransSumm(session, relevantTrans);
+  const bFTransLikelyAddns = [];
+  relevantTrans.forEach((tran) => {
+    if (tran.assetSubCatCode === 1) {
+      const test = calculateDiffInDays(
+        session.activeAssignment.reportingPeriod.periodStart,
+        relevantTrans[0].transactionDate
+      );
+      test > 0 && bFTransLikelyAddns.push(tran);
+    }
+  });
+  if (bFTransLikelyAddns.length > 0) {
+    createTFATransSumm(session, bFTransLikelyAddns);
+    setView("confirmBFAreAddns");
+  } else {
+    createTFATransSumm(session, relevantTrans);
+    setView("confirm");
+  }
 }
 
 export async function createTFATransSumm(session, relevantTrans) {
   try {
     await Excel.run(async (context) => {
+      console.log(relevantTrans);
       const ws = addWorksheet(context, "TFA Transactions");
       let activeClient;
       session.customer.clients.forEach((client) => {
@@ -35,21 +52,6 @@ export async function createTFATransSumm(session, relevantTrans) {
           let trans;
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
-              //trans["cerysCategory"] = i.cerysCategory;
-              //trans["assetCategory"] = i.assetCategory;
-              //trans["assetCategoryNo"] = i.assetCategoryNo;
-              //trans["assetSubCategory"] = i.assetSubCategory;
-              //trans["assetSubCatCode"] = i.assetSubCatCode;
-              //trans["regColNameOne"] = i.regColNameOne;
-              //trans["regColNameTwo"] = i.regColNameTwo;
-              //trans["cerysName"] = i.cerysName;
-              //trans["cerysCode"] = i.cerysCode;
-              //trans["cerysShortName"] = i.cerysShortName;
-              //trans["clientAdjustment"] = i.clientAdjustment;
-              //trans["clientTB"] = i.clientTB;
-              //trans["clientNominalCode"] = i.clientNominalCode;
-              //trans["narrative"] = i.narrative;
-              //trans["transactionType"] = i.transactionType;
               trans = i;
               trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
               trans["subTransactions"] = [
@@ -61,7 +63,7 @@ export async function createTFATransSumm(session, relevantTrans) {
                   value: tran.value,
                 },
               ];
-              trans["value"] = i.value;
+              trans["transactionDate"] = convertExcelDate(tran.date);
               trans["transactionDateClt"] = tran.date;
               trans["clientNominalCode"] = tran.code;
               trans["clientNominalName"] = tran.name;
@@ -92,8 +94,10 @@ export async function createTFATransSumm(session, relevantTrans) {
       session.activeJournal.journalType = "auto-journal";
       session["TFATransactions"].forEach((tran) => {
         const transVals = [];
+        console.log(tran);
         if (tran.transactionDate) {
           const dateString = tran.transactionDate.split("T")[0];
+          console.log(dateString);
           const dateStringSplit = dateString.split("-");
           const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
           transVals.push(dateConverted);
@@ -242,22 +246,22 @@ export function calculateDepnChg(session, tran) {
   tran.subTransactions.push(subTran);
   const jnls = buildAutoDepnJnls(session, tran);
   session.activeJournal.journals.push(jnls.debit);
-  session.activeJournal.netValue += jnls["debit"]["journalValue"];
+  session.activeJournal.netValue += jnls["debit"]["value"];
   session.activeJournal.journals.push(jnls.credit);
-  session.activeJournal.netValue += jnls["credit"]["journalValue"];
+  session.activeJournal.netValue += jnls["credit"]["value"];
 }
 
 export const buildAutoDepnJnls = (session, tran) => {
   const catNo = tran.assetCategoryNo;
   const jnls = setAutoDepnNominals(catNo);
   session.chart.forEach((nom) => {
-    if (nom.code === jnls.debit) jnls.debit = nom;
-    if (nom.code === jnls.credit) jnls.credit = nom;
+    if (nom.cerysCode === jnls.debit) jnls.debit = nom;
+    if (nom.cerysCode === jnls.credit) jnls.credit = nom;
   });
-  jnls.debit["journalValue"] = tran.depnChg;
-  jnls.credit["journalValue"] = tran.depnChg * -1;
-  jnls.debit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  jnls.credit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.debit["value"] = tran.depnChg;
+  jnls.credit["value"] = tran.depnChg * -1;
+  jnls.debit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.credit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
   jnls.debit["narrative"] = "Depreciation charged automatically";
   jnls.credit["narrative"] = "Depreciation charged automatically";
   return jnls;

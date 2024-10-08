@@ -37,6 +37,8 @@ import EnterJournal from "./Assignment/EnterJournal";
 import PromptIFARCreation from "./Assignment/Asset-Registers/PromptIFARCreation";
 import PromptTFARCreation from "./Assignment/Asset-Registers/PromptTFARCreation";
 import PromptIPRCreation from "./Assignment/Asset-Registers/PromptIPRCreation";
+import HandleTransUpdates from "./Assignment/Transaction-Updates/HandleTransUpdates";
+import ReviewTransUpdates from "./Assignment/Transaction-Updates/ReviewTransUpdates";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -49,6 +51,7 @@ const AppBody: React.FC = () => {
   };
 
   const handleView = (view) => {
+    session["currentView"] = view;
     setView(view);
   };
 
@@ -128,6 +131,10 @@ const AppBody: React.FC = () => {
         return <PromptTFARCreation handleView={handleView} updateSession={updateSession} session={session} />;
       case "promptIPRCreation":
         return <PromptIPRCreation handleView={handleView} updateSession={updateSession} session={session} />;
+      case "handleTransUpdates":
+        return <HandleTransUpdates handleView={handleView} updateSession={updateSession} session={session} />;
+      case "reviewTransUpdates":
+        return <ReviewTransUpdates handleView={handleView} updateSession={updateSession} session={session} />;
       default:
         return <LandingPage handleView={handleView} />;
     }

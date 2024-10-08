@@ -85,9 +85,9 @@ export async function cerysCodeToCerysObject(cerysCode) {
 
 // takes a Cerys code and the Cerys NL object and returns an array with all the
 // nominal activity.
-export async function getCerysNomDetail(context, code, activeAssignment) {
+export async function getCerysNomDetail(context, code, session) {
   const selection = [];
-  activeAssignment.transactions.forEach((transaction) => {
+  session.activeAssignment.transactions.forEach((transaction) => {
     if (transaction.cerysCode === code) {
       selection.push(transaction);
     }
@@ -144,8 +144,8 @@ export function getCerysNomDetailPL(category, activeAssignment) {
   }
   let selection;
   activeAssignment.activeCategoriesDetails.forEach((obj) => {
-    if (obj.category === cat || obj.category === category) {
-      selection = obj.codes;
+    if (obj.cerysCategory === cat || obj.cerysCategory === category) {
+      selection = obj.cerysCodes;
     }
   });
   let selectionArray = [];
@@ -172,8 +172,8 @@ export async function getCerysNomDetailBS(context, category, activeAssignment) {
   }
   let selection;
   activeAssignment.activeCategoriesDetails.forEach((obj) => {
-    if (obj.category === cat || obj.category === category) {
-      selection = obj.codes;
+      if (obj.cerysCategory === cat || obj.cerysCategory === category) {
+      selection = obj.cerysCodes;
     }
   });
   let selectionArray = [];

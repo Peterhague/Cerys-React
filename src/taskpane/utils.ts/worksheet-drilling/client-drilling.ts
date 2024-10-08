@@ -4,7 +4,7 @@ import { addWorksheet, getWorksheet } from "../worksheet";
 // Called by a click on the client code in the Cerys code analysis sheets.
 // Generates an array of client's relevant transactions and calls
 // clientNomDetailView to generate a worksheet-based view to display the data.
-export async function showClientNominalDetail(e, activeAssignment) {
+export async function showClientNominalDetail(e, session) {
   try {
     await Excel.run(async (context) => {
       const address = e.address;
@@ -14,7 +14,7 @@ export async function showClientNominalDetail(e, activeAssignment) {
       await context.sync();
       const innerValues = values.values;
       const clientCode = innerValues[0][0];
-      const detail = getClientNomDetail(clientCode, activeAssignment);
+      const detail = getClientNomDetail(clientCode, session);
       clientNomDetailView(context, detail);
     });
   } catch (e) {
@@ -25,9 +25,9 @@ export async function showClientNominalDetail(e, activeAssignment) {
 // called by showClientNominalDetail to generate a worksheet-based view of the client
 // nominal activity.
 async function clientNomDetailView(context, detail) {
-  addWorksheet(context, `${detail[0].code} analysis`);
+  addWorksheet(context, `${detail[0].cerysCode} analysis`);
   await context.sync();
-  const ws = getWorksheet(context, `${detail[0].code} analysis`);
+  const ws = getWorksheet(context, `${detail[0].cerysCode} analysis`);
   const headerRange = ws.getRange("A1:D2");
   const headers = [
     ["Transaction", "Transaction", "Detail", "£"],

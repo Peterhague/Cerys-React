@@ -1,13 +1,14 @@
+import { captureReanalysis } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 
-export async function addTbClickListener(activeAssignment) {
+export async function addTbClickListener(session) {
   try {
-    await Excel.run(async (context) => {
+      await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem("Trial Balance");
-      ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, activeAssignment));
-      activeAssignment.tbListenerAdded = true;
+      ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, session));
+      session.activeAssignment.tbListenerAdded = true;
 
       await context.sync();
     });
@@ -30,7 +31,7 @@ export async function addPlClickListener(activeAssignment) {
   }
 }
 
-export async function showNominalDetail(context, e, activeAssignment) {
+export async function showNominalDetail(context, e, session) {
   const address = e.address;
   if (address[0] !== "A") return;
   const ws = context.workbook.worksheets.getItem("Trial Balance");
@@ -39,13 +40,12 @@ export async function showNominalDetail(context, e, activeAssignment) {
   await context.sync();
   const innerValues = values.values;
   const code = innerValues[0][0];
-  const detail = await getCerysNomDetail(context, code, activeAssignment);
-  cerysNomDetailView(context, detail, activeAssignment);
+  const detail = await getCerysNomDetail(context, code, session);
+  cerysNomDetailView(context, detail, session);
 }
 
 export async function showNominalDetailPL(e, activeAssignment, context) {
   const address = e.address;
-  console.log("working");
   if (address[0] !== "A") return;
   const ws = context.workbook.worksheets.getItem("Profit & loss account");
   const range = ws.getRange(`${address}:${address}`);
@@ -60,24 +60,44 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
   cerysNomDetailViewPL(context, detail, activeAssignment);
 }
 
-async function cerysNomDetailView(context, detail, activeAssignment) {
+async function cerysNomDetailView(context, detail, session) {
   console.log(detail);
-  addWorksheet(context, `${detail[0].cerysCode} analysis`);
+  addWorksheet(context, `${detail[0].cerysShortName} analysis`);
   await context.sync();
-  const ws = getWorksheet(context, `${detail[0].cerysCode} analysis`);
-  const range = ws.getRange(`A1:D${detail.length}`);
-  const valuesToPost = [];
+  const ws = getWorksheet(context, `${detail[0].cerysShortName} analysis`);
+  const range = ws.getRange(`A1:F${detail.length + 2}`);
+  const valuesToPost = [
+    ["Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
+    ["Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
+  ];
+  detail[0].defaultSign === "debit" ? valuesToPost[1].push("DR/(CR)") : valuesToPost[1].push("CR/(DR)");
+  let rowNumber = 3;
   detail.forEach((line) => {
     let arr = [];
+    arr.push(line.transactionDateExcel);
     arr.push(line.transactionType);
+    arr.push(line.cerysCode);
     line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
     arr.push(line.narrative);
-    arr.push(line.value / 100);
+    line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
+    line.rowNumber = rowNumber;
+    rowNumber += 1;
   });
   range.values = valuesToPost;
+  const headerRange = ws.getRange("A1:F2");
+  headerRange.format.font.bold = true;
+  const columnA = ws.getRange("A:A");
+  columnA.numberFormat = "dd/mm/yyyy";
+  const columnsRange = ws.getRange("A:F");
+  const columnF = ws.getRange("F:F");
+  columnF.numberFormat = "#,##0.00;(#,##0.00);-";
+  const rangeC = ws.getRange(`C3:C${detail.length + 2}`);
+  rangeC.format.fill.color = "yellow";
+  columnsRange.format.autofitColumns();
   ws.activate();
-  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
+  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+  ws.onChanged.add(async (e) => captureReanalysis(session, e, detail));
   await context.sync();
 }
 

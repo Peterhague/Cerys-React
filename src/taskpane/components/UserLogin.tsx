@@ -31,6 +31,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["customer"] = userAndCustomerObject.customer;
     const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     session["activeJournal"] = activeJournal;
+    session["handleView"] = handleView;
     updateSession(session);
     handleView("userDashHome");
   };

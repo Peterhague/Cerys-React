@@ -3,19 +3,19 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { createIFAR, createRelTransIFA } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { processTransBatch } from "../../../utils.ts/transactions/transactions";
+import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
 
-interface promptIFARCreationprops {
+interface promptIFARCreationProps {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const PromptIFARCreation: React.FC<promptIFARCreationprops> = ({
+const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
   handleView,
   session,
   updateSession,
-}: promptIFARCreationprops) => {
+}: promptIFARCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState("main");
@@ -43,7 +43,8 @@ const PromptIFARCreation: React.FC<promptIFARCreationprops> = ({
   const handleSubmit = async () => {
     await createIFAR(session);
     session["IFATransactions"] = [];
-    await processTransBatch(session, handleView);
+    await processTransBatch(session);
+    checkAssetRegStatus(session, handleView);
   };
 
   return (

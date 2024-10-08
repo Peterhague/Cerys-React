@@ -1,5 +1,5 @@
 import { sageCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
-import { processTransBatch } from "../utils.ts/transactions/transactions";
+import { checkAssetRegStatus, processTransBatch } from "../utils.ts/transactions/transactions";
 
 export async function enterTB(session, updateSession, handleView) {
   try {
@@ -11,7 +11,7 @@ export async function enterTB(session, updateSession, handleView) {
       journals.forEach((jnl) => {
         const obj = {
           ...jnl,
-          journalValue: jnl.value,
+          value: jnl.value,
         };
         check += jnl.value;
         transactions.push(obj);
@@ -21,7 +21,8 @@ export async function enterTB(session, updateSession, handleView) {
       session["activeJournal"]["journalType"] = "clientTB";
       session["activeJournal"]["journal"] = false;
       session["activeJournal"]["clientTB"] = true;
-      await processTransBatch(session, handleView);
+      await processTransBatch(session);
+      checkAssetRegStatus(session, handleView);
       updateSession(session);
     });
   } catch (error) {

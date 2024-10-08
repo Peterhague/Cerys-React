@@ -13,13 +13,13 @@ export function tbCreator(transactions) {
 export function populateTransactions(transactions, tbCodes, tb) {
   tbCodes.forEach((code) => {
     const obj = {};
-    obj["code"] = code;
+    obj["cerysCode"] = code;
     obj["value"] = 0;
     transactions.forEach((tran) => {
       if (tran.cerysCode === code) {
-        obj["name"] = tran.cerysName;
+        obj["cerysName"] = tran.cerysName;
         obj["value"] += tran.value;
-        obj["category"] = tran.cerysCategory;
+        obj["cerysCategory"] = tran.cerysCategory;
       }
     });
     tb.push(obj);
@@ -29,20 +29,20 @@ export function populateTransactions(transactions, tbCodes, tb) {
 export function setActiveCategories(tb) {
   const categories = [];
   tb.forEach((line) => {
-    if (!categories.includes(line.category)) {
-      categories.push(line.category);
+    if (!categories.includes(line.cerysCategory)) {
+      categories.push(line.cerysCategory);
     }
   });
   const arrCats = [];
   categories.forEach((cat) => {
     const obj = {};
-    obj["category"] = cat;
+    obj["cerysCategory"] = cat;
     obj["value"] = 0;
-    obj["codes"] = [];
+    obj["cerysCodes"] = [];
     tb.forEach((line) => {
-      if (line.category === cat) {
+      if (line.cerysCategory === cat) {
         obj["value"] += line.value;
-        obj["codes"].push(line.code);
+        obj["cerysCodes"].push(line.cerysCode);
       }
     });
     arrCats.push(obj);

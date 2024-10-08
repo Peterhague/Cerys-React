@@ -1,7 +1,7 @@
-export function getClientNomDetail(clientCode, activeAssignment) {
+export function getClientNomDetail(clientCode, session) {
   const selection = [];
-  activeAssignment.clientNL.forEach((transaction) => {
-    if (transaction.code === clientCode) {
+  session.activeAssignment.clientNL.forEach((transaction) => {
+    if (transaction.cerysCode === clientCode) {
       selection.push(transaction);
     }
   });

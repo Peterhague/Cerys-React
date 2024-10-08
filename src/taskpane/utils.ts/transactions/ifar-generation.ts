@@ -1,7 +1,7 @@
 import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { calculateDiffInDays, updateNomCode } from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
@@ -35,22 +35,8 @@ export async function createIFATransSumm(session, relevantTrans) {
           let trans;
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
-              //trans["cerysCategory"] = i.cerysCategory; // SAME
-              //trans["assetCategory"] = i.assetCategory; // SAME
-              //trans["assetCategoryNo"] = i.assetCategoryNo;  // SAME
-              //trans["assetSubCategory"] = i.assetSubCategory; // SAME
-              //trans["assetSubCatCode"] = i.assetSubCatCode; // SAME
-              //trans["regColNameOne"] = i.regColNameOne; // SAME
-              //trans["regColNameTwo"] = i.regColNameTwo; // SAME
-              //trans["cerysName"] = i.cerysName; // SAME
-              //trans["cerysCode"] = i.cerysCode; // SAME
-              //trans["cerysShortName"] = i.cerysShortName; // SAME
-              //trans["clientAdjustment"] = i.clientAdjustment; // SAME
-              //trans["clientTB"] = i.clientTB; // SAME
-              //trans["clientNominalCode"] = i.clientNominalCode; // SAME
-              //trans["narrative"] = i.narrative; // SAME
-              //trans["transactionType"] = i.transactionType; // SAME
               trans = i;
+              trans["transactionDate"] = convertExcelDate(tran.date);
               trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
               trans["subTransactions"] = [
                 {
@@ -133,22 +119,22 @@ export async function createIFATransSumm(session, relevantTrans) {
           transVals.push("NA");
         }
         transVals.push(tran.value / 100);
-        if (tran.cerysName[0] === "G") {
+        if (tran.assetCategoryNo === 1) {
           transVals.push(activeClient.amortBasisGwill);
           transVals.push(activeClient.amortRateGwill);
           tran.amortBasis = activeClient.amortBasisGwill;
           tran.amortRate = activeClient.amortRateGwill;
-        } else if (tran.cerysName[0] === "P") {
+        } else if (tran.assetCategoryNo === 2) {
           transVals.push(activeClient.amortBasisPatsLics);
           transVals.push(activeClient.amortRatePatsLics);
           tran.amortBasis = activeClient.amortBasisPatsLics;
           tran.amortRate = activeClient.amortRatePatsLics;
-        } else if (tran.cerysName[0] === "D") {
+        } else if (tran.assetCategoryNo === 3) {
           transVals.push(activeClient.amortBasisDevCosts);
           transVals.push(activeClient.amortRateDevCosts);
           tran.amortBasis = activeClient.amortBasisDevCosts;
           tran.amortRate = activeClient.amortRateDevCosts;
-        } else if (tran.cerysName[0] === "C") {
+        } else if (tran.assetCategoryNo === 4) {
           transVals.push(activeClient.amortBasisCompSware);
           transVals.push(activeClient.amortRateCompSware);
           tran.amortBasis = activeClient.amortBasisCompSware;
@@ -230,22 +216,22 @@ export function calculateAmortChg(session, tran) {
   tran.subTransactions.push(subTran);
   const jnls = buildAutoAmortJnls(session, tran);
   session.activeJournal.journals.push(jnls.debit);
-  session.activeJournal.netValue += jnls["debit"]["journalValue"];
+  session.activeJournal.netValue += jnls["debit"]["value"];
   session.activeJournal.journals.push(jnls.credit);
-  session.activeJournal.netValue += jnls["credit"]["journalValue"];
+  session.activeJournal.netValue += jnls["credit"]["value"];
 }
 
 export const buildAutoAmortJnls = (session, tran) => {
   const catNo = tran.assetCategoryNo;
   const jnls = setAutoAmortNominals(catNo);
   session.chart.forEach((nom) => {
-    if (nom.code === jnls.debit) jnls.debit = nom;
-    if (nom.code === jnls.credit) jnls.credit = nom;
+    if (nom.cerysCode === jnls.debit) jnls.debit = nom;
+    if (nom.cerysCode === jnls.credit) jnls.credit = nom;
   });
-  jnls.debit["journalValue"] = tran.amortChg;
-  jnls.credit["journalValue"] = tran.amortChg * -1;
-  jnls.debit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  jnls.credit["journalDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.debit["value"] = tran.amortChg;
+  jnls.credit["value"] = tran.amortChg * -1;
+  jnls.debit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  jnls.credit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
   jnls.debit["narrative"] = "Amortisation charged automatically";
   jnls.credit["narrative"] = "Amortisation charged automatically";
   return jnls;

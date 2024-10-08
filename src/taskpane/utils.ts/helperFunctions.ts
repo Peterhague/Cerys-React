@@ -34,6 +34,33 @@ export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: 
   return updatedTransToPost;
 }
 
+export const resetActiveJournal = (session) => {
+  const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
+  session.activeJournal = activeJournal;
+};
+
+export const callNextView = (session) => {
+  session.handleView(session.nextView);
+  session.nextView = "";
+};
+
+export const convertMongoDate = (date) => {
+  const dateString = date.split("T");
+  const dateSplit = dateString[0].split("-");
+  const convertedDate = `${dateSplit[2]}/${dateSplit[1]}/${dateSplit[0]}`;
+  return convertedDate;
+};
+
+export const convertValueToString = (value) => {
+  console.log(value);
+  const valueChecked = value < 0 ? value * -1 : value;
+  const string = valueChecked.toString();
+  const insertionIndex = string.length - 2;
+  const newString = string.substring(0, insertionIndex) + "." + string.substring(insertionIndex);
+  console.log(newString);
+  return newString;
+};
+
 export const calculateExcelDate = (inputDate) => {
   const date = new Date(inputDate);
   const baseDate = new Date("1899-12-30");
@@ -42,6 +69,18 @@ export const calculateExcelDate = (inputDate) => {
   const timeDiff = Math.abs(utc2 - utc1);
   const excelDate = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
   return excelDate;
+};
+
+export const convertExcelDate = (excelDate) => {
+  const baseDate = new Date("1899-12-30");
+  const convertedDate = new Date(baseDate.getTime() + excelDate * 24 * 60 * 60 * 1000);
+  const rawMonth = convertedDate.getMonth() + 1;
+  const month = rawMonth > 9 ? rawMonth : `0${rawMonth}`;
+  const rawDate = convertedDate.getDate();
+  const date = rawDate < 10 ? `0${rawDate}` : rawDate;
+  const mongoDate = `${convertedDate.getFullYear()}-${month}-${date}`;
+  console.log(mongoDate);
+  return mongoDate;
 };
 
 export const calculateDiffInDays = (inputDate1, inputDate2) => {
@@ -261,4 +300,73 @@ export const colNumToLetter = (numberCols) => {
     default:
       return null;
   }
+};
+
+export const captureReanalysis = (session, e, transactions) => {
+  console.log(e);
+  if (e.details.valueBefore === e.details.valueAfter) return;
+  const eRowNumber = parseInt(e.address.substr(1));
+  let tran;
+  transactions.forEach((line) => {
+    if (line.rowNumber === eRowNumber) tran = line;
+  });
+  let validCode = false;
+  session.chart.forEach((code) => {
+    if (code.cerysCode === e.details.valueAfter) validCode = true;
+  });
+  if (validCode) buildReanalysisJnls(session, e, tran);
+  if (!session.nextView) session.nextView = session.currentView;
+  if (session.activeJournal.journals.length === 0) {
+    resetActiveJournal(session);
+    callNextView(session);
+  } else {
+    session.handleView("handleTransUpdates");
+  }
+};
+
+export const buildReanalysisJnls = (session, e, tran) => {
+  console.log(tran);
+  session.activeJournal.journalType = "reanalysis";
+  session.activeJournal.journal = false;
+  const checkedJournals = [];
+  session.activeJournal.journals.forEach((jnl) => {
+    if (jnl.transactionId !== tran._id) {
+      checkedJournals.push(jnl);
+    }
+  });
+  if (e.details.valueAfter !== tran.cerysCode) {
+    const value = tran.value;
+    const valueNegative = tran.value * -1;
+    let cerysObject1;
+    session.chart.forEach((code) => {
+      if (code.cerysCode === tran.cerysCode) cerysObject1 = code;
+    });
+    const narrative1 = `Reposted to NC${e.details.valueAfter}: ${tran.narrative}`;
+    const transactionDate = tran.transactionDate;
+    const jnlDtls1 = {
+      ...cerysObject1,
+      value: valueNegative,
+      origNarrative: tran.narrative,
+      narrative: narrative1,
+      transactionDate,
+      transactionId: tran._id,
+    };
+    checkedJournals.push(jnlDtls1);
+    let cerysObject2;
+    session.chart.forEach((code) => {
+      if (code.cerysCode === e.details.valueAfter) cerysObject2 = code;
+    });
+    const narrative2 = `Reposted from NC${tran.cerysCode}: ${tran.narrative}`;
+    const jnlDtls2 = {
+      ...cerysObject2,
+      value,
+      origNarrative: tran.narrative,
+      narrative: narrative2,
+      transactionDate,
+      transactionId: tran._id,
+    };
+    checkedJournals.push(jnlDtls2);
+  }
+  session.activeJournal.journals = checkedJournals;
+  console.log(session.activeJournal);
 };

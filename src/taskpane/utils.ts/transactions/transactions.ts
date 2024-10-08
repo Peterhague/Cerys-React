@@ -6,51 +6,44 @@ import { calculateExcelDate } from "../helperFunctions";
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
-export const processTransBatch = async (session, handleView) => {
+export const processTransBatch = async (session) => {
   const activeJournal = session["activeJournal"];
-  console.log(activeJournal);
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
-    const newDate = session.activeAssignment.reportingPeriod.reportingDateConverted.split("/");
-    const jnlDate = `${newDate[2]}-${newDate[1]}-${newDate[0]}`;
-    const trans = {};
+    const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
-    if (jnl.journalDate === "") jnl.journalDate = jnlDate;
-    trans["transactionDateExcel"] = calculateExcelDate(jnl.journalDate);
-    trans["cerysCode"] = jnl.code;
-    trans["cerysCategory"] = jnl.category;
-    trans["cerysSubCategory"] = jnl.subCategory;
-    trans["assetCategory"] = jnl.assetCategory;
-    trans["assetSubCategory"] = jnl.assetSubCategory;
-    trans["assetSubCatCode"] = jnl.assetSubCatCode;
-    trans["assetCodeType"] = jnl.assetCodeType;
-    trans["regColNameOne"] = jnl.regColNameOne;
-    trans["regColNameTwo"] = jnl.regColNameTwo;
-    trans["assetCategoryNo"] = jnl.assetCategoryNo;
-    trans["cerysName"] = jnl.name;
-    trans["cerysShortName"] = jnl.shortName;
-    trans["narrative"] = jnl.narrative;
-    trans["cerysId"] = jnl._id;
-    trans["value"] = jnl.journalValue;
-    trans["transactionDate"] = jnl.journalDate;
-    trans["clientNominalCode"] = jnl.clientNominalCode;
-    trans["transactionType"] = activeJournal.journalType;
-    trans["clientTB"] = activeJournal.clientTB;
-    trans["journal"] = activeJournal.journal;
-    transactions.push(trans);
+    if (jnl.transactionDate === "") {
+      if (
+        jnl.assetSubCategory === "Cost bfwd" ||
+        jnl.assetSubCategory === "Amort bfwd" ||
+        jnl.assetSubCategory === "Depn bfwd"
+      ) {
+        jnl.transactionDate = periodStartDate;
+      } else {
+        jnl.transactionDate = session.activeAssignment.reportingPeriod.reportingDateOrig;
+      }
+    }
+    jnl.transactionDateExcel = calculateExcelDate(jnl.transactionDate);
+    jnl.transactionType = activeJournal.journalType;
+    jnl.clientTB = activeJournal.clientTB;
+    jnl.journal = activeJournal.journal;
+    transactions.push(jnl);
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
-  postTransactionsMem(session, transactions);
-  postTransactionsDb(transactions, transDtls);
+  //postTransactionsMem(session, transactions);
+  const transactionType = activeJournal.journalType;
+  const updatedCustAndAss = await postTransactionsDb(transactions, transDtls, transactionType);
+  session["activeAssignment"] = updatedCustAndAss.assignment;
+  session["customer"] = updatedCustAndAss.customer;
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
   await postTbToWbook(session, tbArray);
   await wsPLAccount(session);
   await wsBalanceSheet(session);
-  addTbClickListener(session["activeAssignment"]);
+  addTbClickListener(session);
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
-  checkAssetRegStatus(session, handleView);
+  //checkAssetRegStatus(session, handleView);
 };
 
 export const checkAssetRegStatus = (session, handleView) => {
@@ -82,85 +75,88 @@ export const checkAssetRegStatus = (session, handleView) => {
   session["nextView"] = "";
 };
 
-const postTransactionsDb = async (transactions, transDtls) => {
-  const options = fetchOptionsTransBatch(transactions, transDtls);
+const postTransactionsDb = async (transactions, transDtls, transactionType) => {
+  const options = fetchOptionsTransBatch(transactions, transDtls, transactionType);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
+  console.log(objs);
+  return objs;
 };
 
-const postTransactionsMem = (session, transactions) => {
-  const actAss = session["activeAssignment"];
-  actAss.transactions.push(...transactions);
-  actAss.transactionsPosted = true;
-  const tb = tbCreator(actAss.transactions);
-  actAss.tb = tb;
-  const activeCats = setActiveCategories(tb);
-  actAss.activeCategoriesDetails = activeCats.arrCats;
-  actAss.activeCategories = activeCats.categories;
-  actAss.activeAssetCodeTypes = setActiveAssetCodeTypes(tb);
-  if (session.activeJournal.journalType === "clientTB") actAss.TBEntered = true;
-  session["activeAssignment"] = actAss;
-};
+//const postTransactionsMem = (session, transactions) => {
+//  const actAss = session["activeAssignment"];
+//  actAss.transactions.push(...transactions);
+//  actAss.transactionsPosted = true;
+//  const tb = tbCreator(actAss.transactions);
+//  actAss.tb = tb;
+//  const activeCats = setActiveCategories(tb);
+//  console.log(activeCats);
+//  actAss.activeCategoriesDetails = activeCats.arrCats;
+//  actAss.activeCategories = activeCats.categories;
+//  actAss.activeAssetCodeTypes = setActiveAssetCodeTypes(tb);
+//  if (session.activeJournal.journalType === "clientTB") actAss.TBEntered = true;
+//  session["activeAssignment"] = actAss;
+//};
 
-function tbCreator(transactions) {
-  const tbCodes = [];
-  transactions.forEach((tran) => {
-    if (!tbCodes.includes(tran.cerysCode)) {
-      tbCodes.push(tran.cerysCode);
-    }
-  });
-  const tb = [];
-  populateTransactions(transactions, tbCodes, tb);
-  return tb;
-}
+//function tbCreator(transactions) {
+//  const tbCodes = [];
+//  transactions.forEach((tran) => {
+//    if (!tbCodes.includes(tran.cerysCode)) {
+//      tbCodes.push(tran.cerysCode);
+//    }
+//  });
+//  const tb = [];
+//  populateTransactions(transactions, tbCodes, tb);
+//  return tb;
+//}
 
-function populateTransactions(transactions, tbCodes, tb) {
-  tbCodes.forEach((code) => {
-    const obj = {};
-    obj["code"] = code;
-    obj["value"] = 0;
-    transactions.forEach((tran) => {
-      if (tran.cerysCode === code) {
-        obj["name"] = tran.cerysName;
-        obj["value"] += tran.value;
-        obj["category"] = tran.cerysCategory;
-        obj["assetCodeType"] = tran.assetCodeType;
-      }
-    });
-    tb.push(obj);
-  });
-}
+//function populateTransactions(transactions, tbCodes, tb) {
+//  tbCodes.forEach((code) => {
+//    const obj = {};
+//    obj["cerysCode"] = code;
+//    obj["value"] = 0;
+//    transactions.forEach((tran) => {
+//      if (tran.cerysCode === code) {
+//        obj["cerysName"] = tran.cerysName;
+//        obj["value"] += tran.value;
+//        obj["cerysCategory"] = tran.cerysCategory;
+//        obj["assetCodeType"] = tran.assetCodeType;
+//      }
+//    });
+//    tb.push(obj);
+//  });
+//}
 
-function setActiveCategories(tb) {
-  const categories = [];
-  tb.forEach((line) => {
-    if (!categories.includes(line.category)) {
-      categories.push(line.category);
-    }
-  });
-  const arrCats = [];
-  categories.forEach((cat) => {
-    const obj = {};
-    obj["category"] = cat;
-    obj["value"] = 0;
-    obj["codes"] = [];
-    tb.forEach((line) => {
-      if (line.category === cat) {
-        obj["value"] += line.value;
-        obj["codes"].push(line.code);
-      }
-    });
-    arrCats.push(obj);
-  });
-  return { arrCats, categories };
-}
+//function setActiveCategories(tb) {
+//  const categories = [];
+//  tb.forEach((line) => {
+//    if (!categories.includes(line.cerysCategory)) {
+//      categories.push(line.cerysCategory);
+//    }
+//  });
+//  const arrCats = [];
+//  categories.forEach((cat) => {
+//    const obj = {};
+//    obj["cerysCategory"] = cat;
+//    obj["value"] = 0;
+//    obj["cerysCodes"] = [];
+//    tb.forEach((line) => {
+//      if (line.cerysCategory === cat) {
+//        obj["value"] += line.value;
+//        obj["cerysCodes"].push(line.cerysCode);
+//      }
+//    });
+//    arrCats.push(obj);
+//  });
+//  return { arrCats, categories };
+//}
 
-function setActiveAssetCodeTypes(tb) {
-  const assetCodeTypes = [];
-  tb.forEach((line) => {
-    if (!assetCodeTypes.includes(line.assetCodeType)) {
-      line.assetCodeType && assetCodeTypes.push(line.assetCodeType);
-    }
-  });
-  return assetCodeTypes;
-}
+//function setActiveAssetCodeTypes(tb) {
+//  const assetCodeTypes = [];
+//  tb.forEach((line) => {
+//    if (!assetCodeTypes.includes(line.assetCodeType)) {
+//      line.assetCodeType && assetCodeTypes.push(line.assetCodeType);
+//    }
+//  });
+//  return assetCodeTypes;
+//}

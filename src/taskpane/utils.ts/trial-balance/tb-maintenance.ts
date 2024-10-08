@@ -4,12 +4,12 @@ import { addWorksheet, deleteWorksheet } from "../worksheet";
 export function tbForPosting(tb) {
   const tbArray = [];
   tb.sort((a, b) => {
-    return a.code - b.code;
+    return a.cerysCode - b.cerysCode;
   });
   tb.forEach((line) => {
     const lineArr = [];
-    lineArr.push(line.code);
-    lineArr.push(line.name);
+    lineArr.push(line.cerysCode);
+    lineArr.push(line.cerysName);
     lineArr.push(line.value / 100);
     tbArray.push(lineArr);
   });
