@@ -1,6 +1,7 @@
-import { captureReanalysis, setEditButtonValue } from "../helperFunctions";
+import { setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
+import { handleColumnSort, handleWorksheetEdit } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -65,15 +66,16 @@ async function cerysNomDetailView(context, detail, session) {
   addWorksheet(context, `${detail[0].cerysShortName} analysis`);
   await context.sync();
   const ws = getWorksheet(context, `${detail[0].cerysShortName} analysis`);
-  const range = ws.getRange(`A1:F${detail.length + 2}`);
+  const range = ws.getRange(`A1:G${detail.length + 2}`);
   const valuesToPost = [
-    ["Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
-    ["Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
+    ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
+    ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
   ];
   detail[0].defaultSign === "debit" ? valuesToPost[1].push("DR/(CR)") : valuesToPost[1].push("CR/(DR)");
   let rowNumber = 3;
   detail.forEach((line) => {
     let arr = [];
+    arr.push(line.transactionNumber);
     arr.push(line.transactionDateExcel);
     arr.push(line.transactionType);
     arr.push(line.cerysCode);
@@ -84,28 +86,37 @@ async function cerysNomDetailView(context, detail, session) {
     line.rowNumber = rowNumber;
     rowNumber += 1;
   });
+  console.log(valuesToPost);
   range.values = valuesToPost;
-  const headerRange = ws.getRange("A1:F2");
+  const headerRange = ws.getRange("A1:G2");
   headerRange.format.font.bold = true;
-  const columnA = ws.getRange("A:A");
+  const columnA = ws.getRange("B:B");
   columnA.numberFormat = "dd/mm/yyyy";
-  const columnsRange = ws.getRange("A:F");
-  const columnF = ws.getRange("F:F");
-  columnF.numberFormat = "#,##0.00;(#,##0.00);-";
+  const columnsRange = ws.getRange("A:G");
+  const columnG = ws.getRange("G:G");
+  columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const editableWs = {
     name: `${detail[0].cerysShortName} analysis`,
-    editableRanges: [`A3:A${detail.length + 2}`, `C3:C${detail.length + 2}`, `E3:E${detail.length + 2}`],
-    dateDetails: { range: `A3:A${detail.length + 2}`, format: "dd/mm/yyyy" },
+    editableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
+    activeEditableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
+    dateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
+    activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
     editButtonStatus: "show",
+    columnsSorted: false,
   };
-  console.log(editableWs);
-  session.editableSheets.push(editableWs);
+  const arr = [editableWs];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name !== editableWs.name) arr.push(sheet);
+  });
+  session.editableSheets = arr;
   columnsRange.format.autofitColumns();
   ws.onActivated.add(() => setEditButtonValue(session));
   ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.activate();
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onChanged.add(async (e) => captureReanalysis(session, e, detail));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail));
+  ws.onColumnSorted.add(async () => handleColumnSort(session));
+  ws.onRowSorted.add(async (e) => console.log(e));
   await context.sync();
 }
 

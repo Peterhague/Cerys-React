@@ -52,7 +52,7 @@ export const getActiveWorksheetName = async () => {
 export const highlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();
-    sheet.editableRanges.forEach((edRange) => {
+    sheet.activeEditableRanges.forEach((edRange) => {
       const range = ws.getRange(edRange);
       range.format.fill.color = "yellow";
     });
@@ -63,13 +63,12 @@ export const highlightEditableRanges = async (sheet) => {
 export const unhighlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();
-    sheet.editableRanges.forEach((edRange) => {
+    sheet.activeEditableRanges.forEach((edRange) => {
       const range = ws.getRange(edRange);
       range.clear("Formats");
-      const dateRange = ws.getRange(sheet.dateDetails.range);
-      dateRange.numberFormat = sheet.dateDetails.format;
-      console.log(range);
     });
+    const dateRange = ws.getRange(sheet.activeDateDetails.range);
+    dateRange.numberFormat = sheet.dateDetails.format;
     await context.sync();
   });
 };

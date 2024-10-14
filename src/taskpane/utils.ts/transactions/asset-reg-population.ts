@@ -1,4 +1,4 @@
-import { colNumToLetter } from "../helperFunctions";
+import { colNumToLetter } from "../excel-col-conversion";
 
 export async function populateAssetRegWs(context, activeCats, transToPost, ws, regType) {
   const { activeSubCats, subCatNames } = populateActiveSubCats(transToPost);
