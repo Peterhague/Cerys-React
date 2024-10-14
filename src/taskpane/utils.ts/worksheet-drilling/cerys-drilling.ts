@@ -1,11 +1,11 @@
-import { captureReanalysis } from "../helperFunctions";
+import { captureReanalysis, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
   try {
-      await Excel.run(async (context) => {
+    await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem("Trial Balance");
       ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, session));
       session.activeAssignment.tbListenerAdded = true;
@@ -92,9 +92,17 @@ async function cerysNomDetailView(context, detail, session) {
   const columnsRange = ws.getRange("A:F");
   const columnF = ws.getRange("F:F");
   columnF.numberFormat = "#,##0.00;(#,##0.00);-";
-  const rangeC = ws.getRange(`C3:C${detail.length + 2}`);
-  rangeC.format.fill.color = "yellow";
+  const editableWs = {
+    name: `${detail[0].cerysShortName} analysis`,
+    editableRanges: [`A3:A${detail.length + 2}`, `C3:C${detail.length + 2}`, `E3:E${detail.length + 2}`],
+    dateDetails: { range: `A3:A${detail.length + 2}`, format: "dd/mm/yyyy" },
+    editButtonStatus: "show",
+  };
+  console.log(editableWs);
+  session.editableSheets.push(editableWs);
   columnsRange.format.autofitColumns();
+  ws.onActivated.add(() => setEditButtonValue(session));
+  ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.activate();
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
   ws.onChanged.add(async (e) => captureReanalysis(session, e, detail));

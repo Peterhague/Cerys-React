@@ -1,5 +1,6 @@
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
+import { getActiveWorksheetName, highlightEditableRanges, unhighlightEditableRanges } from "./worksheet";
 
 export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {
   let userObj: any;
@@ -52,12 +53,10 @@ export const convertMongoDate = (date) => {
 };
 
 export const convertValueToString = (value) => {
-  console.log(value);
   const valueChecked = value < 0 ? value * -1 : value;
   const string = valueChecked.toString();
   const insertionIndex = string.length - 2;
   const newString = string.substring(0, insertionIndex) + "." + string.substring(insertionIndex);
-  console.log(newString);
   return newString;
 };
 
@@ -346,10 +345,12 @@ export const buildReanalysisJnls = (session, e, tran) => {
     const jnlDtls1 = {
       ...cerysObject1,
       value: valueNegative,
+      narrative: tran.narrative,
       origNarrative: tran.narrative,
-      narrative: narrative1,
+      newNarrative: narrative1,
       transactionDate,
       transactionId: tran._id,
+      rowNumberIndex: tran.rowNumber * 10,
     };
     checkedJournals.push(jnlDtls1);
     let cerysObject2;
@@ -360,13 +361,43 @@ export const buildReanalysisJnls = (session, e, tran) => {
     const jnlDtls2 = {
       ...cerysObject2,
       value,
+      narrative: tran.narrative,
       origNarrative: tran.narrative,
-      narrative: narrative2,
+      newNarrative: narrative2,
       transactionDate,
       transactionId: tran._id,
+      rowNumberIndex: tran.rowNumber * 10 + 1,
     };
     checkedJournals.push(jnlDtls2);
   }
   session.activeJournal.journals = checkedJournals;
   console.log(session.activeJournal);
+};
+
+export const setEditButtonValue = async (session) => {
+  const wsName = await getActiveWorksheetName();
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      session.setEditButton(sheet.editButtonStatus);
+      return;
+    }
+  });
+};
+
+export const handleEditButtonClick = async (session) => {
+  const wsName = await getActiveWorksheetName();
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      if (sheet.editButtonStatus === "show") {
+        highlightEditableRanges(sheet);
+        sheet.editButtonStatus = "hide";
+        session.setEditButton(sheet.editButtonStatus);
+      } else {
+        unhighlightEditableRanges(sheet);
+        sheet.editButtonStatus = "show";
+        session.setEditButton(sheet.editButtonStatus);
+      }
+      return;
+    }
+  });
 };

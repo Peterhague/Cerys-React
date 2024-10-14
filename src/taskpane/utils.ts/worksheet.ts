@@ -20,10 +20,56 @@ export function getWorksheet(context, sheetName) {
 export function getWorksheetAndRange(context, sheetName, range) {
   const ws = context.workbook.worksheets.getItem(sheetName);
   const sheetRange = ws.getRange(range);
-  return { ws: ws, range: sheetRange };
+  return { ws, range: sheetRange };
 }
 
 export async function gotToWorksheet(context, sheetName) {
   const sheet = context.workbook.worksheets.getItem(sheetName);
   sheet.activate();
 }
+
+export const getActiveWorksheet = async () => {
+  const ws = await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    sheet.load("name");
+    await context.sync();
+    return sheet;
+  });
+  return ws;
+};
+
+export const getActiveWorksheetName = async () => {
+  const sheetName = await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getActiveWorksheet();
+    sheet.load("name");
+    await context.sync();
+    const name = sheet.name;
+    return name;
+  });
+  return sheetName;
+};
+
+export const highlightEditableRanges = async (sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getActiveWorksheet();
+    sheet.editableRanges.forEach((edRange) => {
+      const range = ws.getRange(edRange);
+      range.format.fill.color = "yellow";
+    });
+    await context.sync();
+  });
+};
+
+export const unhighlightEditableRanges = async (sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getActiveWorksheet();
+    sheet.editableRanges.forEach((edRange) => {
+      const range = ws.getRange(edRange);
+      range.clear("Formats");
+      const dateRange = ws.getRange(sheet.dateDetails.range);
+      dateRange.numberFormat = sheet.dateDetails.format;
+      console.log(range);
+    });
+    await context.sync();
+  });
+};

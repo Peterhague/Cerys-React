@@ -8,9 +8,10 @@ interface userLoginProps {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
+  setEditButton: (state) => void;
 }
 
-const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, session }: userLoginProps) => {
+const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, session, setEditButton }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -31,7 +32,9 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["customer"] = userAndCustomerObject.customer;
     const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     session["activeJournal"] = activeJournal;
+    session["editableSheets"] = [];
     session["handleView"] = handleView;
+    session["setEditButton"] = setEditButton;
     updateSession(session);
     handleView("userDashHome");
   };

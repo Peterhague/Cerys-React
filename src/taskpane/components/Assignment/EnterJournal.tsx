@@ -1,5 +1,6 @@
 import * as React from "react";
 import { useState } from "react";
+import { useRef } from "react";
 import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
 import { checkAssetRegStatus, processTransBatch } from "../../utils.ts/transactions/transactions";
@@ -15,6 +16,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
   const [value, setValue] = useState("");
   const [narrative, setNarrative] = useState("");
   const [transactionDate, setTransactionDate] = useState("");
+  const inputRef = useRef(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -35,6 +37,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
     setValue("");
     setNarrative("");
     setTransactionDate("");
+    inputRef.current.focus();
   };
 
   return (
@@ -50,6 +53,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
             placeholder="Enter nominal code"
             value={nominalCode}
             onChange={(e) => setNominalCode(e.target.value)}
+            ref={inputRef}
           ></input>
         </div>
         <div>

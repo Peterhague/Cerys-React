@@ -7,10 +7,16 @@ import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
 interface customerLoginProps {
   updateSession: (update) => void;
   handleView: (view) => void;
+  setEditButton: (state) => void;
   session: {};
 }
 
-const CustomerLogin: React.FC<customerLoginProps> = ({ updateSession, handleView, session }: customerLoginProps) => {
+const CustomerLogin: React.FC<customerLoginProps> = ({
+  updateSession,
+  handleView,
+  session,
+  setEditButton,
+}: customerLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -21,6 +27,8 @@ const CustomerLogin: React.FC<customerLoginProps> = ({ updateSession, handleView
     const customerDb = await fetch(getCustomerUrl, options);
     const customer = await customerDb.json();
     session["customer"] = customer;
+    session["handleView"] = handleView;
+    session["setEditButton"] = setEditButton;
     updateSession(session);
     handleView("customerDashHome");
   };
