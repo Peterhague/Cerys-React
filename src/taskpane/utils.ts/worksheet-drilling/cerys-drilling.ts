@@ -1,7 +1,7 @@
 import { setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
-import { handleColumnSort, handleWorksheetEdit } from "../worksheet-editing";
+import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -63,9 +63,10 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
 
 async function cerysNomDetailView(context, detail, session) {
   console.log(detail);
-  addWorksheet(context, `${detail[0].cerysShortName} analysis`);
+  const wsName = `${detail[0].cerysShortName} analysis`;
+  addWorksheet(context, wsName);
   await context.sync();
-  const ws = getWorksheet(context, `${detail[0].cerysShortName} analysis`);
+  const ws = getWorksheet(context, wsName);
   const range = ws.getRange(`A1:G${detail.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
@@ -96,13 +97,47 @@ async function cerysNomDetailView(context, detail, session) {
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const editableWs = {
-    name: `${detail[0].cerysShortName} analysis`,
+    name: wsName,
     editableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
+    editableRowRanges: [{ firstRow: 3, lastRow: detail.length + 2 }],
     activeEditableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
-    dateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
+    protectedRange: { firstRow: 3, lastRow: detail.length + 2, firstCol: 1, lastCol: 7 },
+    protectedRangeDeleted: false,
+    dateColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "B",
+      colNumber: 2,
+      format: "dd/mm/yyyy",
+      deleted: false,
+    },
     activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
+    codeColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "D",
+      colNumber: 4,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+    },
+    narrColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "F",
+      colNumber: 6,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+    },
+    headerRange: "A1:G2",
+    headerValues: [
+      ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
+      ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
+    ],
     editButtonStatus: "show",
+    changeRejected: false,
     columnsSorted: false,
+    rowsSorted: false,
+    dataCompromised: false,
+    dataCorrupted: false,
+    queuedTransUpdates: [],
+    updatedTransactions: [],
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -114,9 +149,9 @@ async function cerysNomDetailView(context, detail, session) {
   ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.activate();
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => console.log(e));
+  ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
   await context.sync();
 }
 

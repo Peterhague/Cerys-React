@@ -49,12 +49,47 @@ export const getActiveWorksheetName = async () => {
   return sheetName;
 };
 
+export const getWorksheetUsedRange = async (wsName) => {
+  const usedRange = await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem(wsName);
+    const range = sheet.getUsedRange();
+    range.load("values");
+    await context.sync();
+    const values = range.values;
+    return values;
+  });
+  return usedRange;
+};
+
+export const setExcelRangeValue = async (wsName, range, value) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getItem(wsName);
+    const wsRange = ws.getRange(range);
+    wsRange.values = value;
+    await context.sync();
+  });
+};
+
 export const highlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();
-    sheet.activeEditableRanges.forEach((edRange) => {
-      const range = ws.getRange(edRange);
-      range.format.fill.color = "yellow";
+    sheet.editableRowRanges.forEach((range) => {
+      console.log(sheet);
+      if (!sheet.dateColDetails.deleted) {
+        const dateRange = `${sheet.dateColDetails.colLetter}${range.firstRow}:${sheet.dateColDetails.colLetter}${range.lastRow}`;
+        const wsDateRange = ws.getRange(dateRange);
+        wsDateRange.format.fill.color = "yellow";
+      }
+      if (!sheet.codeColDetails.deleted) {
+        const codeRange = `${sheet.codeColDetails.colLetter}${range.firstRow}:${sheet.codeColDetails.colLetter}${range.lastRow}`;
+        const wsCodeRange = ws.getRange(codeRange);
+        wsCodeRange.format.fill.color = "yellow";
+      }
+      if (!sheet.narrColDetails.deleted) {
+        const narrRange = `${sheet.narrColDetails.colLetter}${range.firstRow}:${sheet.narrColDetails.colLetter}${range.lastRow}`;
+        const wsNarrRange = ws.getRange(narrRange);
+        wsNarrRange.format.fill.color = "yellow";
+      }
     });
     await context.sync();
   });
@@ -63,12 +98,23 @@ export const highlightEditableRanges = async (sheet) => {
 export const unhighlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();
-    sheet.activeEditableRanges.forEach((edRange) => {
-      const range = ws.getRange(edRange);
-      range.clear("Formats");
+    sheet.editableRowRanges.forEach((range) => {
+      if (!sheet.dateColDetails.deleted) {
+        const dateRange = `${sheet.dateColDetails.colLetter}${range.firstRow}:${sheet.dateColDetails.colLetter}${range.lastRow}`;
+        const wsDateRange = ws.getRange(dateRange);
+        wsDateRange.format.fill.clear();
+      }
+      if (!sheet.codeColDetails.deleted) {
+        const codeRange = `${sheet.codeColDetails.colLetter}${range.firstRow}:${sheet.codeColDetails.colLetter}${range.lastRow}`;
+        const wsCodeRange = ws.getRange(codeRange);
+        wsCodeRange.format.fill.clear();
+      }
+      if (!sheet.narrColDetails.deleted) {
+        const narrRange = `${sheet.narrColDetails.colLetter}${range.firstRow}:${sheet.narrColDetails.colLetter}${range.lastRow}`;
+        const wsNarrRange = ws.getRange(narrRange);
+        wsNarrRange.format.fill.clear();
+      }
     });
-    const dateRange = ws.getRange(sheet.activeDateDetails.range);
-    dateRange.numberFormat = sheet.dateDetails.format;
     await context.sync();
   });
 };
