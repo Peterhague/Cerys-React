@@ -136,8 +136,6 @@ async function cerysNomDetailView(context, detail, session) {
     rowsSorted: false,
     dataCompromised: false,
     dataCorrupted: false,
-    queuedTransUpdates: [],
-    updatedTransactions: [],
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {

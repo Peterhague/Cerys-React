@@ -86,6 +86,20 @@ export function fetchOptionsTransBatch(journals, transDtls, transactionType) {
   };
 }
 
+export function fetchOptionsTransBatchUpdate(session) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      updatedTransactions: session.updatedTransactions,
+      customerId: session.customer._id,
+      assignmentId: session.activeAssignment._id,
+    }),
+  };
+}
+
 export function fetchOptionsGetAssignmentId(workbookMeta) {
   return {
     method: "POST",

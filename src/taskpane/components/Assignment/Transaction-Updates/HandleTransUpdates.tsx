@@ -1,6 +1,6 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
-import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
+import { reverseTransactionUpdates, submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
 
 interface handleTransUpdatesProps {
   updateSession: (update) => void;
@@ -10,18 +10,17 @@ interface handleTransUpdatesProps {
 
 const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, session }: handleTransUpdatesProps) => {
   const handleReview = () => {
-    console.log(session["activeJournal"]);
     handleView("reviewTransUpdates");
   };
 
-  const handleDiscard = () => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-    handleView(session["nextView"]);
+  const handleDiscard = async () => {
+    await reverseTransactionUpdates(session);
+    session["updatedTransactions"] = [];
+    //handleView(session["nextView"]);
   };
 
   const handleSubmit = async () => {
-    await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    await submitTransactionUpdates(session);
   };
 
   return (

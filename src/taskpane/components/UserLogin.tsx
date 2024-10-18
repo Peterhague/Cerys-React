@@ -33,6 +33,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     session["activeJournal"] = activeJournal;
     session["editableSheets"] = [];
+    session["updatedTransactions"] = [];
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
     updateSession(session);

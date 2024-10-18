@@ -70,6 +70,17 @@ export const setExcelRangeValue = async (wsName, range, value) => {
   });
 };
 
+export const setManyExcelRangeValues = async (wsName, updates) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getItem(wsName);
+    updates.forEach((update) => {
+      const range = ws.getRange(update.address);
+      range.values = update.value;
+    });
+    await context.sync();
+  });
+};
+
 export const highlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();

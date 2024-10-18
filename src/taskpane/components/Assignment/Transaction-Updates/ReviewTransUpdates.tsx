@@ -1,8 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
-import { convertMongoDate, convertValueToString } from "../../../utils.ts/helperFunctions";
+import { convertExcelDate, convertMongoDate, convertValueToString } from "../../../utils.ts/helperFunctions";
+import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
 
 interface reviewTransUpdatesProps {
   updateSession: (update) => void;
@@ -12,85 +12,22 @@ interface reviewTransUpdatesProps {
 
 const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, session }: reviewTransUpdatesProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  session["activeJournal"]["journals"].sort((a, b) => {
-    return a.rowNumberIndex - b.rowNumberIndex;
+  session["updatedTransactions"].sort((a, b) => {
+    return a.rowNumber - b.rowNumber;
   });
 
-  const initNarratives = (transformer) => {
-    const narr1 = initNarrOne(transformer);
-    const narr2 = initNarrTwo(transformer);
-    setNarrativeOne(narr1);
-    setNarrativeTwo(narr2);
-  };
-
-  const initNarrOne = (transformer) => {
-    if (transformer === "plus") {
-      return activeJournal.journals[activeIndex + 4].narrative;
-    } else if (transformer === "minus") {
-      return activeJournal.journals[activeIndex - 4].narrative;
-    } else {
-      return activeJournal.journals[activeIndex].narrative;
-    }
-  };
-
-  const initNarrTwo = (transformer) => {
-    if (transformer === "plus") {
-      return activeJournal.journals[activeIndex + 6] ? activeJournal.journals[activeIndex + 6].narrative : "";
-    } else if (transformer === "minus") {
-      return activeJournal.journals[activeIndex - 2].narrative;
-    } else {
-      return activeJournal.journals[activeIndex + 2] ? activeJournal.journals[activeIndex + 2].narrative : "";
-    }
-  };
-
-  const activeJournal = session["activeJournal"];
-  const [narrativeOne, setNarrativeOne] = useState(activeJournal.journals[activeIndex].narrative);
-  const [narrativeTwo, setNarrativeTwo] = useState(() => initNarrTwo("neutral"));
-
-  const onBlurNarrativeOne = () => {
-    activeJournal.journals[activeIndex].narrative = narrativeOne;
-    activeJournal.journals[activeIndex + 1].narrative = narrativeOne;
-    console.log(activeJournal);
-  };
-
-  const onBlurNarrativeTwo = () => {
-    activeJournal.journals[activeIndex + 2].narrative = narrativeTwo;
-    activeJournal.journals[activeIndex + 3].narrative = narrativeTwo;
-  };
+  const updatedTransactions = session["updatedTransactions"];
 
   const handlePrevious = () => {
-    activeJournal.journals[activeIndex].narrative = narrativeOne;
-    activeJournal.journals[activeIndex + 1].narrative = narrativeOne;
-    if (activeJournal.journals[activeIndex + 2]) {
-      activeJournal.journals[activeIndex + 2].narrative = narrativeTwo;
-      activeJournal.journals[activeIndex + 3].narrative = narrativeTwo;
-    }
-    setActiveIndex(activeIndex - 4);
-    initNarratives("minus");
+    setActiveIndex(activeIndex - 2);
   };
 
   const handleNext = () => {
-    activeJournal.journals[activeIndex].narrative = narrativeOne;
-    activeJournal.journals[activeIndex + 1].narrative = narrativeOne;
-    if (activeJournal.journals[activeIndex + 2]) {
-      activeJournal.journals[activeIndex + 2].narrative = narrativeTwo;
-      activeJournal.journals[activeIndex + 3].narrative = narrativeTwo;
-    }
-    setActiveIndex(activeIndex + 4);
-    initNarratives("plus");
+    setActiveIndex(activeIndex + 2);
   };
 
   const handleSubmit = async () => {
-    activeJournal.journals[activeIndex].narrative = narrativeOne;
-    activeJournal.journals[activeIndex + 1].narrative = narrativeOne;
-    if (activeJournal.journals[activeIndex + 2]) {
-      activeJournal.journals[activeIndex + 2].narrative = narrativeTwo;
-      activeJournal.journals[activeIndex + 3].narrative = narrativeTwo;
-    }
-    console.log(activeJournal);
-    session["activeJournal"] = activeJournal;
-    await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    await submitTransactionUpdates(session);
   };
 
   return (
@@ -99,95 +36,100 @@ const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, ses
         <tbody>
           <tr>
             <td>Date</td>
-            <td>{convertMongoDate(activeJournal.journals[activeIndex].transactionDate)}</td>
+            <td>{convertMongoDate(updatedTransactions[activeIndex].date)}</td>
           </tr>
+          {updatedTransactions[activeIndex].updatedDate && (
+            <tr>
+              <td>Updated Date</td>
+              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].updatedDate))}</td>
+            </tr>
+          )}
           <tr>
             <td>Narrative</td>
-            <td>{activeJournal.journals[activeIndex].origNarrative}</td>
+            <td>{updatedTransactions[activeIndex].narrative}</td>
           </tr>
-          <tr>
-            <td>Narrative</td>
-            <td>
-              <input
-                name="narrativeOne"
-                type="text"
-                id="narrativeOne"
-                className="form-control"
-                value={narrativeOne}
-                onChange={(e) => setNarrativeOne(e.target.value)}
-                onBlur={() => onBlurNarrativeOne()}
-              ></input>
-            </td>
-          </tr>
+          {updatedTransactions[activeIndex].updatedNarrative && (
+            <tr>
+              <td>Updated Narrative</td>
+              <td>{updatedTransactions[activeIndex].updatedNarrative}</td>
+            </tr>
+          )}
           <tr>
             <td>Value</td>
             <td>
-              {activeJournal.journals[activeIndex].value < 0
-                ? `${convertValueToString(activeJournal.journals[activeIndex].value)} DR`
-                : `${convertValueToString(activeJournal.journals[activeIndex].value)} CR`}
+              {updatedTransactions[activeIndex].value > 0
+                ? `${convertValueToString(updatedTransactions[activeIndex].value)} DR`
+                : `${convertValueToString(updatedTransactions[activeIndex].value)} CR`}
             </td>
           </tr>
           <tr>
             <td>Nominal code</td>
-            <td>
-              {activeJournal.journals[activeIndex].cerysCode} {"=> "}
-              {activeJournal.journals[activeIndex + 1].cerysCode}
-            </td>
+            {updatedTransactions[activeIndex].updatedCode && (
+              <td>
+                {updatedTransactions[activeIndex].code} {"=> "}
+                {updatedTransactions[activeIndex].updatedCode}
+              </td>
+            )}
+            {!updatedTransactions[activeIndex].updatedCode && <td>{updatedTransactions[activeIndex].code}</td>}
           </tr>
         </tbody>
       </table>
-      {activeJournal.journals.length > activeIndex + 2 && (
+      {updatedTransactions.length > activeIndex + 1 && (
         <table>
           <tbody>
             <tr>
               <td>Date</td>
-              <td>{convertMongoDate(activeJournal.journals[activeIndex + 2].transactionDate)}</td>
+              <td>{convertMongoDate(updatedTransactions[activeIndex + 1].date)}</td>
             </tr>
+            {updatedTransactions[activeIndex + 1].updatedDate && (
+              <tr>
+                <td>Updated Date</td>
+                <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].updatedDate))}</td>
+              </tr>
+            )}
             <tr>
               <td>Narrative</td>
-              <td>{activeJournal.journals[activeIndex + 2].origNarrative}</td>
+              <td>{updatedTransactions[activeIndex + 1].narrative}</td>
             </tr>
-            <tr>
-              <td>Narrative</td>
-              <td>
-                <input
-                  name="narrativeTwo"
-                  type="text"
-                  id="narrativeTwo"
-                  className="form-control"
-                  value={narrativeTwo}
-                  onChange={(e) => setNarrativeTwo(e.target.value)}
-                  onBlur={() => onBlurNarrativeTwo()}
-                ></input>
-              </td>
-            </tr>
+            {updatedTransactions[activeIndex + 1].updatedNarrative && (
+              <tr>
+                <td>Updated Narrative</td>
+                <td>{updatedTransactions[activeIndex + 1].updatedNarrative}</td>
+              </tr>
+            )}
             <tr>
               <td>Value</td>
               <td>
-                {activeJournal.journals[activeIndex + 2].value < 0
-                  ? `${convertValueToString(activeJournal.journals[activeIndex + 2].value)} DR`
-                  : `${convertValueToString(activeJournal.journals[activeIndex + 2].value)} CR`}
+                {updatedTransactions[activeIndex + 1].value > 0
+                  ? `${convertValueToString(updatedTransactions[activeIndex + 1].value)} DR`
+                  : `${convertValueToString(updatedTransactions[activeIndex + 1].value)} CR`}
               </td>
             </tr>
             <tr>
               <td>Nominal code</td>
-              <td>
-                {activeJournal.journals[activeIndex + 2].cerysCode} {"=> "}
-                {activeJournal.journals[activeIndex + 3].cerysCode}
-              </td>
+              {updatedTransactions[activeIndex + 1].updatedCode && (
+                <td>
+                  {updatedTransactions[activeIndex + 1].code} {"=> "}
+                  {updatedTransactions[activeIndex + 1].updatedCode}
+                </td>
+              )}
+              {!updatedTransactions[activeIndex + 1].updatedCode && (
+                <td>{updatedTransactions[activeIndex + 1].code}</td>
+              )}
             </tr>
           </tbody>
         </table>
       )}
 
-      {(activeJournal.journals.length > activeIndex + 4 || activeIndex > 0) && (
+      {(updatedTransactions.length > activeIndex + 2 || activeIndex > 0) && (
         <div>
           {activeIndex > 0 && <button onClick={() => handlePrevious()}>Previous</button>}
-          {activeJournal.journals.length > activeIndex + 4 && <button onClick={() => handleNext()}>Next</button>}
+          {updatedTransactions.length > activeIndex + 2 && <button onClick={() => handleNext()}>Next</button>}
         </div>
       )}
       <div>
         <button onClick={() => handleSubmit()}>Submit changes</button>
+        <button onClick={() => handleView("handleTransUpdates")}>Go back</button>
       </div>
 
       <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("assignmentDashHome")} />

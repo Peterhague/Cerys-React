@@ -1,6 +1,11 @@
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
+import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
+import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
+import { checkAssetRegStatus } from "./transactions/transactions";
+import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import { getActiveWorksheetName, highlightEditableRanges, unhighlightEditableRanges } from "./worksheet";
+import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
 export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {
   let userObj: any;
@@ -78,7 +83,6 @@ export const convertExcelDate = (excelDate) => {
   const rawDate = convertedDate.getDate();
   const date = rawDate < 10 ? `0${rawDate}` : rawDate;
   const mongoDate = `${convertedDate.getFullYear()}-${month}-${date}`;
-  console.log(mongoDate);
   return mongoDate;
 };
 
@@ -120,4 +124,15 @@ export const handleEditButtonClick = async (session) => {
       return;
     }
   });
+};
+
+export const updateAssignmentFigures = async (session) => {
+  const tbArray = tbForPosting(session.activeAssignment.tb);
+  await postTbToWbook(session, tbArray);
+  await wsPLAccount(session);
+  await wsBalanceSheet(session);
+  addTbClickListener(session);
+  addPlClickListener(session["activeAssignment"]);
+  addBsClickListener(session["activeAssignment"]);
+  checkAssetRegStatus(session, session["handleView"]);
 };
