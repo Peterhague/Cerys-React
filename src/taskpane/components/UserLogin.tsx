@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
 import { getChartUrl } from "../fetching/apiEndpoints";
+import { registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
 
 interface userLoginProps {
   updateSession: (update) => void;
@@ -37,6 +38,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
     updateSession(session);
+    await registerWorksheetDeletionHandler(session);
     handleView("userDashHome");
   };
   return (

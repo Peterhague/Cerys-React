@@ -1,13 +1,14 @@
 import { updateTransactionBatch } from "../fetching/apiEndpoints";
 import { fetchOptionsTransBatchUpdate } from "../fetching/generateOptions";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
-import { convertExcelDate, updateAssignmentFigures } from "./helperFunctions";
+import { callNextView, convertExcelDate, updateAssignmentFigures } from "./helperFunctions";
 import {
   getActiveWorksheet,
   getActiveWorksheetName,
   getWorksheetUsedRange,
   setExcelRangeValue,
   setManyExcelRangeValues,
+  setManyWorksheetRangeValues,
 } from "./worksheet";
 
 export const handleWorksheetEdit = (session, e, transactions, wsName) => {
@@ -275,11 +276,11 @@ export const checkEditMode = (session, wsName) => {
 };
 
 export const rejectChanges = async (session, e, wsName) => {
+  console.log(session);
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
-  const sheets = session.editableSheets;
   let changeRejected;
   let withinProtectedRange = false;
-  sheets.forEach((sheet) => {
+  session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
       changeRejected = sheet.changeRejected;
       sheet.changeRejected = !sheet.changeRejected;
@@ -331,7 +332,7 @@ export const rejectChanges = async (session, e, wsName) => {
 //  session.editableSheets = sheets;
 //};
 
-export const captureReanalysis = (session, e, transactions, wsName) => {
+export const captureReanalysis = async (session, e, transactions, wsName) => {
   console.log(e);
   console.log(transactions);
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
@@ -339,22 +340,46 @@ export const captureReanalysis = (session, e, transactions, wsName) => {
   transactions.forEach((line) => {
     if (line.rowNumber === eRowNumber) tran = line;
   });
-  const sheets = session.editableSheets;
+  let changeRejected = false;
   let isValid = false;
-  sheets.forEach((sheet) => {
+  session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
       const change = determineChangeType(sheet, e.address);
-      isValid = validateChange(session, tran, change, e);
-      if (isValid) {
-        console.log(isValid);
+      const { isError, isInvalid, isNegation } = validateChange(session, tran, change, e);
+      changeRejected = isInvalid;
+      if (!isError && !isInvalid) {
         let updated = false;
+        let newArray = [];
         session.updatedTransactions.forEach((updatedTran) => {
           if (updatedTran.transactionId === tran._id) {
-            updatedTran[change] = e.details.valueAfter;
+            isValid = true;
             updated = true;
-          }
+            if (isNegation) {
+              if (change === "updatedCode") {
+                if (updatedTran.updatedDate || updatedTran.updatedNarrative) {
+                  delete updatedTran[change];
+                  newArray.push(updatedTran);
+                }
+              }
+              if (change === "updatedDate") {
+                if (updatedTran.updatedCode || updatedTran.updatedNarrative) {
+                  delete updatedTran[change];
+                  newArray.push(updatedTran);
+                }
+              }
+              if (change === "updatedNarrative") {
+                if (updatedTran.updatedCode || updatedTran.updatedDate) {
+                  delete updatedTran[change];
+                  newArray.push(updatedTran);
+                }
+              }
+            } else {
+              updatedTran[change] = e.details.valueAfter;
+              newArray.push(updatedTran);
+            }
+          } else newArray.push(updatedTran);
         });
-        if (!updated) {
+        if (!updated && !isNegation) {
           const updatedTran: {
             transactionId: string;
             code: number;
@@ -366,6 +391,9 @@ export const captureReanalysis = (session, e, transactions, wsName) => {
             updatedNarrative?: string;
             value: number;
             rowNumber: number;
+            rowNumberOrig: number;
+            worksheetId: string;
+            worksheetName: string;
           } = {
             transactionId: tran._id,
             code: tran.cerysCode,
@@ -374,28 +402,27 @@ export const captureReanalysis = (session, e, transactions, wsName) => {
             narrative: tran.narrative,
             value: tran.value,
             rowNumber: tran.rowNumber,
+            rowNumberOrig: tran.rowNumberOrig,
+            worksheetId: sheet.worksheetId,
+            worksheetName: sheet.name,
             [change]: e.details.valueAfter,
           };
-          session.updatedTransactions.push(updatedTran);
+          newArray.push(updatedTran);
+          isValid = true;
         }
-        console.log(sheet);
+        session.updatedTransactions = newArray;
       }
     }
   });
-  //if (e.details.valueBefore === e.details.valueAfter) return;
-  //let validCode = false;
-  //session.chart.forEach((code) => {
-  //  if (code.cerysCode === e.details.valueAfter) validCode = true;
-  //});
-  //if (validCode) buildReanalysisJnls(session, e, tran);
-  isValid && session.handleView("handleTransUpdates");
-  if (!session.nextView) session.nextView = session.currentView;
-  //if (session.activeJournal.journals.length === 0) {
-  //  resetActiveJournal(session);
-  //  callNextView(session);
-  //} else {
-  //  session.handleView("handleTransUpdates");
-  //}
+  if (changeRejected) {
+    const range = `${e.address}:${e.address}`;
+    await setExcelRangeValue(wsName, range, e.details.valueBefore);
+  }
+  if (isValid) {
+    if (!session.nextView) session.nextView = session.currentView;
+    const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
+    session.handleView(view);
+  }
 };
 
 export const determineChangeType = (sheet, address) => {
@@ -412,28 +439,29 @@ export const determineChangeType = (sheet, address) => {
 };
 
 export const validateChange = (session, tran, change, e) => {
+  const obj = { isNegation: false, isInvalid: false, isError: false };
   if (change === "updatedCode") {
-    if (e.details.valueAfter === tran.cerysCode) return false;
-    let validCode = false;
+    if (e.details.valueAfter === tran.cerysCode) obj.isNegation = true;
+    let inValidCode = true;
     session.chart.forEach((code) => {
-      if (code.cerysCode === e.details.valueAfter) validCode = true;
+      if (code.cerysCode === e.details.valueAfter) inValidCode = false;
     });
-    return validCode;
+    obj.isInvalid = inValidCode;
   } else if (change === "updatedDate") {
-    if (typeof e.details.valueAfter !== "number") return false;
-    if (e.details.valueAfter === tran.transactionDateExcel) return false;
+    if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
+    if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
     if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
-      return false;
+      obj.isInvalid = true;
     } else if (
       e.details.valueAfter <=
       session.activeAssignment.reportingPeriod.reportingDateExcel - session.activeAssignment.reportingPeriod.noOfDays
     ) {
-      return false;
-    } else return true;
+      obj.isInvalid = true;
+    }
   } else if (change === "updatedNarrative") {
-    if (e.details.valueAfter === tran.narrative) return false;
-    return true;
-  } else return false;
+    if (e.details.valueAfter === tran.narrative) obj.isNegation = true;
+  } else obj.isError = true;
+  return obj;
 };
 
 //export const buildReanalysisJnls = (session, e, updatedTransactions) => {
@@ -506,38 +534,36 @@ export const submitTransactionUpdates = async (session) => {
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
   const updatedCustAndAss = await updatedCustAndAssDB.json();
-  console.log(updatedCustAndAss);
   session["customer"] = updatedCustAndAss.customer;
   session["activeAssignment"] = updatedCustAndAss.assignment;
   session["updatedTransactions"] = [];
-  tbUpdated && updateAssignmentFigures(session);
+  tbUpdated ? updateAssignmentFigures(session) : callNextView(session);
 };
 
 export const reverseTransactionUpdates = async (session) => {
-  const wsName = await getActiveWorksheetName();
-  let ws;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) ws = sheet;
-  });
   const reversals = [];
   const updatedTrans = session.updatedTransactions;
   updatedTrans.forEach((tran) => {
+    const wsName = tran.worksheetName;
+    let ws;
+    session.editableSheets.forEach((sheet) => {
+      if (sheet.name === wsName) ws = sheet;
+    });
     if (tran.updatedCode) {
       const address = `${ws.codeColDetails.colLetter}${tran.rowNumber}:${ws.codeColDetails.colLetter}${tran.rowNumber}`;
-      const reversal = { address, value: tran.code };
+      const reversal = { wsName, address, value: tran.code };
       reversals.push(reversal);
     }
     if (tran.updatedDate) {
       const address = `${ws.dateColDetails.colLetter}${tran.rowNumber}:${ws.dateColDetails.colLetter}${tran.rowNumber}`;
-      const reversal = { address, value: tran.dateExcel };
+      const reversal = { wsName, address, value: tran.dateExcel };
       reversals.push(reversal);
     }
     if (tran.updatedNarrative) {
       const address = `${ws.narrColDetails.colLetter}${tran.rowNumber}:${ws.narrColDetails.colLetter}${tran.rowNumber}`;
-      const reversal = { address, value: tran.narrative };
+      const reversal = { wsName, address, value: tran.narrative };
       reversals.push(reversal);
     }
   });
-  console.log(session)
-  await setManyExcelRangeValues(wsName, reversals);
+  await setManyWorksheetRangeValues(reversals);
 };

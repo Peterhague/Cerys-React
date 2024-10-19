@@ -7,6 +7,24 @@ import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import { getActiveWorksheetName, highlightEditableRanges, unhighlightEditableRanges } from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
+export const registerWorksheetDeletionHandler = async (session) => {
+  await Excel.run(async (context) => {
+    let sheets = context.workbook.worksheets;
+    console.log(sheets);
+    sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
+    console.log(session);
+    await context.sync();
+  });
+};
+
+export const handleSheetDeletion = (e, session) => {
+  let editableSheetDeleted = false;
+  session.updatedTransactions.forEach((tran) => {
+    if (tran.worksheetId === e.worksheetId) editableSheetDeleted = true;
+  });
+  console.log(editableSheetDeleted);
+};
+
 export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {
   let userObj: any;
   session["customer"]["users"].forEach((user: { _id: any }) => {
@@ -109,7 +127,9 @@ export const setEditButtonValue = async (session) => {
 };
 
 export const handleEditButtonClick = async (session) => {
+  console.log("clicked");
   const wsName = await getActiveWorksheetName();
+  console.log(wsName);
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
       if (sheet.editButtonStatus === "show") {

@@ -1,6 +1,7 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { reverseTransactionUpdates, submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
+import { callNextView } from "../../../utils.ts/helperFunctions";
 
 interface handleTransUpdatesProps {
   updateSession: (update) => void;
@@ -16,7 +17,7 @@ const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, ses
   const handleDiscard = async () => {
     await reverseTransactionUpdates(session);
     session["updatedTransactions"] = [];
-    //handleView(session["nextView"]);
+    callNextView(session);
   };
 
   const handleSubmit = async () => {

@@ -1,4 +1,4 @@
-import { setEditButtonValue } from "../helperFunctions";
+import { handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
@@ -63,10 +63,23 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
 
 async function cerysNomDetailView(context, detail, session) {
   console.log(detail);
+  console.log(session.updatedTransactions);
+  let sheetInMidEdit = false;
+  session.updatedTransactions.forEach((update) => {
+    detail.forEach((tran) => {
+      if (update.transactionId === tran._id) {
+        sheetInMidEdit = true;
+        tran.cerysCodeUpdated = update.updatedCode && update.updatedCode;
+        tran.transactionDateExcelUpdated = update.updatedDate && update.updatedDate;
+        tran.narrativeUpdated = update.updatedNarrative && update.updatedNarrative;
+        update.rowNumber = update.rowNumberOrig;
+      }
+    });
+  });
   const wsName = `${detail[0].cerysShortName} analysis`;
-  addWorksheet(context, wsName);
+  const ws = addWorksheet(context, wsName);
+  ws.load("id");
   await context.sync();
-  const ws = getWorksheet(context, wsName);
   const range = ws.getRange(`A1:G${detail.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
@@ -77,17 +90,17 @@ async function cerysNomDetailView(context, detail, session) {
   detail.forEach((line) => {
     let arr = [];
     arr.push(line.transactionNumber);
-    arr.push(line.transactionDateExcel);
+    arr.push(line.transactionDateExcelUpdated ? line.transactionDateExcelUpdated : line.transactionDateExcel);
     arr.push(line.transactionType);
-    arr.push(line.cerysCode);
+    arr.push(line.cerysCodeUpdated ? line.cerysCodeUpdated : line.cerysCode);
     line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
-    arr.push(line.narrative);
+    arr.push(line.narrativeUpdated ? line.narrativeUpdated : line.narrative);
     line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
     line.rowNumber = rowNumber;
+    line.rowNumberOrig = rowNumber;
     rowNumber += 1;
   });
-  console.log(valuesToPost);
   range.values = valuesToPost;
   const headerRange = ws.getRange("A1:G2");
   headerRange.format.font.bold = true;
@@ -98,6 +111,7 @@ async function cerysNomDetailView(context, detail, session) {
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const editableWs = {
     name: wsName,
+    worksheetId: ws.id,
     editableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
     editableRowRanges: [{ firstRow: 3, lastRow: detail.length + 2 }],
     activeEditableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
@@ -145,7 +159,9 @@ async function cerysNomDetailView(context, detail, session) {
   columnsRange.format.autofitColumns();
   ws.onActivated.add(() => setEditButtonValue(session));
   ws.onDeactivated.add(() => session.setEditButton("off"));
-  ws.activate();
+    ws.activate();
+    console.log(sheetInMidEdit);
+  if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));

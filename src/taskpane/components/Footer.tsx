@@ -1,6 +1,5 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
-import { getActiveWorksheet, highlightEditableRanges, unhighlightEditableRanges } from "../utils.ts/worksheet";
 import { handleEditButtonClick } from "../utils.ts/helperFunctions";
 
 interface footerProps {
@@ -11,28 +10,6 @@ interface footerProps {
 }
 
 const Footer: React.FC<footerProps> = ({ editButton, session }: footerProps) => {
-  //const handleShow = async () => {
-  //  const ws = await getActiveWorksheet();
-  //  session["editableSheets"].forEach((sheet) => {
-  //    if (sheet.name === ws["name"]) {
-  //      console.log(sheet);
-  //      highlightEditableRanges(sheet.editableRanges);
-  //    }
-  //  });
-  //  setEditButton("hide");
-  //};
-
-  //const handleHide = async () => {
-  //  const ws = await getActiveWorksheet();
-  //  session["editableSheets"].forEach((sheet) => {
-  //    if (sheet.name === ws["name"]) {
-  //      console.log(sheet);
-  //      unhighlightEditableRanges(sheet);
-  //    }
-  //  });
-  //  setEditButton("show");
-  //};
-
   return (
     <>
       <>
