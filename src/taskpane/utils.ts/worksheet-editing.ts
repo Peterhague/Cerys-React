@@ -5,27 +5,34 @@ import { callNextView, convertExcelDate, updateAssignmentFigures } from "./helpe
 import {
   getActiveWorksheet,
   getActiveWorksheetName,
+  getWorksheetRangeValues,
   getWorksheetUsedRange,
+  highlightRanges,
   setExcelRangeValue,
-  setManyExcelRangeValues,
   setManyWorksheetRangeValues,
 } from "./worksheet";
 
-export const handleWorksheetEdit = (session, e, transactions, wsName) => {
-  console.log("triggered");
+export const handleWorksheetEdit = (session, e, wsName) => {
+  console.log(e);
   if (e.changeType === "ColumnInserted") {
     handleColumnInsertion(session, e, wsName);
     return;
   } else if (e.changeType === "ColumnDeleted") {
     handleColumnDeletion(session, e, wsName);
   } else if (e.changeType === "RowInserted") {
-    handleRowInsertion(session, e, transactions, wsName);
+    handleRowInsertion(session, e, wsName);
   } else if (e.changeType === "RowDeleted") {
-    handleRowDeletion(session, e, transactions, wsName);
+    handleRowDeletion(session, e, wsName);
   } else {
     const editModeEnabled = checkEditMode(session, wsName);
     !editModeEnabled && rejectChanges(session, e, wsName);
-    editModeEnabled && captureReanalysis(session, e, transactions, wsName);
+    const autoFillObj = editModeEnabled && checkForAutoFill(e);
+    console.log(autoFillObj);
+    if (autoFillObj.autoFill) {
+      simulateAutoFillChanges(session, e, wsName, autoFillObj);
+    } else {
+      editModeEnabled && captureReanalysis(session, e, wsName);
+    }
   }
 };
 
@@ -43,17 +50,33 @@ export const handleColumnInsertion = async (session, e, wsName) => {
       } else if (addressColNo1 <= sheet.protectedRange.lastCol) {
         sheet.protectedRange.lastCol += colsInserted;
       }
+      if (sheet.transNoColDetails.colNumber >= addressColNo1) {
+        sheet.transNoColDetails.colNumber += colsInserted;
+        sheet.transNoColDetails.colLetter = colNumToLetter(sheet.transNoColDetails.colNumber);
+      }
       if (sheet.dateColDetails.colNumber >= addressColNo1) {
         sheet.dateColDetails.colNumber += colsInserted;
         sheet.dateColDetails.colLetter = colNumToLetter(sheet.dateColDetails.colNumber);
+      }
+      if (sheet.transTypeColDetails.colNumber >= addressColNo1) {
+        sheet.transTypeColDetails.colNumber += colsInserted;
+        sheet.transTypeColDetails.colLetter = colNumToLetter(sheet.transTypeColDetails.colNumber);
       }
       if (sheet.codeColDetails.colNumber >= addressColNo1) {
         sheet.codeColDetails.colNumber += colsInserted;
         sheet.codeColDetails.colLetter = colNumToLetter(sheet.codeColDetails.colNumber);
       }
+      if (sheet.clientCodeColDetails.colNumber >= addressColNo1) {
+        sheet.clientCodeColDetails.colNumber += colsInserted;
+        sheet.clientCodeColDetails.colLetter = colNumToLetter(sheet.clientCodeColDetails.colNumber);
+      }
       if (sheet.narrColDetails.colNumber >= addressColNo1) {
         sheet.narrColDetails.colNumber += colsInserted;
         sheet.narrColDetails.colLetter = colNumToLetter(sheet.narrColDetails.colNumber);
+      }
+      if (sheet.valueColDetails.colNumber >= addressColNo1) {
+        sheet.valueColDetails.colNumber += colsInserted;
+        sheet.valueColDetails.colLetter = colNumToLetter(sheet.valueColDetails.colNumber);
       }
       sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
       return;
@@ -93,12 +116,23 @@ export const handleColumnDeletion = async (session, e, wsName) => {
         session.setEditButton("off");
         sheet.editButtonStatus = "off";
       }
-      console.log(sheet);
+      if (sheet.transNoColDetails.colNumber > addressColNo1 && sheet.transNoColDetails.colNumber > addressColNo2) {
+        sheet.transNoColDetails.colNumber -= colsDeleted;
+        sheet.transNoColDetails.colLetter = colNumToLetter(sheet.transNoColDetails.colNumber);
+      } else if (!(addressColNo1 > sheet.transNoColDetails.colNumber)) {
+        sheet.transNoColDetails.deleted = true;
+      }
       if (sheet.dateColDetails.colNumber > addressColNo1 && sheet.dateColDetails.colNumber > addressColNo2) {
         sheet.dateColDetails.colNumber -= colsDeleted;
         sheet.dateColDetails.colLetter = colNumToLetter(sheet.dateColDetails.colNumber);
       } else if (!(addressColNo1 > sheet.dateColDetails.colNumber)) {
         sheet.dateColDetails.deleted = true;
+      }
+      if (sheet.transTypeColDetails.colNumber > addressColNo1 && sheet.transTypeColDetails.colNumber > addressColNo2) {
+        sheet.transTypeColDetails.colNumber -= colsDeleted;
+        sheet.transTypeColDetails.colLetter = colNumToLetter(sheet.transTypeColDetails.colNumber);
+      } else if (!(addressColNo1 > sheet.transTypeColDetails.colNumber)) {
+        sheet.transTypeColDetails.deleted = true;
       }
       if (sheet.codeColDetails.colNumber > addressColNo1 && sheet.codeColDetails.colNumber > addressColNo2) {
         sheet.codeColDetails.colNumber -= colsDeleted;
@@ -106,18 +140,33 @@ export const handleColumnDeletion = async (session, e, wsName) => {
       } else if (!(addressColNo1 > sheet.codeColDetails.colNumber)) {
         sheet.codeColDetails.deleted = true;
       }
+      if (
+        sheet.clientCodeColDetails.colNumber > addressColNo1 &&
+        sheet.clientCodeColDetails.colNumber > addressColNo2
+      ) {
+        sheet.clientCodeColDetails.colNumber -= colsDeleted;
+        sheet.clientCodeColDetails.colLetter = colNumToLetter(sheet.clientCodeColDetails.colNumber);
+      } else if (!(addressColNo1 > sheet.clientCodeColDetails.colNumber)) {
+        sheet.clientCodeColDetails.deleted = true;
+      }
       if (sheet.narrColDetails.colNumber > addressColNo1 && sheet.narrColDetails.colNumber > addressColNo2) {
         sheet.narrColDetails.colNumber -= colsDeleted;
         sheet.narrColDetails.colLetter = colNumToLetter(sheet.narrColDetails.colNumber);
       } else if (!(addressColNo1 > sheet.narrColDetails.colNumber)) {
         sheet.narrColDetails.deleted = true;
       }
+      if (sheet.valueColDetails.colNumber > addressColNo1 && sheet.valueColDetails.colNumber > addressColNo2) {
+        sheet.valueColDetails.colNumber -= colsDeleted;
+        sheet.valueColDetails.colLetter = colNumToLetter(sheet.valueColDetails.colNumber);
+      } else if (!(addressColNo1 > sheet.valueColDetails.colNumber)) {
+        sheet.valueColDetails.deleted = true;
+      }
       return;
     }
   });
 };
 
-export const handleRowInsertion = async (session, e, transactions, wsName) => {
+export const handleRowInsertion = async (session, e, wsName) => {
   console.log(e);
   const addressSplit = e.address.split(":");
   const addressRowNo1 = parseInt(addressSplit[0]);
@@ -146,20 +195,21 @@ export const handleRowInsertion = async (session, e, transactions, wsName) => {
       sheet.editableRowRanges = newRowRanges;
       console.log(sheet);
       sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
+      sheet.transactions.forEach((tran) => {
+        if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
+      });
       return;
     }
   });
-  transactions.forEach((tran) => {
-    if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
-  });
+  //transactions.forEach((tran) => {
+  //  if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
+  //});
   session.updatedTransactions.forEach((tran) => {
     if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
   });
-  console.log(transactions);
 };
 
-export const handleRowDeletion = async (session, e, transactions, wsName) => {
-  console.log(e);
+export const handleRowDeletion = async (session, e, wsName) => {
   const addressSplit = e.address.split(":");
   const addressRowNo1 = parseInt(addressSplit[0]);
   const addressRowNo2 = parseInt(addressSplit[1]);
@@ -183,15 +233,12 @@ export const handleRowDeletion = async (session, e, transactions, wsName) => {
         addressRowNo1 <= sheet.protectedRange.lastRow &&
         addressRowNo2 >= sheet.protectedRange.lastRow
       ) {
-        console.log("correct branch");
         sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (addressRowNo1 - 1);
       } else if (addressRowNo1 <= sheet.protectedRange.firstRow && addressRowNo2 >= sheet.protectedRange.lastRow) {
-        console.log("null!!!");
         sheet.protectedRangeDeleted = true;
         session.setEditButton("off");
         sheet.editButtonStatus = "off";
       }
-      console.log(sheet);
       const newRowRanges = [];
       sheet.editableRowRanges.forEach((range) => {
         if (addressRowNo2 < range.firstRow) {
@@ -215,16 +262,18 @@ export const handleRowDeletion = async (session, e, transactions, wsName) => {
         }
       });
       sheet.editableRowRanges = newRowRanges;
+      sheet.transactions.forEach((tran) => {
+        if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
+      });
       return;
     }
   });
-  transactions.forEach((tran) => {
-    if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
-  });
+  //transactions.forEach((tran) => {
+  //  if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
+  //});
   session.updatedTransactions.forEach((tran) => {
     if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
   });
-  console.log(transactions);
 };
 
 export const getActiveEdSheet = async (session) => {
@@ -296,6 +345,34 @@ export const rejectChanges = async (session, e, wsName) => {
   if (withinProtectedRange && !changeRejected) await setExcelRangeValue(wsName, range, e.details.valueBefore);
 };
 
+export const checkForAutoFill = (e) => {
+  console.log(e);
+  const autoFillObj = { autoFill: false };
+  const addressSplit = e.address.split(":");
+  if (!addressSplit[1]) return autoFillObj;
+  autoFillObj.autoFill = true;
+  console.log(addressSplit);
+  autoFillObj["firstColLetter"] = parseInt(addressSplit[0][1])
+    ? addressSplit[0].substr(0, 1)
+    : addressSplit[0].substr(0, 2);
+  autoFillObj["firstColNumber"] = colLetterToNum(autoFillObj["firstColLetter"]);
+  autoFillObj["lastColLetter"] = parseInt(addressSplit[1][1])
+    ? addressSplit[1].substr(0, 1)
+    : addressSplit[1].substr(0, 2);
+  autoFillObj["lastColNumber"] = colLetterToNum(autoFillObj["lastColLetter"]);
+  autoFillObj["autoFillCols"] = autoFillObj["firstColLetter"] === autoFillObj["lastColLetter"] ? false : true;
+  autoFillObj["firstRow"] = parseInt(addressSplit[0][1])
+    ? parseInt(addressSplit[0].substr(1))
+    : parseInt(addressSplit[0].substr(2));
+  autoFillObj["lastRow"] = parseInt(addressSplit[1][1])
+    ? parseInt(addressSplit[1].substr(1))
+    : parseInt(addressSplit[1].substr(2));
+  autoFillObj["autoFillRows"] = autoFillObj["firstRow"] === autoFillObj["lastRow"] ? false : true;
+  let repRange = `${autoFillObj["firstColLetter"]}${autoFillObj["firstRow"]}`;
+  autoFillObj["repRange"] = repRange;
+  return autoFillObj;
+};
+
 //export const queueChanges = (session, e, transactions, wsName) => {
 //  console.log(e);
 //  console.log(transactions);
@@ -332,20 +409,20 @@ export const rejectChanges = async (session, e, wsName) => {
 //  session.editableSheets = sheets;
 //};
 
-export const captureReanalysis = async (session, e, transactions, wsName) => {
-  console.log(e);
-  console.log(transactions);
+export const captureReanalysis = async (session, e, wsName) => {
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
   let tran;
-  transactions.forEach((line) => {
-    if (line.rowNumber === eRowNumber) tran = line;
-  });
   let changeRejected = false;
   let isValid = false;
+  let isNotNegation = true;
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
+      sheet.transactions.forEach((line) => {
+        if (line.rowNumber === eRowNumber) tran = line;
+      });
       const change = determineChangeType(sheet, e.address);
       const { isError, isInvalid, isNegation } = validateChange(session, tran, change, e);
+      isNotNegation = !isNegation;
       changeRejected = isInvalid;
       if (!isError && !isInvalid) {
         let updated = false;
@@ -414,11 +491,13 @@ export const captureReanalysis = async (session, e, transactions, wsName) => {
       }
     }
   });
+  const range = `${e.address}:${e.address}`;
   if (changeRejected) {
-    const range = `${e.address}:${e.address}`;
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
   if (isValid) {
+    const color = isNotNegation ? "lightGreen" : "yellow";
+    highlightRanges(wsName, [range], color);
     if (!session.nextView) session.nextView = session.currentView;
     const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
     session.handleView(view);
@@ -566,4 +645,108 @@ export const reverseTransactionUpdates = async (session) => {
     }
   });
   await setManyWorksheetRangeValues(reversals);
+  await resetEditableRanges(session, reversals);
+};
+
+export const resetEditableRanges = async (session, updates) => {
+  await Excel.run(async (context) => {
+    updates.forEach((update) => {
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === update.wsName && sheet.editButtonStatus === "hide") {
+          const ws = context.workbook.worksheets.getItem(update.wsName);
+          const range = ws.getRange(update.address);
+          range.format.fill.color = "yellow";
+        }
+      });
+    });
+    await context.sync();
+  });
+};
+
+export const simulateAutoFillChanges = async (session, e, wsName, autoFillObj) => {
+  console.log(session);
+  console.log(e);
+  console.log(wsName);
+  console.log(autoFillObj);
+  let sheet;
+  session.editableSheets.forEach((ws) => {
+    if (ws.name === wsName) sheet = ws;
+  });
+  const ranges = [];
+  if (autoFillObj.autoFillCols) {
+    for (let i = autoFillObj.firstColNumber; i < autoFillObj.lastColNumber + 1; i++) {
+      const rangeObj = { colNumber: i, rowNumber: autoFillObj.firstRow, column: "" };
+      if (sheet.transNoColDetails.colNumber === i) {
+        rangeObj.column = "transNo";
+      } else if (sheet.dateColDetails.colNumber === i) {
+        rangeObj.column = "date";
+      } else if (sheet.transTypeColDetails.colNumber === i) {
+        rangeObj.column = "transType";
+      } else if (sheet.codeColDetails.colNumber === i) {
+        rangeObj.column = "code";
+      } else if (sheet.clientCodeColDetails.colNumber === i) {
+        rangeObj.column = "clientCode";
+      } else if (sheet.narrColDetails.colNumber === i) {
+        rangeObj.column = "narrative";
+      } else if (sheet.valueColDetails.colNumber === i) {
+        rangeObj.column = "value";
+      }
+      ranges.push(rangeObj);
+    }
+  } else if (autoFillObj.autoFillRows) {
+    console.log("this far...");
+    console.log(sheet);
+    let column = "";
+    if (sheet.transNoColDetails.colNumber === autoFillObj.firstColNumber) {
+      console.log("help!!!");
+      column = "transNo";
+    } else if (sheet.dateColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "date";
+    } else if (sheet.transTypeColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "transType";
+    } else if (sheet.codeColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "code";
+    } else if (sheet.clientCodeColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "clientCode";
+    } else if (sheet.narrColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "narrative";
+    } else if (sheet.valueColDetails.colNumber === autoFillObj.firstColNumber) {
+      column = "value";
+    }
+    for (let i = autoFillObj.firstRow; i < autoFillObj.lastRow + 1; i++) {
+      const rangeObj = { colNumber: autoFillObj.firstColNumber, rowNumber: i, column };
+      ranges.push(rangeObj);
+    }
+  }
+  ranges.forEach((range) => {
+    session.updatedTransactions.forEach((update) => {
+      if (range.rowNumber === update.rowNumber) {
+        if (range.column === "code" && update.updatedCode) range.valueBefore = update.updatedCode;
+        if (range.column === "date" && update.updatedDate) range.valueBefore = update.updatedDate;
+        if (range.column === "narrative" && update.updatedNarrative) range.valueBefore = update.updatedNarrative;
+      }
+    });
+    !range.valueBefore &&
+      sheet.transactions.forEach((tran) => {
+        if (range.rowNumber === tran.rowNumber) {
+          if (range.column === "transNo") range.valueBefore = tran.transactionNumber;
+          if (range.column === "date") range.valueBefore = tran.transactionDateExcel;
+          if (range.column === "transType") range.valueBefore = tran.transactionType;
+          if (range.column === "code") range.valueBefore = tran.cerysCode;
+          if (range.column === "clientCode") range.valueBefore = tran.clientNominalCode;
+          if (range.column === "narrative") range.valueBefore = tran.narrative;
+          if (range.column === "value") range.valueBefore = tran.value;
+        }
+      });
+  });
+  console.log(ranges);
+  const range = `${autoFillObj.repRange}:${autoFillObj.repRange}`;
+  const valueAfter = await getWorksheetRangeValues(wsName, range);
+  ranges.forEach((item) => {
+    const event = {
+      address: `${colNumToLetter(item.colNumber)}${item.rowNumber}`,
+      details: { valueBefore: item.valueBefore, valueAfter: valueAfter[0][0] },
+    };
+    handleWorksheetEdit(session, event, wsName);
+  });
 };

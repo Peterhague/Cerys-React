@@ -23,6 +23,17 @@ export function getWorksheetAndRange(context, sheetName, range) {
   return { ws, range: sheetRange };
 }
 
+export const getWorksheetRangeValues = async (wsName, range) => {
+  const values = await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem(wsName);
+    const wsRange = sheet.getRange(range);
+    wsRange.load("values");
+    await context.sync();
+    return wsRange.values;
+  });
+  return values;
+};
+
 export async function gotToWorksheet(context, sheetName) {
   const sheet = context.workbook.worksheets.getItem(sheetName);
   sheet.activate();
@@ -136,6 +147,17 @@ export const unhighlightEditableRanges = async (sheet) => {
         const wsNarrRange = ws.getRange(narrRange);
         wsNarrRange.format.fill.clear();
       }
+    });
+    await context.sync();
+  });
+};
+
+export const highlightRanges = async (wsName, ranges, color) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getItem(wsName);
+    ranges.forEach((range) => {
+      const wsRange = ws.getRange(range);
+      wsRange.format.fill.color = color;
     });
     await context.sync();
   });

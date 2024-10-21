@@ -4,7 +4,7 @@ import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-s
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
-import { getActiveWorksheetName, highlightEditableRanges, unhighlightEditableRanges } from "./worksheet";
+import { getActiveWorksheetName, highlightEditableRanges, highlightRanges, unhighlightEditableRanges } from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
 export const registerWorksheetDeletionHandler = async (session) => {
@@ -127,13 +127,29 @@ export const setEditButtonValue = async (session) => {
 };
 
 export const handleEditButtonClick = async (session) => {
-  console.log("clicked");
   const wsName = await getActiveWorksheetName();
-  console.log(wsName);
+  const highlightGreenRanges = [];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
+      session.updatedTransactions.forEach((tran) => {
+        if (tran.worksheetName === wsName) {
+          if (tran.updatedCode) {
+            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+          if (tran.updatedDate) {
+            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+          if (tran.updatedNarrative) {
+            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+        }
+      });
       if (sheet.editButtonStatus === "show") {
         highlightEditableRanges(sheet);
+        highlightRanges(wsName, highlightGreenRanges, "lightGreen");
         sheet.editButtonStatus = "hide";
         session.setEditButton(sheet.editButtonStatus);
       } else {

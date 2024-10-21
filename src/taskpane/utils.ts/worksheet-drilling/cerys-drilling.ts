@@ -124,12 +124,40 @@ async function cerysNomDetailView(context, detail, session) {
       format: "dd/mm/yyyy",
       deleted: false,
     },
+    transNoColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "A",
+      colNumber: 1,
+      format: "",
+      deleted: false,
+    },
+    transTypeColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "C",
+      colNumber: 3,
+      format: "",
+      deleted: false,
+    },
+    clientCodeColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "E",
+      colNumber: 5,
+      format: "",
+      deleted: false,
+    },
+    valueColDetails: {
+      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+      colLetter: "G",
+      colNumber: 7,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+    },
     activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
     codeColDetails: {
       ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
       colLetter: "D",
       colNumber: 4,
-      format: "#,##0.00;(#,##0.00);-",
+      format: "",
       deleted: false,
     },
     narrColDetails: {
@@ -150,6 +178,7 @@ async function cerysNomDetailView(context, detail, session) {
     rowsSorted: false,
     dataCompromised: false,
     dataCorrupted: false,
+    transactions: detail,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -159,11 +188,12 @@ async function cerysNomDetailView(context, detail, session) {
   columnsRange.format.autofitColumns();
   ws.onActivated.add(() => setEditButtonValue(session));
   ws.onDeactivated.add(() => session.setEditButton("off"));
-    ws.activate();
-    console.log(sheetInMidEdit);
+  ws.activate();
+  console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail, wsName));
+  //ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail, wsName));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
   await context.sync();
