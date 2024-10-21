@@ -24,10 +24,11 @@ export const handleWorksheetEdit = (session, e, wsName) => {
   } else if (e.changeType === "RowDeleted") {
     handleRowDeletion(session, e, wsName);
   } else {
+    //rejectProtectedCellsChanges(session, e, wsName);
     const editModeEnabled = checkEditMode(session, wsName);
-    !editModeEnabled && rejectChanges(session, e, wsName);
-    const autoFillObj = editModeEnabled && checkForAutoFill(e);
-    console.log(autoFillObj);
+    //!editModeEnabled && rejectChanges(session, e, wsName, editModeEnabled);
+    rejectChanges(session, e, wsName, editModeEnabled);
+    const autoFillObj = checkForAutoFill(e);
     if (autoFillObj.autoFill) {
       simulateAutoFillChanges(session, e, wsName, autoFillObj);
     } else {
@@ -268,9 +269,6 @@ export const handleRowDeletion = async (session, e, wsName) => {
       return;
     }
   });
-  //transactions.forEach((tran) => {
-  //  if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
-  //});
   session.updatedTransactions.forEach((tran) => {
     if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
   });
@@ -290,27 +288,114 @@ export const handleColumnSort = async (session) => {
   sheet.columnsSorted = true;
 };
 
-export const handleRowSort = async (session, e, transactions) => {
+export const handleRowSort = async (session, e, wsName) => {
   console.log(e);
-  const ws = await getActiveWorksheet();
-  const wsName = ws.name;
+  console.log(session);
   const usedRange = await getWorksheetUsedRange(wsName);
-  const colAVals = [];
-  usedRange.forEach((arr) => {
-    colAVals.push(arr[0]);
+  const colVals = {
+    transNoVals: [],
+    dateVals: [],
+    transTypeVals: [],
+    codeVals: [],
+    clientCodeVals: [],
+    narrativeVals: [],
+    valueVals: [],
+  };
+  let colLocations;
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      colLocations = {
+        transNoCol: sheet.transNoColDetails.colNumber,
+        dateCol: sheet.dateColDetails.colNumber,
+        transTypeCol: sheet.transTypeColDetails.colNumber,
+        codeCol: sheet.codeColDetails.colNumber,
+        clientCodeCol: sheet.clientCodeColDetails.colNumber,
+        narrCol: sheet.narrColDetails.colNumber,
+        valueCol: sheet.valueColDetails.colNumber,
+      };
+    }
   });
-  transactions.forEach((tran) => {
-    colAVals.forEach((value, index) => {
-      if (tran.transactionNumber === value) {
-        tran.rowNumber = index + 1;
-      }
+  usedRange.forEach((arr) => {
+    arr.forEach((value, index) => {
+      if (index + 1 === colLocations.transNoCol) colVals.transNoVals.push(value);
+      if (index + 1 === colLocations.dateCol) colVals.dateVals.push(value);
+      if (index + 1 === colLocations.transTypeCol) colVals.transTypeVals.push(value);
+      if (index + 1 === colLocations.codeCol) colVals.codeVals.push(value);
+      if (index + 1 === colLocations.clientCodeCol) colVals.clientCodeVals.push(value);
+      if (index + 1 === colLocations.narrCol) colVals.narrativeVals.push(value);
+      if (index + 1 === colLocations.valueCol) colVals.valueVals.push(value);
     });
   });
-  console.log(usedRange);
-  console.log(transactions);
+  const protectedRowNumbers = [];
   session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) sheet.rowsSorted = true;
+    if (sheet.name === wsName) {
+      sheet.rowsSorted = true;
+      sheet.transactions.forEach((tran) => {
+        colVals.transNoVals.forEach((val, index) => {
+          if (val === tran.transactionNumber) {
+            if (
+              colVals.transTypeVals[index] === tran.transactionType &&
+              (colVals.clientCodeVals[index] === tran.clientNominalCode ||
+                (colVals.clientCodeVals[index] === "NA" && tran.clientNominalCode === -1)) &&
+              (colVals.valueVals[index] * 100 === tran.value || colVals.valueVals[index] * -100 === tran.value)
+            ) {
+              tran.rowNumber = index + 1;
+              protectedRowNumbers.push(index + 1);
+            }
+          }
+        });
+      });
+      protectedRowNumbers.sort((a, b) => {
+        return a - b;
+      });
+      let rangeObjs = [];
+      const indices = [];
+      let count = protectedRowNumbers[0];
+      protectedRowNumbers.forEach((rowNumber, index) => {
+        if (index > 0) {
+          if (rowNumber !== count + 1) {
+            indices.push(index);
+          }
+          count = rowNumber;
+        }
+      });
+      indices.push(protectedRowNumbers.length);
+      let firstRow = protectedRowNumbers[0];
+      indices.forEach((index) => {
+        const rangeObj = {
+          firstRow,
+          lastRow: protectedRowNumbers[index - 1],
+        };
+        rangeObjs.push(rangeObj);
+        firstRow = protectedRowNumbers[index];
+      });
+      sheet.editableRowRanges = rangeObjs;
+    }
   });
+  //protectedRowNumbers.sort((a, b) => {
+  //  return a - b;
+  //});
+  //let rangeObjs = [];
+  //const indices = [];
+  //let count = protectedRowNumbers[0];
+  //protectedRowNumbers.forEach((rowNumber, index) => {
+  //  if (index > 0) {
+  //    if (rowNumber !== count + 1) {
+  //      indices.push(index);
+  //    }
+  //    count = rowNumber;
+  //  }
+  //});
+  //indices.push(protectedRowNumbers.length);
+  //let firstRow = protectedRowNumbers[0];
+  //indices.forEach((index) => {
+  //  const rangeObj = {
+  //    firstRow,
+  //    lastRow: protectedRowNumbers[index - 1],
+  //  };
+  //  rangeObjs.push(rangeObj);
+  //  firstRow = protectedRowNumbers[index];
+  //});
 };
 
 export const checkEditMode = (session, wsName) => {
@@ -324,25 +409,33 @@ export const checkEditMode = (session, wsName) => {
   return editModeEnabled;
 };
 
-export const rejectChanges = async (session, e, wsName) => {
+export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
   console.log(session);
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
   let changeRejected;
   let withinProtectedRange = false;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      changeRejected = sheet.changeRejected;
-      sheet.changeRejected = !sheet.changeRejected;
-      const change = determineChangeType(sheet, e.address);
-      if (change) {
-        sheet.editableRowRanges.forEach((range) => {
-          if (eRowNumber >= range.firstRow || eRowNumber <= range.lastRow) withinProtectedRange = true;
+  for (let i = 0; i < session.editableSheets.length; i++) {
+    if (session.editableSheets[i].name === wsName) {
+      changeRejected = session.editableSheets[i].changeRejected;
+      session.editableSheets[i].changeRejected = !session.editableSheets[i].changeRejected;
+      const change = determineChangeType(session.editableSheets[i], e.address);
+      if ((change && !editModeEnabled) || change === "other") {
+        session.editableSheets[i].editableRowRanges.forEach((range) => {
+          if (eRowNumber >= range.firstRow && eRowNumber <= range.lastRow) withinProtectedRange = true;
         });
       }
     }
-  });
-  const range = `${e.address}:${e.address}`;
-  if (withinProtectedRange && !changeRejected) await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    console.log(withinProtectedRange);
+    console.log(changeRejected);
+    if (withinProtectedRange && !changeRejected) {
+      console.log("triggered here");
+      const range = `${e.address}:${e.address}`;
+      await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    } else {
+      if (session.editableSheets[i].changeRejected)
+        session.editableSheets[i].changeRejected = !session.editableSheets[i].changeRejected;
+    }
+  }
 };
 
 export const checkForAutoFill = (e) => {
@@ -493,6 +586,7 @@ export const captureReanalysis = async (session, e, wsName) => {
   });
   const range = `${e.address}:${e.address}`;
   if (changeRejected) {
+    console.log("triggered here");
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
   if (isValid) {
@@ -513,6 +607,13 @@ export const determineChangeType = (sheet, address) => {
     type = "updatedDate";
   } else if (addressCol === sheet.narrColDetails.colLetter) {
     type = "updatedNarrative";
+  } else if (
+    addressCol === sheet.transNoColDetails.colLetter ||
+    addressCol === sheet.transTypeColDetails.colLetter ||
+    addressCol === sheet.clientCodeColDetails.colLetter ||
+    addressCol === sheet.valueColDetails.colLetter
+  ) {
+    type = "other";
   }
   return type;
 };
@@ -542,53 +643,6 @@ export const validateChange = (session, tran, change, e) => {
   } else obj.isError = true;
   return obj;
 };
-
-//export const buildReanalysisJnls = (session, e, updatedTransactions) => {
-//  console.log(updatedTransactions);
-//  session.activeJournal.journalType = "reanalysis";
-//  session.activeJournal.journal = false;
-//  //const checkedJournals = [];
-//  //session.activeJournal.journals.forEach((jnl) => {
-//  //  if (jnl.transactionId !== tran._id) {
-//  //    checkedJournals.push(jnl);
-//  //  }
-//  //});
-//  //if (e.details.valueAfter !== tran.cerysCode) {
-//  updatedTransactions.forEach((tran) => {
-//    const value = tran.value;
-//    const valueNegative = tran.value * -1;
-//    let cerysObject1;
-//    session.chart.forEach((code) => {
-//      if (code.cerysCode === tran.code) cerysObject1 = code;
-//    });
-//    const narrative1 = `Reposted to NC${tran.updatedCode}: ${tran.narrative}`;
-//    const transactionDate = tran.updatedDate ? tran.updatedDate : tran.date;
-//    const jnlDtls1 = {
-//      ...cerysObject1,
-//      value: valueNegative,
-//      narrative: tran.narrative,
-//      origNarrative: tran.narrative,
-//      newNarrative: narrative1,
-//      transactionDate,
-//      transactionId: tran.transactionId,
-//    };
-//    let cerysObject2;
-//    session.chart.forEach((code) => {
-//      if (code.cerysCode === tran.updatedCode) cerysObject2 = code;
-//    });
-//    const narrative2 = `Reposted from NC${tran.code}: ${tran.narrative}`;
-//    const jnlDtls2 = {
-//      ...cerysObject2,
-//      value,
-//      narrative: tran.narrative,
-//      origNarrative: tran.narrative,
-//      newNarrative: narrative2,
-//      transactionDate,
-//      transactionId: tran._id,
-//    };
-//  });
-//  console.log(session.activeJournal);
-//};
 
 export const cancelAutoFill = async (wsName, address) => {
   await Excel.run(async (context) => {
@@ -694,11 +748,8 @@ export const simulateAutoFillChanges = async (session, e, wsName, autoFillObj) =
       ranges.push(rangeObj);
     }
   } else if (autoFillObj.autoFillRows) {
-    console.log("this far...");
-    console.log(sheet);
     let column = "";
     if (sheet.transNoColDetails.colNumber === autoFillObj.firstColNumber) {
-      console.log("help!!!");
       column = "transNo";
     } else if (sheet.dateColDetails.colNumber === autoFillObj.firstColNumber) {
       column = "date";
@@ -740,13 +791,13 @@ export const simulateAutoFillChanges = async (session, e, wsName, autoFillObj) =
       });
   });
   console.log(ranges);
-  const range = `${autoFillObj.repRange}:${autoFillObj.repRange}`;
-  const valueAfter = await getWorksheetRangeValues(wsName, range);
-  ranges.forEach((item) => {
+  for (let i = 0; i < ranges.length; i++) {
+    const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
+    const valueAfter = await getWorksheetRangeValues(wsName, valueAfterRange);
     const event = {
-      address: `${colNumToLetter(item.colNumber)}${item.rowNumber}`,
-      details: { valueBefore: item.valueBefore, valueAfter: valueAfter[0][0] },
+      address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
+      details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
     };
     handleWorksheetEdit(session, event, wsName);
-  });
+  }
 };

@@ -128,7 +128,7 @@ async function cerysNomDetailView(context, detail, session) {
       ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
       colLetter: "A",
       colNumber: 1,
-      format: "",
+      format: "0",
       deleted: false,
     },
     transTypeColDetails: {
@@ -142,7 +142,7 @@ async function cerysNomDetailView(context, detail, session) {
       ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
       colLetter: "E",
       colNumber: 5,
-      format: "",
+      format: "0",
       deleted: false,
     },
     valueColDetails: {
@@ -157,7 +157,7 @@ async function cerysNomDetailView(context, detail, session) {
       ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
       colLetter: "D",
       colNumber: 4,
-      format: "",
+      format: "0",
       deleted: false,
     },
     narrColDetails: {
@@ -192,10 +192,10 @@ async function cerysNomDetailView(context, detail, session) {
   console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  //ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, detail, wsName));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
+  //ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
+  ws.onRowSorted.add(async (e) => handleRowSort(session, e, wsName));
   await context.sync();
 }
 
