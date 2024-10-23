@@ -90,11 +90,29 @@ async function cerysNomDetailView(context, detail, session) {
   detail.forEach((line) => {
     let arr = [];
     arr.push(line.transactionNumber);
-    arr.push(line.transactionDateExcelUpdated ? line.transactionDateExcelUpdated : line.transactionDateExcel);
+    if (line.transactionDateExcelUpdated) {
+      arr.push(line.transactionDateExcelUpdated);
+      delete line.transactionDateExcelUpdated;
+    } else {
+      arr.push(line.transactionDateExcel);
+    }
+    //arr.push(line.transactionDateExcelUpdated ? line.transactionDateExcelUpdated : line.transactionDateExcel);
     arr.push(line.transactionType);
-    arr.push(line.cerysCodeUpdated ? line.cerysCodeUpdated : line.cerysCode);
+    if (line.cerysCodeUpdated) {
+      arr.push(line.cerysCodeUpdated);
+      delete line.cerysCodeUpdated;
+    } else {
+      arr.push(line.cerysCode);
+    }
+    //arr.push(line.cerysCodeUpdated ? line.cerysCodeUpdated : line.cerysCode);
     line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
-    arr.push(line.narrativeUpdated ? line.narrativeUpdated : line.narrative);
+    if (line.narrativeUpdated) {
+      arr.push(line.narrativeUpdated);
+      delete line.narrativeUpdated;
+    } else {
+      arr.push(line.narrative);
+    }
+    //arr.push(line.narrativeUpdated ? line.narrativeUpdated : line.narrative);
     line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
     line.rowNumber = rowNumber;
@@ -195,7 +213,7 @@ async function cerysNomDetailView(context, detail, session) {
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   //ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, e, wsName));
+  ws.onRowSorted.add(async () => handleRowSort(session, wsName));
   await context.sync();
 }
 

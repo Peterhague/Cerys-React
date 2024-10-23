@@ -103,6 +103,21 @@ export const setManyWorksheetRangeValues = async (updates) => {
   });
 };
 
+export const deleteWorksheetRangesUp = async (deletionObjs) => {
+  await Excel.run(async (context) => {
+    deletionObjs.forEach((obj) => {
+      obj.sheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
+    });
+      await context.sync();
+      console.log(deletionObjs);
+    deletionObjs.forEach((obj) => {
+      const range = obj.sheet && obj.sheet.getRange(obj.range);
+      range.delete(Excel.DeleteShiftDirection.up);
+    });
+    await context.sync();
+  });
+};
+
 export const highlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();

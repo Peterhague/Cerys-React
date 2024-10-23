@@ -3,7 +3,8 @@ import { fetchOptionsTransBatchUpdate } from "../fetching/generateOptions";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import { callNextView, convertExcelDate, updateAssignmentFigures } from "./helperFunctions";
 import {
-  getActiveWorksheet,
+  deleteWorksheet,
+  deleteWorksheetRangesUp,
   getActiveWorksheetName,
   getWorksheetRangeValues,
   getWorksheetUsedRange,
@@ -16,29 +17,28 @@ export const handleWorksheetEdit = (session, e, wsName) => {
   console.log(e);
   if (e.changeType === "ColumnInserted") {
     handleColumnInsertion(session, e, wsName);
-    return;
   } else if (e.changeType === "ColumnDeleted") {
     handleColumnDeletion(session, e, wsName);
   } else if (e.changeType === "RowInserted") {
     handleRowInsertion(session, e, wsName);
   } else if (e.changeType === "RowDeleted") {
     handleRowDeletion(session, e, wsName);
-  } else {
-    //rejectProtectedCellsChanges(session, e, wsName);
+  } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Up") {
+    handleCellDeletion(session, e, wsName);
+  } else if (e.changeType === "RangeEdited") {
     const editModeEnabled = checkEditMode(session, wsName);
-    //!editModeEnabled && rejectChanges(session, e, wsName, editModeEnabled);
     rejectChanges(session, e, wsName, editModeEnabled);
     const autoFillObj = checkForAutoFill(e);
     if (autoFillObj.autoFill) {
-      simulateAutoFillChanges(session, e, wsName, autoFillObj);
+      simulateAutoFillChanges(session, wsName, autoFillObj);
     } else {
       editModeEnabled && captureReanalysis(session, e, wsName);
     }
   }
+  console.log(session);
 };
 
 export const handleColumnInsertion = async (session, e, wsName) => {
-  console.log(e);
   const addressSplit = e.address.split(":");
   const addressColNo1 = colLetterToNum(addressSplit[0]);
   const addressColNo2 = colLetterToNum(addressSplit[1]);
@@ -109,10 +109,8 @@ export const handleColumnDeletion = async (session, e, wsName) => {
         addressColNo1 <= sheet.protectedRange.lastCol &&
         addressColNo2 >= sheet.protectedRange.lastCol
       ) {
-        console.log("correct branch");
         sheet.protectedRange.lastCol -= sheet.protectedRange.lastCol - (addressColNo1 - 1);
       } else if (addressColNo1 <= sheet.protectedRange.firstCol && addressColNo2 >= sheet.protectedRange.lastCol) {
-        console.log("null!!!");
         sheet.protectedRangeDeleted = true;
         session.setEditButton("off");
         sheet.editButtonStatus = "off";
@@ -168,7 +166,6 @@ export const handleColumnDeletion = async (session, e, wsName) => {
 };
 
 export const handleRowInsertion = async (session, e, wsName) => {
-  console.log(e);
   const addressSplit = e.address.split(":");
   const addressRowNo1 = parseInt(addressSplit[0]);
   const addressRowNo2 = parseInt(addressSplit[1]);
@@ -194,7 +191,6 @@ export const handleRowInsertion = async (session, e, wsName) => {
         } else newRowRanges.push(range);
       });
       sheet.editableRowRanges = newRowRanges;
-      console.log(sheet);
       sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
       sheet.transactions.forEach((tran) => {
         if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
@@ -202,9 +198,6 @@ export const handleRowInsertion = async (session, e, wsName) => {
       return;
     }
   });
-  //transactions.forEach((tran) => {
-  //  if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
-  //});
   session.updatedTransactions.forEach((tran) => {
     if (tran.rowNumber >= addressRowNo1) tran.rowNumber += rowsInserted;
   });
@@ -274,6 +267,86 @@ export const handleRowDeletion = async (session, e, wsName) => {
   });
 };
 
+export const handleCellDeletion = async (session, e, wsName) => {
+  const addressSplit = e.address.split(":");
+  const addressRowNo1 = parseInt(addressSplit[0][1])
+    ? parseInt(addressSplit[0].substr(1))
+    : parseInt(addressSplit[0].substr(2));
+  const addressRowNo2 = parseInt(addressSplit[1][1])
+    ? parseInt(addressSplit[1].substr(1))
+    : parseInt(addressSplit[1].substr(2));
+  const rowsDeleted = addressRowNo2 - addressRowNo1 + 1;
+  const addressColNo1 = parseInt(addressSplit[0][1])
+    ? colLetterToNum(addressSplit[0].substr(0, 1))
+    : colLetterToNum(addressSplit[0].substr(0, 2));
+  const addressColNo2 = parseInt(addressSplit[1][1])
+    ? colLetterToNum(addressSplit[1].substr(0, 1))
+    : colLetterToNum(addressSplit[1].substr(0, 2));
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      if (sheet.protectedRange.firstCol >= addressColNo1 && sheet.protectedRange.lastCol <= addressColNo2) {
+        if (addressRowNo2 < sheet.protectedRange.firstRow) {
+          sheet.protectedRange.firstRow -= rowsDeleted;
+          sheet.protectedRange.lastRow -= rowsDeleted;
+        } else if (
+          addressRowNo1 <= sheet.protectedRange.firstRow &&
+          addressRowNo2 >= sheet.protectedRange.firstRow &&
+          addressRowNo2 < sheet.protectedRange.lastRow
+        ) {
+          sheet.protectedRange.firstRow -= addressRowNo2 - sheet.protectedRange.firstRow;
+          sheet.protectedRange.lastRow -= rowsDeleted;
+        } else if (addressRowNo1 > sheet.protectedRange.firstRow && addressRowNo2 < sheet.protectedRange.lastRow) {
+          sheet.protectedRange.lastRow -= rowsDeleted;
+        } else if (
+          addressRowNo1 > sheet.protectedRange.firstRow &&
+          addressRowNo1 <= sheet.protectedRange.lastRow &&
+          addressRowNo2 >= sheet.protectedRange.lastRow
+        ) {
+          sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (addressRowNo1 - 1);
+        } else if (addressRowNo1 <= sheet.protectedRange.firstRow && addressRowNo2 >= sheet.protectedRange.lastRow) {
+          sheet.protectedRangeDeleted = true;
+          session.setEditButton("off");
+          sheet.editButtonStatus = "off";
+        }
+        const newRowRanges = [];
+        sheet.editableRowRanges.forEach((range) => {
+          if (addressRowNo2 < range.firstRow) {
+            const newRange = { firstRow: range.firstRow - rowsDeleted, lastRow: range.lastRow - rowsDeleted };
+            newRowRanges.push(newRange);
+          } else if (
+            addressRowNo1 <= range.firstRow &&
+            addressRowNo2 >= range.firstRow &&
+            addressRowNo2 < range.lastRow
+          ) {
+            const newRange = { firstRow: addressRowNo1, lastRow: range.lastRow - rowsDeleted };
+            newRowRanges.push(newRange);
+          } else if (addressRowNo1 > range.firstRow && addressRowNo2 <= range.lastRow) {
+            const newRange = { firstRow: range.firstRow, lastRow: range.lastRow - rowsDeleted };
+            newRowRanges.push(newRange);
+          } else if (
+            addressRowNo1 > range.firstRow &&
+            addressRowNo1 <= range.lastRow &&
+            addressRowNo2 >= range.lastRow
+          ) {
+            const newRange = { firstRow: range.firstRow, lastRow: range.lastRow - (addressRowNo1 - 1) };
+            newRowRanges.push(newRange);
+          } else if (addressRowNo1 > range.lastRow) {
+            newRowRanges.push(range);
+          }
+        });
+        sheet.editableRowRanges = newRowRanges;
+        sheet.transactions.forEach((tran) => {
+          if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
+        });
+        return;
+      }
+    }
+  });
+  session.updatedTransactions.forEach((tran) => {
+    if (tran.rowNumber > addressRowNo2) tran.rowNumber -= rowsDeleted;
+  });
+};
+
 export const getActiveEdSheet = async (session) => {
   const wsName = await getActiveWorksheetName();
   let ws;
@@ -288,9 +361,7 @@ export const handleColumnSort = async (session) => {
   sheet.columnsSorted = true;
 };
 
-export const handleRowSort = async (session, e, wsName) => {
-  console.log(e);
-  console.log(session);
+export const handleRowSort = async (session, wsName) => {
   const usedRange = await getWorksheetUsedRange(wsName);
   const colVals = {
     transNoVals: [],
@@ -341,6 +412,11 @@ export const handleRowSort = async (session, e, wsName) => {
             ) {
               tran.rowNumber = index + 1;
               protectedRowNumbers.push(index + 1);
+              session.updatedTransactions.forEach((update) => {
+                if (update.transactionId === tran._id) {
+                  update.rowNumber = index + 1;
+                }
+              });
             }
           }
         });
@@ -372,37 +448,12 @@ export const handleRowSort = async (session, e, wsName) => {
       sheet.editableRowRanges = rangeObjs;
     }
   });
-  //protectedRowNumbers.sort((a, b) => {
-  //  return a - b;
-  //});
-  //let rangeObjs = [];
-  //const indices = [];
-  //let count = protectedRowNumbers[0];
-  //protectedRowNumbers.forEach((rowNumber, index) => {
-  //  if (index > 0) {
-  //    if (rowNumber !== count + 1) {
-  //      indices.push(index);
-  //    }
-  //    count = rowNumber;
-  //  }
-  //});
-  //indices.push(protectedRowNumbers.length);
-  //let firstRow = protectedRowNumbers[0];
-  //indices.forEach((index) => {
-  //  const rangeObj = {
-  //    firstRow,
-  //    lastRow: protectedRowNumbers[index - 1],
-  //  };
-  //  rangeObjs.push(rangeObj);
-  //  firstRow = protectedRowNumbers[index];
-  //});
 };
 
 export const checkEditMode = (session, wsName) => {
   let editModeEnabled = false;
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
-      console.log(sheet);
       if (sheet.editButtonStatus === "hide") editModeEnabled = true;
     }
   });
@@ -410,7 +461,6 @@ export const checkEditMode = (session, wsName) => {
 };
 
 export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
-  console.log(session);
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
   let changeRejected;
   let withinProtectedRange = false;
@@ -425,10 +475,7 @@ export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
         });
       }
     }
-    console.log(withinProtectedRange);
-    console.log(changeRejected);
     if (withinProtectedRange && !changeRejected) {
-      console.log("triggered here");
       const range = `${e.address}:${e.address}`;
       await setExcelRangeValue(wsName, range, e.details.valueBefore);
     } else {
@@ -439,12 +486,10 @@ export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
 };
 
 export const checkForAutoFill = (e) => {
-  console.log(e);
   const autoFillObj = { autoFill: false };
   const addressSplit = e.address.split(":");
   if (!addressSplit[1]) return autoFillObj;
   autoFillObj.autoFill = true;
-  console.log(addressSplit);
   autoFillObj["firstColLetter"] = parseInt(addressSplit[0][1])
     ? addressSplit[0].substr(0, 1)
     : addressSplit[0].substr(0, 2);
@@ -586,7 +631,6 @@ export const captureReanalysis = async (session, e, wsName) => {
   });
   const range = `${e.address}:${e.address}`;
   if (changeRejected) {
-    console.log("triggered here");
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
   if (isValid) {
@@ -654,7 +698,9 @@ export const cancelAutoFill = async (wsName, address) => {
 };
 
 export const submitTransactionUpdates = async (session) => {
+  console.log("working here");
   let tbUpdated = false;
+  const deletionObjs = [];
   session["updatedTransactions"].forEach((tran) => {
     tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
     if (tran.updatedCode) {
@@ -662,8 +708,18 @@ export const submitTransactionUpdates = async (session) => {
       session["chart"].forEach((code) => {
         if (code.cerysCode === tran.updatedCode) tran.cerysCodeObject = code;
       });
+      console.log(tran);
+      const sheet = session.editableSheets.find((ws) => {
+        return ws.name === tran.worksheetName;
+      });
+      console.log(sheet);
+      const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${tran.rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${tran.rowNumber}`;
+      const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber: tran.rowNumber };
+      deletionObjs.push(deletionObj);
     }
   });
+  console.log(session.editableSheets[0].transactions);
+  await deleteWorksheetRangesUp(deletionObjs);
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
   const updatedCustAndAss = await updatedCustAndAssDB.json();
@@ -717,11 +773,7 @@ export const resetEditableRanges = async (session, updates) => {
   });
 };
 
-export const simulateAutoFillChanges = async (session, e, wsName, autoFillObj) => {
-  console.log(session);
-  console.log(e);
-  console.log(wsName);
-  console.log(autoFillObj);
+export const simulateAutoFillChanges = async (session, wsName, autoFillObj) => {
   let sheet;
   session.editableSheets.forEach((ws) => {
     if (ws.name === wsName) sheet = ws;
@@ -790,7 +842,6 @@ export const simulateAutoFillChanges = async (session, e, wsName, autoFillObj) =
         }
       });
   });
-  console.log(ranges);
   for (let i = 0; i < ranges.length; i++) {
     const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
     const valueAfter = await getWorksheetRangeValues(wsName, valueAfterRange);
