@@ -2,9 +2,15 @@ import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
+import { colLetterToNum } from "./excel-col-conversion";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
-import { getActiveWorksheetName, highlightEditableRanges, highlightRanges, unhighlightEditableRanges } from "./worksheet";
+import {
+  getActiveWorksheetName,
+  highlightEditableRanges,
+  highlightRanges,
+  unhighlightEditableRanges,
+} from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
 export const registerWorksheetDeletionHandler = async (session) => {
@@ -151,12 +157,11 @@ export const handleEditButtonClick = async (session) => {
         highlightEditableRanges(sheet);
         highlightRanges(wsName, highlightGreenRanges, "lightGreen");
         sheet.editButtonStatus = "hide";
-        session.setEditButton(sheet.editButtonStatus);
       } else {
         unhighlightEditableRanges(sheet);
         sheet.editButtonStatus = "show";
-        session.setEditButton(sheet.editButtonStatus);
       }
+      session.setEditButton(sheet.editButtonStatus);
       return;
     }
   });
@@ -171,4 +176,42 @@ export const updateAssignmentFigures = async (session) => {
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
   checkAssetRegStatus(session, session["handleView"]);
+};
+
+export const interpretEventAddress = (e) => {
+  const address = e.address.length < 4 ? `${e.address}:${e.address}` : e.address;
+  const addressSplit = address.split(":");
+  const noCols = parseInt(addressSplit[0][0]) ? true : false;
+  const noRows = parseInt(addressSplit[0].at(-1)) ? false : true;
+  const firstRow = noRows
+    ? null
+    : noCols
+      ? parseInt(addressSplit[0])
+      : parseInt(addressSplit[0][1])
+        ? parseInt(addressSplit[0].substr(1))
+        : parseInt(addressSplit[0].substr(2));
+
+  const lastRow = noRows
+    ? null
+    : noCols
+      ? parseInt(addressSplit[1])
+      : parseInt(addressSplit[1][1])
+        ? parseInt(addressSplit[1].substr(1))
+        : parseInt(addressSplit[1].substr(2));
+  const firstCol = noCols
+    ? null
+    : noRows
+      ? colLetterToNum(addressSplit[0])
+      : parseInt(addressSplit[0][1])
+        ? colLetterToNum(addressSplit[0].substr(0, 1))
+        : colLetterToNum(addressSplit[0].substr(0, 2));
+  const lastCol = noCols
+    ? null
+    : noRows
+      ? colLetterToNum(addressSplit[1])
+      : parseInt(addressSplit[1][1])
+        ? colLetterToNum(addressSplit[1].substr(0, 1))
+        : colLetterToNum(addressSplit[1].substr(0, 2));
+
+  return { firstRow, lastRow, firstCol, lastCol };
 };

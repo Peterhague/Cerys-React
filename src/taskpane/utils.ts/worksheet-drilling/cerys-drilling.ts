@@ -212,8 +212,7 @@ async function cerysNomDetailView(context, detail, session) {
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
-  //ws.onRowSorted.add(async (e) => handleRowSort(session, e, detail));
-  ws.onRowSorted.add(async () => handleRowSort(session, wsName));
+  ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
   await context.sync();
 }
 

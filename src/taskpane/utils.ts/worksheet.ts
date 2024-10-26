@@ -108,12 +108,36 @@ export const deleteWorksheetRangesUp = async (deletionObjs) => {
     deletionObjs.forEach((obj) => {
       obj.sheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
     });
-      await context.sync();
-      console.log(deletionObjs);
+    await context.sync();
+    console.log(deletionObjs);
     deletionObjs.forEach((obj) => {
       const range = obj.sheet && obj.sheet.getRange(obj.range);
       range.delete(Excel.DeleteShiftDirection.up);
     });
+    await context.sync();
+  });
+};
+
+//export const insertWorksheetRangeUp = async (wsName, range) => {
+//    await Excel.run(async (context) => {
+//        const sheet = context.workbook.worksheets.getItem(wsName);
+//        const range = sheet.getRange(range);
+//        range.insert(Excel.)
+//        await context.sync();
+//        console.log(deletionObjs);
+//        deletionObjs.forEach((obj) => {
+//            const range = obj.sheet && obj.sheet.getRange(obj.range);
+//            range.delete(Excel.DeleteShiftDirection.up);
+//        });
+//        await context.sync();
+//    });
+//};
+
+export const deleteWorksheetRangeDown = async (wsName, range) => {
+  await Excel.run(async (context) => {
+    const sheet = context.workbook.worksheets.getItem(wsName);
+    const wsRange = sheet.getRange(range);
+    wsRange.delete(Excel.DeleteShiftDirection.up);
     await context.sync();
   });
 };
