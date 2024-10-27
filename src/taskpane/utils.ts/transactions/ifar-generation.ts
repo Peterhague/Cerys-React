@@ -58,6 +58,7 @@ export async function createIFATransSumm(session, relevantTrans) {
           console.log(trans);
           session["IFATransactions"].push(trans);
         } else {
+          console.log(i);
           i.rowNumber = session["IFATransactions"].length + 3;
           i.assetNarrative = i.narrative;
           i.assetSubCatCodes = [i.assetSubCatCode];
@@ -193,6 +194,7 @@ export async function createIFATransSumm(session, relevantTrans) {
       rangeJK.format.fill.color = "yellow";
       ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
       await context.sync();
+      ws.activate();
     });
   } catch (e) {
     console.error(e);
@@ -295,7 +297,6 @@ export function updateAmortRate(e, transToPost, eRowNumber) {
 export async function createIFAR(session) {
   try {
     await Excel.run(async (context) => {
-      //await postIFAtoMem(session);
       const { customer, assignment } = await postIFAtoDB(session);
       session["customer"] = customer;
       session["activeAssignment"] = assignment;

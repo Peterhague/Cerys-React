@@ -37,6 +37,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["updatedTransactions"] = [];
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
+    session["options"] = {};
     updateSession(session);
     await registerWorksheetDeletionHandler(session);
     handleView("userDashHome");

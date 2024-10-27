@@ -80,6 +80,7 @@ const AppBody: React.FC = () => {
         break;
       case "userDashHome":
         body = <UserDashHome handleView={handleView} />;
+        session["nextView"] = view;
         break;
       case "customerLogin":
         body = (
@@ -110,6 +111,7 @@ const AppBody: React.FC = () => {
         break;
       case "customerDashHome":
         body = <CustomerDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        session["nextView"] = view;
         break;
       case "customerClientsHome":
         body = <CustomerClientsHome handleView={handleView} updateSession={updateSession} session={session} />;
@@ -176,9 +178,11 @@ const AppBody: React.FC = () => {
         break;
       case "assignmentDashHome":
         body = <AssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        session["nextView"] = view;
         break;
       case "enterClientDataHome":
         body = <EnterClientDataHome handleView={handleView} updateSession={updateSession} session={session} />;
+        session["nextView"] = view;
         break;
       case "enterJournal":
         body = <EnterJournal handleView={handleView} updateSession={updateSession} session={session} />;

@@ -167,6 +167,34 @@ export const handleEditButtonClick = async (session) => {
   });
 };
 
+export const simulateEditButtonClick = async (session) => {
+  const wsName = await getActiveWorksheetName();
+  const highlightGreenRanges = [];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      session.updatedTransactions.forEach((tran) => {
+        if (tran.worksheetName === wsName) {
+          if (tran.updatedCode) {
+            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+          if (tran.updatedDate) {
+            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+          if (tran.updatedNarrative) {
+            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+        }
+      });
+      highlightEditableRanges(sheet);
+      highlightRanges(wsName, highlightGreenRanges, "lightGreen");
+      return;
+    }
+  });
+};
+
 export const updateAssignmentFigures = async (session) => {
   const tbArray = tbForPosting(session.activeAssignment.tb);
   await postTbToWbook(session, tbArray);
@@ -180,6 +208,44 @@ export const updateAssignmentFigures = async (session) => {
 
 export const interpretEventAddress = (e) => {
   const address = e.address.length < 4 ? `${e.address}:${e.address}` : e.address;
+  const addressSplit = address.split(":");
+  const noCols = parseInt(addressSplit[0][0]) ? true : false;
+  const noRows = parseInt(addressSplit[0].at(-1)) ? false : true;
+  const firstRow = noRows
+    ? null
+    : noCols
+      ? parseInt(addressSplit[0])
+      : parseInt(addressSplit[0][1])
+        ? parseInt(addressSplit[0].substr(1))
+        : parseInt(addressSplit[0].substr(2));
+
+  const lastRow = noRows
+    ? null
+    : noCols
+      ? parseInt(addressSplit[1])
+      : parseInt(addressSplit[1][1])
+        ? parseInt(addressSplit[1].substr(1))
+        : parseInt(addressSplit[1].substr(2));
+  const firstCol = noCols
+    ? null
+    : noRows
+      ? colLetterToNum(addressSplit[0])
+      : parseInt(addressSplit[0][1])
+        ? colLetterToNum(addressSplit[0].substr(0, 1))
+        : colLetterToNum(addressSplit[0].substr(0, 2));
+  const lastCol = noCols
+    ? null
+    : noRows
+      ? colLetterToNum(addressSplit[1])
+      : parseInt(addressSplit[1][1])
+        ? colLetterToNum(addressSplit[1].substr(0, 1))
+        : colLetterToNum(addressSplit[1].substr(0, 2));
+
+  return { firstRow, lastRow, firstCol, lastCol };
+};
+
+export const interpretExcelAddress = (excelAddress) => {
+  const address = excelAddress.length < 4 ? `${excelAddress}:${excelAddress}` : excelAddress;
   const addressSplit = address.split(":");
   const noCols = parseInt(addressSplit[0][0]) ? true : false;
   const noRows = parseInt(addressSplit[0].at(-1)) ? false : true;

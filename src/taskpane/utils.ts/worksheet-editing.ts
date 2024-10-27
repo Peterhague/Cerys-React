@@ -1,18 +1,23 @@
 import { updateTransactionBatch } from "../fetching/apiEndpoints";
 import { fetchOptionsTransBatchUpdate } from "../fetching/generateOptions";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
-import { callNextView, convertExcelDate, interpretEventAddress, updateAssignmentFigures } from "./helperFunctions";
+import {
+  callNextView,
+  convertExcelDate,
+  interpretEventAddress,
+  interpretExcelAddress,
+  simulateEditButtonClick,
+  updateAssignmentFigures,
+} from "./helperFunctions";
 import {
   deleteWorksheetRangeDown,
   deleteWorksheetRangesUp,
   getActiveWorksheetName,
-  getWorksheet,
   getWorksheetRangeValues,
   getWorksheetUsedRange,
   highlightRanges,
   setExcelRangeValue,
   setManyWorksheetRangeValues,
-  unhighlightEditableRanges,
 } from "./worksheet";
 
 export const handleWorksheetEdit = async (session, e, wsName) => {
@@ -34,24 +39,37 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
   } else if (e.changeType === "RangeEdited") {
     const editModeEnabled = checkEditMode(session, wsName);
     await rejectChanges(session, e, wsName, editModeEnabled);
-    const autoFillObj = checkForAutoFill(e);
+    const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e);
     if (autoFillObj.autoFill) {
+      console.log("triggered somehow");
       await simulateAutoFillChanges(session, wsName, autoFillObj);
     } else {
       editModeEnabled && (await captureReanalysis(session, e, wsName));
     }
   }
   console.log(session);
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name == wsName) {
-      if (sheet.dataCorrupted) {
-        sheet.editButtonStatus === "show" && unhighlightEditableRanges(sheet);
-        sheet.editButtonStatus = "off";
-        session.setEditButton("off");
+  for (let i = 0; i < session.editableSheets.length; i++) {
+    if (session.editableSheets[i].name == wsName) {
+      if (session.editableSheets[i].dataCorrupted) {
+        console.log("CORRUPTED");
+        if (
+          session.editableSheets[i].editButtonStatus === "hide" ||
+          session.editableSheets[i].editButtonStatus === "inProgress"
+        ) {
+          simulateEditButtonClick(session);
+        }
+        session.options.autoFillOverride = true;
+        await resetToPreviousValues(wsName, session.editableSheets[i]);
       }
     }
-  });
+  }
   const usedRange = await getWorksheetUsedRange(wsName);
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name == wsName) {
+      sheet.usedRange = usedRange;
+    }
+  });
+  session.options.autoFillOverride = false;
   console.log(usedRange);
 };
 
@@ -295,12 +313,10 @@ export const handleRowDeletion = async (session, e, wsName) => {
 export const handleCellDeletionUp = async (session, e, wsName) => {
   console.log("cells deleted");
   const eventAddressObj = interpretEventAddress(e);
-  console.log(eventAddressObj);
   const { firstCol, firstRow, lastCol, lastRow } = eventAddressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
-      console.log(sheet);
       if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
         if (lastRow < sheet.protectedRange.firstRow) {
           sheet.protectedRange.firstRow -= rowsDeleted;
@@ -453,7 +469,9 @@ export const handleCellDeletionLeft = async (session, e, wsName) => {
           firstCol <= sheet.protectedRange.lastCol &&
           firstCol >= sheet.protectedRange.firstCol)
       ) {
+        console.log(sheet);
         console.log("DATA CORRUPPTED!!!!");
+        reinstateNumberFormats(sheet);
         sheet.dataCorrupted = true;
       }
     }
@@ -615,7 +633,7 @@ export const checkEditMode = (session, wsName) => {
   let editModeEnabled = false;
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
-      if (sheet.editButtonStatus === "hide") editModeEnabled = true;
+      if (sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress") editModeEnabled = true;
     }
   });
   return editModeEnabled;
@@ -709,6 +727,7 @@ export const checkForAutoFill = (e) => {
 //};
 
 export const captureReanalysis = async (session, e, wsName) => {
+  console.log("here at least");
   const eRowNumber = parseInt(e.address[1]) ? parseInt(e.address.substr(1)) : parseInt(e.address.substr(2));
   let tran;
   const tests = { changeRejected: false, isValid: false, isNotNegation: true, updated: false };
@@ -730,20 +749,26 @@ export const captureReanalysis = async (session, e, wsName) => {
         }
         session.updatedTransactions = newArray;
       }
-      if (tests.isValid) sheet.editButtonStatus = "off";
+      if (tests.isValid) {
+        sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
+      }
     }
   });
   const range = `${e.address}:${e.address}`;
   if (tests.changeRejected) {
+    console.log("deemed to be rejected");
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
   if (tests.isValid) {
     const color = tests.isNotNegation ? "lightGreen" : "yellow";
     highlightRanges(wsName, [range], color);
-    if (!session.nextView) session.nextView = session.currentView;
     const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
     session.handleView(view);
-    session.setEditButton("off");
+    if (session.updatedTransactions.length > 0) {
+      session.setEditButton("off");
+    } else {
+      session.setEditButton("hide");
+    }
   }
 };
 
@@ -893,8 +918,8 @@ export const submitTransactionUpdates = async (session) => {
   session["customer"] = updatedCustAndAss.customer;
   session["activeAssignment"] = updatedCustAndAss.assignment;
   session["updatedTransactions"] = [];
-    tbUpdated ? updateAssignmentFigures(session) : callNextView(session);
-    session.setEditButton("hide");
+  tbUpdated ? updateAssignmentFigures(session) : callNextView(session);
+  session.setEditButton("hide");
 };
 
 export const reverseTransactionUpdates = async (session) => {
@@ -1029,4 +1054,52 @@ export const simulateAutoFillChanges = async (session, wsName, autoFillObj) => {
     };
     handleWorksheetEdit(session, event, wsName);
   }
+};
+
+export const resetToPreviousValues = async (wsName, sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getItem(wsName);
+    const usedRange = ws.getUsedRange();
+    usedRange.load("address");
+    await context.sync();
+    const fullAddress = usedRange.address;
+    const fullAddressSplit = fullAddress.split("!");
+    const addressObj = interpretExcelAddress(fullAddressSplit[1]);
+    const blankValues = [];
+    for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
+      const row = [];
+      for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
+        row.push("");
+      }
+      blankValues.push(row);
+    }
+    usedRange.values = blankValues;
+    const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
+    const wsNewRange = ws.getRange(newRange);
+    wsNewRange.values = sheet.usedRange;
+    sheet.dataCorrupted = false;
+    await context.sync();
+  });
+};
+
+export const reinstateNumberFormats = async (sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getItem(sheet.name);
+    const transNoRange = ws.getRange(`${sheet.transNoColDetails.colLetter}:${sheet.transNoColDetails.colLetter}`);
+    transNoRange.numberFormat = sheet.transNoColDetails.format;
+    const dateRange = ws.getRange(`${sheet.dateColDetails.colLetter}:${sheet.dateColDetails.colLetter}`);
+    dateRange.numberFormat = sheet.dateColDetails.format;
+    const transTypeRange = ws.getRange(`${sheet.transTypeColDetails.colLetter}:${sheet.transTypeColDetails.colLetter}`);
+    transTypeRange.numberFormat = sheet.transTypeColDetails.format;
+    const codeRange = ws.getRange(`${sheet.codeColDetails.colLetter}:${sheet.codeColDetails.colLetter}`);
+    codeRange.numberFormat = sheet.codeColDetails.format;
+    const clientCodeRange = ws.getRange(
+      `${sheet.clientCodeColDetails.colLetter}:${sheet.clientCodeColDetails.colLetter}`
+    );
+    clientCodeRange.numberFormat = sheet.clientCodeColDetails.format;
+    const narrativeRange = ws.getRange(`${sheet.narrColDetails.colLetter}:${sheet.narrColDetails.colLetter}`);
+    narrativeRange.numberFormat = sheet.narrColDetails.format;
+    const valueRange = ws.getRange(`${sheet.valueColDetails.colLetter}:${sheet.valueColDetails.colLetter}`);
+    valueRange.numberFormat = sheet.valueColDetails.format;
+  });
 };

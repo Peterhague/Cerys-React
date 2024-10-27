@@ -182,7 +182,7 @@ async function cerysNomDetailView(context, detail, session) {
       ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
       colLetter: "F",
       colNumber: 6,
-      format: "#,##0.00;(#,##0.00);-",
+      format: "",
       deleted: false,
     },
     headerRange: "A1:G2",
@@ -197,6 +197,7 @@ async function cerysNomDetailView(context, detail, session) {
     dataCompromised: false,
     dataCorrupted: false,
     transactions: detail,
+    usedRange: valuesToPost,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
