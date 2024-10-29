@@ -2,7 +2,7 @@ import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
-import { colLetterToNum } from "./excel-col-conversion";
+import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import {
@@ -10,6 +10,8 @@ import {
   highlightEditableRanges,
   highlightRanges,
   unhighlightEditableRanges,
+  xhighlightEditableRanges,
+  xunhighlightEditableRanges,
 } from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
@@ -132,33 +134,79 @@ export const setEditButtonValue = async (session) => {
   });
 };
 
+//export const handleEditButtonClick = async (session) => {
+//  const wsName = await getActiveWorksheetName();
+//  const highlightGreenRanges = [];
+//  session.editableSheets.forEach((sheet) => {
+//    if (sheet.name === wsName) {
+//      session.updatedTransactions.forEach((tran) => {
+//        if (tran.worksheetName === wsName) {
+//          if (tran.updatedCode) {
+//            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
+//            highlightGreenRanges.push(range);
+//          }
+//          if (tran.updatedDate) {
+//            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
+//            highlightGreenRanges.push(range);
+//          }
+//          if (tran.updatedNarrative) {
+//            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
+//            highlightGreenRanges.push(range);
+//          }
+//        }
+//      });
+//      if (sheet.editButtonStatus === "show") {
+//        highlightEditableRanges(sheet);
+//        highlightRanges(wsName, highlightGreenRanges, "lightGreen");
+//        sheet.editButtonStatus = "hide";
+//      } else {
+//        unhighlightEditableRanges(sheet);
+//        sheet.editButtonStatus = "show";
+//      }
+//      session.setEditButton(sheet.editButtonStatus);
+//      return;
+//    }
+//  });
+//};
+
 export const handleEditButtonClick = async (session) => {
   const wsName = await getActiveWorksheetName();
   const highlightGreenRanges = [];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
+      let dateCol;
+      let cerysCodeCol;
+      let cerysNarrativeCol;
+      sheet.definedCols.forEach((col) => {
+        if (col.type === "date") dateCol = col.colNumber;
+        if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
+        if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
+      });
+      const dateColLetter = colNumToLetter(dateCol);
+      const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
+      const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
       session.updatedTransactions.forEach((tran) => {
         if (tran.worksheetName === wsName) {
           if (tran.updatedCode) {
-            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${cerysCodeColLetter}${tran.rowNumber}:${cerysCodeColLetter}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedDate) {
-            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedNarrative) {
-            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
         }
       });
       if (sheet.editButtonStatus === "show") {
-        highlightEditableRanges(sheet);
+        xhighlightEditableRanges(sheet);
         highlightRanges(wsName, highlightGreenRanges, "lightGreen");
         sheet.editButtonStatus = "hide";
       } else {
-        unhighlightEditableRanges(sheet);
+        xunhighlightEditableRanges(sheet);
         sheet.editButtonStatus = "show";
       }
       session.setEditButton(sheet.editButtonStatus);
@@ -207,10 +255,11 @@ export const updateAssignmentFigures = async (session) => {
 };
 
 export const interpretEventAddress = (e) => {
-  const address = e.address.length < 4 ? `${e.address}:${e.address}` : e.address;
+  const address = e.address.includes(":") ? e.address : `${e.address}:${e.address}`;
   const addressSplit = address.split(":");
   const noCols = parseInt(addressSplit[0][0]) ? true : false;
-  const noRows = parseInt(addressSplit[0].at(-1)) ? false : true;
+  let noRows = parseInt(addressSplit[0][addressSplit[0].length - 1]) ? false : true;
+  if (addressSplit[0][addressSplit[0].length - 1] === "0") noRows = false;
   const firstRow = noRows
     ? null
     : noCols
@@ -245,10 +294,11 @@ export const interpretEventAddress = (e) => {
 };
 
 export const interpretExcelAddress = (excelAddress) => {
-  const address = excelAddress.length < 4 ? `${excelAddress}:${excelAddress}` : excelAddress;
+  const address = excelAddress.includes(":") ? excelAddress : `${excelAddress}:${excelAddress}`;
   const addressSplit = address.split(":");
   const noCols = parseInt(addressSplit[0][0]) ? true : false;
-  const noRows = parseInt(addressSplit[0].at(-1)) ? false : true;
+  let noRows = parseInt(addressSplit[0][addressSplit[0].length - 1]) ? false : true;
+  if (addressSplit[0][addressSplit[0].length - 1] === "0") noRows = false;
   const firstRow = noRows
     ? null
     : noCols

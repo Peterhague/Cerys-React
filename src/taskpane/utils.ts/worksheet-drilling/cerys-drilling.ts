@@ -2,6 +2,7 @@ import { handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
+import { xhandleColumnSort, xhandleRowSort, xhandleWorksheetEdit } from "../x-worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -96,7 +97,6 @@ async function cerysNomDetailView(context, detail, session) {
     } else {
       arr.push(line.transactionDateExcel);
     }
-    //arr.push(line.transactionDateExcelUpdated ? line.transactionDateExcelUpdated : line.transactionDateExcel);
     arr.push(line.transactionType);
     if (line.cerysCodeUpdated) {
       arr.push(line.cerysCodeUpdated);
@@ -104,7 +104,6 @@ async function cerysNomDetailView(context, detail, session) {
     } else {
       arr.push(line.cerysCode);
     }
-    //arr.push(line.cerysCodeUpdated ? line.cerysCodeUpdated : line.cerysCode);
     line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
     if (line.narrativeUpdated) {
       arr.push(line.narrativeUpdated);
@@ -112,7 +111,6 @@ async function cerysNomDetailView(context, detail, session) {
     } else {
       arr.push(line.narrative);
     }
-    //arr.push(line.narrativeUpdated ? line.narrativeUpdated : line.narrative);
     line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
     line.rowNumber = rowNumber;
@@ -130,61 +128,120 @@ async function cerysNomDetailView(context, detail, session) {
   const editableWs = {
     name: wsName,
     worksheetId: ws.id,
-    editableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
     editableRowRanges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    activeEditableRanges: [`B3:B${detail.length + 2}`, `D3:D${detail.length + 2}`, `F3:F${detail.length + 2}`],
     protectedRange: { firstRow: 3, lastRow: detail.length + 2, firstCol: 1, lastCol: 7 },
     protectedRangeDeleted: false,
-    dateColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "B",
-      colNumber: 2,
-      format: "dd/mm/yyyy",
-      deleted: false,
-    },
-    transNoColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "A",
-      colNumber: 1,
-      format: "0",
-      deleted: false,
-    },
-    transTypeColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "C",
-      colNumber: 3,
-      format: "",
-      deleted: false,
-    },
-    clientCodeColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "E",
-      colNumber: 5,
-      format: "0",
-      deleted: false,
-    },
-    valueColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "G",
-      colNumber: 7,
-      format: "#,##0.00;(#,##0.00);-",
-      deleted: false,
-    },
-    activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
-    codeColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "D",
-      colNumber: 4,
-      format: "0",
-      deleted: false,
-    },
-    narrColDetails: {
-      ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-      colLetter: "F",
-      colNumber: 6,
-      format: "",
-      deleted: false,
-    },
+    //dateColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "B",
+    //  colNumber: 2,
+    //  format: "dd/mm/yyyy",
+    //  deleted: false,
+    //},
+    //transNoColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "A",
+    //  colNumber: 1,
+    //  format: "0",
+    //  deleted: false,
+    //},
+    //transTypeColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "C",
+    //  colNumber: 3,
+    //  format: "",
+    //  deleted: false,
+    //},
+    //clientCodeColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "E",
+    //  colNumber: 5,
+    //  format: "0",
+    //  deleted: false,
+    //},
+    //valueColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "G",
+    //  colNumber: 7,
+    //  format: "#,##0.00;(#,##0.00);-",
+    //  deleted: false,
+    //},
+    //activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
+    //codeColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "D",
+    //  colNumber: 4,
+    //  format: "0",
+    //  deleted: false,
+    //},
+    //narrColDetails: {
+    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
+    //  colLetter: "F",
+    //  colNumber: 6,
+    //  format: "",
+    //  deleted: false,
+    //},
+    definedCols: [
+      {
+        type: "transNo",
+        colNumber: 1,
+        mutable: false,
+        format: "0",
+        deleted: false,
+        unique: true,
+      },
+      {
+        type: "date",
+        colNumber: 2,
+        mutable: true,
+        format: "dd/mm/yyyy",
+        deleted: false,
+        updateKey: "updatedDate",
+        unique: false,
+      },
+      {
+        type: "transType",
+        colNumber: 3,
+        mutable: false,
+        format: "",
+        deleted: false,
+        unique: false,
+      },
+      {
+        type: "cerysCode",
+        colNumber: 4,
+        mutable: true,
+        format: "0",
+        deleted: false,
+        updateKey: "updatedCode",
+        unique: false,
+      },
+      {
+        type: "clientCode",
+        colNumber: 5,
+        mutable: false,
+        format: "0",
+        deleted: false,
+        unique: false,
+      },
+      {
+        type: "cerysNarrative",
+        colNumber: 6,
+        mutable: true,
+        format: "",
+        deleted: false,
+        updateKey: "updatedNarrative",
+        unique: false,
+      },
+      {
+        type: "value",
+        colNumber: 7,
+        mutable: false,
+        format: "#,##0.00;(#,##0.00);-",
+        deleted: false,
+        unique: false,
+      },
+    ],
     headerRange: "A1:G2",
     headerValues: [
       ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
@@ -211,9 +268,9 @@ async function cerysNomDetailView(context, detail, session) {
   console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
-  ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
+  ws.onChanged.add(async (e) => xhandleWorksheetEdit(session, e, wsName));
+  ws.onColumnSorted.add(async () => xhandleColumnSort(session));
+  ws.onRowSorted.add(async (e) => xhandleRowSort(session, wsName, e));
   await context.sync();
 }
 

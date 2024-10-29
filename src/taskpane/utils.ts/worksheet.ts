@@ -1,3 +1,5 @@
+import { colNumToLetter } from "./excel-col-conversion";
+
 export function addWorksheet(context, sheetName) {
   const ws = context.workbook.worksheets.add(sheetName);
   return ws;
@@ -73,7 +75,8 @@ export const getWorksheetUsedRange = async (wsName) => {
 };
 
 export const setExcelRangeValue = async (wsName, range, value) => {
-  await Excel.run(async (context) => {
+    await Excel.run(async (context) => {
+      console.log("setting value....")
     const ws = context.workbook.worksheets.getItem(wsName);
     const wsRange = ws.getRange(range);
     wsRange.values = value;
@@ -167,6 +170,23 @@ export const highlightEditableRanges = async (sheet) => {
   });
 };
 
+export const xhighlightEditableRanges = async (sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getActiveWorksheet();
+    sheet.editableRowRanges.forEach((range) => {
+      sheet.definedCols.forEach((col) => {
+        if (!col.deleted && col.mutable) {
+          const colLetter = colNumToLetter(col.colNumber);
+          const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
+          const wsColRange = ws.getRange(colRange);
+          wsColRange.format.fill.color = "yellow";
+        }
+      });
+    });
+    await context.sync();
+  });
+};
+
 export const unhighlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
     const ws = context.workbook.worksheets.getActiveWorksheet();
@@ -186,6 +206,23 @@ export const unhighlightEditableRanges = async (sheet) => {
         const wsNarrRange = ws.getRange(narrRange);
         wsNarrRange.format.fill.clear();
       }
+    });
+    await context.sync();
+  });
+};
+
+export const xunhighlightEditableRanges = async (sheet) => {
+  await Excel.run(async (context) => {
+    const ws = context.workbook.worksheets.getActiveWorksheet();
+    sheet.editableRowRanges.forEach((range) => {
+      sheet.definedCols.forEach((col) => {
+        if (!col.deleted && col.mutable) {
+          const colLetter = colNumToLetter(col.colNumber);
+          const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
+          const wsColRange = ws.getRange(colRange);
+          wsColRange.format.fill.clear();
+        }
+      });
     });
     await context.sync();
   });
