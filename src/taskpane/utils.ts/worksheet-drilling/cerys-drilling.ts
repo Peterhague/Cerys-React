@@ -2,7 +2,6 @@ import { handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
-import { xhandleColumnSort, xhandleRowSort, xhandleWorksheetEdit } from "../x-worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -77,7 +76,7 @@ async function cerysNomDetailView(context, detail, session) {
       }
     });
   });
-  const wsName = `${detail[0].cerysShortName} analysis`;
+  const wsName = `${detail[0].cerysExcelName} analysis`;
   const ws = addWorksheet(context, wsName);
   ws.load("id");
   await context.sync();
@@ -86,7 +85,9 @@ async function cerysNomDetailView(context, detail, session) {
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
   ];
-  detail[0].defaultSign === "debit" ? valuesToPost[1].push("DR/(CR)") : valuesToPost[1].push("CR/(DR)");
+    //detail[0].defaultSign === "debit" ? valuesToPost[1].push("DR/(CR)") : valuesToPost[1].push("CR/(DR)");
+    console.log(detail[0]);
+  detail[0].defaultSign === "credit" ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
   detail.forEach((line) => {
     let arr = [];
@@ -127,6 +128,7 @@ async function cerysNomDetailView(context, detail, session) {
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const editableWs = {
     name: wsName,
+    type: "cerysCodeAnalysis",
     worksheetId: ws.id,
     editableRowRanges: [{ firstRow: 3, lastRow: detail.length + 2 }],
     protectedRange: { firstRow: 3, lastRow: detail.length + 2, firstCol: 1, lastCol: 7 },
@@ -268,9 +270,9 @@ async function cerysNomDetailView(context, detail, session) {
   console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onChanged.add(async (e) => xhandleWorksheetEdit(session, e, wsName));
-  ws.onColumnSorted.add(async () => xhandleColumnSort(session));
-  ws.onRowSorted.add(async (e) => xhandleRowSort(session, wsName, e));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
+  ws.onColumnSorted.add(async () => handleColumnSort(session));
+  ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
   await context.sync();
 }
 

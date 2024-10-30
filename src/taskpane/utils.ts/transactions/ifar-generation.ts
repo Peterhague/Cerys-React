@@ -3,7 +3,7 @@ import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { calculateDiffInDays, convertExcelDate, setEditButtonValue, updateNomCode } from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
-import { xhandleColumnSort, xhandleRowSort, xhandleWorksheetEdit } from "../x-worksheet-editing";
+import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIFA(session) {
@@ -316,9 +316,9 @@ export async function createIFATransSumm(session, relevantTrans) {
       ws.onActivated.add(() => setEditButtonValue(session));
       ws.onDeactivated.add(() => session.setEditButton("off"));
       //ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
-      ws.onChanged.add(async (e) => xhandleWorksheetEdit(session, e, "IFA Transactions"));
-      ws.onColumnSorted.add(async () => xhandleColumnSort(session));
-      ws.onRowSorted.add(async (e) => xhandleRowSort(session, "IFA Transactions", e));
+      ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, "IFA Transactions"));
+      ws.onColumnSorted.add(async () => handleColumnSort(session));
+      ws.onRowSorted.add(async (e) => handleRowSort(session, "IFA Transactions", e));
       await context.sync();
       ws.activate();
     });

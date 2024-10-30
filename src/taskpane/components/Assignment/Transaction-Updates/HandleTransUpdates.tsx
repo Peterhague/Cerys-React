@@ -1,9 +1,7 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
-//import { reverseTransactionUpdates, submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
-import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
+import { reverseTransactionUpdates, submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
 import { callNextView } from "../../../utils.ts/helperFunctions";
-import { reverseTransactionUpdates } from "../../../utils.ts/x-worksheet-editing";
 
 interface handleTransUpdatesProps {
   updateSession: (update) => void;
