@@ -10,8 +10,6 @@ import {
   highlightEditableRanges,
   highlightRanges,
   unhighlightEditableRanges,
-  xhighlightEditableRanges,
-  xunhighlightEditableRanges,
 } from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
@@ -26,11 +24,11 @@ export const registerWorksheetDeletionHandler = async (session) => {
 };
 
 export const handleSheetDeletion = (e, session) => {
-  let editableSheetDeleted = false;
-  session.updatedTransactions.forEach((tran) => {
-    if (tran.worksheetId === e.worksheetId) editableSheetDeleted = true;
+  const newEditableSheets = [];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.worksheetId !== e.worksheetId) newEditableSheets.push(sheet);
   });
-  console.log(editableSheetDeleted);
+  session.editableSheets = newEditableSheets;
 };
 
 export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {
@@ -134,41 +132,6 @@ export const setEditButtonValue = async (session) => {
   });
 };
 
-//export const handleEditButtonClick = async (session) => {
-//  const wsName = await getActiveWorksheetName();
-//  const highlightGreenRanges = [];
-//  session.editableSheets.forEach((sheet) => {
-//    if (sheet.name === wsName) {
-//      session.updatedTransactions.forEach((tran) => {
-//        if (tran.worksheetName === wsName) {
-//          if (tran.updatedCode) {
-//            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
-//            highlightGreenRanges.push(range);
-//          }
-//          if (tran.updatedDate) {
-//            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
-//            highlightGreenRanges.push(range);
-//          }
-//          if (tran.updatedNarrative) {
-//            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
-//            highlightGreenRanges.push(range);
-//          }
-//        }
-//      });
-//      if (sheet.editButtonStatus === "show") {
-//        highlightEditableRanges(sheet);
-//        highlightRanges(wsName, highlightGreenRanges, "lightGreen");
-//        sheet.editButtonStatus = "hide";
-//      } else {
-//        unhighlightEditableRanges(sheet);
-//        sheet.editButtonStatus = "show";
-//      }
-//      session.setEditButton(sheet.editButtonStatus);
-//      return;
-//    }
-//  });
-//};
-
 export const handleEditButtonClick = async (session) => {
   const wsName = await getActiveWorksheetName();
   const highlightGreenRanges = [];
@@ -202,11 +165,11 @@ export const handleEditButtonClick = async (session) => {
         }
       });
       if (sheet.editButtonStatus === "show") {
-        xhighlightEditableRanges(sheet);
+        highlightEditableRanges(sheet);
         highlightRanges(wsName, highlightGreenRanges, "lightGreen");
         sheet.editButtonStatus = "hide";
       } else {
-        xunhighlightEditableRanges(sheet);
+        unhighlightEditableRanges(sheet);
         sheet.editButtonStatus = "show";
       }
       session.setEditButton(sheet.editButtonStatus);
@@ -220,18 +183,26 @@ export const simulateEditButtonClick = async (session) => {
   const highlightGreenRanges = [];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
+      let codeColNumber;
+      let dateColNumber;
+      let narrColNumber;
+      sheet.definedCols.forEach((col) => {
+        if (col.type === "cerysCode") codeColNumber = col.colNumber;
+        if (col.type === "date") dateColNumber = col.colNumber;
+        if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
+      });
       session.updatedTransactions.forEach((tran) => {
         if (tran.worksheetName === wsName) {
           if (tran.updatedCode) {
-            const range = `${sheet.codeColDetails.colLetter}${tran.rowNumber}:${sheet.codeColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${colNumToLetter(codeColNumber)}${tran.rowNumber}:${colNumToLetter(codeColNumber)}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedDate) {
-            const range = `${sheet.dateColDetails.colLetter}${tran.rowNumber}:${sheet.dateColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${colNumToLetter(dateColNumber)}${tran.rowNumber}:${colNumToLetter(dateColNumber)}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedNarrative) {
-            const range = `${sheet.narrColDetails.colLetter}${tran.rowNumber}:${sheet.narrColDetails.colLetter}${tran.rowNumber}`;
+            const range = `${colNumToLetter(narrColNumber)}${tran.rowNumber}:${colNumToLetter(narrColNumber)}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
         }
@@ -251,7 +222,6 @@ export const updateAssignmentFigures = async (session) => {
   addTbClickListener(session);
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
-  checkAssetRegStatus(session, session["handleView"]);
 };
 
 export const interpretEventAddress = (e) => {
@@ -330,4 +300,26 @@ export const interpretExcelAddress = (excelAddress) => {
         : colLetterToNum(addressSplit[1].substr(0, 2));
 
   return { firstRow, lastRow, firstCol, lastCol };
+};
+
+export const createEditableWs = (transactions, ws, definedCols, valuesToPost, type) => {
+  return {
+    name: ws.name,
+    type,
+    edited: false,
+    promptDeletion: false,
+    worksheetId: ws.id,
+    editableRowRanges: [{ firstRow: 3, lastRow: transactions.length + 2 }],
+    protectedRange: { firstRow: 3, lastRow: transactions.length + 2, firstCol: 1, lastCol: 7 },
+    protectedRangeDeleted: false,
+    definedCols,
+    editButtonStatus: "show",
+    changeRejected: false,
+    columnsSorted: false,
+    rowsSorted: false,
+    dataCompromised: false,
+    dataCorrupted: false,
+    transactions: transactions,
+    usedRange: valuesToPost,
+  };
 };

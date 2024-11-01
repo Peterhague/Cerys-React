@@ -1,4 +1,4 @@
-import { handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
+import { createEditableWs, handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
@@ -62,8 +62,6 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
 }
 
 async function cerysNomDetailView(context, detail, session) {
-  console.log(detail);
-  console.log(session.updatedTransactions);
   let sheetInMidEdit = false;
   session.updatedTransactions.forEach((update) => {
     detail.forEach((tran) => {
@@ -78,15 +76,13 @@ async function cerysNomDetailView(context, detail, session) {
   });
   const wsName = `${detail[0].cerysExcelName} analysis`;
   const ws = addWorksheet(context, wsName);
-  ws.load("id");
+  ws.load(["id", "name"]);
   await context.sync();
   const range = ws.getRange(`A1:G${detail.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
   ];
-    //detail[0].defaultSign === "debit" ? valuesToPost[1].push("DR/(CR)") : valuesToPost[1].push("CR/(DR)");
-    console.log(detail[0]);
   detail[0].defaultSign === "credit" ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
   detail.forEach((line) => {
@@ -118,6 +114,7 @@ async function cerysNomDetailView(context, detail, session) {
     line.rowNumberOrig = rowNumber;
     rowNumber += 1;
   });
+  console.log("working here??");
   range.values = valuesToPost;
   const headerRange = ws.getRange("A1:G2");
   headerRange.format.font.bold = true;
@@ -126,138 +123,68 @@ async function cerysNomDetailView(context, detail, session) {
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
-  const editableWs = {
-    name: wsName,
-    type: "cerysCodeAnalysis",
-    worksheetId: ws.id,
-    editableRowRanges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    protectedRange: { firstRow: 3, lastRow: detail.length + 2, firstCol: 1, lastCol: 7 },
-    protectedRangeDeleted: false,
-    //dateColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "B",
-    //  colNumber: 2,
-    //  format: "dd/mm/yyyy",
-    //  deleted: false,
-    //},
-    //transNoColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "A",
-    //  colNumber: 1,
-    //  format: "0",
-    //  deleted: false,
-    //},
-    //transTypeColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "C",
-    //  colNumber: 3,
-    //  format: "",
-    //  deleted: false,
-    //},
-    //clientCodeColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "E",
-    //  colNumber: 5,
-    //  format: "0",
-    //  deleted: false,
-    //},
-    //valueColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "G",
-    //  colNumber: 7,
-    //  format: "#,##0.00;(#,##0.00);-",
-    //  deleted: false,
-    //},
-    //activeDateDetails: { range: `B3:B${detail.length + 2}`, format: "dd/mm/yyyy" },
-    //codeColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "D",
-    //  colNumber: 4,
-    //  format: "0",
-    //  deleted: false,
-    //},
-    //narrColDetails: {
-    //  ranges: [{ firstRow: 3, lastRow: detail.length + 2 }],
-    //  colLetter: "F",
-    //  colNumber: 6,
-    //  format: "",
-    //  deleted: false,
-    //},
-    definedCols: [
-      {
-        type: "transNo",
-        colNumber: 1,
-        mutable: false,
-        format: "0",
-        deleted: false,
-        unique: true,
-      },
-      {
-        type: "date",
-        colNumber: 2,
-        mutable: true,
-        format: "dd/mm/yyyy",
-        deleted: false,
-        updateKey: "updatedDate",
-        unique: false,
-      },
-      {
-        type: "transType",
-        colNumber: 3,
-        mutable: false,
-        format: "",
-        deleted: false,
-        unique: false,
-      },
-      {
-        type: "cerysCode",
-        colNumber: 4,
-        mutable: true,
-        format: "0",
-        deleted: false,
-        updateKey: "updatedCode",
-        unique: false,
-      },
-      {
-        type: "clientCode",
-        colNumber: 5,
-        mutable: false,
-        format: "0",
-        deleted: false,
-        unique: false,
-      },
-      {
-        type: "cerysNarrative",
-        colNumber: 6,
-        mutable: true,
-        format: "",
-        deleted: false,
-        updateKey: "updatedNarrative",
-        unique: false,
-      },
-      {
-        type: "value",
-        colNumber: 7,
-        mutable: false,
-        format: "#,##0.00;(#,##0.00);-",
-        deleted: false,
-        unique: false,
-      },
-    ],
-    headerRange: "A1:G2",
-    headerValues: [
-      ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
-      ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
-    ],
-    editButtonStatus: "show",
-    changeRejected: false,
-    columnsSorted: false,
-    rowsSorted: false,
-    dataCompromised: false,
-    dataCorrupted: false,
-    transactions: detail,
-    usedRange: valuesToPost,
-  };
+  const definedCols = [
+    {
+      type: "transNo",
+      colNumber: 1,
+      mutable: false,
+      format: "0",
+      deleted: false,
+      unique: true,
+    },
+    {
+      type: "date",
+      colNumber: 2,
+      mutable: true,
+      format: "dd/mm/yyyy",
+      deleted: false,
+      updateKey: "updatedDate",
+      unique: false,
+    },
+    {
+      type: "transType",
+      colNumber: 3,
+      mutable: false,
+      format: "",
+      deleted: false,
+      unique: false,
+    },
+    {
+      type: "cerysCode",
+      colNumber: 4,
+      mutable: true,
+      format: "0",
+      deleted: false,
+      updateKey: "updatedCode",
+      unique: false,
+    },
+    {
+      type: "clientCode",
+      colNumber: 5,
+      mutable: false,
+      format: "0",
+      deleted: false,
+      unique: false,
+    },
+    {
+      type: "cerysNarrative",
+      colNumber: 6,
+      mutable: true,
+      format: "",
+      deleted: false,
+      updateKey: "updatedNarrative",
+      unique: false,
+    },
+    {
+      type: "value",
+      colNumber: 7,
+      mutable: false,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+      unique: false,
+    },
+  ];
+  const editableWs = createEditableWs(detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis");
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name !== editableWs.name) arr.push(sheet);

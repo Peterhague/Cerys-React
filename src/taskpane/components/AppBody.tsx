@@ -40,6 +40,7 @@ import PromptIPRCreation from "./Assignment/Asset-Registers/PromptIPRCreation";
 import HandleTransUpdates from "./Assignment/Transaction-Updates/HandleTransUpdates";
 import ReviewTransUpdates from "./Assignment/Transaction-Updates/ReviewTransUpdates";
 import Footer from "./Footer";
+import DeleteSheetPrompt from "./Assignment/Transaction-Updates/DeleteSheetPrompt";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -201,6 +202,9 @@ const AppBody: React.FC = () => {
         break;
       case "reviewTransUpdates":
         body = <ReviewTransUpdates handleView={handleView} updateSession={updateSession} session={session} />;
+        break;
+      case "deleteSheetPrompt":
+        body = <DeleteSheetPrompt handleView={handleView} updateSession={updateSession} session={session} />;
         break;
       default:
         body = <LandingPage handleView={handleView} />;

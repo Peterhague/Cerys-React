@@ -35,6 +35,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["activeJournal"] = activeJournal;
     session["editableSheets"] = [];
     session["updatedTransactions"] = [];
+    session["liveUpdatedTrans"] = [];
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
     session["options"] = {};

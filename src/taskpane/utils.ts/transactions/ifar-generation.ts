@@ -1,7 +1,13 @@
 import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { calculateDiffInDays, convertExcelDate, setEditButtonValue, updateNomCode } from "../helperFunctions";
+import {
+  calculateDiffInDays,
+  convertExcelDate,
+  createEditableWs,
+  setEditButtonValue,
+  updateNomCode,
+} from "../helperFunctions";
 import { addWorksheet } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -23,13 +29,46 @@ export async function createIFATransSumm(session, relevantTrans) {
   try {
     await Excel.run(async (context) => {
       const ws = addWorksheet(context, "IFA Transactions");
+      ws.load(["id", "name"]);
+      await context.sync();
       let activeClient;
       session.customer.clients.forEach((client) => {
         if (client._id === session.activeAssignment.clientId) {
           activeClient = client;
         }
       });
-      const bodyContent = [];
+      const valuesToPost = [
+        [
+          "TRANSACTION",
+          "CERYS",
+          "CERYS",
+          "POSTING",
+          "CERYS",
+          "CERYS",
+          "CLIENT",
+          "CLIENT",
+          "CLIENT",
+          "DEBIT/",
+          "AMORT",
+          "AMORT",
+          "AMORT",
+        ],
+        [
+          "NUMBER",
+          "DATE",
+          "NARRATIVE",
+          "SOURCE",
+          "CODE",
+          "NOMINAL",
+          "NC",
+          "NOMINAL",
+          "NARRATIVE",
+          "(CREDIT)",
+          "BASIS",
+          "RATE",
+          "CHARGE",
+        ],
+      ];
       session["IFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
@@ -56,10 +95,8 @@ export async function createIFATransSumm(session, relevantTrans) {
               trans["rowNumber"] = session["IFATransactions"].length + 3;
             }
           });
-          console.log(trans);
           session["IFATransactions"].push(trans);
         } else {
-          console.log(i);
           i.rowNumber = session["IFATransactions"].length + 3;
           i.assetNarrative = i.narrative;
           i.assetSubCatCodes = [i.assetSubCatCode];
@@ -145,45 +182,12 @@ export async function createIFATransSumm(session, relevantTrans) {
         }
         calculateAmortChg(session, tran);
         transVals.push(tran.amortChg / 100);
-        bodyContent.push(transVals);
+        valuesToPost.push(transVals);
       });
-      let bodyRange;
       const headerRange = ws.getRange("A1:M2");
-      headerRange.values = [
-        [
-          "TRANSACTION",
-          "CERYS",
-          "CERYS",
-          "POSTING",
-          "CERYS",
-          "CERYS",
-          "CLIENT",
-          "CLIENT",
-          "CLIENT",
-          "DEBIT/",
-          "AMORT",
-          "AMORT",
-          "AMORT",
-        ],
-        [
-          "NUMBER",
-          "DATE",
-          "NARRATIVE",
-          "SOURCE",
-          "CODE",
-          "NOMINAL",
-          "NC",
-          "NOMINAL",
-          "NARRATIVE",
-          "(CREDIT)",
-          "BASIS",
-          "RATE",
-          "CHARGE",
-        ],
-      ];
-      bodyRange = ws.getRange(`A3:M${bodyContent.length + 2}`);
       headerRange.format.font.bold = true;
-      bodyRange.values = bodyContent;
+      const range = ws.getRange(`A1:M${valuesToPost.length}`);
+      range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = "dd/mm/yyyy";
       const rangeJ = ws.getRange("J:J");
@@ -192,122 +196,104 @@ export async function createIFATransSumm(session, relevantTrans) {
       rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
-      //const rangeD = ws.getRange(`D3:D${bodyContent.length + 2}`);
-      //const rangeJK = ws.getRange(`J3:K${bodyContent.length + 2}`);
-      //rangeD.format.fill.color = "yellow";
-      //rangeJK.format.fill.color = "yellow";
-      const editableWs = {
-        name: "IFA Transactions",
-        //worksheetId: ws.id,
-        editableRowRanges: [{ firstRow: 3, lastRow: session.IFATransactions.length + 2 }],
-        protectedRange: { firstRow: 3, lastRow: session.IFATransactions.length + 2, firstCol: 1, lastCol: 12 },
-        protectedRangeDeleted: false,
-        definedCols: [
-          {
-            type: "transNo",
-            colNumber: 1,
-            mutable: false,
-            format: "0",
-            deleted: false,
-          },
-          {
-            type: "date",
-            colNumber: 2,
-            mutable: true,
-            format: "dd/mm/yyyy",
-            deleted: false,
-            updateKey: "updatedDate",
-          },
-          {
-            type: "cerysNarrative",
-            colNumber: 3,
-            mutable: true,
-            format: "",
-            deleted: false,
-            updateKey: "updatedNarrative",
-          },
-          {
-            type: "postingSource",
-            colNumber: 4,
-            mutable: false,
-            format: "",
-            deleted: false,
-          },
-          {
-            type: "cerysCode",
-            colNumber: 5,
-            mutable: true,
-            format: "0",
-            deleted: false,
-            updateKey: "updatedCode",
-          },
-          {
-            type: "cerysName",
-            colNumber: 6,
-            mutable: false,
-            format: "",
-            deleted: false,
-          },
-          {
-            type: "clientCode",
-            colNumber: 7,
-            mutable: false,
-            format: "0",
-            deleted: false,
-          },
-          {
-            type: "clientNominal",
-            colNumber: 8,
-            mutable: false,
-            format: "",
-            deleted: false,
-          },
-          {
-            type: "clientNarrative",
-            colNumber: 9,
-            mutable: false,
-            format: "",
-            deleted: false,
-          },
-          {
-            type: "value",
-            colNumber: 10,
-            mutable: false,
-            format: "#,##0.00;(#,##0.00);-",
-            deleted: false,
-          },
-          {
-            type: "amortBasis",
-            colNumber: 11,
-            mutable: true,
-            format: "",
-            deleted: false,
-            updateKey: "updatedAmortBasis",
-          },
-          {
-            type: "amortRate",
-            colNumber: 12,
-            mutable: true,
-            format: "0",
-            deleted: false,
-            updateKey: "updatedAmortRate",
-          },
-          {
-            type: "amortCharge",
-            colNumber: 13,
-            format: "#,##0.00;(#,##0.00);-",
-            deleted: false,
-          },
-        ],
-        editButtonStatus: "show",
-        changeRejected: false,
-        columnsSorted: false,
-        rowsSorted: false,
-        dataCompromised: false,
-        dataCorrupted: false,
-        transactions: session.IFATransactions,
-        //usedRange: valuesToPost,
-      };
+      const definedCols = [
+        {
+          type: "transNo",
+          colNumber: 1,
+          mutable: false,
+          format: "0",
+          deleted: false,
+        },
+        {
+          type: "date",
+          colNumber: 2,
+          mutable: true,
+          format: "dd/mm/yyyy",
+          deleted: false,
+          updateKey: "updatedDate",
+        },
+        {
+          type: "cerysNarrative",
+          colNumber: 3,
+          mutable: true,
+          format: "",
+          deleted: false,
+          updateKey: "updatedNarrative",
+        },
+        {
+          type: "transType",
+          colNumber: 4,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "cerysCode",
+          colNumber: 5,
+          mutable: true,
+          format: "0",
+          deleted: false,
+          updateKey: "updatedCode",
+        },
+        {
+          type: "cerysName",
+          colNumber: 6,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "clientCode",
+          colNumber: 7,
+          mutable: false,
+          format: "0",
+          deleted: false,
+        },
+        {
+          type: "clientNominal",
+          colNumber: 8,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "clientNarrative",
+          colNumber: 9,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "value",
+          colNumber: 10,
+          mutable: false,
+          format: "#,##0.00;(#,##0.00);-",
+          deleted: false,
+        },
+        {
+          type: "amortBasis",
+          colNumber: 11,
+          mutable: true,
+          format: "",
+          deleted: false,
+          updateKey: "updatedAmortBasis",
+        },
+        {
+          type: "amortRate",
+          colNumber: 12,
+          mutable: true,
+          format: "0",
+          deleted: false,
+          updateKey: "updatedAmortRate",
+        },
+        {
+          type: "amortCharge",
+          colNumber: 13,
+          format: "#,##0.00;(#,##0.00);-",
+          deleted: false,
+        },
+      ];
+      const editableWs = createEditableWs(session.IFATransactions, ws, definedCols, valuesToPost, "IFARPreview");
       const arr = [editableWs];
       session.editableSheets.forEach((sheet) => {
         if (sheet.name !== editableWs.name) arr.push(sheet);

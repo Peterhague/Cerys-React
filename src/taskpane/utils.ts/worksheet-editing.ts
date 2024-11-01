@@ -9,12 +9,14 @@ import {
   simulateEditButtonClick,
   updateAssignmentFigures,
 } from "./helperFunctions";
+import { checkAssetRegStatus } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
   deleteWorksheetRangesUp,
   getActiveWorksheetName,
   getWorksheetRangeValues,
   getWorksheetUsedRange,
+  highlightEditableRanges,
   highlightRanges,
   setExcelRangeValue,
   setManyWorksheetRangeValues,
@@ -51,11 +53,11 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
   for (let i = 0; i < session.editableSheets.length; i++) {
     if (session.editableSheets[i].name == wsName) {
       if (session.editableSheets[i].dataCorrupted) {
-        console.log("CORRUPTED");
         if (
           session.editableSheets[i].editButtonStatus === "hide" ||
           session.editableSheets[i].editButtonStatus === "inProgress"
         ) {
+          console.log("simulation");
           simulateEditButtonClick(session);
         }
         session.options.autoFillOverride = true;
@@ -223,6 +225,17 @@ export const handleRowDeletion = async (session, e, wsName) => {
       sheet.transactions.forEach((tran) => {
         if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
       });
+      console.log(sheet.transactions);
+      //const newTransactions = [];
+      //sheet.transactions.forEach((tran) => {
+      //  if (tran.rowNumber > lastRow || tran.rowNumber < firstRow) {
+      //    if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+      //    newTransactions.push(tran);
+      //  }
+      //});
+      //sheet.transactions = newTransactions;
+      //if (newTransactions.length === 0) console.log("omfg all trans deleted!!!");
+      //console.log(newTransactions);
       return;
     }
   });
@@ -284,6 +297,7 @@ export const handleCellDeletionUp = async (session, e, wsName) => {
         sheet.transactions.forEach((tran) => {
           if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
         });
+        console.log(sheet.transactions);
         session.updatedTransactions.forEach((tran) => {
           if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
         });
@@ -574,6 +588,9 @@ export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
           if (eRowNumber >= range.firstRow && eRowNumber <= range.lastRow) withinProtectedRange = true;
         });
       }
+      console.log(withinProtectedRange);
+      if (!withinProtectedRange) session.editableSheets[i].edited = true;
+      console.log(session.editableSheets[i]);
     }
     if (withinProtectedRange && !changeRejected) {
       const range = `${e.address}:${e.address}`;
@@ -765,8 +782,16 @@ export const cancelAutoFill = async (wsName, address) => {
 
 export const submitTransactionUpdates = async (session) => {
   let tbUpdated = false;
+  let otherUpdated = false;
+  const updatedTrans = session.updatedTransactions;
   const deletionObjs = [];
-  session["updatedTransactions"].forEach((tran) => {
+  let promptSheetDeletion = false;
+  session.updatedTransactions.forEach((tran) => {
+    session.liveUpdatedTrans.push({
+      transactionId: tran.transactionId,
+      updatedDate: tran.updatedDate,
+      updatedNarrative: tran.updatedNarrative,
+    });
     tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
     if (tran.updatedCode) {
       tbUpdated = true;
@@ -779,9 +804,43 @@ export const submitTransactionUpdates = async (session) => {
           const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber: tran.rowNumber };
           deletionObjs.push(deletionObj);
           sheet.editButtonStatus = "hide";
+          const newTransactions = [];
+          sheet.transactions.forEach((i) => {
+            if (i._id !== tran.transactionId) {
+              newTransactions.push(i);
+            }
+          });
+          sheet.transactions = newTransactions;
+          if (newTransactions.length === 0) {
+            sheet.promptDeletion = true;
+            promptSheetDeletion = true;
+          }
         }
       });
+    } else {
+      otherUpdated = true;
+      session.editableSheets.forEach((sheet) => {
+        sheet.transactions.forEach((transaction) => {
+          if (transaction._id === tran.transactionId) {
+            if (tran.updatedDate) transaction.transactionDateExcel = tran.updatedDate;
+            if (tran.updatedNarrative) transaction.narrative = tran.updatedNarrative;
+          }
+        });
+      });
     }
+  });
+  console.log(session.liveUpdatedTrans);
+  if (otherUpdated) {
+    updatedTrans.forEach((tran) => {
+      session.editableSheets.forEach((sheet) => {
+        if (tran.worksheetName === sheet.name) {
+          highlightEditableRanges(sheet);
+        }
+      });
+    });
+  }
+  deletionObjs.sort((a, b) => {
+    return b.rowNumber - a.rowNumber;
   });
   await deleteWorksheetRangesUp(deletionObjs);
   const options = fetchOptionsTransBatchUpdate(session);
@@ -790,7 +849,17 @@ export const submitTransactionUpdates = async (session) => {
   session["customer"] = updatedCustAndAss.customer;
   session["activeAssignment"] = updatedCustAndAss.assignment;
   session["updatedTransactions"] = [];
-  tbUpdated ? updateAssignmentFigures(session) : callNextView(session);
+  if (tbUpdated) {
+    if (promptSheetDeletion) {
+      await updateAssignmentFigures(session);
+      session.handleView("deleteSheetPrompt");
+    } else {
+      await updateAssignmentFigures(session);
+      checkAssetRegStatus(session, session["handleView"]);
+    }
+  } else {
+    callNextView(session);
+  }
   session.setEditButton("hide");
 };
 

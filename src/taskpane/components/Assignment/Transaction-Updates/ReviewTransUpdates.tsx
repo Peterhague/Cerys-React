@@ -36,7 +36,7 @@ const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, ses
         <tbody>
           <tr>
             <td>Date</td>
-            <td>{convertMongoDate(updatedTransactions[activeIndex].date)}</td>
+            <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].dateExcel))}</td>
           </tr>
           {updatedTransactions[activeIndex].updatedDate && (
             <tr>
@@ -79,7 +79,7 @@ const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, ses
           <tbody>
             <tr>
               <td>Date</td>
-              <td>{convertMongoDate(updatedTransactions[activeIndex + 1].date)}</td>
+              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].dateExcel))}</td>
             </tr>
             {updatedTransactions[activeIndex + 1].updatedDate && (
               <tr>
