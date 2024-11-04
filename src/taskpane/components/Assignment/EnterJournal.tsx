@@ -20,7 +20,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    session["nextView"] = "assignmentDashHome";
+    //session["nextView"] = "assignmentDashHome";
     await processTransBatch(session);
     checkAssetRegStatus(session, handleView);
     updateSession(session);

@@ -59,18 +59,6 @@ const columnsIndex = {
 const populateActiveSubCats = (transToPost) => {
   const activeSubCats = [];
   const subCatNames = [];
-  //transToPost.forEach((i) => {
-  //  if (!subCatNames.includes(i.assetSubCategory)) {
-  //    const obj = {
-  //      assetSubCategory: i.assetSubCategory,
-  //      assetSubCatCode: i.assetSubCatCode,
-  //      regColNameOne: i.regColNameOne,
-  //      regColNameTwo: i.regColNameTwo,
-  //    };
-  //    subCatNames.push(i.assetSubCategory);
-  //    activeSubCats.push(obj);
-  //  }
-  //});
   transToPost.forEach((i) => {
     i.subTransactions.forEach((sub) => {
       if (!subCatNames.includes(sub.assetSubCategory)) {
@@ -186,14 +174,16 @@ const buildRegPerCategory = (activeCats, numberCols, registerColNames, transToPo
     regBodyVals.push(blankLine);
     rowNumber++;
     const totalStartRowNumber = rowNumber;
+    console.log(transToPost);
     transToPost.forEach((tran) => {
       if (tran.assetCategory === cat.assetCategory) {
         const assetLine = [];
-        if (tran.transactionDateClt) {
-          assetLine.push(tran.transactionDateClt);
-        } else if (tran.transactionDateUser) {
-          assetLine.push(tran.transactionDateUser);
-        }
+        //if (tran.transactionDateClt) {
+        //  assetLine.push(tran.transactionDateClt);
+        //} else if (tran.transactionDateUser) {
+        //  assetLine.push(tran.transactionDateUser);
+        //}
+        assetLine.push(tran.transactionDateExcel);
         assetLine.push(tran.assetNarrative);
         assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
         for (let i = 0; i < numberCols - 3; i++) {

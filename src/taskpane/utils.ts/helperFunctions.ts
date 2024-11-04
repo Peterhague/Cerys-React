@@ -71,7 +71,18 @@ export const resetActiveJournal = (session) => {
 
 export const callNextView = (session) => {
   session.handleView(session.nextView);
-  session.nextView = "";
+  session.nextView = session.nextViewButOne;
+  session.nextViewButOne = "";
+};
+
+export const setNextViewButOne = (session) => {
+  session.nextViewButOne = session.nextView;
+  session.nextView = session.currentView;
+};
+
+export const clearNextViewButOne = (session) => {
+  session.nextView = session.nextViewButOne;
+  session.nextViewButOne = "";
 };
 
 export const convertMongoDate = (date) => {

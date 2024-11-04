@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { callNextView } from "../../../utils.ts/helperFunctions";
+import { callNextView, clearNextViewButOne } from "../../../utils.ts/helperFunctions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
 import { checkAssetRegStatus } from "../../../utils.ts/transactions/transactions";
 
@@ -23,11 +23,14 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
     }
   });
   const [emptySheets, setEmptySheets] = useState(sheetsToDelete);
+
+  clearNextViewButOne(session);
+
   const deleteSheets = async () => {
-    console.log("sheets deleted");
     await deleteManyWorksheets(sheetsToDelete);
     checkAssetRegStatus(session, session["handleView"]);
   };
+
   const deleteSingleWorksheet = async (sheet) => {
     await deleteManyWorksheets([sheet]);
     const newArr = [];

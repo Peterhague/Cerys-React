@@ -16,12 +16,10 @@ export function createRelTransTFA(session, setView) {
     }
   });
   const bFTransLikelyAddns = [];
+  console.log(relevantTrans);
   relevantTrans.forEach((tran) => {
     if (tran.assetSubCatCode === 1) {
-      const test = calculateDiffInDays(
-        session.activeAssignment.reportingPeriod.periodStart,
-        relevantTrans[0].transactionDate
-      );
+      const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
       test > 0 && bFTransLikelyAddns.push(tran);
     }
   });
@@ -49,7 +47,9 @@ export async function createTFATransSumm(session, relevantTrans) {
       session["TFATransactions"] = [];
       relevantTrans.forEach((i) => {
         if (i.clientTB) {
+          console.log("here");
           let trans;
+          console.log(session.activeAssignment.clientNL);
           session.activeAssignment.clientNL.forEach((tran) => {
             if (tran.code === i.clientNominalCode) {
               trans = i;
@@ -65,6 +65,7 @@ export async function createTFATransSumm(session, relevantTrans) {
               ];
               trans["transactionDate"] = convertExcelDate(tran.date);
               trans["transactionDateClt"] = tran.date;
+              trans["transactionDateExcel"] = tran.date;
               trans["clientNominalCode"] = tran.code;
               trans["clientNominalName"] = tran.name;
               trans["assetNarrative"] = tran.detail;

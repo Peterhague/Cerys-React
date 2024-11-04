@@ -1,6 +1,7 @@
 import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
+import { colNumToLetter } from "../excel-col-conversion";
 import {
   calculateDiffInDays,
   convertExcelDate,
@@ -8,7 +9,7 @@ import {
   setEditButtonValue,
   updateNomCode,
 } from "../helperFunctions";
-import { addWorksheet } from "../worksheet";
+import { addWorksheet, setExcelRangeValue } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 
@@ -112,9 +113,9 @@ export async function createIFATransSumm(session, relevantTrans) {
           session["IFATransactions"].push(i);
         }
       });
-      session.activeJournal.clientTB = false;
-      session.activeJournal.journal = false;
-      session.activeJournal.journalType = "auto-journal";
+      //session.activeJournal.clientTB = false;
+      //session.activeJournal.journal = false;
+      //session.activeJournal.journalType = "auto-journal";
       session["IFATransactions"].forEach((tran) => {
         const transVals = [];
         transVals.push(tran.transactionNumber);
@@ -182,6 +183,7 @@ export async function createIFATransSumm(session, relevantTrans) {
         }
         calculateAmortChg(session, tran);
         transVals.push(tran.amortChg / 100);
+        //transVals.push(excelAmortFormula);
         valuesToPost.push(transVals);
       });
       const headerRange = ws.getRange("A1:M2");
@@ -333,15 +335,57 @@ export function calculateAmortChg(session, tran) {
   session.activeJournal.netValue += jnls["debit"]["value"];
   session.activeJournal.journals.push(jnls.credit);
   session.activeJournal.netValue += jnls["credit"]["value"];
+  return `=ROUND(SUM((${tran.value / 100})*(${parseInt(tran.amortRate)}/100)*((${session.activeAssignment.reportingPeriod.reportingDateExcel + 1}-B3)/${daysInPeriod})), 2)`;
+  //console.log(excelAmortFormula);
 }
 
+export const recalculateAmortChg = async (session, sheet, tran, e) => {
+  console.log(session.IFATransactions);
+  const mongoDate = convertExcelDate(e.details.valueAfter);
+  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
+  const daysHeld = calculateDiffInDays(mongoDate, periodEnd) + 1;
+  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
+  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod));
+  let amortChgColNumber;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "amortCharge") amortChgColNumber = col.colNumber;
+  });
+  const colLetter = colNumToLetter(amortChgColNumber);
+  const range = `${colLetter}${tran.rowNumber}:${colLetter}${tran.rowNumber}`;
+  session.options.allowAmortChgEdit = true;
+  await setExcelRangeValue(sheet.name, range, charge / 100);
+  session.IFATransactions.forEach((i) => {
+    if (i._id === tran._id) {
+      i.amortChg = charge;
+      i.transactionDateExcel = e.details.valueAfter;
+      i.subTransactions.forEach((subTran) => {
+        if (subTran.assetSubCatCode === 11 && subTran.assetSubCategory === "Amort chg") {
+          subTran.value = charge;
+        }
+      });
+    }
+  });
+  adjustAutoAmortJnls(session, tran, charge);
+};
+
+export const updateIFANarrative = async (session, tran, e) => {
+  session.IFATransactions.forEach((i) => {
+    if (i._id === tran._id) {
+      i.assetNarrative = e.details.valueAfter;
+    }
+  });
+};
+
 export const buildAutoAmortJnls = (session, tran) => {
+  console.log(tran);
   const catNo = tran.assetCategoryNo;
   const jnls = setAutoAmortNominals(catNo);
   session.chart.forEach((nom) => {
     if (nom.cerysCode === jnls.debit) jnls.debit = nom;
     if (nom.cerysCode === jnls.credit) jnls.credit = nom;
   });
+  jnls.debit["transactionId"] = tran._id;
+  jnls.credit["transactionId"] = tran._id;
   jnls.debit["value"] = tran.amortChg;
   jnls.credit["value"] = tran.amortChg * -1;
   jnls.debit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
@@ -364,6 +408,17 @@ export const setAutoAmortNominals = (catNo) => {
     default:
       return { debit: 3890, credit: 5012 };
   }
+};
+
+export const adjustAutoAmortJnls = (session, tran, charge) => {
+  console.log(session.activeJournal.journals);
+  session.activeJournal.journals.forEach((jnl) => {
+    if (jnl.transactionId === tran._id) {
+      console.log("matched");
+      if (jnl.value > 0) jnl.value = charge;
+      if (jnl.value < 0) jnl.value = charge * -1;
+    }
+  });
 };
 
 export async function captureIFARSummChange(context, e, transToPost, ws) {

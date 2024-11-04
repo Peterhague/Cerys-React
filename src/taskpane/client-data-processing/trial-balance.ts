@@ -4,7 +4,7 @@ import { checkAssetRegStatus, processTransBatch } from "../utils.ts/transactions
 export async function enterTB(session, updateSession, handleView) {
   try {
     await Excel.run(async (context) => {
-      session["nextView"] = "enterClientDataHome";
+      //session["nextView"] = "enterClientDataHome";
       const journals = await handleTBData(context);
       let check = 0;
       const transactions = [];
@@ -12,6 +12,7 @@ export async function enterTB(session, updateSession, handleView) {
         const obj = {
           ...jnl,
           value: jnl.value,
+          transactionDate: "",
         };
         check += jnl.value;
         transactions.push(obj);

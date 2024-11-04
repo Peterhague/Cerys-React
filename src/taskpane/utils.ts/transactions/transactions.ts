@@ -2,13 +2,14 @@ import { postJournalBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
 import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
-import { calculateExcelDate } from "../helperFunctions";
+import { calculateExcelDate, callNextView } from "../helperFunctions";
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
 export const processTransBatch = async (session) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
+  console.log(activeJournal.journals);
   activeJournal.journals.forEach((jnl) => {
     const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
@@ -47,7 +48,6 @@ export const processTransBatch = async (session) => {
 };
 
 export const checkAssetRegStatus = (session, handleView) => {
-  console.log(session);
   if (
     !session["activeAssignment"]["IFARegisterCreated"] &&
     session["activeAssignment"]["activeCategories"].includes("Intangible assets") &&
@@ -70,9 +70,8 @@ export const checkAssetRegStatus = (session, handleView) => {
   ) {
     handleView("promptIPRCreation");
   } else {
-    handleView(session["nextView"]);
+    callNextView(session);
   }
-  session["nextView"] = "";
 };
 
 const postTransactionsDb = async (transactions, transDtls, transactionType) => {

@@ -9,6 +9,7 @@ import {
   simulateEditButtonClick,
   updateAssignmentFigures,
 } from "./helperFunctions";
+import { recalculateAmortChg, updateIFANarrative } from "./transactions/ifar-generation";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
@@ -583,6 +584,10 @@ export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
       changeRejected = session.editableSheets[i].changeRejected;
       session.editableSheets[i].changeRejected = !session.editableSheets[i].changeRejected;
       const definedCol = determineChangeType(session.editableSheets[i], firstCol);
+      if (definedCol.type === "amortCharge" && session.options.allowAmortChgEdit) {
+        session.options.allowAmortChgEdit = false;
+        return;
+      }
       if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.mutable)) {
         session.editableSheets[i].editableRowRanges.forEach((range) => {
           if (eRowNumber >= range.firstRow && eRowNumber <= range.lastRow) withinProtectedRange = true;
@@ -649,6 +654,8 @@ export const captureReanalysis = async (session, e, wsName) => {
         if (!tests.updated && !validationObj.isNegation) {
           createNewTransactionUpdate(tran, newArray, tests, e, sheet, change);
         }
+        if (change.type === "date" && sheet.type === "IFARPreview") recalculateAmortChg(session, sheet, tran, e);
+        if (change.type === "cerysNarrative" && sheet.type === "IFARPreview") updateIFANarrative(session, tran, e);
         session.updatedTransactions = newArray;
       }
       if (tests.isValid) {
@@ -787,11 +794,6 @@ export const submitTransactionUpdates = async (session) => {
   const deletionObjs = [];
   let promptSheetDeletion = false;
   session.updatedTransactions.forEach((tran) => {
-    session.liveUpdatedTrans.push({
-      transactionId: tran.transactionId,
-      updatedDate: tran.updatedDate,
-      updatedNarrative: tran.updatedNarrative,
-    });
     tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
     if (tran.updatedCode) {
       tbUpdated = true;
@@ -829,7 +831,6 @@ export const submitTransactionUpdates = async (session) => {
       });
     }
   });
-  console.log(session.liveUpdatedTrans);
   if (otherUpdated) {
     updatedTrans.forEach((tran) => {
       session.editableSheets.forEach((sheet) => {
@@ -842,7 +843,7 @@ export const submitTransactionUpdates = async (session) => {
   deletionObjs.sort((a, b) => {
     return b.rowNumber - a.rowNumber;
   });
-  await deleteWorksheetRangesUp(deletionObjs);
+  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
   const updatedCustAndAss = await updatedCustAndAssDB.json();
@@ -858,6 +859,7 @@ export const submitTransactionUpdates = async (session) => {
       checkAssetRegStatus(session, session["handleView"]);
     }
   } else {
+    console.log("here");
     callNextView(session);
   }
   session.setEditButton("hide");

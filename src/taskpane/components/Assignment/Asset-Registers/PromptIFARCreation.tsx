@@ -4,6 +4,7 @@ import CerysButton from "../../CerysButton";
 import { createIFAR, createRelTransIFA } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
+import { setNextViewButOne } from "../../../utils.ts/helperFunctions";
 
 interface promptIFARCreationProps {
   updateSession: (update) => void;
@@ -18,13 +19,15 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 }: promptIFARCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState("main");
+  const [view, setView] = useState(session["options"].IFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
       createRelTransIFA(session);
+      setNextViewButOne(session);
       setView("confirm");
+      session["options"].IFARCreationSetting = "confirm";
     } else {
       setView("NLPrompt");
     }
@@ -34,15 +37,22 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
     await enterNL(session, updateSession);
     createRelTransIFA(session);
     setView("confirm");
+    session["options"].IFARCreationSetting = "confirm";
   };
 
   const handleAbort = (view) => {
+    session["options"].IFARCreationSetting = "main";
+    session["activeJournal"].journals = [];
     handleView(view);
   };
 
   const handleSubmit = async () => {
+    session["options"].IFARCreationSetting = "main";
     await createIFAR(session);
     session["IFATransactions"] = [];
+    session["activeJournal"].clientTB = false;
+    session["activeJournal"].journal = false;
+    session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
     checkAssetRegStatus(session, handleView);
   };
