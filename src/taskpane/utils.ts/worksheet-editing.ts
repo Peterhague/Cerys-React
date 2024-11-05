@@ -9,6 +9,7 @@ import {
   simulateEditButtonClick,
   updateAssignmentFigures,
 } from "./helperFunctions";
+import { recalculateCharge, updateAssetNarrative } from "./transactions/asset-reg-generation";
 import { recalculateAmortChg, updateIFANarrative } from "./transactions/ifar-generation";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import {
@@ -584,8 +585,8 @@ export const rejectChanges = async (session, e, wsName, editModeEnabled) => {
       changeRejected = session.editableSheets[i].changeRejected;
       session.editableSheets[i].changeRejected = !session.editableSheets[i].changeRejected;
       const definedCol = determineChangeType(session.editableSheets[i], firstCol);
-      if (definedCol.type === "amortCharge" && session.options.allowAmortChgEdit) {
-        session.options.allowAmortChgEdit = false;
+      if (definedCol.type === "depnCharge" && session.options.allowDepnChgEdit) {
+        session.options.allowDepnChgEdit = false;
         return;
       }
       if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.mutable)) {
@@ -655,8 +656,10 @@ export const captureReanalysis = async (session, e, wsName) => {
         if (!tests.updated && !validationObj.isNegation) {
           createNewTransactionUpdate(tran, newArray, tests, e, sheet, change);
         }
-        if (change.type === "date" && sheet.type === "IFARPreview") recalculateAmortChg(session, sheet, tran, e);
-        if (change.type === "cerysNarrative" && sheet.type === "IFARPreview") updateIFANarrative(session, tran, e);
+        if (change.type === "date" && sheet.type === "IFARPreview") recalculateCharge(session, sheet, tran, e);
+        //if (change.type === "cerysNarrative" && sheet.type === "IFARPreview") updateIFANarrative(session, tran, e);
+        if (change.type === "cerysNarrative" && sheet.type === "IFARPreview")
+          updateAssetNarrative(session, sheet, tran, e);
         session.updatedTransactions = newArray;
       }
       if (tests.isValid) {
@@ -702,6 +705,8 @@ export const validateChange = (session, tran, change, e) => {
     obj.isInvalid = inValidCode;
   } else if (change.type === "date") {
     if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
+    console.log(e.details.valueAfter);
+    console.log(tran.transactionDateExcel);
     if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
     if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
       obj.isInvalid = true;
@@ -913,27 +918,27 @@ export const reverseTransactionUpdates = async (session) => {
     }
   });
   await setManyWorksheetRangeValues(reversals);
-  await resetEditableRanges(session, reversals);
+  //await resetEditableRanges(session, reversals);
   session.setEditButton("hide");
 };
 
-export const resetEditableRanges = async (session, updates) => {
-  await Excel.run(async (context) => {
-    console.log(updates);
-    updates.forEach((update) => {
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name === update.wsName && sheet.editButtonStatus === "hide") {
-          console.log("test passed");
-          const ws = context.workbook.worksheets.getItem(update.wsName);
-          const range = ws.getRange(update.address);
-          range.format.fill.color = "yellow";
-          console.log("filled yellow");
-        }
-      });
-    });
-    await context.sync();
-  });
-};
+//export const resetEditableRanges = async (session, updates) => {
+//  await Excel.run(async (context) => {
+//    console.log(updates);
+//    updates.forEach((update) => {
+//      session.editableSheets.forEach((sheet) => {
+//        if (sheet.name === update.wsName && sheet.editButtonStatus === "hide") {
+//          console.log("test passed");
+//          const ws = context.workbook.worksheets.getItem(update.wsName);
+//          const range = ws.getRange(update.address);
+//          range.format.fill.color = "yellow";
+//          console.log("filled yellow");
+//        }
+//      });
+//    });
+//    await context.sync();
+//  });
+//};
 
 export const simulateAutoFillChanges = async (session, wsName, autoFillObj) => {
   console.log("changes simulated");

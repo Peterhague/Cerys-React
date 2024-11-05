@@ -5,6 +5,7 @@ import { createIFAR, createRelTransIFA } from "../../../utils.ts/transactions/if
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
 import { setNextViewButOne } from "../../../utils.ts/helperFunctions";
+import { createRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 
 interface promptIFARCreationProps {
   updateSession: (update) => void;
@@ -26,7 +27,8 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
-      createRelTransIFA(session);
+      //createRelTransIFA(session);
+      createRelTrans(session, "IFA");
       setView("confirm");
       session["options"].IFARCreationSetting = "confirm";
     } else {
@@ -36,7 +38,8 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    createRelTransIFA(session);
+    //createRelTransIFA(session);
+    createRelTrans(session, "IFA");
     setView("confirm");
     session["options"].IFARCreationSetting = "confirm";
   };
