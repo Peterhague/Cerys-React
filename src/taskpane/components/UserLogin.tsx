@@ -37,7 +37,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["updatedTransactions"] = [];
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
-    session["options"] = { IFARCreationSetting: "main", allowDepnChgEdit: false };
+    session["options"] = { IFARCreationSetting: "main", TFARCreationSetting: "main", allowDepnChgEdit: false };
     session["nextViewButOne"] = "";
     updateSession(session);
     await registerWorksheetDeletionHandler(session);

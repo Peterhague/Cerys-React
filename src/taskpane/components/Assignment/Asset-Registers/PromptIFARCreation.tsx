@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { createIFAR, createRelTransIFA } from "../../../utils.ts/transactions/ifar-generation";
+import { createIFAR } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
 import { setNextViewButOne } from "../../../utils.ts/helperFunctions";

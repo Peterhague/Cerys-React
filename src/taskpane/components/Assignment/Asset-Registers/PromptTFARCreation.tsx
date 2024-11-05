@@ -2,9 +2,11 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { createRelTransTFA, createTFAR } from "../../../utils.ts/transactions/tfar-generation";
+import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
 import { getWorksheet } from "../../../utils.ts/worksheet";
+import { createRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+import { setNextViewButOne } from "../../../utils.ts/helperFunctions";
 
 interface promptTFARCreationProps {
   updateSession: (update) => void;
@@ -19,13 +21,17 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 }: promptTFARCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState("main");
+  const [view, setView] = useState(session["options"].TFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
+
+  setNextViewButOne(session);
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
-      createRelTransTFA(session, setView);
-      //setView("confirm");
+      //createRelTransTFA(session, setView);
+      createRelTrans(session, "TFA");
+      setView("confirm");
+      session["options"].TFARCreationSetting = "confirm";
     } else {
       setView("NLPrompt");
     }
@@ -33,17 +39,25 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    createRelTransTFA(session, setView);
-    //setView("confirm");
+    //createRelTransTFA(session, setView);
+    createRelTrans(session, "TFA");
+    setView("confirm");
+    session["options"].TFARCreationSetting = "confirm";
   };
 
   const handleAbort = (view) => {
+    session["options"].TFARCreationSetting = "main";
+    session["activeJournal"].journals = [];
     handleView(view);
   };
 
   const handleSubmit = async () => {
+    session["options"].TFARCreationSetting = "main";
     await createTFAR(session);
     session["TFATransactions"] = [];
+    session["activeJournal"].clientTB = false;
+    session["activeJournal"].journal = false;
+    session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
     checkAssetRegStatus(session, handleView);
   };

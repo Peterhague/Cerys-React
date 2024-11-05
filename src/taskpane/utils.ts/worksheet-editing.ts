@@ -10,7 +10,6 @@ import {
   updateAssignmentFigures,
 } from "./helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "./transactions/asset-reg-generation";
-import { recalculateAmortChg, updateIFANarrative } from "./transactions/ifar-generation";
 import { checkAssetRegStatus } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
@@ -656,9 +655,10 @@ export const captureReanalysis = async (session, e, wsName) => {
         if (!tests.updated && !validationObj.isNegation) {
           createNewTransactionUpdate(tran, newArray, tests, e, sheet, change);
         }
-        if (change.type === "date" && sheet.type === "IFARPreview") recalculateCharge(session, sheet, tran, e);
+        if (change.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+          recalculateCharge(session, sheet, tran, e);
         //if (change.type === "cerysNarrative" && sheet.type === "IFARPreview") updateIFANarrative(session, tran, e);
-        if (change.type === "cerysNarrative" && sheet.type === "IFARPreview")
+        if (change.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
           updateAssetNarrative(session, sheet, tran, e);
         session.updatedTransactions = newArray;
       }

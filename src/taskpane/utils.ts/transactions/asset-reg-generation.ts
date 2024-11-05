@@ -2,13 +2,7 @@ import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  calculateDiffInDays,
-  convertExcelDate,
-  createEditableWs,
-  setEditButtonValue,
-  updateNomCode,
-} from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, createEditableWs, setEditButtonValue } from "../helperFunctions";
 import { addWorksheet, setExcelRangeValue } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -24,6 +18,13 @@ export function createRelTrans(session, registerType) {
       ) {
         relevantTrans.push(tran);
       }
+    } else if (registerType === "TFA") {
+      if (
+        tran.cerysCategory === "Tangible assets" &&
+        (tran.assetCodeType === "tFACostAddns" || tran.assetCodeType === "tFACostBF")
+      ) {
+        relevantTrans.push(tran);
+      }
     }
   });
   createTransSumm(session, relevantTrans, registerType);
@@ -32,7 +33,8 @@ export function createRelTrans(session, registerType) {
 export async function createTransSumm(session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
-      const ws = addWorksheet(context, "IFA Transactions");
+      const name = `${registerType} Transactions`;
+      const ws = addWorksheet(context, name);
       ws.load(["id", "name"]);
       await context.sync();
       let activeClient;
@@ -169,6 +171,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
       const headerRange = ws.getRange("A1:M2");
       headerRange.format.font.bold = true;
       const range = ws.getRange(`A1:M${valuesToPost.length}`);
+      console.log(valuesToPost);
       range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = "dd/mm/yyyy";
@@ -275,7 +278,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
           deleted: false,
         },
       ];
-      const transactions = _.cloneDeep(session.IFATransactions);
+      const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
       const sheetName = `${registerType}RPreview`;
       const editableWs = createEditableWs(transactions, ws, definedCols, valuesToPost, sheetName);
       const arr = [editableWs];
@@ -319,6 +322,53 @@ export const populateDepnCols = (activeClient, transVals, tran, registerType) =>
       tran.amortBasis = activeClient.amortBasisCompSware;
       tran.amortRate = activeClient.amortRateCompSware;
     }
+  } else if (registerType === "TFA") {
+    if (tran.assetCategoryNo === 1) {
+      tran.depnBasis = activeClient.depnBasisFholdProp;
+      tran.depnRate = activeClient.depnRateFholdProp;
+      transVals.push(activeClient.depnBasisFholdProp);
+      transVals.push(activeClient.depnRateFholdProp);
+    } else if (tran.assetCategoryNo === 2) {
+      tran.depnBasis = activeClient.depnBasisShortLhold;
+      tran.depnRate = activeClient.depnRateShortLhold;
+      transVals.push(activeClient.depnBasisShortLhold);
+      transVals.push(activeClient.depnRateShortLhold);
+    } else if (tran.assetCategoryNo === 3) {
+      tran.depnBasis = activeClient.depnBasisLongLhold;
+      tran.depnRate = activeClient.depnRateLongLhold;
+      transVals.push(activeClient.depnBasisLongLhold);
+      transVals.push(activeClient.depnRateLongLhold);
+    } else if (tran.assetCategoryNo === 4) {
+      tran.depnBasis = activeClient.depnBasisImprovements;
+      tran.depnRate = activeClient.depnRateImprovements;
+      transVals.push(activeClient.depnBasisImprovements);
+      transVals.push(activeClient.depnRateImprovements);
+    } else if (tran.assetCategoryNo === 5) {
+      tran.depnBasis = activeClient.depnBasisPlantMachinery;
+      tran.depnRate = activeClient.depnRatePlantMachinery;
+      transVals.push(activeClient.depnBasisPlantMachinery);
+      transVals.push(activeClient.depnRatePlantMachinery);
+    } else if (tran.assetCategoryNo === 6) {
+      tran.depnBasis = activeClient.depnBasisFixFittings;
+      tran.depnRate = activeClient.depnRateFixFittings;
+      transVals.push(activeClient.depnBasisFixFittings);
+      transVals.push(activeClient.depnRateFixFittings);
+    } else if (tran.assetCategoryNo === 7) {
+      tran.depnBasis = activeClient.depnBasisMotorVehicles;
+      tran.depnRate = activeClient.depnRateMotorVehicles;
+      transVals.push(activeClient.depnBasisMotorVehicles);
+      transVals.push(activeClient.depnRateMotorVehicles);
+    } else if (tran.assetCategoryNo === 8) {
+      tran.depnBasis = activeClient.depnBasisCompEquip;
+      tran.depnRate = activeClient.depnRateCompEquip;
+      transVals.push(activeClient.depnBasisCompEquip);
+      transVals.push(activeClient.depnRateCompEquip);
+    } else if (tran.assetCategoryNo === 9) {
+      tran.depnBasis = activeClient.depnBasisOfficeEquip;
+      tran.depnRate = activeClient.depnRateOfficeEquip;
+      transVals.push(activeClient.depnBasisOfficeEquip);
+      transVals.push(activeClient.depnRateOfficeEquip);
+    }
   }
 };
 
@@ -326,7 +376,8 @@ export function calculateCharge(session, tran, registerType) {
   const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
   const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
-  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod));
+  const rate = tran.amortRate ? tran.amortRate : tran.depnRate;
+  const charge = Math.round(tran.value * (parseInt(rate) / 100) * (daysHeld / daysInPeriod));
   let amortOrDepn;
   if (registerType === "IFA") {
     amortOrDepn = "Amort";
@@ -421,7 +472,7 @@ export const buildAutoDepnJnls = (session, tran, registerType) => {
     jnls = setAutoAmortNominals(catNo);
     amortOrDepn = "Amortisation";
   } else if (registerType === "TFA") {
-    setAutoDepnNominals(catNo);
+    jnls = setAutoDepnNominals(catNo);
     amortOrDepn = "Depreciation";
   }
   session.chart.forEach((nom) => {
@@ -430,8 +481,8 @@ export const buildAutoDepnJnls = (session, tran, registerType) => {
   });
   jnls.debit["transactionId"] = tran._id;
   jnls.credit["transactionId"] = tran._id;
-  jnls.debit["value"] = tran.amortChg;
-  jnls.credit["value"] = tran.amortChg * -1;
+  jnls.debit["value"] = tran.amortChg ? tran.amortChg : tran.depnChg;
+  jnls.credit["value"] = tran.amortChg ? tran.amortChg * -1 : tran.depnChg * -1;
   jnls.debit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
   jnls.credit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
   jnls.debit["narrative"] = `${amortOrDepn} charged automatically`;
@@ -502,31 +553,31 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
 //  }
 //}
 
-export function updateAmortBasis(e, transToPost, eRowNumber) {
-  const updatedTransToPost = [];
-  transToPost.forEach((i) => {
-    if (i.rowNumber === eRowNumber) {
-      i.amortBasis = e.details.valueAfter;
-      updatedTransToPost.push(i);
-    } else {
-      updatedTransToPost.push(i);
-    }
-  });
-  return updatedTransToPost;
-}
+//export function updateAmortBasis(e, transToPost, eRowNumber) {
+//  const updatedTransToPost = [];
+//  transToPost.forEach((i) => {
+//    if (i.rowNumber === eRowNumber) {
+//      i.amortBasis = e.details.valueAfter;
+//      updatedTransToPost.push(i);
+//    } else {
+//      updatedTransToPost.push(i);
+//    }
+//  });
+//  return updatedTransToPost;
+//}
 
-export function updateAmortRate(e, transToPost, eRowNumber) {
-  const updatedTransToPost = [];
-  transToPost.forEach((i) => {
-    if (i.rowNumber === eRowNumber) {
-      i.amortRate = e.details.valueAfter;
-      updatedTransToPost.push(i);
-    } else {
-      updatedTransToPost.push(i);
-    }
-  });
-  return updatedTransToPost;
-}
+//export function updateAmortRate(e, transToPost, eRowNumber) {
+//  const updatedTransToPost = [];
+//  transToPost.forEach((i) => {
+//    if (i.rowNumber === eRowNumber) {
+//      i.amortRate = e.details.valueAfter;
+//      updatedTransToPost.push(i);
+//    } else {
+//      updatedTransToPost.push(i);
+//    }
+//  });
+//  return updatedTransToPost;
+//}
 
 export async function createIFAR(session) {
   try {
