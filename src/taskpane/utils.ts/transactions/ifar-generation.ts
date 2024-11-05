@@ -340,7 +340,7 @@ export function calculateAmortChg(session, tran) {
 }
 
 export const recalculateAmortChg = async (session, sheet, tran, e) => {
-  console.log(session.IFATransactions);
+  const newValue = e.details.valueAfter;
   const mongoDate = convertExcelDate(e.details.valueAfter);
   const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(mongoDate, periodEnd) + 1;
@@ -357,7 +357,7 @@ export const recalculateAmortChg = async (session, sheet, tran, e) => {
   session.IFATransactions.forEach((i) => {
     if (i._id === tran._id) {
       i.amortChg = charge;
-      i.transactionDateExcel = e.details.valueAfter;
+      i.transactionDateExcel = newValue;
       i.subTransactions.forEach((subTran) => {
         if (subTran.assetSubCatCode === 11 && subTran.assetSubCategory === "Amort chg") {
           subTran.value = charge;

@@ -22,10 +22,11 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
   const [view, setView] = useState(session["options"].IFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
 
+  setNextViewButOne(session);
+
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
       createRelTransIFA(session);
-      setNextViewButOne(session);
       setView("confirm");
       session["options"].IFARCreationSetting = "confirm";
     } else {

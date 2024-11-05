@@ -634,6 +634,7 @@ export const checkForAutoFill = (e) => {
 };
 
 export const captureReanalysis = async (session, e, wsName) => {
+  console.log("reanalysis captured");
   const { firstRow, firstCol } = interpretEventAddress(e);
   const eRowNumber = firstRow;
   let tran;
@@ -667,8 +668,10 @@ export const captureReanalysis = async (session, e, wsName) => {
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
+  console.log(tests.isValid);
   if (tests.isValid) {
     const color = tests.isNotNegation ? "lightGreen" : "yellow";
+    console.log("color is " + color);
     highlightRanges(wsName, [range], color);
     const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
     session.handleView(view);
@@ -715,8 +718,11 @@ export const validateChange = (session, tran, change, e) => {
 };
 
 export const updateIfExistingUpdate = (session, tran, tests, change, validationObj, newArray, e) => {
+  console.log(session.updatedTransactions);
+  console.log(tran);
   session.updatedTransactions.forEach((updatedTran) => {
     if (updatedTran.transactionId === tran._id) {
+      console.log("validated");
       tests.isValid = true;
       tests.updated = true;
       if (validationObj.isNegation) {
@@ -867,6 +873,7 @@ export const submitTransactionUpdates = async (session) => {
 
 export const reverseTransactionUpdates = async (session) => {
   const reversals = [];
+  console.log(session.updatedTransactions);
   const updatedTrans = session.updatedTransactions;
   updatedTrans.forEach((tran) => {
     const wsName = tran.worksheetName;
@@ -894,6 +901,7 @@ export const reverseTransactionUpdates = async (session) => {
       reversals.push(reversal);
     }
     if (tran.updatedDate) {
+      console.log("date updated");
       const address = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
       const reversal = { wsName, address, value: tran.dateExcel };
       reversals.push(reversal);
@@ -911,12 +919,15 @@ export const reverseTransactionUpdates = async (session) => {
 
 export const resetEditableRanges = async (session, updates) => {
   await Excel.run(async (context) => {
+    console.log(updates);
     updates.forEach((update) => {
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === update.wsName && sheet.editButtonStatus === "hide") {
+          console.log("test passed");
           const ws = context.workbook.worksheets.getItem(update.wsName);
           const range = ws.getRange(update.address);
           range.format.fill.color = "yellow";
+          console.log("filled yellow");
         }
       });
     });

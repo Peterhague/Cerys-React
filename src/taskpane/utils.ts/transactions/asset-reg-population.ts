@@ -174,15 +174,9 @@ const buildRegPerCategory = (activeCats, numberCols, registerColNames, transToPo
     regBodyVals.push(blankLine);
     rowNumber++;
     const totalStartRowNumber = rowNumber;
-    console.log(transToPost);
     transToPost.forEach((tran) => {
       if (tran.assetCategory === cat.assetCategory) {
         const assetLine = [];
-        //if (tran.transactionDateClt) {
-        //  assetLine.push(tran.transactionDateClt);
-        //} else if (tran.transactionDateUser) {
-        //  assetLine.push(tran.transactionDateUser);
-        //}
         assetLine.push(tran.transactionDateExcel);
         assetLine.push(tran.assetNarrative);
         assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);

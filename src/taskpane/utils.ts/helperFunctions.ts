@@ -3,7 +3,6 @@ import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
-import { checkAssetRegStatus } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import {
   getActiveWorksheetName,
@@ -16,9 +15,7 @@ import { addBsClickListener, addPlClickListener, addTbClickListener } from "./wo
 export const registerWorksheetDeletionHandler = async (session) => {
   await Excel.run(async (context) => {
     let sheets = context.workbook.worksheets;
-    console.log(sheets);
     sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
-    console.log(session);
     await context.sync();
   });
 };
@@ -321,7 +318,7 @@ export const createEditableWs = (transactions, ws, definedCols, valuesToPost, ty
     promptDeletion: false,
     worksheetId: ws.id,
     editableRowRanges: [{ firstRow: 3, lastRow: transactions.length + 2 }],
-    protectedRange: { firstRow: 3, lastRow: transactions.length + 2, firstCol: 1, lastCol: 7 },
+    protectedRange: { firstRow: 3, lastRow: transactions.length + 2, firstCol: 1, lastCol: definedCols.length },
     protectedRangeDeleted: false,
     definedCols,
     editButtonStatus: "show",

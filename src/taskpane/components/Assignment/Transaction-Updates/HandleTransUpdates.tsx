@@ -16,7 +16,8 @@ const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, ses
 
   const handleDiscard = async () => {
     await reverseTransactionUpdates(session);
-    session["updatedTransactions"] = [];
+      session["updatedTransactions"] = [];
+      console.log("trans deleted");
     callNextView(session);
   };
 
