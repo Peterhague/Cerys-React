@@ -4,30 +4,48 @@ import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/comp
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateDiffInDays, convertExcelDate, createEditableWs, setEditButtonValue } from "../helperFunctions";
 import { addWorksheet, setExcelRangeValue } from "../worksheet";
-import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
+import { createNewTransactionUpdate, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
 
-export function createRelTrans(session, registerType) {
+export const identifyLikelyAdditions = (session, registerType, setView) => {
+  const bFTransLikelyAddns = [];
+  session.activeAssignment.transactions.forEach((tran) => {
+    if (
+      (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
+      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF")
+    ) {
+      const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
+      test > 0 && bFTransLikelyAddns.push(tran);
+    }
+  });
+  if (bFTransLikelyAddns.length > 0) {
+    createLikelyAdditionsSumm(bFTransLikelyAddns, registerType);
+    setView("confirmBFAreAddns");
+    createTransactionUpdates(session, bFTransLikelyAddns);
+  } else {
+    previewRelTrans(session, registerType, setView);
+  }
+};
+
+export const previewRelTrans = (session, registerType, setView) => {
+  createRelTrans(session, registerType);
+  setView("confirm");
+  session["options"][`${registerType}RCreationSetting`] = "confirm";
+};
+
+export async function createRelTrans(session, registerType) {
   const relevantTrans = [];
   session.activeAssignment.transactions.forEach((tran) => {
-    if (registerType === "IFA") {
-      if (
-        tran.cerysCategory === "Intangible assets" &&
-        (tran.assetCodeType === "iFACostAddns" || tran.assetCodeType === "iFACostBF")
-      ) {
-        relevantTrans.push(tran);
-      }
-    } else if (registerType === "TFA") {
-      if (
-        tran.cerysCategory === "Tangible assets" &&
-        (tran.assetCodeType === "tFACostAddns" || tran.assetCodeType === "tFACostBF")
-      ) {
-        relevantTrans.push(tran);
-      }
+    if (
+      (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
+      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns")
+    ) {
+      relevantTrans.push(tran);
     }
   });
   createTransSumm(session, relevantTrans, registerType);
+  console.log(relevantTrans);
 }
 
 export async function createTransSumm(session, relevantTrans, registerType) {
@@ -299,6 +317,80 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   }
 }
 
+export async function createLikelyAdditionsSumm(relevantTrans, registerType) {
+  try {
+    await Excel.run(async (context) => {
+      const name = `${registerType} Possible Additions`;
+      const ws = addWorksheet(context, name);
+      const valuesToPost = [
+        ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
+        ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
+      ];
+      relevantTrans.forEach((tran) => {
+        const transVals = [];
+        transVals.push(tran.transactionNumber);
+        if (tran.transactionDate) {
+          const dateString = tran.transactionDate.split("T")[0];
+          const dateStringSplit = dateString.split("-");
+          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+          transVals.push(dateConverted);
+          tran.transactionDateUser = dateConverted;
+        } else if (tran.transactionDateClt) {
+          transVals.push(tran.transactionDateClt);
+        } else {
+          transVals.push("Not provided");
+        }
+        transVals.push(tran.narrative);
+        if (tran.journal) {
+          transVals.push("Journal");
+        } else if (tran.finalJournal) {
+          transVals.push("Final journal");
+        } else if (tran.reviewJournal) {
+          transVals.push("Review journal");
+        } else if (tran.clientTB) {
+          transVals.push("Client TB");
+        } else if (tran.clientAdjustment) {
+          transVals.push("Client adjustment");
+        }
+        transVals.push(tran.cerysCode);
+        transVals.push(tran.cerysShortName);
+        if (tran.clientNominalCode >= 0) {
+          transVals.push(tran.clientNominalCode);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.clientNominalName) {
+          transVals.push(tran.clientNominalName);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.assetNarrative) {
+          transVals.push(tran.assetNarrative);
+        } else {
+          transVals.push("NA");
+        }
+        transVals.push(tran.value / 100);
+        valuesToPost.push(transVals);
+      });
+      const headerRange = ws.getRange("A1:J2");
+      headerRange.format.font.bold = true;
+      const range = ws.getRange(`A1:J${valuesToPost.length}`);
+      console.log(valuesToPost);
+      range.values = valuesToPost;
+      const rangeB = ws.getRange("B:B");
+      rangeB.numberFormat = "dd/mm/yyyy";
+      const rangeJ = ws.getRange("J:J");
+      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+      const rangeAJ = ws.getRange("A:J");
+      rangeAJ.format.autofitColumns();
+      await context.sync();
+      ws.activate();
+    });
+  } catch (e) {
+    console.error(e);
+  }
+}
+
 export const populateDepnCols = (activeClient, transVals, tran, registerType) => {
   if (registerType === "IFA") {
     if (tran.assetCategoryNo === 1) {
@@ -539,45 +631,18 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
   });
 };
 
-//export async function captureIFARSummChange(context, e, transToPost, ws) {
-//  const eRowNumber = parseInt(e.address.substr(1));
-//  const callingCell = ws.getRange(`${e.address}:${e.address}`);
-//  callingCell.format.fill.color = "lightGreen";
-//  await context.sync();
-//  if (e.address[0] === "D") {
-//    transToPost = updateNomCode(e, transToPost, eRowNumber);
-//  } else if (e.address[0] === "J") {
-//    transToPost = updateAmortBasis(e, transToPost, eRowNumber);
-//  } else if (e.address[0] === "K") {
-//    transToPost = updateAmortRate(e, transToPost, eRowNumber);
-//  }
-//}
-
-//export function updateAmortBasis(e, transToPost, eRowNumber) {
-//  const updatedTransToPost = [];
-//  transToPost.forEach((i) => {
-//    if (i.rowNumber === eRowNumber) {
-//      i.amortBasis = e.details.valueAfter;
-//      updatedTransToPost.push(i);
-//    } else {
-//      updatedTransToPost.push(i);
-//    }
-//  });
-//  return updatedTransToPost;
-//}
-
-//export function updateAmortRate(e, transToPost, eRowNumber) {
-//  const updatedTransToPost = [];
-//  transToPost.forEach((i) => {
-//    if (i.rowNumber === eRowNumber) {
-//      i.amortRate = e.details.valueAfter;
-//      updatedTransToPost.push(i);
-//    } else {
-//      updatedTransToPost.push(i);
-//    }
-//  });
-//  return updatedTransToPost;
-//}
+export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
+  console.log(bFTransLikelyAddns);
+  console.log(session);
+  const newArray = [];
+  bFTransLikelyAddns.forEach((tran) => {
+    const newValue = tran.cerysCode + 1;
+    const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
+    newArray.push(newUpdate);
+  });
+  console.log(newArray);
+  session.updatedTransactions = newArray;
+};
 
 export async function createIFAR(session) {
   try {

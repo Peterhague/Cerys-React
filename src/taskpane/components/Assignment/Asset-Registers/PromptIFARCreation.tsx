@@ -3,9 +3,13 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { createIFAR } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
-import { setNextViewButOne } from "../../../utils.ts/helperFunctions";
-import { createRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+import {
+  checkAssetRegStatus,
+  processTransBatch,
+  processUpdateBatch,
+} from "../../../utils.ts/transactions/transactions";
+import { setNextViewButOne, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 
 interface promptIFARCreationProps {
   updateSession: (update) => void;
@@ -22,15 +26,13 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].IFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
+  const registerType = "IFA";
 
   setNextViewButOne(session);
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
-      //createRelTransIFA(session);
-      createRelTrans(session, "IFA");
-      setView("confirm");
-      session["options"].IFARCreationSetting = "confirm";
+      identifyLikelyAdditions(session, registerType, setView);
     } else {
       setView("NLPrompt");
     }
@@ -38,10 +40,7 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    //createRelTransIFA(session);
-    createRelTrans(session, "IFA");
-    setView("confirm");
-    session["options"].IFARCreationSetting = "confirm";
+    previewRelTrans(session, registerType, setView);
   };
 
   const handleAbort = (view) => {
@@ -61,6 +60,12 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
     checkAssetRegStatus(session, handleView);
   };
 
+  const handleReanalysis = async () => {
+    await processUpdateBatch(session);
+    await updateAssignmentFigures(session);
+    previewRelTrans(session, registerType, setView);
+  };
+
   return (
     <>
       {view === "main" && (
@@ -77,6 +82,14 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
           <p>You have not yet imported a nominal ledger to support the current period's client data.</p>
           <p>This is required for auto-generation of an Intangible Fixed Assets Register.</p>
           <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleView={() => handleNLImport()} />
+        </>
+      )}
+      {view === "confirmBFAreAddns" && (
+        <>
+          <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
+          <p>Would you like to repost them as additions?</p>
+          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleView={() => handleReanalysis()} />
+          <CerysButton buttonText={"NO THANKS"} handleView={() => previewRelTrans(session, registerType, setView)} />
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleSubmit()} />}

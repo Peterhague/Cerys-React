@@ -16,8 +16,6 @@ const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, ses
 
   const handleDiscard = async () => {
     await reverseTransactionUpdates(session);
-      //session["updatedTransactions"] = []; // does this not make the component impure???!!
-      //console.log("trans deleted");
     callNextView(session);
   };
 

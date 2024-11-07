@@ -1,5 +1,5 @@
-import { postJournalBatch } from "../../fetching/apiEndpoints";
-import { fetchOptionsTransBatch } from "../../fetching/generateOptions";
+import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
+import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
 import { calculateExcelDate, callNextView } from "../helperFunctions";
@@ -9,7 +9,6 @@ import { addBsClickListener, addPlClickListener, addTbClickListener } from "../w
 export const processTransBatch = async (session) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
-  console.log(activeJournal.journals);
   activeJournal.journals.forEach((jnl) => {
     const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
@@ -31,11 +30,10 @@ export const processTransBatch = async (session) => {
     transactions.push(jnl);
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
-  //postTransactionsMem(session, transactions);
   const transactionType = activeJournal.journalType;
   const updatedCustAndAss = await postTransactionsDb(transactions, transDtls, transactionType);
   session["activeAssignment"] = updatedCustAndAss.assignment;
-  session["customer"] = updatedCustAndAss.customer;
+  //session["customer"] = updatedCustAndAss.customer;
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
   await postTbToWbook(session, tbArray);
@@ -44,7 +42,15 @@ export const processTransBatch = async (session) => {
   addTbClickListener(session);
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
-  //checkAssetRegStatus(session, handleView);
+};
+
+export const processUpdateBatch = async (session) => {
+  const options = fetchOptionsTransBatchUpdate(session);
+  const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
+  const updatedCustAndAss = await updatedCustAndAssDB.json();
+  //session["customer"] = updatedCustAndAss.customer;
+  session["activeAssignment"] = updatedCustAndAss.assignment;
+  session["updatedTransactions"] = [];
 };
 
 export const checkAssetRegStatus = (session, handleView) => {

@@ -1,12 +1,15 @@
 import * as React from "react";
 import { useState } from "react";
-import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
+import { setNextViewButOne, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
-import { checkAssetRegStatus, processTransBatch } from "../../../utils.ts/transactions/transactions";
-import { getWorksheet } from "../../../utils.ts/worksheet";
-import { createRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
-import { setNextViewButOne } from "../../../utils.ts/helperFunctions";
+import {
+  checkAssetRegStatus,
+  processTransBatch,
+  processUpdateBatch,
+} from "../../../utils.ts/transactions/transactions";
+import CerysButton from "../../CerysButton";
 
 interface promptTFARCreationProps {
   updateSession: (update) => void;
@@ -23,15 +26,13 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].TFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
+  const registerType = "TFA";
 
   setNextViewButOne(session);
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
-      //createRelTransTFA(session, setView);
-      createRelTrans(session, "TFA");
-      setView("confirm");
-      session["options"].TFARCreationSetting = "confirm";
+      identifyLikelyAdditions(session, registerType, setView);
     } else {
       setView("NLPrompt");
     }
@@ -39,10 +40,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    //createRelTransTFA(session, setView);
-    createRelTrans(session, "TFA");
-    setView("confirm");
-    session["options"].TFARCreationSetting = "confirm";
+    previewRelTrans(session, registerType, setView);
   };
 
   const handleAbort = (view) => {
@@ -62,18 +60,10 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
     checkAssetRegStatus(session, handleView);
   };
 
-  const simulateChange = async () => {
-    try {
-      await Excel.run(async (context) => {
-        console.log("running");
-        const ws = getWorksheet(context, "TFA Transactions");
-        const range = ws.getRange("D3:D3");
-        range.values = [["5202"]];
-        await context.sync();
-      });
-    } catch (e) {
-      console.error(e);
-    }
+  const handleReanalysis = async () => {
+    await processUpdateBatch(session);
+    await updateAssignmentFigures(session);
+    previewRelTrans(session, registerType, setView);
   };
 
   return (
@@ -99,8 +89,8 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
         <>
           <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
           <p>Would you like to repost them as additions?</p>
-          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleView={() => simulateChange()} />
-          <CerysButton buttonText={"NO THANKS"} handleView={() => handleNLImport()} />
+          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleView={() => handleReanalysis()} />
+          <CerysButton buttonText={"NO THANKS"} handleView={() => previewRelTrans(session, registerType, setView)} />
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleSubmit()} />}

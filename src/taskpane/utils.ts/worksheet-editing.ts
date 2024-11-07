@@ -10,7 +10,7 @@ import {
   updateAssignmentFigures,
 } from "./helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "./transactions/asset-reg-generation";
-import { checkAssetRegStatus } from "./transactions/transactions";
+import { checkAssetRegStatus, processUpdateBatch } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
   deleteWorksheetRangesUp,
@@ -634,7 +634,7 @@ export const checkForAutoFill = (e) => {
 };
 
 export const captureReanalysis = async (session, e, wsName) => {
-  console.log("reanalysis captured");
+  const newValue = e.details.valueAfter;
   const { firstRow, firstCol } = interpretEventAddress(e);
   const eRowNumber = firstRow;
   let tran;
@@ -653,11 +653,19 @@ export const captureReanalysis = async (session, e, wsName) => {
         let newArray = [];
         updateIfExistingUpdate(session, tran, tests, change, validationObj, newArray, e);
         if (!tests.updated && !validationObj.isNegation) {
-          createNewTransactionUpdate(tran, newArray, tests, e, sheet, change);
+          const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, change.updateKey);
+          newArray.push(newUpdate);
+          tests.isValid = true;
         }
+        newArray.forEach((update) => {
+          if (update.updatedCode && !update.cerysCodeObject) {
+            session["chart"].forEach((code) => {
+              if (code.cerysCode === newValue) update.cerysCodeObject = code;
+            });
+          }
+        });
         if (change.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
           recalculateCharge(session, sheet, tran, e);
-        //if (change.type === "cerysNarrative" && sheet.type === "IFARPreview") updateIFANarrative(session, tran, e);
         if (change.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
           updateAssetNarrative(session, sheet, tran, e);
         session.updatedTransactions = newArray;
@@ -757,7 +765,7 @@ export const updateIfExistingUpdate = (session, tran, tests, change, validationO
   });
 };
 
-export const createNewTransactionUpdate = (tran, newArray, tests, e, sheet, change) => {
+export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => {
   const updatedTran: {
     transactionId: string;
     code: number;
@@ -770,8 +778,9 @@ export const createNewTransactionUpdate = (tran, newArray, tests, e, sheet, chan
     value: number;
     rowNumber: number;
     rowNumberOrig: number;
-    worksheetId: string;
-    worksheetName: string;
+    worksheetId?: string;
+    worksheetName?: string;
+    cerysCodeObject?: {};
   } = {
     transactionId: tran._id,
     code: tran.cerysCode,
@@ -781,12 +790,11 @@ export const createNewTransactionUpdate = (tran, newArray, tests, e, sheet, chan
     value: tran.value,
     rowNumber: tran.rowNumber,
     rowNumberOrig: tran.rowNumberOrig,
-    worksheetId: sheet.worksheetId,
-    worksheetName: sheet.name,
-    [change.updateKey]: e.details.valueAfter,
+    worksheetId: sheet.worksheetId && sheet.worksheetId,
+    worksheetName: sheet.name && sheet.name,
+    [updateKey]: newValue,
   };
-  newArray.push(updatedTran);
-  tests.isValid = true;
+  return updatedTran;
 };
 
 export const cancelAutoFill = async (wsName, address) => {
@@ -808,9 +816,9 @@ export const submitTransactionUpdates = async (session) => {
     tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
     if (tran.updatedCode) {
       tbUpdated = true;
-      session["chart"].forEach((code) => {
-        if (code.cerysCode === tran.updatedCode) tran.cerysCodeObject = code;
-      });
+      //session["chart"].forEach((code) => {
+      //  if (code.cerysCode === tran.updatedCode) tran.cerysCodeObject = code;
+      //});
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === tran.worksheetName) {
           const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${tran.rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${tran.rowNumber}`;
@@ -855,12 +863,9 @@ export const submitTransactionUpdates = async (session) => {
     return b.rowNumber - a.rowNumber;
   });
   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
-  const options = fetchOptionsTransBatchUpdate(session);
-  const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
-  const updatedCustAndAss = await updatedCustAndAssDB.json();
-  session["customer"] = updatedCustAndAss.customer;
-  session["activeAssignment"] = updatedCustAndAss.assignment;
-  session["updatedTransactions"] = [];
+  console.log("here");
+  await processUpdateBatch(session);
+  console.log("here too");
   if (tbUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);
