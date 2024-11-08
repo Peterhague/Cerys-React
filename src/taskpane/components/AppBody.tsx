@@ -41,6 +41,7 @@ import HandleTransUpdates from "./Assignment/Transaction-Updates/HandleTransUpda
 import ReviewTransUpdates from "./Assignment/Transaction-Updates/ReviewTransUpdates";
 import Footer from "./Footer";
 import DeleteSheetPrompt from "./Assignment/Transaction-Updates/DeleteSheetPrompt";
+import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClientDepnIP";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -152,6 +153,9 @@ const AppBody: React.FC = () => {
         break;
       case "addCorpClientDepn":
         body = <AddCorpClientDepn handleView={handleView} updateSession={updateSession} session={session} />;
+        break;
+      case "addCorpClientDepnIP":
+        body = <AddCorpClientDepnIP handleView={handleView} updateSession={updateSession} session={session} />;
         break;
       case "addIndiClientDtls":
         body = <AddIndiClientDtls handleView={handleView} updateSession={updateSession} session={session} />;

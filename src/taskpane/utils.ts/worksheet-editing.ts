@@ -6,6 +6,7 @@ import {
   convertExcelDate,
   interpretEventAddress,
   interpretExcelAddress,
+  setNextViewButOne,
   simulateEditButtonClick,
   updateAssignmentFigures,
 } from "./helperFunctions";
@@ -679,11 +680,15 @@ export const captureReanalysis = async (session, e, wsName) => {
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
-  console.log(tests.isValid);
   if (tests.isValid) {
     const color = tests.isNotNegation ? "lightGreen" : "yellow";
-    console.log("color is " + color);
     highlightRanges(wsName, [range], color);
+    if (
+      session.currentView === "promptIFARCreation" ||
+      session.currentView === "promptTFARCreation" ||
+      session.currentView === "propmptIPRCreation"
+    )
+      setNextViewButOne(session);
     const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
     session.handleView(view);
     if (session.updatedTransactions.length > 0) {
@@ -713,8 +718,6 @@ export const validateChange = (session, tran, change, e) => {
     obj.isInvalid = inValidCode;
   } else if (change.type === "date") {
     if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
-    console.log(e.details.valueAfter);
-    console.log(tran.transactionDateExcel);
     if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
     if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
       obj.isInvalid = true;
@@ -813,9 +816,6 @@ export const submitTransactionUpdates = async (session) => {
     tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
     if (tran.updatedCode) {
       tbUpdated = true;
-      //session["chart"].forEach((code) => {
-      //  if (code.cerysCode === tran.updatedCode) tran.cerysCodeObject = code;
-      //});
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === tran.worksheetName) {
           const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${tran.rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${tran.rowNumber}`;
@@ -860,9 +860,7 @@ export const submitTransactionUpdates = async (session) => {
     return b.rowNumber - a.rowNumber;
   });
   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
-  console.log("here");
   await processUpdateBatch(session);
-  console.log("here too");
   if (tbUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);
@@ -872,7 +870,6 @@ export const submitTransactionUpdates = async (session) => {
       checkAssetRegStatus(session, session["handleView"]);
     }
   } else {
-    console.log("here");
     callNextView(session);
   }
   session.setEditButton("hide");
@@ -880,7 +877,6 @@ export const submitTransactionUpdates = async (session) => {
 
 export const reverseTransactionUpdates = async (session) => {
   const reversals = [];
-  console.log(session.updatedTransactions);
   const updatedTrans = session.updatedTransactions;
   updatedTrans.forEach((tran) => {
     const wsName = tran.worksheetName;
@@ -908,7 +904,6 @@ export const reverseTransactionUpdates = async (session) => {
       reversals.push(reversal);
     }
     if (tran.updatedDate) {
-      console.log("date updated");
       const address = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
       const reversal = { wsName, address, value: tran.dateExcel };
       reversals.push(reversal);
@@ -920,27 +915,8 @@ export const reverseTransactionUpdates = async (session) => {
     }
   });
   await setManyWorksheetRangeValues(reversals);
-  //await resetEditableRanges(session, reversals);
   session.setEditButton("hide");
 };
-
-//export const resetEditableRanges = async (session, updates) => {
-//  await Excel.run(async (context) => {
-//    console.log(updates);
-//    updates.forEach((update) => {
-//      session.editableSheets.forEach((sheet) => {
-//        if (sheet.name === update.wsName && sheet.editButtonStatus === "hide") {
-//          console.log("test passed");
-//          const ws = context.workbook.worksheets.getItem(update.wsName);
-//          const range = ws.getRange(update.address);
-//          range.format.fill.color = "yellow";
-//          console.log("filled yellow");
-//        }
-//      });
-//    });
-//    await context.sync();
-//  });
-//};
 
 export const simulateAutoFillChanges = async (session, wsName, autoFillObj) => {
   console.log("changes simulated");

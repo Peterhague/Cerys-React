@@ -16,7 +16,6 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
 }: addCorpClientOptionsProps) => {
   const handleSubmission = async () => {
     const client = session["newClientPrelim"];
-    console.log(client);
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsAddClient(client, customerId);
     const newCustAndClientDb = await fetch(addClientGlobalUrl, options);
@@ -25,7 +24,6 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
     session["customer"] = newCustAndClient.customer;
     delete session["newClientPrelim"];
     updateSession(session);
-    console.log(session);
     handleView("customerDashHome");
   };
 
@@ -34,6 +32,7 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
       <CerysButton buttonText={"ADD ANOTHER CLASS"} handleView={() => handleView("addCorpClientShares")} />
       <CerysButton buttonText={"ENTER AMORTISATION POLICIES"} handleView={() => handleView("addCorpClientAmort")} />
       <CerysButton buttonText={"ENTER DEPRECIATION POLICIES"} handleView={() => handleView("addCorpClientDepn")} />
+      <CerysButton buttonText={"ENTER IP DEPN POLICIES"} handleView={() => handleView("addCorpClientDepnIP")} />
       <CerysButton buttonText={"ENTER VAT DETAILS"} handleView={() => handleView("addClientHome")} />
       <CerysButton buttonText={"ADD INDIVIDUALS"} handleView={() => handleView("addCorpClientIndisHome")} />
       <CerysButton buttonText={"Submit client now"} handleView={() => handleSubmission()} />

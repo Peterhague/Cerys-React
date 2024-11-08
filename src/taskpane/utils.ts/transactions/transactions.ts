@@ -74,6 +74,8 @@ export const checkAssetRegStatus = (session, handleView) => {
   ) {
     handleView("promptIPRCreation");
   } else {
+      console.log("should be calling next view");
+      console.log(session.nextView)
     callNextView(session);
   }
 };

@@ -334,23 +334,10 @@ export function updateDepnRate(e, transToPost, eRowNumber) {
   return updatedTransToPost;
 }
 
-//export async function createTFAR(session) {
-//  try {
-//    await Excel.run(async (context) => {
-//      await postTFAtoDB(session);
-//      createTFARWs(context, session);
-//    });
-//  } catch (e) {
-//    console.error(e);
-//  }
-//}
-
 export async function createTFAR(session) {
   try {
     await Excel.run(async (context) => {
-      //await postTFAtoMem(session);
-      const { customer, assignment } = await postTFAtoDB(session);
-      session["customer"] = customer;
+      const assignment = await postTFAtoDB(session);
       session["activeAssignment"] = assignment;
       createTFARWs(context, session);
     });
@@ -358,40 +345,13 @@ export async function createTFAR(session) {
     console.error(e);
   }
 }
-
-//const postTFAtoMem = async (session) => {
-//  const tAssets = [];
-//  session["TFATransactions"].forEach((asset) => {
-//    const tAss = {
-//      narrative: asset.narrative,
-//      assetNarrative: asset.assetNarrative,
-//      cerysCategory: asset.cerysCategory,
-//      cost: asset.value,
-//      transDateUser: asset.transactionDate,
-//      transDateClt: asset.transactionDateClt,
-//    };
-//    tAssets.push(tAss);
-//  });
-//  updateTFAMem(session, tAssets);
-//};
-
-//const updateTFAMem = (session, tAssets) => {
-//  session["activeAssignment"].TFAR.push(...tAssets);
-//  session["activeAssignment"].TFARegisterCreated = true;
-//  session["customer"]["assignments"].forEach((ass) => {
-//    if (ass._id === session["activeAssignment"]._id) {
-//      ass.IFAR.push(...tAssets);
-//      ass.IFARegistered = true;
-//    }
-//  });
 //};
 
 export async function postTFAtoDB(session) {
   const options = fetchOptionsTFA(session);
-  const updatedCustAndAssDb = await fetch(postTFA, options);
-  const updatedCustAndAss = await updatedCustAndAssDb.json();
-  console.log(updatedCustAndAss);
-  return updatedCustAndAss;
+  const updatedAssignmentDb = await fetch(postTFA, options);
+  const updatedAssignment = await updatedAssignmentDb.json();
+  return updatedAssignment;
 }
 
 export async function createTFARWs(context, session) {

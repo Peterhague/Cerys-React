@@ -67,6 +67,7 @@ export const resetActiveJournal = (session) => {
 };
 
 export const callNextView = (session) => {
+    console.log(session.nextView)
   session.handleView(session.nextView);
   session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";

@@ -2,13 +2,7 @@ import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  calculateDiffInDays,
-  convertExcelDate,
-  createEditableWs,
-  setEditButtonValue,
-  setNextViewButOne,
-} from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, createEditableWs, setEditButtonValue } from "../helperFunctions";
 import { addWorksheet, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -19,7 +13,8 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
   session.activeAssignment.transactions.forEach((tran) => {
     if (
       (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
-      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF")
+      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF") ||
+      (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
     ) {
       const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
       test > 0 && bFTransLikelyAddns.push(tran);
@@ -31,7 +26,6 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
     createTransactionUpdates(session, bFTransLikelyAddns);
   } else {
     previewRelTrans(session, registerType, setView);
-    setNextViewButOne(session);
   }
 };
 
@@ -46,7 +40,8 @@ export async function createRelTrans(session, registerType) {
   session.activeAssignment.transactions.forEach((tran) => {
     if (
       (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
-      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns")
+      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns") ||
+      (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostAddns")
     ) {
       relevantTrans.push(tran);
     }
@@ -468,6 +463,18 @@ export const populateDepnCols = (activeClient, transVals, tran, registerType) =>
       transVals.push(activeClient.depnBasisOfficeEquip);
       transVals.push(activeClient.depnRateOfficeEquip);
     }
+  } else if (registerType === "IP") {
+    if (tran.assetCategoryNo === 1) {
+      transVals.push(activeClient.depnBasisIPOwned);
+      transVals.push(activeClient.depnRateIPOwned);
+      tran.depnBasis = activeClient.depnBasisIPOwned;
+      tran.depnRate = activeClient.depnRateIPOwned;
+    } else if (tran.assetCategoryNo === 2) {
+      transVals.push(activeClient.depnBasisIPLeased);
+      transVals.push(activeClient.depnRateIPLeased);
+      tran.depnBasis = activeClient.depnBasisIPLeased;
+      tran.depnRate = activeClient.depnRateIPLeased;
+    }
   }
 };
 
@@ -485,9 +492,10 @@ export function calculateCharge(session, tran, registerType) {
     amortOrDepn = "Depn";
     tran.depnChg = charge;
   }
-  tran.assetSubCatCodes.push(11);
+  const subCatCode = registerType === "IP" ? 12 : 11;
+  tran.assetSubCatCodes.push(subCatCode);
   const subTran = {
-    assetSubCatCode: 11,
+    assetSubCatCode: subCatCode,
     assetSubCategory: `${amortOrDepn} chg`,
     regColNameOne: `${amortOrDepn}`,
     regColNameTwo: "Charge",
@@ -505,6 +513,7 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   let registerType;
   let amortOrDepn;
   let amortOrDepnUpper;
+  let subCatCode = 11;
   if (sheet.type === "IFARPreview") {
     registerType = "IFA";
     amortOrDepn = "amort";
@@ -517,6 +526,7 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
     registerType = "IP";
     amortOrDepn = "depn";
     amortOrDepnUpper = "Depn";
+    subCatCode = 12;
   }
   const newValue = e.details.valueAfter;
   const mongoDate = convertExcelDate(e.details.valueAfter);
@@ -538,7 +548,7 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
       i[`${amortOrDepn}Chg`] = charge;
       i.transactionDateExcel = newValue;
       i.subTransactions.forEach((subTran) => {
-        if (subTran.assetSubCatCode === 11 && subTran.assetSubCategory === `${amortOrDepnUpper} chg`) {
+        if (subTran.assetSubCatCode === subCatCode && subTran.assetSubCategory === `${amortOrDepnUpper} chg`) {
           subTran.value = charge;
         }
       });
@@ -573,6 +583,8 @@ export const buildAutoDepnJnls = (session, tran, registerType) => {
   } else if (registerType === "TFA") {
     jnls = setAutoDepnNominals(catNo);
     amortOrDepn = "Depreciation";
+  } else if (registerType === "IP") {
+    jnls = setAutoDepnIPNominals(catNo);
   }
   session.chart.forEach((nom) => {
     if (nom.cerysCode === jnls.debit) jnls.debit = nom;
@@ -626,6 +638,17 @@ export const setAutoDepnNominals = (catNo) => {
       return { debit: 3909, credit: 5292 };
     default:
       return undefined;
+  }
+};
+
+export const setAutoDepnIPNominals = (catNo) => {
+  switch (catNo) {
+    case 1:
+      return { debit: 3974, credit: 5712 };
+    case 2:
+      return { debit: 3974, credit: 5732 };
+    default:
+      return { debit: 3974, credit: 5012 };
   }
 };
 

@@ -1,4 +1,4 @@
-import { postTFA } from "../../fetching/apiEndpoints";
+import { postIP } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { updateNomCode } from "../helperFunctions";
@@ -164,48 +164,10 @@ export async function captureIPRSummChange(context, e, transToPost, ws) {
   }
 }
 
-//export function updateDepnBasis(e, transToPost, eRowNumber) {
-//  const updatedTransToPost = [];
-//  transToPost.forEach((i) => {
-//    if (i.rowNumber === eRowNumber) {
-//      i.depnBasis = e.details.valueAfter;
-//      updatedTransToPost.push(i);
-//    } else {
-//      updatedTransToPost.push(i);
-//    }
-//  });
-//  return updatedTransToPost;
-//}
-
-//export function updateDepnRate(e, transToPost, eRowNumber) {
-//  const updatedTransToPost = [];
-//  transToPost.forEach((i) => {
-//    if (i.rowNumber === eRowNumber) {
-//      i.depnRate = e.details.valueAfter;
-//      updatedTransToPost.push(i);
-//    } else {
-//      updatedTransToPost.push(i);
-//    }
-//  });
-//  return updatedTransToPost;
-//}
-
-//export async function createIPR(session) {
-//  try {
-//    await Excel.run(async (context) => {
-//      await postIPtoDB(session);
-//      createIPRWs(context, session);
-//    });
-//  } catch (e) {
-//    console.error(e);
-//  }
-//}
-
 export async function createIPR(session) {
   try {
     await Excel.run(async (context) => {
-      await postIPtoMem(session);
-      postIPtoDB(session);
+      await postIPtoDB(session);
       createIPRWs(context, session);
     });
   } catch (e) {
@@ -213,38 +175,12 @@ export async function createIPR(session) {
   }
 }
 
-const postIPtoMem = async (session) => {
-  const iPAssets = [];
-  session["IPTransactions"].forEach((asset) => {
-    const iPAss = {
-      narrative: asset.narrative,
-      assetNarrative: asset.assetNarrative,
-      cerysCategory: asset.cerysCategory,
-      cost: asset.value,
-      transDateUser: asset.transactionDate,
-      transDateClt: asset.transactionDateClt,
-    };
-    iPAssets.push(iPAss);
-  });
-  updateIPMem(session, iPAssets);
-};
-
-const updateIPMem = (session, iPAssets) => {
-  session["activeAssignment"].IPR.push(...iPAssets);
-  session["activeAssignment"].IPRegisterCreated = true;
-  session["customer"]["assignments"].forEach((ass) => {
-    if (ass._id === session["activeAssignment"]._id) {
-      ass.IPR.push(...iPAssets);
-      ass.IPRegistered = true;
-    }
-  });
-};
-
 export async function postIPtoDB(session) {
   const options = fetchOptionsIP(session);
-  const updatedCustAndAssDb = await fetch(postTFA, options);
-  const updatedCustAndAss = await updatedCustAndAssDb.json();
-  console.log(updatedCustAndAss);
+  const updatedAssignmentDb = await fetch(postIP, options);
+  const updatedAssignment = await updatedAssignmentDb.json();
+  session.activeAssignment = updatedAssignment;
+  console.log(updatedAssignment);
 }
 
 export async function createIPRWs(context, session) {

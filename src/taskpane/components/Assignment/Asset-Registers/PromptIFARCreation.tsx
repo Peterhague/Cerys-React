@@ -8,7 +8,7 @@ import {
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
-import { setNextViewButOne, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 
 interface promptIFARCreationProps {

@@ -2,7 +2,14 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { createIPR, createRelTransIP } from "../../../utils.ts/transactions/ipr-generation";
+import { createIPR } from "../../../utils.ts/transactions/ipr-generation";
+import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+import {
+  checkAssetRegStatus,
+  processTransBatch,
+  processUpdateBatch,
+} from "../../../utils.ts/transactions/transactions";
+import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 
 interface promptIPRCreationProps {
   updateSession: (update) => void;
@@ -17,13 +24,13 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
 }: promptIPRCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState("main");
+  const [view, setView] = useState(session["options"].IPRCreationSetting);
   const journal = session["activeJournal"]["journal"];
+  const registerType = "IP";
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
-      createRelTransIP(session);
-      setView("confirm");
+      identifyLikelyAdditions(session, registerType, setView);
     } else {
       setView("NLPrompt");
     }
@@ -31,18 +38,30 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    createRelTransIP(session);
-    setView("confirm");
+    handleCreateRequest();
   };
 
   const handleAbort = (view) => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+    session["options"].IPRCreationSetting = "main";
+    session["activeJournal"].journals = [];
     handleView(view);
   };
 
-  const handleSubmit = () => {
-    session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-    createIPR(session);
+  const handleSubmit = async () => {
+    session["options"].IPRCreationSetting = "main";
+    await createIPR(session);
+    session["IPTransactions"] = [];
+    session["activeJournal"].clientTB = false;
+    session["activeJournal"].journal = false;
+    session["activeJournal"].journalType = "auto-journal";
+    await processTransBatch(session);
+    checkAssetRegStatus(session, handleView);
+  };
+
+  const handleReanalysis = async () => {
+    await processUpdateBatch(session);
+    await updateAssignmentFigures(session);
+    previewRelTrans(session, registerType, setView);
   };
 
   return (
@@ -61,6 +80,14 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
           <p>You have not yet imported a nominal ledger to support the current period's client data.</p>
           <p>This is required for auto-generation of an Investment Property Register.</p>
           <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleView={() => handleNLImport()} />
+        </>
+      )}
+      {view === "confirmBFAreAddns" && (
+        <>
+          <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
+          <p>Would you like to repost them as additions?</p>
+          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleView={() => handleReanalysis()} />
+          <CerysButton buttonText={"NO THANKS"} handleView={() => previewRelTrans(session, registerType, setView)} />
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleSubmit()} />}

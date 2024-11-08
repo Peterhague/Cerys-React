@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { setNextViewButOne, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import {
