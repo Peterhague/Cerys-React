@@ -78,7 +78,8 @@ export const setNextViewButOne = (session) => {
 };
 
 export const clearNextViewButOne = (session) => {
-  session.nextView = session.nextViewButOne;
+  console.log(session.nextViewButOne);
+  if (session.nextViewButOne) session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
 };
 

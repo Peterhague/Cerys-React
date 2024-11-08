@@ -28,8 +28,6 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
   const journal = session["activeJournal"]["journal"];
   const registerType = "IFA";
 
-  setNextViewButOne(session);
-
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
       identifyLikelyAdditions(session, registerType, setView);
@@ -40,7 +38,7 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    previewRelTrans(session, registerType, setView);
+    handleCreateRequest();
   };
 
   const handleAbort = (view) => {

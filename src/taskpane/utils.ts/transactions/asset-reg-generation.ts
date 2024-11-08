@@ -2,7 +2,13 @@ import { postIFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import { calculateDiffInDays, convertExcelDate, createEditableWs, setEditButtonValue } from "../helperFunctions";
+import {
+  calculateDiffInDays,
+  convertExcelDate,
+  createEditableWs,
+  setEditButtonValue,
+  setNextViewButOne,
+} from "../helperFunctions";
 import { addWorksheet, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -25,6 +31,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
     createTransactionUpdates(session, bFTransLikelyAddns);
   } else {
     previewRelTrans(session, registerType, setView);
+    setNextViewButOne(session);
   }
 };
 
@@ -632,15 +639,12 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
 };
 
 export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
-  console.log(bFTransLikelyAddns);
-  console.log(session);
   const newArray = [];
   bFTransLikelyAddns.forEach((tran) => {
     const newValue = tran.cerysCode + 1;
     const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
     newArray.push(newUpdate);
   });
-  console.log(newArray);
   session.updatedTransactions = newArray;
 };
 

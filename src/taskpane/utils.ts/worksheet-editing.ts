@@ -731,11 +731,8 @@ export const validateChange = (session, tran, change, e) => {
 };
 
 export const updateIfExistingUpdate = (session, tran, tests, change, validationObj, newArray, e) => {
-  console.log(session.updatedTransactions);
-  console.log(tran);
   session.updatedTransactions.forEach((updatedTran) => {
     if (updatedTran.transactionId === tran._id) {
-      console.log("validated");
       tests.isValid = true;
       tests.updated = true;
       if (validationObj.isNegation) {

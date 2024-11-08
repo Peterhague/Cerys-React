@@ -28,7 +28,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
   const journal = session["activeJournal"]["journal"];
   const registerType = "TFA";
 
-  setNextViewButOne(session);
+  console.log(session);
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -40,7 +40,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 
   const handleNLImport = async () => {
     await enterNL(session, updateSession);
-    previewRelTrans(session, registerType, setView);
+    handleCreateRequest();
   };
 
   const handleAbort = (view) => {
