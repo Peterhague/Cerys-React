@@ -28,8 +28,6 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
   const journal = session["activeJournal"]["journal"];
   const registerType = "TFA";
 
-  console.log(session);
-
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
       identifyLikelyAdditions(session, registerType, setView);

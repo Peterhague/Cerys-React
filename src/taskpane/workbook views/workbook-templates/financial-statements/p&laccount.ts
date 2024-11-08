@@ -1,14 +1,17 @@
-import { addWorksheet, deleteWorksheet } from "../../../utils.ts/worksheet";
+import { addWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsPLAccount(session) {
   try {
     await Excel.run(async (context) => {
-      const check = context.workbook.worksheets.getItemOrNullObject("Profit & loss account");
-      check.load("values");
+      let ws = context.workbook.worksheets.getItemOrNullObject("Profit & loss account");
+      ws.load("values");
       await context.sync();
-      if (!check.isNullObject) deleteWorksheet(context, "Profit & loss account");
-      const ws = addWorksheet(context, "Profit & loss account");
+      if (ws.isNullObject) {
+        ws = addWorksheet(context, "Profit & loss account");
+      } else {
+        ws.getUsedRange().clear();
+      }
       const headerValues = worksheetHeader(session, "Profit & loss account");
       applyWorkhseetHeader(ws, headerValues);
       const values = [];
@@ -28,7 +31,6 @@ export async function wsPLAccount(session) {
       let tax;
       let calcSwitches = {};
       let runningTotal = 0;
-      console.log(session.activeAssignment.activeCategories);
       if (session.activeAssignment.activeCategories.includes("Turnover")) {
         session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
           if (obj.cerysCategory === "Turnover") turnover = (obj.value * -1) / 100;
@@ -155,7 +157,7 @@ export async function wsPLAccount(session) {
       const range = ws.getRange(`A9:F${values.length + 8}`);
       range.values = values;
       const numbersRange = ws.getRange("F:F");
-      numbersRange.numberFormat = "#,##0;(#,##0);-";
+      numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
       wsPLAccountFormat(ws, values, calcSwitches);
       session.activeAssignment.profit = runningTotal * 100;
     });

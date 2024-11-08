@@ -1,14 +1,17 @@
-import { addWorksheet, deleteWorksheet } from "../../../utils.ts/worksheet";
+import { addWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsBalanceSheet(session) {
   try {
     await Excel.run(async (context) => {
-      const check = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
-      check.load("values");
+      let ws = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
+      ws.load("values");
       await context.sync();
-      if (!check.isNullObject) deleteWorksheet(context, "Balance Sheet");
-      const ws = addWorksheet(context, "Balance Sheet");
+      if (ws.isNullObject) {
+        ws = addWorksheet(context, "Balance Sheet");
+      } else {
+        ws.getUsedRange().clear();
+      }
       const headerValues = worksheetHeader(session, "Balance Sheet");
       applyWorkhseetHeader(ws, headerValues);
       const values = [
@@ -147,7 +150,7 @@ export async function wsBalanceSheet(session) {
       values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
       const range = ws.getRange(`a9:f${values.length + 8}`);
       const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
-      numbersRange.numberFormat = "#,##0;(#,##0);-";
+      numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
       const cleansedValues = cleanseValues(values);
       range.values = cleansedValues;
       const currencyRange = ws.getRange("E9:F9");

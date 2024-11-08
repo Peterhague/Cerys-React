@@ -1,5 +1,5 @@
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { addWorksheet, deleteWorksheet } from "../worksheet";
+import { addWorksheet } from "../worksheet";
 
 export function tbForPosting(tb) {
   const tbArray = [];
@@ -18,11 +18,14 @@ export function tbForPosting(tb) {
 export async function postTbToWbook(session, tbExcel) {
   try {
     await Excel.run(async (context) => {
-      const check = context.workbook.worksheets.getItemOrNullObject("Trial Balance");
-      check.load("values");
+      let ws = context.workbook.worksheets.getItemOrNullObject("Trial Balance");
+      ws.load("values");
       await context.sync();
-      if (!check.isNullObject) deleteWorksheet(context, "Trial Balance");
-      const ws = addWorksheet(context, "Trial Balance");
+      if (ws.isNullObject) {
+        ws = addWorksheet(context, "Trial Balance");
+      } else {
+        ws.getUsedRange().clear();
+      }
       const headerValues = worksheetHeader(session, "Trial Balance");
       applyWorkhseetHeader(ws, headerValues);
       const headersRange = ws.getRange("A9:C10");
@@ -39,7 +42,7 @@ export async function postTbToWbook(session, tbExcel) {
       const total = ws.getRange(`C${tbExcel.length + 12}: C${tbExcel.length + 12}`);
       total.values = [[0]];
       const drCrRange = ws.getRange(`C11:C${tbExcel.length + 12}`);
-      drCrRange.numberFormat = "#,##0.00;(#,##0.00);-";
+      drCrRange.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       range.format.autofitColumns();
       total.format.font.bold = true;
       const colC = ws.getRange("C:C");
