@@ -5,7 +5,6 @@ import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import {
-  checkAssetRegStatus,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
@@ -28,6 +27,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
   const [view, setView] = useState(session["options"].TFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
   const registerType = "TFA";
+  const registerCreated = session["activeAssignment"].TFARegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -56,7 +56,6 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    //checkAssetRegStatus(session, handleView);
     checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
@@ -68,12 +67,18 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 
   return (
     <>
-      {view === "main" && (
+      {view === "main" && !registerCreated && (
         <>
           <p>Your data suggests this client owns tangible fixed assets.</p>
           <p>You have not set up a relevant asset register.</p>
           <p>Would you like to create one automatically?</p>
           <CerysButton buttonText={"CREATE TFA REGISTER"} handleView={() => handleCreateRequest()} />
+        </>
+      )}
+      {view === "main" && registerCreated && (
+        <>
+          <p>Update your Tangible Fixed Assets Register for new transactions?</p>
+          <CerysButton buttonText={"UPDATE TFA REGISTER"} handleView={() => handleCreateRequest()} />
         </>
       )}
 

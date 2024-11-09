@@ -5,7 +5,6 @@ import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { createIPR } from "../../../utils.ts/transactions/ipr-generation";
 import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 import {
-  checkAssetRegStatus,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
@@ -28,6 +27,7 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
   const [view, setView] = useState(session["options"].IPRCreationSetting);
   const journal = session["activeJournal"]["journal"];
   const registerType = "IP";
+  const registerCreated = session["activeAssignment"].IPRegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -56,7 +56,6 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    //checkAssetRegStatus(session, handleView);
     checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
@@ -68,12 +67,18 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
 
   return (
     <>
-      {view === "main" && (
+      {view === "main" && !registerCreated && (
         <>
           <p>Your data suggests this client owns investment property.</p>
           <p>You have not set up a relevant asset register.</p>
           <p>Would you like to create one automatically?</p>
           <CerysButton buttonText={"CREATE IP REGISTER"} handleView={() => handleCreateRequest()} />
+        </>
+      )}
+      {view === "main" && registerCreated && (
+        <>
+          <p>Update your Investment Property Register for new transactions?</p>
+          <CerysButton buttonText={"UPDATE IP REGISTER"} handleView={() => handleCreateRequest()} />
         </>
       )}
 

@@ -4,7 +4,6 @@ import CerysButton from "../../CerysButton";
 import { createIFAR } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import {
-  checkAssetRegStatus,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
@@ -28,6 +27,7 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
   const [view, setView] = useState(session["options"].IFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
   const registerType = "IFA";
+  const registerCreated = session["activeAssignment"].IFARegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -56,7 +56,6 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    //checkAssetRegStatus(session, handleView);
     checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
@@ -68,12 +67,18 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   return (
     <>
-      {view === "main" && (
+      {view === "main" && !registerCreated && (
         <>
           <p>Your data suggests this client owns intangible fixed assets.</p>
           <p>You have not set up a relevant asset register.</p>
           <p>Would you like to create one automatically?</p>
           <CerysButton buttonText={"CREATE IFA REGISTER"} handleView={() => handleCreateRequest()} />
+        </>
+      )}
+      {view === "main" && registerCreated && (
+        <>
+          <p>Update your Intangible Fixed Assets Register for new transactions?</p>
+          <CerysButton buttonText={"UPDATE IFA REGISTER"} handleView={() => handleCreateRequest()} />
         </>
       )}
 
