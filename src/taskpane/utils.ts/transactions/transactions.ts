@@ -33,6 +33,10 @@ export const processTransBatch = async (session) => {
   const transactionType = activeJournal.journalType;
   const updatedCustAndAss = await postTransactionsDb(transactions, transDtls, transactionType);
   session["activeAssignment"] = updatedCustAndAss.assignment;
+  //session.latestTransactions = updatedCustAndAss.newTransactions;
+  updatedCustAndAss.newTransactions.forEach((tran) => {
+    tran.processedAsAsset = false;
+  });
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
   await postTbToWbook(session, tbArray);
@@ -41,14 +45,20 @@ export const processTransBatch = async (session) => {
   addTbClickListener(session);
   addPlClickListener(session["activeAssignment"]);
   addBsClickListener(session["activeAssignment"]);
+  return updatedCustAndAss.newTransactions;
 };
 
 export const processUpdateBatch = async (session) => {
   const options = fetchOptionsTransBatchUpdate(session);
-  const updatedCustAndAssDB = await fetch(updateTransactionBatch, options);
-  const updatedCustAndAss = await updatedCustAndAssDB.json();
-  session["activeAssignment"] = updatedCustAndAss.assignment;
+  const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
+  const updatedAssignmentAndTrans = await updatedAssignmentAndTransDB.json();
+  const updatedTransactions = updatedAssignmentAndTrans.processedTrans;
+  updatedTransactions.forEach((tran) => {
+    tran.processedAsAsset = false;
+  });
+  session["activeAssignment"] = updatedAssignmentAndTrans.assignment;
   session["updatedTransactions"] = [];
+  return updatedTransactions;
 };
 
 export const checkAssetRegStatus = (session, handleView) => {
@@ -74,9 +84,66 @@ export const checkAssetRegStatus = (session, handleView) => {
   ) {
     handleView("promptIPRCreation");
   } else {
-      console.log("should be calling next view");
-      console.log(session.nextView)
+    console.log("next view called");
     callNextView(session);
+  }
+  //if (
+  //  session["activeAssignment"]["activeCategories"].includes("Intangible assets") &&
+  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostAddns") ||
+  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostBF"))
+  //) {
+  //  handleView("promptIFARCreation");
+  //} else if (
+  //  !session["activeAssignment"]["TFARegisterCreated"] &&
+  //  session["activeAssignment"]["activeCategories"].includes("Tangible assets") &&
+  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostAddns") ||
+  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostBF"))
+  //) {
+  //  handleView("promptTFARCreation");
+  //} else if (
+  //  !session["activeAssignment"]["IPRegisterCreated"] &&
+  //  session["activeAssignment"]["activeCategories"].includes("Investment property") &&
+  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostAddns") ||
+  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostBF"))
+  //) {
+  //  handleView("promptIPRCreation");
+  //} else {
+  //  callNextView(session);
+  //}
+};
+
+export const checkNewTransForAssets = (session, newTransactions) => {
+  //const newTransactions = session.latestTransactions;
+  console.log(newTransactions);
+  session.newFATransactions = newTransactions;
+  let nextView = true;
+  for (let i = 0; i < newTransactions.length; i++) {
+    if (
+      newTransactions[i].processedAsAsset === false &&
+      (newTransactions[i].assetCodeType === "iFACostAddns" || newTransactions[i].assetCodeType === "iFACostBF")
+    ) {
+      session.handleView("promptIFARCreation");
+      nextView = false;
+      break;
+    } else if (
+      newTransactions[i].processedAsAsset === false &&
+      (newTransactions[i].assetCodeType === "tFACostAddns" || newTransactions[i].assetCodeType === "tFACostBF")
+    ) {
+      session.handleView("promptTFARCreation");
+      nextView = false;
+      break;
+    } else if (
+      newTransactions[i].processedAsAsset === false &&
+      (newTransactions[i].assetCodeType === "iPCostAddns" || newTransactions[i].assetCodeType === "iPCostBF")
+    ) {
+      session.handleView("promptIPRCreation");
+      nextView = false;
+      break;
+    }
+  }
+  if (nextView) {
+    callNextView(session);
+    session.newFATranasctions = [];
   }
 };
 

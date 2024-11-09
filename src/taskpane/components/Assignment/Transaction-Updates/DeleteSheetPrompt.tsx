@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { callNextView, clearNextViewButOne } from "../../../utils.ts/helperFunctions";
+import { clearNextViewButOne } from "../../../utils.ts/helperFunctions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
-import { checkAssetRegStatus } from "../../../utils.ts/transactions/transactions";
+import { checkAssetRegStatus, checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
 
 interface deleteSheetPromptProps {
   updateSession: (update) => void;
@@ -28,7 +28,8 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
 
   const deleteSheets = async () => {
     await deleteManyWorksheets(sheetsToDelete);
-    checkAssetRegStatus(session, session["handleView"]);
+    checkNewTransForAssets(session, session["options"].updatedTransactions);
+    session["options"].updatedTransactions = [];
   };
 
   const deleteSingleWorksheet = async (sheet) => {
@@ -40,6 +41,11 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
     setEmptySheets(newArr);
   };
 
+  const skipDeleteSheets = () => {
+    checkNewTransForAssets(session, session["options"].updatedTransactions);
+    session["options"].updatedTransactions = [];
+  };
+
   return (
     <>
       {emptySheets.length === 1 && (
@@ -47,7 +53,7 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
           <p>{sheetsToDelete[0]} transactions all reposted. Would you like to delete this sheet?</p>
           <div>
             <CerysButton buttonText={"YES"} handleView={() => deleteSheets()} />
-            <CerysButton buttonText={"NO"} handleView={() => callNextView(session)} />
+            <CerysButton buttonText={"NO"} handleView={() => skipDeleteSheets()} />
           </div>
         </>
       )}
@@ -69,7 +75,7 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
           </table>
           <div>
             <CerysButton buttonText={"DELETE ALL"} handleView={() => deleteSheets()} />
-            <CerysButton buttonText={"SKIP"} handleView={() => callNextView(session)} />
+            <CerysButton buttonText={"SKIP"} handleView={() => skipDeleteSheets()} />
           </div>
         </>
       )}

@@ -6,6 +6,7 @@ import { createIPR } from "../../../utils.ts/transactions/ipr-generation";
 import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
 import {
   checkAssetRegStatus,
+  checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
@@ -55,7 +56,8 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    //checkAssetRegStatus(session, handleView);
+    checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
   const handleReanalysis = async () => {

@@ -3,21 +3,32 @@ import { fetchOptionsIFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateDiffInDays, convertExcelDate, createEditableWs, setEditButtonValue } from "../helperFunctions";
-import { addWorksheet, setExcelRangeValue } from "../worksheet";
+import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
 
 export const identifyLikelyAdditions = (session, registerType, setView) => {
   const bFTransLikelyAddns = [];
-  session.activeAssignment.transactions.forEach((tran) => {
+  //session.activeAssignment.transactions.forEach((tran) => {
+  //  if (
+  //    (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
+  //    (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF") ||
+  //    (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
+  //  ) {
+  //    const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
+  //    test > 0 && bFTransLikelyAddns.push(tran);
+  //  }
+  //});
+  session.newFATransactions.forEach((tran) => {
     if (
-      (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
-      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF") ||
-      (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
+      (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
+      (registerType === "TFA" && tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF") ||
+      (registerType === "IP" && tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
     ) {
       const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
       test > 0 && bFTransLikelyAddns.push(tran);
+      tran.processedAsAsset = true;
     }
   });
   if (bFTransLikelyAddns.length > 0) {
@@ -30,6 +41,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
 };
 
 export const previewRelTrans = (session, registerType, setView) => {
+  deleteManyWorksheets([`${registerType} Possible Additions`]);
   createRelTrans(session, registerType);
   setView("confirm");
   session["options"][`${registerType}RCreationSetting`] = "confirm";
@@ -37,13 +49,24 @@ export const previewRelTrans = (session, registerType, setView) => {
 
 export async function createRelTrans(session, registerType) {
   const relevantTrans = [];
-  session.activeAssignment.transactions.forEach((tran) => {
+  //session.activeAssignment.transactions.forEach((tran) => {
+  //  if (
+  //    (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
+  //    (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns") ||
+  //    (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostAddns")
+  //  ) {
+  //    relevantTrans.push(tran);
+  //  }
+    //});
+    console.log(session.newFATransactions);
+  session.newFATransactions.forEach((tran) => {
     if (
-      (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
-      (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns") ||
-      (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostAddns")
+      (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
+      (registerType === "TFA" && tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns") ||
+      (registerType === "IP" && tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostAddns")
     ) {
       relevantTrans.push(tran);
+      tran.processedAsAsset = true;
     }
   });
   createTransSumm(session, relevantTrans, registerType);
@@ -666,6 +689,11 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
   bFTransLikelyAddns.forEach((tran) => {
     const newValue = tran.cerysCode + 1;
     const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
+    session.chart.forEach((code) => {
+      if (code.cerysCode === newValue) {
+        newUpdate.cerysCodeObject = code;
+      }
+    });
     newArray.push(newUpdate);
   });
   session.updatedTransactions = newArray;
@@ -674,10 +702,8 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
 export async function createIFAR(session) {
   try {
     await Excel.run(async (context) => {
-      const { customer, assignment } = await postIFAtoDB(session);
-      session["customer"] = customer;
+      const assignment = await postIFAtoDB(session);
       session["activeAssignment"] = assignment;
-      console.log(session);
       createIFARWs(context, session);
     });
   } catch (e) {
@@ -687,9 +713,9 @@ export async function createIFAR(session) {
 
 export async function postIFAtoDB(session) {
   const options = fetchOptionsIFA(session);
-  const updatedCustAndAssDb = await fetch(postIFA, options);
-  const updatedCustAndAss = await updatedCustAndAssDb.json();
-  return updatedCustAndAss;
+  const updatedAssignmentDb = await fetch(postIFA, options);
+  const updatedAssignment = await updatedAssignmentDb.json();
+  return updatedAssignment;
 }
 
 export async function createIFARWs(context, session) {

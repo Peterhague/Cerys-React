@@ -17,10 +17,15 @@ export function deleteWorksheet(context, sheetName) {
 
 export const deleteManyWorksheets = async (sheetsToDelete) => {
   await Excel.run(async (context) => {
+    const sheets = [];
     sheetsToDelete.forEach((sheet) => {
-      context.workbook.worksheets.getItem(sheet).delete();
+      const ws = context.workbook.worksheets.getItemOrNullObject(sheet);
+      sheets.push(ws);
     });
     await context.sync();
+    sheets.forEach((sheet) => {
+      if (sheet) sheet.delete();
+    });
   });
 };
 
@@ -165,8 +170,6 @@ export const deleteWorksheetRangeDown = async (wsName, range) => {
 
 export const highlightEditableRanges = async (sheet) => {
   await Excel.run(async (context) => {
-    //const ws = context.workbook.worksheets.getActiveWorksheet();
-    console.log(sheet);
     const ws = context.workbook.worksheets.getItem(sheet.name);
     sheet.editableRowRanges.forEach((range) => {
       sheet.definedCols.forEach((col) => {

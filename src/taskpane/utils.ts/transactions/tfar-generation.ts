@@ -2,7 +2,7 @@ import { postTFA } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { calculateDiffInDays, convertExcelDate, updateNomCode } from "../helperFunctions";
-import { addWorksheet } from "../worksheet";
+import { addWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransTFA(session, setView) {
@@ -345,7 +345,6 @@ export async function createTFAR(session) {
     console.error(e);
   }
 }
-//};
 
 export async function postTFAtoDB(session) {
   const options = fetchOptionsTFA(session);
@@ -376,5 +375,6 @@ export async function createTFARWs(context, session) {
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
   populateAssetRegWs(context, TFAActiveCats, transToPost, ws, "TFA");
-  console.log(session);
+  ws.activate();
+  deleteManyWorksheets(["TFA Transactions"]);
 }

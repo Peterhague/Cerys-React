@@ -11,7 +11,7 @@ import {
   updateAssignmentFigures,
 } from "./helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "./transactions/asset-reg-generation";
-import { checkAssetRegStatus, processUpdateBatch } from "./transactions/transactions";
+import { checkAssetRegStatus, checkNewTransForAssets, processUpdateBatch } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
   deleteWorksheetRangesUp,
@@ -860,14 +860,16 @@ export const submitTransactionUpdates = async (session) => {
     return b.rowNumber - a.rowNumber;
   });
   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
-  await processUpdateBatch(session);
+  const updatedTransactions = await processUpdateBatch(session);
   if (tbUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);
+      session.options.updatedTransactions = updatedTransactions;
       session.handleView("deleteSheetPrompt");
     } else {
       await updateAssignmentFigures(session);
-      checkAssetRegStatus(session, session["handleView"]);
+      //checkAssetRegStatus(session, session["handleView"]);
+      checkNewTransForAssets(session, updatedTransactions);
     }
   } else {
     callNextView(session);

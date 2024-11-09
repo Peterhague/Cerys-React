@@ -6,6 +6,7 @@ import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/tran
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import {
   checkAssetRegStatus,
+  checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
@@ -55,7 +56,8 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    //checkAssetRegStatus(session, handleView);
+    checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
   const handleReanalysis = async () => {

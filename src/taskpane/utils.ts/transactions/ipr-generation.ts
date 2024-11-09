@@ -2,7 +2,7 @@ import { postIP } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { updateNomCode } from "../helperFunctions";
-import { addWorksheet } from "../worksheet";
+import { addWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransIP(session) {
@@ -205,4 +205,6 @@ export async function createIPRWs(context, session) {
   applyWorkhseetHeader(ws, wsHeaders);
   await context.sync();
   populateAssetRegWs(context, IPActiveCats, transToPost, ws, "IP");
+  ws.activate();
+  deleteManyWorksheets(["IP Transactions"]);
 }

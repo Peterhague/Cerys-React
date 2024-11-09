@@ -33,6 +33,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["customer"] = userAndCustomerObject.customer;
     const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     session["activeJournal"] = activeJournal;
+    session["newFATransactions"] = [];
     session["editableSheets"] = [];
     session["updatedTransactions"] = [];
     session["handleView"] = handleView;
@@ -42,6 +43,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
       TFARCreationSetting: "main",
       IPRCreationSetting: "main",
       allowDepnChgEdit: false,
+      updatedTransactions: [],
     };
     session["nextViewButOne"] = "";
     updateSession(session);

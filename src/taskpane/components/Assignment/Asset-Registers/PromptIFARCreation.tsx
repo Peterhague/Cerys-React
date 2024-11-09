@@ -5,6 +5,7 @@ import { createIFAR } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import {
   checkAssetRegStatus,
+  checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
@@ -55,7 +56,8 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
     session["activeJournal"].journal = false;
     session["activeJournal"].journalType = "auto-journal";
     await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    //checkAssetRegStatus(session, handleView);
+    checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
   const handleReanalysis = async () => {

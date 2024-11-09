@@ -3,7 +3,11 @@ import { useState } from "react";
 import { useRef } from "react";
 import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
-import { checkAssetRegStatus, processTransBatch } from "../../utils.ts/transactions/transactions";
+import {
+  checkAssetRegStatus,
+  checkNewTransForAssets,
+  processTransBatch,
+} from "../../utils.ts/transactions/transactions";
 
 interface enterJournalProps {
   updateSession: (update) => void;
@@ -21,8 +25,9 @@ const EnterJournal: React.FC<enterJournalProps> = ({ updateSession, handleView, 
   const handleSubmit = async (e) => {
     e.preventDefault();
     //session["nextView"] = "assignmentDashHome";
-    await processTransBatch(session);
-    checkAssetRegStatus(session, handleView);
+    const newTransactions = await processTransBatch(session);
+    //checkAssetRegStatus(session, handleView);
+    checkNewTransForAssets(session, newTransactions);
     updateSession(session);
   };
 
