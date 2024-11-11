@@ -9,6 +9,7 @@ import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
 
 export const identifyLikelyAdditions = (session, registerType, setView) => {
+  console.log("next step working");
   const bFTransLikelyAddns = [];
   //session.activeAssignment.transactions.forEach((tran) => {
   //  if (
@@ -20,6 +21,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
   //    test > 0 && bFTransLikelyAddns.push(tran);
   //  }
   //});
+  console.log(session.newFATransactions);
   session.newFATransactions.forEach((tran) => {
     if (
       (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
@@ -27,10 +29,12 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
       (registerType === "IP" && tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
     ) {
       const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
+      console.log(test);
       test > 0 && bFTransLikelyAddns.push(tran);
       tran.processedAsAsset = true;
     }
   });
+  console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
     createLikelyAdditionsSumm(bFTransLikelyAddns, registerType);
     setView("confirmBFAreAddns");
@@ -57,8 +61,8 @@ export async function createRelTrans(session, registerType) {
   //  ) {
   //    relevantTrans.push(tran);
   //  }
-    //});
-    console.log(session.newFATransactions);
+  //});
+  console.log(session.newFATransactions);
   session.newFATransactions.forEach((tran) => {
     if (
       (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
@@ -699,24 +703,42 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
   session.updatedTransactions = newArray;
 };
 
-export async function createIFAR(session) {
-  try {
-    await Excel.run(async (context) => {
-      const assignment = await postIFAtoDB(session);
-      session["activeAssignment"] = assignment;
-      createIFARWs(context, session);
-    });
-  } catch (e) {
-    console.error(e);
-  }
-}
+//export async function createIFAR(session) {
+//  try {
+//    await Excel.run(async (context) => {
+//      const assignment = await postIFAtoDB(session);
+//      session["activeAssignment"] = assignment;
+//      createIFARWs(context, session);
+//    });
+//  } catch (e) {
+//    console.error(e);
+//  }
+//}
 
-export async function postIFAtoDB(session) {
-  const options = fetchOptionsIFA(session);
-  const updatedAssignmentDb = await fetch(postIFA, options);
-  const updatedAssignment = await updatedAssignmentDb.json();
-  return updatedAssignment;
-}
+//export async function postIFAtoDB(session) {
+//  const options = fetchOptionsIFA(session);
+//  const updatedAssignmentDb = await fetch(postIFA, options);
+//  const updatedAssignment = await updatedAssignmentDb.json();
+//  return updatedAssignment;
+//}
+
+export const createCurrentPeriodRegister = (iFAR, session) => {
+  const periodId = session.activeAssignment.reportingPeriod._id;
+  const currentIFAR = [];
+  iFAR.assets.forEach((asset) => {
+    if (asset.activePeriods.includes(periodId)) {
+      const { periods, activePeriods, ...obj } = asset;
+      let subTransactions;
+      asset.periods.forEach((period) => {
+        if (period.reportingPeriodId === periodId) subTransactions = period.subTransactions;
+      });
+      obj.subTransactions = subTransactions;
+      currentIFAR.push(obj);
+    }
+  });
+  console.log(currentIFAR);
+  return currentIFAR;
+};
 
 export async function createIFARWs(context, session) {
   const transToPost = session["IFATransactions"];
@@ -742,3 +764,19 @@ export async function createIFARWs(context, session) {
   await context.sync();
   populateAssetRegWs(context, IFAActiveCats, transToPost, ws, "IFA");
 }
+
+export const finaliseAssetObjects = (session, registerType) => {
+  const reportingPeriod = session.activeAssignment.reportingPeriod;
+  const assets = session[`${registerType}Transactions`];
+  assets.forEach((asset) => {
+    asset.activePeriods = [reportingPeriod._id];
+    asset.periods = [
+      {
+        reportingPeriodNumber: reportingPeriod.periodNumber,
+        reportingPeriodId: reportingPeriod._id,
+        subTransactions: asset.subTransactions,
+      },
+    ];
+  });
+  console.log(session[`${registerType}Transactions`]);
+};

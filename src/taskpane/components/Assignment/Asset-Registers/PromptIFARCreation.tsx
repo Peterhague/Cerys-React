@@ -9,7 +9,11 @@ import {
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
-import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+import {
+  finaliseAssetObjects,
+  identifyLikelyAdditions,
+  previewRelTrans,
+} from "../../../utils.ts/transactions/asset-reg-generation";
 
 interface promptIFARCreationProps {
   updateSession: (update) => void;
@@ -50,6 +54,7 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({
 
   const handleSubmit = async () => {
     session["options"].IFARCreationSetting = "main";
+    finaliseAssetObjects(session, registerType);
     await createIFAR(session);
     session["IFATransactions"] = [];
     session["activeJournal"].clientTB = false;

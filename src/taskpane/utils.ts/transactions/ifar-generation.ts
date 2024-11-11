@@ -1,5 +1,5 @@
-import { postIFA } from "../../fetching/apiEndpoints";
-import { fetchOptionsIFA } from "../../fetching/generateOptions";
+import { postIFA, createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
+import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
@@ -11,6 +11,7 @@ import {
 } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
+import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
 
@@ -475,15 +476,30 @@ export async function createIFAR(session) {
 }
 
 export async function postIFAtoDB(session) {
+  let assignment = session.activeAssignment;
   const options = fetchOptionsIFA(session);
-  const updatedAssignmentDb = await fetch(postIFA, options);
-  const updatedAssignment = await updatedAssignmentDb.json();
-  return updatedAssignment;
+  const endpoint = session.activeAssignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
+  const iFARDb = await fetch(endpoint, options);
+  const iFAR = await iFARDb.json();
+  session.IFARegister = createCurrentPeriodRegister(iFAR, session);
+  if (!session.activeAssignment.IFARegisterCreated) {
+    const options = fetchOptionsUpdateAssignment(
+      session.customer._id,
+      session.activeAssignment._id,
+      "IFARegisterCreated"
+    );
+    const assignmentDb = await fetch(updateAssignmentUrl, options);
+    assignment = await assignmentDb.json();
+  }
+  //const updatedAssignmentDb = await fetch(postIFA, options);
+    //const updatedAssignment = await updatedAssignmentDb.json();
+    console.log(assignment);
+  return assignment;
 }
 
 export async function createIFARWs(context, session) {
-  //const transToPost = session["IFATransactions"];
-  const transToPost = session.activeAssignment.IFAR;
+  //const transToPost = session.activeAssignment.IFAR;
+  const transToPost = session.IFARegister;
   console.log(transToPost);
   const activeCatsNames = [];
   const IFAActiveCats = [];

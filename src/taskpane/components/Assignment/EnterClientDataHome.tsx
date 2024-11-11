@@ -17,7 +17,7 @@ const EnterClientDataHome: React.FC<enterClientDataHomeProps> = ({
   return (
     <>
       <CerysButton buttonText={"GO BACK"} handleView={() => handleView("assignmentDashHome")} />
-      <CerysButton buttonText={"TRIAL BALANCE"} handleView={() => enterTB(session, updateSession, handleView)} />
+      <CerysButton buttonText={"TRIAL BALANCE"} handleView={() => enterTB(session, updateSession)} />
       <CerysButton buttonText={"NOMINAL LEDGER"} handleView={() => enterNL(session, updateSession)} />
       <CerysButton buttonText={"AGED DEBTORS REPORT"} handleView={() => handleView("customerSignUp")} />
       <CerysButton buttonText={"AGED CREDITORS REPORT"} handleView={() => handleView("customerSignUp")} />

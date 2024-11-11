@@ -2,9 +2,11 @@ import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 
 export async function enterNL(session, updateSession) {
-  const clientNL = await createClientNLObject();
+    const clientNL = await createClientNLObject();
+  console.log(clientNL)
   session.activeAssignment.clientNL = clientNL;
-  const { customer, assignment } = await postCltNltoDb(session);
+    const { customer, assignment } = await postCltNltoDb(session);
+    console.log(assignment);
   session.activeAssignment = assignment;
   session.customer = customer;
   updateSession(session);

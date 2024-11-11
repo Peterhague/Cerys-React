@@ -5,6 +5,7 @@ import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
 import { addPrimarySheets } from "../../assignment/assignmentInit";
 import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunctions";
+import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-reg-generation";
 interface newAssignmentDtlsProps {
   updateSession: (update) => void;
   handleView: (view) => void;
@@ -81,7 +82,12 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
   const calculatePeriodStart = (date, clientObj) => {
     const dateSplit = date.split("-");
     const month = calculateMonth(dateSplit[1]);
-    const prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0]) - 1}`;
+    let prelimPeriodStart;
+    if (month === "01") {
+      prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0])}`;
+    } else {
+      prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0]) - 1}`;
+    }
     const splitPeriodStart = prelimPeriodStart.split("/");
     const convertedPeriodStart = `${splitPeriodStart[2]}-${splitPeriodStart[1]}-${splitPeriodStart[0]}`;
     const test = calculateDiffInDays(clientObj["incorpDate"], convertedPeriodStart);
@@ -118,9 +124,12 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
       transactionsPosted: false,
     };
     populateStaffObjs(prelimAssignment);
-    const updatedCustAndNewAss = await processNewAssignment(prelimAssignment);
-    session["customer"] = updatedCustAndNewAss.customer;
-    session["activeAssignment"] = updatedCustAndNewAss.assignment;
+    const { customer, assignment, IFARegister } = await processNewAssignment(prelimAssignment);
+    session["customer"] = customer;
+    session["activeAssignment"] = assignment;
+    session["IFARegister"] = IFARegister;
+    session["IFARegister"] = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
+    console.log(session);
     updateSession(session);
     addPrimarySheets(session);
     handleView("assignmentDashHome");

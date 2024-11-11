@@ -456,6 +456,9 @@ export function fetchOptionsIFA(session) {
       assets: session.IFATransactions,
       customerId: session.customer._id,
       workbookId: session.activeAssignment._id,
+      clientId: session.activeAssignment.clientId,
+      //reportingPeriodNumber: session.activeAssignment.reportingPeriod.periodNumber,
+      //reportingPeriodId: session.activeAssignment.reportingPeriod._id,
     }),
   };
 }
