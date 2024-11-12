@@ -38,6 +38,8 @@ export const getCustomerUrl = "http://localhost:4000/api/customer/get-customer";
 
 export const updateAssignmentUrl = "http://localhost:4000/api/assignment/update";
 
+export const finaliseAssignmentUrl = "http://localhost:4000/api/assignment/finalise";
+
 export const iterateAssignmentUrl = "http://localhost:4000/api/assignment/iterate";
 
 export const postClientNLUrl = "http://localhost:4000/api/client-nl";

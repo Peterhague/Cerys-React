@@ -42,6 +42,7 @@ import ReviewTransUpdates from "./Assignment/Transaction-Updates/ReviewTransUpda
 import Footer from "./Footer";
 import DeleteSheetPrompt from "./Assignment/Transaction-Updates/DeleteSheetPrompt";
 import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClientDepnIP";
+import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageAssignmentDashHome";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
@@ -113,6 +114,10 @@ const AppBody: React.FC = () => {
         break;
       case "customerDashHome":
         body = <CustomerDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        session["nextView"] = view;
+        break;
+      case "manageAssignmentDashHome":
+        body = <ManageAssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
         session["nextView"] = view;
         break;
       case "customerClientsHome":

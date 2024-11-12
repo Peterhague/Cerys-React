@@ -7,17 +7,18 @@ interface assignmentDashHomeProps {
   session: {};
 }
 
-const AssignmentDashHome: React.FC<assignmentDashHomeProps> = (props: assignmentDashHomeProps) => {
+const AssignmentDashHome: React.FC<assignmentDashHomeProps> = ({ handleView }: assignmentDashHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"ENTER CLIENT DATA"} handleView={() => props.handleView("enterClientDataHome")} />
-      <CerysButton buttonText={"EDIT ASSIGNMENT DATA"} handleView={() => props.handleView("customerIndisHome")} />
-      <CerysButton buttonText={"ENTER JOURNAL"} handleView={() => props.handleView("enterJournal")} />
-      <CerysButton buttonText={"ACCOUNTS & OTHER REPORTS"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"TAX"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"FIXED ASSET REGISTER"} handleView={() => props.handleView("userLogin")} />
-      <CerysButton buttonText={"STATUTORY DATABASE"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"INDEX"} handleView={() => props.handleView("userLogin")} />
+      <CerysButton buttonText={"ENTER CLIENT DATA"} handleView={() => handleView("enterClientDataHome")} />
+      <CerysButton buttonText={"EDIT ASSIGNMENT DATA"} handleView={() => handleView("customerIndisHome")} />
+      <CerysButton buttonText={"ENTER JOURNAL"} handleView={() => handleView("enterJournal")} />
+      <CerysButton buttonText={"ACCOUNTS & OTHER REPORTS"} handleView={() => handleView("customerSignUp")} />
+      <CerysButton buttonText={"MANAGE ASSIGNMENT"} handleView={() => handleView("manageAssignmentDashHome")} />
+      <CerysButton buttonText={"TAX"} handleView={() => handleView("customerSignUp")} />
+      <CerysButton buttonText={"FIXED ASSET REGISTER"} handleView={() => handleView("userLogin")} />
+      <CerysButton buttonText={"STATUTORY DATABASE"} handleView={() => handleView("customerSignUp")} />
+      <CerysButton buttonText={"INDEX"} handleView={() => handleView("userLogin")} />
     </>
   );
 };

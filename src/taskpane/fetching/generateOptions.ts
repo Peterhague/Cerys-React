@@ -419,6 +419,21 @@ export function fetchOptionsUpdateAssignment(customerId, workbookId, target) {
   };
 }
 
+export function fetchOptionsFinaliseAssignment(activeAssignment, customerId) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      activeAssignment,
+      workbookId: activeAssignment._id,
+      customerId,
+      clientId: activeAssignment.clientId,
+    }),
+  };
+}
+
 export function fetchOptionsTBModify(cerysObject) {
   return {
     method: "PUT",
