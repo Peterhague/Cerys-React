@@ -62,6 +62,10 @@ export const createIFARegister = "http://localhost:4000/api/ifar/create";
 
 export const updateIFARegister = "http://localhost:4000/api/ifar/update";
 
+export const createTFARegister = "http://localhost:4000/api/tfar/create";
+
+export const updateTFARegister = "http://localhost:4000/api/tfar/update";
+
 export const postTFA = "http://localhost:4000/api/tfa";
 
 export const postIP = "http://localhost:4000/api/ip";

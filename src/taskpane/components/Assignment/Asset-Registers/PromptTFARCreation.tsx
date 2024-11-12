@@ -2,7 +2,11 @@ import * as React from "react";
 import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
-import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+import {
+  finaliseAssetObjects,
+  identifyLikelyAdditions,
+  previewRelTrans,
+} from "../../../utils.ts/transactions/asset-reg-generation";
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import {
   checkNewTransForAssets,
@@ -56,6 +60,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
 
   const handleSubmit = async () => {
     session["options"].TFARCreationSetting = "main";
+    finaliseAssetObjects(session, registerType);
     await createTFAR(session);
     session["TFATransactions"] = [];
     session["activeJournal"].clientTB = false;

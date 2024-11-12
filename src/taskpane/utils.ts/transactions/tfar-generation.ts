@@ -1,8 +1,9 @@
-import { postTFA } from "../../fetching/apiEndpoints";
-import { fetchOptionsTFA } from "../../fetching/generateOptions";
+import { createTFARegister, postTFA, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
+import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { calculateDiffInDays, convertExcelDate, updateNomCode } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets } from "../worksheet";
+import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 export function createRelTransTFA(session, setView) {
@@ -347,14 +348,30 @@ export async function createTFAR(session) {
 }
 
 export async function postTFAtoDB(session) {
+  let assignment = session.activeAssignment;
   const options = fetchOptionsTFA(session);
-  const updatedAssignmentDb = await fetch(postTFA, options);
-  const updatedAssignment = await updatedAssignmentDb.json();
-  return updatedAssignment;
+  const endpoint = session.activeAssignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
+  const tFARDb = await fetch(endpoint, options);
+  const tFAR = await tFARDb.json();
+  session.TFARegister = createCurrentPeriodRegister(tFAR, session);
+  if (!session.activeAssignment.TFARegisterCreated) {
+    const options = fetchOptionsUpdateAssignment(
+      session.customer._id,
+      session.activeAssignment._id,
+      "TFARegisterCreated"
+    );
+    const assignmentDb = await fetch(updateAssignmentUrl, options);
+    assignment = await assignmentDb.json();
+  }
+  //const updatedAssignmentDb = await fetch(postIFA, options);
+  //const updatedAssignment = await updatedAssignmentDb.json();
+  console.log(assignment);
+  return assignment;
 }
 
 export async function createTFARWs(context, session) {
-  const transToPost = session["TFATransactions"];
+  //const transToPost = session["TFATransactions"];
+  const transToPost = session.TFARegister;
   const activeCatsNames = [];
   const TFAActiveCats = [];
   transToPost.forEach((i) => {

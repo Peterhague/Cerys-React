@@ -492,8 +492,8 @@ export async function postIFAtoDB(session) {
     assignment = await assignmentDb.json();
   }
   //const updatedAssignmentDb = await fetch(postIFA, options);
-    //const updatedAssignment = await updatedAssignmentDb.json();
-    console.log(assignment);
+  //const updatedAssignment = await updatedAssignmentDb.json();
+  console.log(assignment);
   return assignment;
 }
 

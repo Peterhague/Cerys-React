@@ -722,10 +722,10 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
 //  return updatedAssignment;
 //}
 
-export const createCurrentPeriodRegister = (iFAR, session) => {
+export const createCurrentPeriodRegister = (regsiter, session) => {
   const periodId = session.activeAssignment.reportingPeriod._id;
-  const currentIFAR = [];
-  iFAR.assets.forEach((asset) => {
+  const currentPeriodRegister = [];
+  regsiter.assets.forEach((asset) => {
     if (asset.activePeriods.includes(periodId)) {
       const { periods, activePeriods, ...obj } = asset;
       let subTransactions;
@@ -733,11 +733,11 @@ export const createCurrentPeriodRegister = (iFAR, session) => {
         if (period.reportingPeriodId === periodId) subTransactions = period.subTransactions;
       });
       obj.subTransactions = subTransactions;
-      currentIFAR.push(obj);
+      currentPeriodRegister.push(obj);
     }
   });
-  console.log(currentIFAR);
-  return currentIFAR;
+  console.log(currentPeriodRegister);
+  return currentPeriodRegister;
 };
 
 export async function createIFARWs(context, session) {
