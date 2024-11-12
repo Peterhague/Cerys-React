@@ -123,7 +123,8 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
       periodStart,
       transactionsPosted: false,
     };
-    populateStaffObjs(prelimAssignment);
+      populateStaffObjs(prelimAssignment);
+      console.log(session);
     const { customer, assignment, IFARegister, TFARegister } = await processNewAssignment(prelimAssignment);
     session["customer"] = customer;
     session["activeAssignment"] = assignment;
@@ -139,7 +140,7 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
 
   const processNewAssignment = async (prelimAssignment) => {
     const customerId = session["customer"]["_id"];
-    const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
+    const options = fetchOptionsNewAssignment(prelimAssignment, customerId, session["chart"]);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
     console.log(updatedCustAndNewAss);

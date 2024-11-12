@@ -3,7 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { clearNextViewButOne } from "../../../utils.ts/helperFunctions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
-import { checkAssetRegStatus, checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
+import { checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
 
 interface deleteSheetPromptProps {
   updateSession: (update) => void;

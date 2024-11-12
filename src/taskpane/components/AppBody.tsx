@@ -43,11 +43,13 @@ import Footer from "./Footer";
 import DeleteSheetPrompt from "./Assignment/Transaction-Updates/DeleteSheetPrompt";
 import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClientDepnIP";
 import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageAssignmentDashHome";
+import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
 
 const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
+  const [options, setOptions] = useState({ handleYes: () => console.log("yes"), handleNo: () => console.log("no") });
 
   console.log(session);
 
@@ -56,6 +58,12 @@ const AppBody: React.FC = () => {
   };
 
   const handleView = (view) => {
+    session["currentView"] = view;
+    setView(view);
+  };
+
+  const handleDynamicView = (view, options) => {
+    setOptions(options);
     session["currentView"] = view;
     setView(view);
   };
@@ -74,6 +82,7 @@ const AppBody: React.FC = () => {
         body = (
           <UserLogin
             handleView={handleView}
+            handleDynamicView={handleDynamicView}
             updateSession={updateSession}
             session={session}
             setEditButton={setEditButton}
@@ -118,6 +127,17 @@ const AppBody: React.FC = () => {
         break;
       case "manageAssignmentDashHome":
         body = <ManageAssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        session["nextView"] = view;
+        break;
+      case "userConfirmPrompt":
+        body = (
+          <UserConfirmPrompt
+            handleView={handleView}
+            updateSession={updateSession}
+            session={session}
+            options={options}
+          />
+        );
         session["nextView"] = view;
         break;
       case "customerClientsHome":

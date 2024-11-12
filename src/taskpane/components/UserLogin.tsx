@@ -8,11 +8,18 @@ import { registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
 interface userLoginProps {
   updateSession: (update) => void;
   handleView: (view) => void;
+  handleDynamicView: (view, props) => void;
   session: {};
   setEditButton: (state) => void;
 }
 
-const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, session, setEditButton }: userLoginProps) => {
+const UserLogin: React.FC<userLoginProps> = ({
+  updateSession,
+  handleView,
+  handleDynamicView,
+  session,
+  setEditButton,
+}: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -38,6 +45,7 @@ const UserLogin: React.FC<userLoginProps> = ({ updateSession, handleView, sessio
     session["updatedTransactions"] = [];
     session["IFARegister"] = [];
     session["handleView"] = handleView;
+    session["handleDynamicView"] = handleDynamicView;
     session["setEditButton"] = setEditButton;
     session["options"] = {
       IFARCreationSetting: "main",
