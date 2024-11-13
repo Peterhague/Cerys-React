@@ -37,7 +37,6 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
         clientObj = client;
       }
     });
-    console.log(clientObj);
     setClientObject(clientObj);
     clientObj["_senior"] ? set_Senior(clientObj["_senior"]) : set_Senior("");
     clientObj["_manager"] ? set_Manager(clientObj["_manager"]) : set_Manager("");
@@ -46,7 +45,6 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
       : set_ResponsibleIndividual("");
     clientObj["clientSoftware"] ? setClientSoftware(clientObj["clientSoftware"]) : setClientSoftware("");
     const dateEst = calculateDateEst(clientObj);
-    console.log(dateEst);
     clientObj["accRefDate"] ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
   };
 

@@ -4,6 +4,7 @@ import AppBody from "./AppBody";
 
 interface AppProps {
   title: string;
+  session: {};
 }
 
 const useStyles = makeStyles({
@@ -12,12 +13,14 @@ const useStyles = makeStyles({
   },
 });
 
-const App: React.FC<AppProps> = () => {
+console.log("here babes!!!!!");
+
+const App: React.FC<AppProps> = ({ session }: AppProps) => {
   const styles = useStyles();
 
   return (
     <div className={styles.root}>
-      <AppBody />
+      <AppBody session={session} />
     </div>
   );
 };

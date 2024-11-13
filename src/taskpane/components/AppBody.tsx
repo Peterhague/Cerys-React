@@ -45,8 +45,12 @@ import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClient
 import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageAssignmentDashHome";
 import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
 
-const AppBody: React.FC = () => {
-  const [session, setSession] = useState({});
+interface AppBodyProps {
+  session: {};
+}
+
+const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
+  const [ssn, setSession] = useState({});
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
   const [options, setOptions] = useState({
@@ -54,8 +58,10 @@ const AppBody: React.FC = () => {
     handleNo: () => console.log("no"),
     message: <p>Message</p>,
   });
+  //const session = {};
 
-  console.log(session);
+  //console.log(session);
+  console.log(ssn);
 
   const updateSession = (update) => {
     setSession(update);
