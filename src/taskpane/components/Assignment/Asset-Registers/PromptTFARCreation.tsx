@@ -16,7 +16,6 @@ import {
 import CerysButton from "../../CerysButton";
 
 interface promptTFARCreationProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

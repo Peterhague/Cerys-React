@@ -8,7 +8,6 @@ import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunction
 import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-reg-generation";
 import { bFPrevPeriodMessage } from "../../utils.ts/messages";
 interface newAssignmentDtlsProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

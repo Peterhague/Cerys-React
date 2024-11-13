@@ -5,7 +5,6 @@ import { convertExcelDate, convertMongoDate, convertValueToString } from "../../
 import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
 
 interface reviewTransUpdatesProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

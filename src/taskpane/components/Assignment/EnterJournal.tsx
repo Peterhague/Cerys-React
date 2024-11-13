@@ -6,7 +6,6 @@ import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retri
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
 
 interface enterJournalProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

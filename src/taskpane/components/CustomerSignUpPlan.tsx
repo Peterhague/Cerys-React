@@ -5,7 +5,6 @@ import { fetchOptionsSignUp } from "../fetching/generateOptions";
 import { customerUrl } from "../fetching/apiEndpoints";
 
 interface customerSignUpPlanProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

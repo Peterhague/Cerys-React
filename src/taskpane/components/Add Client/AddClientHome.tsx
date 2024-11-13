@@ -2,7 +2,6 @@ import * as React from "react";
 import CerysButton from "../CerysButton";
 
 interface addClientHomeProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

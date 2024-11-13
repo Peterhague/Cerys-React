@@ -5,7 +5,6 @@ import { getCustomerUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
 
 interface customerLoginProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   setEditButton: (state) => void;
   session: {};

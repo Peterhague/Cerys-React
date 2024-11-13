@@ -16,7 +16,6 @@ import {
 } from "../../../utils.ts/transactions/asset-reg-generation";
 
 interface promptIFARCreationProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

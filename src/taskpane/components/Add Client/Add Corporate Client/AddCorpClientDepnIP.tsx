@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 interface addCorpClientDepnIPProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

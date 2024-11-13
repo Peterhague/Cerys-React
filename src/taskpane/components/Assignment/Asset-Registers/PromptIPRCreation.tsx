@@ -12,7 +12,6 @@ import {
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 
 interface promptIPRCreationProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

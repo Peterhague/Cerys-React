@@ -4,7 +4,6 @@ import { enterTB } from "../../client-data-processing/trial-balance";
 import { enterNL } from "../../client-data-processing/nominal-ledger";
 
 interface enterClientDataHomeProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

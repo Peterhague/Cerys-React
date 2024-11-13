@@ -4,7 +4,6 @@ import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
 import { postIndiUrl, postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 
 interface addIndiClientAssocOptionsProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

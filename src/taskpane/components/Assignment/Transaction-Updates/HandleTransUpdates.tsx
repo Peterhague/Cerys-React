@@ -4,7 +4,6 @@ import { reverseTransactionUpdates, submitTransactionUpdates } from "../../../ut
 import { callNextView } from "../../../utils.ts/helperFunctions";
 
 interface handleTransUpdatesProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

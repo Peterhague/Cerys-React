@@ -4,7 +4,6 @@ import { fetchOptionsAddClient } from "../../../fetching/generateOptions";
 import { addClientGlobalUrl } from "../../../fetching/apiEndpoints";
 
 interface addCorpClientOptionsProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

@@ -3,7 +3,6 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 
 interface addCorpClientIndisHomeProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

@@ -4,7 +4,6 @@ import { finaliseAssignment } from "../../../assignment/assignment-management";
 import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
 
 interface manageAssignmentDashHomeProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

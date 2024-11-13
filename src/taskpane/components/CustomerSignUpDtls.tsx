@@ -3,7 +3,6 @@ import { useState } from "react";
 import CerysButton from "./CerysButton";
 
 interface customerSignUpDtlsProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

@@ -50,7 +50,6 @@ interface AppBodyProps {
 }
 
 const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
-  const [ssn, setSession] = useState({});
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
   const [options, setOptions] = useState({
@@ -58,14 +57,6 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
     handleNo: () => console.log("no"),
     message: <p>Message</p>,
   });
-  //const session = {};
-
-  //console.log(session);
-  console.log(ssn);
-
-  const updateSession = (update) => {
-    setSession(update);
-  };
 
   const handleView = (view) => {
     session["currentView"] = view;
@@ -93,7 +84,6 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
           <UserLogin
             handleView={handleView}
             handleDynamicView={handleDynamicView}
-            updateSession={updateSession}
             session={session}
             setEditButton={setEditButton}
           />
@@ -105,45 +95,37 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         session["nextView"] = view;
         break;
       case "customerLogin":
-        body = (
-          <CustomerLogin
-            handleView={handleView}
-            updateSession={updateSession}
-            session={session}
-            setEditButton={setEditButton}
-          />
-        );
+        body = <CustomerLogin handleView={handleView} session={session} setEditButton={setEditButton} />;
         footer = null;
         break;
       case "customerSignUp":
-        body = <CustomerSignUp handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerSignUp handleView={handleView} session={session} />;
         footer = null;
         break;
       case "customerSignUpDtls":
-        body = <CustomerSignUpDtls handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerSignUpDtls handleView={handleView} session={session} />;
         break;
       case "customerSignUpPlan":
-        body = <CustomerSignUpPlan handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerSignUpPlan handleView={handleView} session={session} />;
         break;
       case "newCustomerLanding":
-        body = <NewCustomerLanding handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <NewCustomerLanding handleView={handleView} session={session} />;
         break;
       case "addUser":
-        body = <AddUser handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddUser handleView={handleView} session={session} />;
         break;
       case "customerDashHome":
-        body = <CustomerDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerDashHome handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "manageAssignmentDashHome":
-        body = <ManageAssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <ManageAssignmentDashHome handleView={handleView}  session={session} />;
         session["nextView"] = view;
         break;
       case "userConfirmPrompt":
         body = (
           <UserConfirmPrompt
             handleView={handleView}
-            updateSession={updateSession}
             session={session}
             options={options}
           />
@@ -151,99 +133,99 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         session["nextView"] = view;
         break;
       case "customerClientsHome":
-        body = <CustomerClientsHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerClientsHome handleView={handleView} session={session} />;
         break;
       case "addClientHome":
-        body = <AddClientHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddClientHome handleView={handleView} session={session} />;
         break;
       case "addCorpClientDtls":
-        body = <AddCorpClientDtls handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientDtls handleView={handleView}  session={session} />;
         break;
       case "addCorpClientShares":
-        body = <AddCorpClientShares handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientShares handleView={handleView}  session={session} />;
         break;
       case "addCorpClientOptions":
-        body = <AddCorpClientOptions handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientOptions handleView={handleView}  session={session} />;
         break;
       case "addCorpClientIndisHome":
-        body = <AddCorpClientIndisHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientIndisHome handleView={handleView}  session={session} />;
         break;
       case "addCorpClientIndiNew":
-        body = <AddCorpClientIndiNew handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientIndiNew handleView={handleView}  session={session} />;
         break;
       case "addCorpClientDirsHome":
-        body = <AddCorpClientDirsHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientDirsHome handleView={handleView}  session={session} />;
         break;
       case "addCorpClientDirNew":
-        body = <AddCorpClientDirNew handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientDirNew handleView={handleView}  session={session} />;
         break;
       case "addCorpClientSHHome":
-        body = <AddCorpClientSHHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientSHHome handleView={handleView}  session={session} />;
         break;
       case "addCorpClientSHNew":
-        body = <AddCorpClientSHNew handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientSHNew handleView={handleView}  session={session} />;
         break;
       case "addCorpClientAmort":
-        body = <AddCorpClientAmort handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientAmort handleView={handleView}  session={session} />;
         break;
       case "addCorpClientDepn":
-        body = <AddCorpClientDepn handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientDepn handleView={handleView}  session={session} />;
         break;
       case "addCorpClientDepnIP":
-        body = <AddCorpClientDepnIP handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddCorpClientDepnIP handleView={handleView}  session={session} />;
         break;
       case "addIndiClientDtls":
-        body = <AddIndiClientDtls handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddIndiClientDtls handleView={handleView}  session={session} />;
         break;
       case "addIndiClientAssocOptions":
-        body = <AddIndiClientAssocOptions handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddIndiClientAssocOptions handleView={handleView}  session={session} />;
         break;
       case "addIndiClientAssocDir":
-        body = <AddIndiClientAssocDir handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddIndiClientAssocDir handleView={handleView}  session={session} />;
         break;
       case "addIndiClientAssocSH":
-        body = <AddIndiClientAssocSH handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddIndiClientAssocSH handleView={handleView}  session={session} />;
         break;
       case "customerIndisHome":
-        body = <CustomerIndisHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <CustomerIndisHome handleView={handleView} session={session} />;
         break;
       case "addIndiDtls":
-        body = <AddIndiDtls handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AddIndiDtls handleView={handleView} session={session} />;
         break;
       case "userAssignmentsHome":
-        body = <UserAssignmentsHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <UserAssignmentsHome handleView={handleView} session={session} />;
         break;
       case "newAssignmentDtls":
-        body = <NewAssignmentDtls handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <NewAssignmentDtls handleView={handleView} session={session} />;
         break;
       case "assignmentDashHome":
-        body = <AssignmentDashHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <AssignmentDashHome handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "enterClientDataHome":
-        body = <EnterClientDataHome handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <EnterClientDataHome handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "enterJournal":
-        body = <EnterJournal handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <EnterJournal handleView={handleView} session={session} />;
         break;
       case "promptIFARCreation":
-        body = <PromptIFARCreation handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <PromptIFARCreation handleView={handleView} session={session} />;
         break;
       case "promptTFARCreation":
-        body = <PromptTFARCreation handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <PromptTFARCreation handleView={handleView} session={session} />;
         break;
       case "promptIPRCreation":
-        body = <PromptIPRCreation handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <PromptIPRCreation handleView={handleView} session={session} />;
         break;
       case "handleTransUpdates":
-        body = <HandleTransUpdates handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <HandleTransUpdates handleView={handleView} session={session} />;
         break;
       case "reviewTransUpdates":
-        body = <ReviewTransUpdates handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <ReviewTransUpdates handleView={handleView} session={session} />;
         break;
       case "deleteSheetPrompt":
-        body = <DeleteSheetPrompt handleView={handleView} updateSession={updateSession} session={session} />;
+        body = <DeleteSheetPrompt handleView={handleView} session={session} />;
         break;
       default:
         body = <LandingPage handleView={handleView} />;

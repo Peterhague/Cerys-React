@@ -6,16 +6,11 @@ import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/works
 import { checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
 
 interface deleteSheetPromptProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({
-  //handleView,
-  session,
-  //updateSession,
-}: deleteSheetPromptProps) => {
+const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({ session }: deleteSheetPromptProps) => {
   const sheetsToDelete = [];
   session["editableSheets"].forEach((sheet) => {
     if (sheet.promptDeletion) {

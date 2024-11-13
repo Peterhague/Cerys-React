@@ -5,7 +5,6 @@ import { fetchOptionsAddUser } from "../fetching/generateOptions";
 import { userUrl } from "../fetching/apiEndpoints";
 
 interface addUserProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

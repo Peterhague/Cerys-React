@@ -4,7 +4,6 @@ import CerysButton from "../CerysButton";
 import { fetchOptionsNewIndi } from "../../fetching/generateOptions";
 import { postIndiUrl } from "../../fetching/apiEndpoints";
 interface addIndiDtlsprops {
-  updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }

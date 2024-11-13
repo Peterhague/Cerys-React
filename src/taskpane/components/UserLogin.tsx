@@ -6,7 +6,6 @@ import { getChartUrl } from "../fetching/apiEndpoints";
 import { registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
 
 interface userLoginProps {
-  updateSession: (update) => void;
   handleView: (view) => void;
   handleDynamicView: (view, props) => void;
   session: {};
