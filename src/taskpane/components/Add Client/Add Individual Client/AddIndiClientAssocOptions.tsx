@@ -10,22 +10,18 @@ interface addIndiClientAssocOptionsProps {
 }
 
 const AddIndiClientAssocOptions: React.FC<addIndiClientAssocOptionsProps> = ({
-  updateSession,
   handleView,
   session,
 }: addIndiClientAssocOptionsProps) => {
   const processNewIndiClient = async () => {
     const newIndi = session["newIndiPrelim"];
-    console.log(newIndi);
     delete session["newIndiPrelim"];
     const customerId = session["customer"]["_id"];
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
     const newIndiAndCustomerDb = await fetch(url, options);
     const newIndiAndCustomerObj = await newIndiAndCustomerDb.json();
-    console.log(newIndiAndCustomerObj);
     session["customer"] = newIndiAndCustomerObj.customer;
-    updateSession(session);
     handleView("customerDashHome");
   };
   return (

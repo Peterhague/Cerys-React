@@ -8,11 +8,7 @@ interface customerSignUpDtlsProps {
   session: {};
 }
 
-const CustomerSignUpDtls: React.FC<customerSignUpDtlsProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: customerSignUpDtlsProps) => {
+const CustomerSignUpDtls: React.FC<customerSignUpDtlsProps> = ({ handleView, session }: customerSignUpDtlsProps) => {
   const [orgName, setOrgName] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
@@ -21,7 +17,6 @@ const CustomerSignUpDtls: React.FC<customerSignUpDtlsProps> = ({
     e.preventDefault();
     const newCustDtlsTwo = { orgName, orgAddress, orgPhone };
     session["newCustDtlsTwo"] = newCustDtlsTwo;
-    updateSession(session);
     handleView("customerSignUpPlan");
   };
 

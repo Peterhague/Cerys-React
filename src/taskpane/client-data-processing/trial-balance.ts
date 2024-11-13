@@ -1,10 +1,9 @@
 import { sageCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
-import { checkAssetRegStatus, checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
+import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
 
-export async function enterTB(session, updateSession) {
+export async function enterTB(session) {
   try {
     await Excel.run(async (context) => {
-      //session["nextView"] = "enterClientDataHome";
       const journals = await handleTBData(context);
       let check = 0;
       const transactions = [];
@@ -23,9 +22,7 @@ export async function enterTB(session, updateSession) {
       session["activeJournal"]["journal"] = false;
       session["activeJournal"]["clientTB"] = true;
       const newTransactions = await processTransBatch(session);
-      //checkAssetRegStatus(session, handleView);
       checkNewTransForAssets(session, newTransactions);
-      updateSession(session);
     });
   } catch (error) {
     console.error(error);

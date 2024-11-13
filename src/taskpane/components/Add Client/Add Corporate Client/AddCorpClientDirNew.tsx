@@ -7,11 +7,7 @@ interface addCorpClientDirNewProps {
   session: {};
 }
 
-const AddCorpClientDirNew: React.FC<addCorpClientDirNewProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientDirNewProps) => {
+const AddCorpClientDirNew: React.FC<addCorpClientDirNewProps> = ({ handleView, session }: addCorpClientDirNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -23,8 +19,6 @@ const AddCorpClientDirNew: React.FC<addCorpClientDirNewProps> = ({
     e.preventDefault();
     const newClientDirector = { firstName, lastName, email, phone, address, uTR };
     session["newCorpClientDirectors"].push(newClientDirector);
-    updateSession(session);
-    console.log(session);
     handleView("addCorpClientDirsHome");
   };
 

@@ -10,7 +10,7 @@ interface addUserProps {
   session: {};
 }
 
-const AddUser: React.FC<addUserProps> = ({ updateSession, handleView, session }: addUserProps) => {
+const AddUser: React.FC<addUserProps> = ({ handleView, session }: addUserProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,25 +20,17 @@ const AddUser: React.FC<addUserProps> = ({ updateSession, handleView, session }:
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newUserDtls = { firstName, lastName, email, password, isAdmin };
-    console.log(newUserDtls);
-    console.log(session);
     newUserDtls["customerId"] = session["customer"]["_id"];
     const updatedDbObjs = await processNewUser(newUserDtls);
-    console.log(updatedDbObjs.customer);
     session["newUserAccount"] = updatedDbObjs.user;
     session["customer"] = updatedDbObjs.customer;
-    updateSession(session);
-    console.log(session);
     handleView("newCustomerLanding");
   };
 
   const processNewUser = async (newUserDtls) => {
-    console.log(newUserDtls);
     const options = fetchOptionsAddUser(newUserDtls);
-    console.log(options);
     const newObjsFromDb = await fetch(userUrl, options.post);
     const newObjs = await newObjsFromDb.json();
-    console.log(newObjs);
     return newObjs;
   };
   return (

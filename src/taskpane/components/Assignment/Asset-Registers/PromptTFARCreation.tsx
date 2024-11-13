@@ -21,20 +21,13 @@ interface promptTFARCreationProps {
   session: {};
 }
 
-const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
-  handleView,
-  session,
-  updateSession,
-}: promptTFARCreationProps) => {
-  //const [nLEntered, setNLEntered] = useState(session["activeAssignment"]["NLEntered"]);
+const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({ handleView, session }: promptTFARCreationProps) => {
   let nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].TFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
   const registerType = "TFA";
   const registerCreated = session["activeAssignment"].TFARegisterCreated;
-  console.log(nLEntered);
-  console.log(view);
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -45,9 +38,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({
   };
 
   const handleNLImport = async () => {
-    console.log("NL import triggered");
-    await enterNL(session, updateSession);
-    //setNLEntered(session["activeAssignment"]["NLEntered"]);
+    await enterNL(session);
     nLEntered = session["activeAssignment"]["NLEntered"];
     handleCreateRequest();
   };

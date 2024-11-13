@@ -9,7 +9,7 @@ interface addIndiDtlsprops {
   session: {};
 }
 
-const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ updateSession, handleView, session }: addIndiDtlsprops) => {
+const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ handleView, session }: addIndiDtlsprops) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -31,8 +31,6 @@ const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ updateSession, handleView, se
       otherShareholdings: [],
     };
     session["newIndiPrelim"] = newIndi;
-    updateSession(session);
-    console.log(newIndi);
     const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
     session["customer"]["clients"].length === 0 && processNewIndi(newIndi);
     handleView(route);
@@ -43,9 +41,7 @@ const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ updateSession, handleView, se
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const newIndiAndUpdatedCustomerDb = await fetch(postIndiUrl, options);
     const newIndiAndUpdatedCustomerObj = await newIndiAndUpdatedCustomerDb.json();
-    console.log(newIndiAndUpdatedCustomerObj);
     session["customer"] = newIndiAndUpdatedCustomerObj.customer;
-    updateSession(session);
   };
 
   return (

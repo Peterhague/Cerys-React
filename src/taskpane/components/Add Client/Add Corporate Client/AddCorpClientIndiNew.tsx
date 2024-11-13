@@ -8,12 +8,9 @@ interface addCorpClientIndiNewProps {
 }
 
 const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
-  updateSession,
   handleView,
   session,
 }: addCorpClientIndiNewProps) => {
-  //const [selectedIndi, setSelectedIndi] = useState("");
-  //const [addNewIndi, setAddNewIndi] = useState(false);
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -89,14 +86,12 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
       otherDirectorShips: [],
       otherShareholdings: [],
     };
-    updateSession(session);
     processNewIndi(newIndi);
     session["newClientPrelim"]["newIndividuals"].push(newIndi);
     session["newClientPrelim"]["shareClasses"].forEach((item) => {
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
     });
-    updateSession(session);
     handleView("addCorpClientIndisHome");
   };
 
@@ -120,7 +115,6 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
     newIndi._clientShareholdings = shareAllocations;
     newIndi.shareholdings = newIndi._clientShareholdings;
     session["newClientPrelim"]["shareholders"].push(newIndi);
-    console.log(newIndi);
   };
 
   return (

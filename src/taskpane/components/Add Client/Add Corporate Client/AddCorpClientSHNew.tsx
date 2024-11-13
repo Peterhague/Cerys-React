@@ -7,11 +7,7 @@ interface addCorpClientSHNewProps {
   session: {};
 }
 
-const AddCorpClientSHNew: React.FC<addCorpClientSHNewProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientSHNewProps) => {
+const AddCorpClientSHNew: React.FC<addCorpClientSHNewProps> = ({ handleView, session }: addCorpClientSHNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -24,8 +20,6 @@ const AddCorpClientSHNew: React.FC<addCorpClientSHNewProps> = ({
     e.preventDefault();
     const newClientShareholder = { firstName, lastName, email, phone, address, uTR, isDirector };
     session["newCorpClientShareholders"].push(newClientShareholder);
-    updateSession(session);
-    console.log(session);
     handleView("addCorpClientDirsHome");
   };
 

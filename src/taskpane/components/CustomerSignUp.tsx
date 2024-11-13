@@ -8,7 +8,7 @@ interface customerSignUpProps {
   session: {};
 }
 
-const CustomerSignUp: React.FC<customerSignUpProps> = ({ updateSession, handleView, session }: customerSignUpProps) => {
+const CustomerSignUp: React.FC<customerSignUpProps> = ({ handleView, session }: customerSignUpProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -17,7 +17,6 @@ const CustomerSignUp: React.FC<customerSignUpProps> = ({ updateSession, handleVi
     e.preventDefault();
     const newCustDtlsOne = { email, password, confirmPassword };
     session["newCustDtlsOne"] = newCustDtlsOne;
-    updateSession(session);
     handleView("customerSignUpDtls");
   };
 

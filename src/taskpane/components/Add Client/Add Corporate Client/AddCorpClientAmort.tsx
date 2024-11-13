@@ -7,11 +7,7 @@ interface addCorpClientAmortProps {
   session: {};
 }
 
-const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientAmortProps) => {
+const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, session }: addCorpClientAmortProps) => {
   const [amortBasisGwill, setAmortBasisGwill] = useState("");
   const [amortRateGwill, setAmortRateGwill] = useState("");
   const [amortBasisPatsLics, setAmortBasisPatsLics] = useState("");
@@ -49,13 +45,8 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({
       amortBasisCompSware,
       amortRateCompSware,
     };
-    console.log(amortPols);
-    //const updatedClient = await updateClientDb(amortPols);
-    //session["newClientPrelim"] = updatedClient;
     const updatedObj = { ...session["newClientPrelim"], ...amortPols };
     session["newClientPrelim"] = updatedObj;
-    updateSession(session);
-    console.log(session);
     handleView("addCorpClientOptions");
   };
 

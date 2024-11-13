@@ -14,7 +14,6 @@ interface userLoginProps {
 }
 
 const UserLogin: React.FC<userLoginProps> = ({
-  updateSession,
   handleView,
   handleDynamicView,
   session,
@@ -55,7 +54,6 @@ const UserLogin: React.FC<userLoginProps> = ({
       updatedTransactions: [],
     };
     session["nextViewButOne"] = "";
-    updateSession(session);
     await registerWorksheetDeletionHandler(session);
     handleView("userDashHome");
   };

@@ -11,12 +11,7 @@ interface customerLoginProps {
   session: {};
 }
 
-const CustomerLogin: React.FC<customerLoginProps> = ({
-  updateSession,
-  handleView,
-  session,
-  setEditButton,
-}: customerLoginProps) => {
+const CustomerLogin: React.FC<customerLoginProps> = ({ handleView, session, setEditButton }: customerLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -29,7 +24,6 @@ const CustomerLogin: React.FC<customerLoginProps> = ({
     session["customer"] = customer;
     session["handleView"] = handleView;
     session["setEditButton"] = setEditButton;
-    updateSession(session);
     handleView("customerDashHome");
   };
 

@@ -128,8 +128,6 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
     session["IFARegister"] = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
     session["TFARegister"] = TFARegister;
     session["TFARegister"] = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
-    console.log(session);
-    //updateSession(session);
     addPrimarySheets(session);
     if (session["activeAssignment"].reportingPeriod.bFTB.length > 0) {
       const options = {

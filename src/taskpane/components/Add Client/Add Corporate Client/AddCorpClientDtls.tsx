@@ -7,11 +7,7 @@ interface addCorpClientDtlsProps {
   session: {};
 }
 
-const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientDtlsProps) => {
+const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({ handleView, session }: addCorpClientDtlsProps) => {
   const [clientCode, setClientCode] = useState("");
   const [clientName, setClientName] = useState("");
   const [companyNumber, setCompanyNumber] = useState("");
@@ -45,8 +41,6 @@ const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({
     session["newClientPrelim"]["shareholders"] = [];
     session["newClientPrelim"]["newIndividuals"] = [];
     session["newClientPrelim"]["existingIndividuals"] = [];
-    updateSession(session);
-    console.log(session);
     handleView("addCorpClientShares");
   };
 

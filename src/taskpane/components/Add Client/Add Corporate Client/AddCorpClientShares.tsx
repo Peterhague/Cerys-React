@@ -8,11 +8,7 @@ interface addCorpClientSharesProps {
   session: {};
 }
 
-const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientSharesProps) => {
+const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({ handleView, session }: addCorpClientSharesProps) => {
   const [shareClassName, setShareClassName] = useState("");
   const [numberIssued, setNumberIssued] = useState(0);
   const [nomValue, setNomValue] = useState(0);
@@ -24,8 +20,6 @@ const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({
     newClientShares["issuedNotAllocated"] = newClientShares["numberIssued"];
     newClientShares["prelimAllocation"] = 0;
     session["newClientPrelim"]["shareClasses"].push(newClientShares);
-    updateSession(session);
-    console.log(session);
     handleView("addCorpClientOptions");
   };
 

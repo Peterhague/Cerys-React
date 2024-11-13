@@ -8,7 +8,6 @@ interface addIndiClientAssocSHProps {
 }
 
 const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
-  updateSession,
   handleView,
   session,
 }: addIndiClientAssocSHProps) => {
@@ -18,32 +17,25 @@ const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    updateSession(session);
     handleView("addIndiClientAssocOptions");
   };
 
   const handleClientSelection = (e) => {
     const activeClient = e.target.value;
-    console.log(activeClient);
     let sClasses;
     session["customer"]["clients"].forEach((clt) => {
-      console.log(clt);
-      console.log(clt.shareClasses);
       if (clt._id === activeClient) {
         sClasses = clt.shareClasses;
         setClientId(clt);
       }
     });
-    console.log(sClasses);
     setShareClasses(sClasses);
-    console.log(shareClasses);
     setShowShareClasses(true);
     return activeClient;
   };
 
   const handleShareAllocation = (value, shareClassId) => {
     shareClasses.forEach((sClass) => {
-      console.log(sClass);
       if (sClass._id === shareClassId && sClass.issuedNotAllocated >= value) {
         sClass["prelimAllocation"] = parseInt(value);
         const allocation = {

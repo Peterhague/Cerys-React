@@ -7,11 +7,7 @@ interface addCorpClientDepnIPProps {
   session: {};
 }
 
-const AddCorpClientDepnIP: React.FC<addCorpClientDepnIPProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: addCorpClientDepnIPProps) => {
+const AddCorpClientDepnIP: React.FC<addCorpClientDepnIPProps> = ({ handleView, session }: addCorpClientDepnIPProps) => {
   const [depnBasisIPOwned, setDepnBasisIPOwned] = useState("");
   const [depnRateIPOwned, setDepnRateIPOwned] = useState("");
   const [depnBasisIPLeased, setDepnBasisIPLeased] = useState("");
@@ -35,7 +31,6 @@ const AddCorpClientDepnIP: React.FC<addCorpClientDepnIPProps> = ({
     };
     const updatedObj = { ...session["newClientPrelim"], ...depnPols };
     session["newClientPrelim"] = updatedObj;
-    updateSession(session);
     handleView("addCorpClientOptions");
   };
 

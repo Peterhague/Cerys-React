@@ -8,7 +8,6 @@ interface addIndiClientAssocDirProps {
 }
 
 const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
-  updateSession,
   handleView,
   session,
 }: addIndiClientAssocDirProps) => {
@@ -25,11 +24,7 @@ const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
       dateCeased,
     };
     populateNewDirectorship(directorship);
-    console.log(directorship);
     session["newIndiPrelim"]["_clientDirectorships"].push(directorship);
-    console.log(session);
-    updateSession(session);
-    //const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
     handleView("addIndiClientAssocOptions");
   };
 
