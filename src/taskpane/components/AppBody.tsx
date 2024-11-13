@@ -49,7 +49,11 @@ const AppBody: React.FC = () => {
   const [session, setSession] = useState({});
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState({ handleYes: () => console.log("yes"), handleNo: () => console.log("no") });
+  const [options, setOptions] = useState({
+    handleYes: () => console.log("yes"),
+    handleNo: () => console.log("no"),
+    message: <p>Message</p>,
+  });
 
   console.log(session);
 

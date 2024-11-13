@@ -1,3 +1,4 @@
+import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 
 export async function addPrimarySheets(session) {
@@ -36,3 +37,28 @@ async function writeToDATA(context, dataSpread) {
   range.values = dataSpread;
   range.format.autofitColumns();
 }
+
+export const postOpBalJnls = async (session) => {
+  const transactionDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
+  const chart = session.chart;
+  session.activeJournal.journalType = "opening balance";
+  session.activeJournal.journal = false;
+  session.activeAssignment.reportingPeriod.bFTB.forEach((line) => {
+    for (let i = 0; i < chart.length; i++) {
+      if (line.cerysCode === chart[i].cerysCode) {
+        const jnl = {
+          ...chart[i],
+          journal: false,
+          narrative: "automatic opening balance",
+          transactionType: "opening balance",
+          value: line.value,
+          transactionDate,
+        };
+        session.activeJournal.journals.push(jnl);
+        break;
+      }
+    }
+  });
+  await processTransBatch(session);
+  session.handleView("assignmentDashHome");
+};

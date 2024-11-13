@@ -3,20 +3,17 @@ import { useState } from "react";
 import CerysButton from "../CerysButton";
 import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
-import { addPrimarySheets } from "../../assignment/assignmentInit";
+import { addPrimarySheets, postOpBalJnls } from "../../assignment/assignmentInit";
 import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunctions";
 import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-reg-generation";
+import { bFPrevPeriodMessage } from "../../utils.ts/messages";
 interface newAssignmentDtlsProps {
   updateSession: (update) => void;
   handleView: (view) => void;
   session: {};
 }
 
-const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
-  updateSession,
-  handleView,
-  session,
-}: newAssignmentDtlsProps) => {
+const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, session }: newAssignmentDtlsProps) => {
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
   const [clientObject, setClientObject] = useState({});
@@ -123,8 +120,7 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
       periodStart,
       transactionsPosted: false,
     };
-      populateStaffObjs(prelimAssignment);
-      console.log(session);
+    populateStaffObjs(prelimAssignment);
     const { customer, assignment, IFARegister, TFARegister } = await processNewAssignment(prelimAssignment);
     session["customer"] = customer;
     session["activeAssignment"] = assignment;
@@ -133,9 +129,18 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({
     session["TFARegister"] = TFARegister;
     session["TFARegister"] = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
     console.log(session);
-    updateSession(session);
+    //updateSession(session);
     addPrimarySheets(session);
-    handleView("assignmentDashHome");
+    if (session["activeAssignment"].reportingPeriod.bFTB.length > 0) {
+      const options = {
+        handleYes: () => postOpBalJnls(session),
+        handleNo: () => session["handleView"]("assignmentDashHome"),
+        message: bFPrevPeriodMessage,
+      };
+      session["handleDynamicView"]("userConfirmPrompt", options);
+    } else {
+      handleView("assignmentDashHome");
+    }
   };
 
   const processNewAssignment = async (prelimAssignment) => {
