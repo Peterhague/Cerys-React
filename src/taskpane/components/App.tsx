@@ -13,8 +13,6 @@ const useStyles = makeStyles({
   },
 });
 
-console.log("here babes!!!!!");
-
 const App: React.FC<AppProps> = ({ session }: AppProps) => {
   const styles = useStyles();
 

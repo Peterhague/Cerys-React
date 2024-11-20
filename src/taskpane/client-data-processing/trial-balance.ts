@@ -1,10 +1,10 @@
-import { sageCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
+import { clientCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
 
 export async function enterTB(session) {
   try {
     await Excel.run(async (context) => {
-      const journals = await handleTBData(context);
+      const journals = await handleTBData(session, context);
       let check = 0;
       const transactions = [];
       journals.forEach((jnl) => {
@@ -29,7 +29,7 @@ export async function enterTB(session) {
   }
 }
 
-export async function handleTBData(context) {
+export async function handleTBData(session, context) {
   const ws = context.workbook.worksheets.getItem("Client TB");
   const range = ws.getUsedRange();
   const values = range.load("values");
@@ -38,21 +38,21 @@ export async function handleTBData(context) {
   const arrays = innerValues.slice(3, innerValues.length - 1);
   const arrObjs = [];
   for (let i = 0; i < arrays.length; i++) {
-    const obj = await convertToCerysObject(arrays[i]);
+    const obj = convertToCerysObject(session, arrays[i]);
     obj.clientNominalCode = arrays[i][0];
+    if (arrays[i][2]) {
+      obj.value = arrays[i][2] * 100;
+    } else {
+      obj.value = arrays[i][3] * -1 * 100;
+    }
     obj.narrative = "Client TB auto-entry";
     arrObjs.push(obj);
   }
   return arrObjs;
 }
 
-export async function convertToCerysObject(formattedTB) {
-  const objForPosting = await sageCodeToCerysObject(formattedTB[0]);
-  objForPosting.clientNominalCode = formattedTB[0];
-  if (formattedTB[2]) {
-    objForPosting.value = formattedTB[2] * 100;
-  } else {
-    objForPosting.value = formattedTB[3] * -1 * 100;
-  }
-  return objForPosting;
+export function convertToCerysObject(session, formattedTB) {
+  const objForPosting = clientCodeToCerysObject(session, formattedTB[0]);
+  const copy = { ...objForPosting };
+  return copy;
 }

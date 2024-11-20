@@ -12,6 +12,20 @@ export async function sageCodeToCerysObject(sageCode) {
   return cerysObject;
 }
 
+export const clientCodeToCerysObject = (session, clientCode) => {
+  let cerysCode;
+  session.clientChart.forEach((nom) => {
+    if (nom.clientCode === clientCode) {
+      cerysCode = nom.cerysCode;
+    }
+  });
+  for (let i = 0; i < session.chart.length; i++) {
+    if (cerysCode === session.chart[i].cerysCode) {
+      return session.chart[i];
+    }
+  }
+};
+
 // takes a Sage code and returns the corresponding Cerys nominal code
 export async function sageCodeToCerysCode(sageCode) {
   const codeOptions = fetchOptionsNC(sageCode);
@@ -172,7 +186,7 @@ export async function getCerysNomDetailBS(context, category, activeAssignment) {
   }
   let selection;
   activeAssignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === cat || obj.cerysCategory === category) {
+    if (obj.cerysCategory === cat || obj.cerysCategory === category) {
       selection = obj.cerysCodes;
     }
   });

@@ -118,9 +118,11 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
       transactionsPosted: false,
     };
     populateStaffObjs(prelimAssignment);
-    const { customer, assignment, IFARegister, TFARegister } = await processNewAssignment(prelimAssignment);
+    const { customer, assignment, IFARegister, TFARegister, clientChart } =
+      await processNewAssignment(prelimAssignment);
     session["customer"] = customer;
     session["activeAssignment"] = assignment;
+    session["clientChart"] = clientChart;
     session["IFARegister"] = IFARegister;
     session["IFARegister"] = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
     session["TFARegister"] = TFARegister;

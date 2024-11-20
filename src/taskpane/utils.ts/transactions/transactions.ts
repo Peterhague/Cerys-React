@@ -7,8 +7,8 @@ import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
 export const processTransBatch = async (session) => {
-    const activeJournal = session["activeJournal"];
-    console.log(activeJournal);
+    console.log("yes still owrking here")
+  const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
     const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
@@ -34,7 +34,6 @@ export const processTransBatch = async (session) => {
   const transactionType = activeJournal.journalType;
   const updatedCustAndAss = await postTransactionsDb(transactions, transDtls, transactionType);
   session["activeAssignment"] = updatedCustAndAss.assignment;
-  //session.latestTransactions = updatedCustAndAss.newTransactions;
   updatedCustAndAss.newTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });

@@ -35,8 +35,8 @@ const UserLogin: React.FC<userLoginProps> = ({
     session["chart"] = chart;
     const userAndCustomerObject = await userAndCustomerFromDb.json();
     session["user"] = userAndCustomerObject.user;
-      session["customer"] = userAndCustomerObject.customer;
-    console.log(session)
+    session["customer"] = userAndCustomerObject.customer;
+    console.log(session);
     const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
     session["activeJournal"] = activeJournal;
     session["newFATransactions"] = [];
