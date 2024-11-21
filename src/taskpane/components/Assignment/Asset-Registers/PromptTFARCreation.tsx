@@ -3,12 +3,14 @@ import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import {
+  convertNewFATrans,
   finaliseAssetObjects,
   identifyLikelyAdditions,
   previewRelTrans,
 } from "../../../utils.ts/transactions/asset-reg-generation";
 import { createTFAR } from "../../../utils.ts/transactions/tfar-generation";
 import {
+  checkFATranUpdatesForAssets,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
@@ -38,6 +40,7 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({ handleView, ses
 
   const handleNLImport = async () => {
     await enterNL(session);
+    convertNewFATrans(session);
     nLEntered = session["activeAssignment"]["NLEntered"];
     handleCreateRequest();
   };
@@ -61,8 +64,15 @@ const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({ handleView, ses
   };
 
   const handleReanalysis = async () => {
-    await processUpdateBatch(session);
-    await updateAssignmentFigures(session);
+    if (session["updatedTransactions"].length > 0) {
+      const updatedTransactions = await processUpdateBatch(session);
+      await updateAssignmentFigures(session);
+      checkFATranUpdatesForAssets(session, updatedTransactions);
+    }
+    if (session["activeJournal"].journals.length > 0) {
+      const newTransactions = await processTransBatch(session);
+      checkFATranUpdatesForAssets(session, newTransactions);
+    }
     previewRelTrans(session, registerType, setView);
   };
 

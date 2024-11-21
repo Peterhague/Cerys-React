@@ -30,7 +30,8 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
     ) {
       const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
       console.log(test);
-      test > 0 && bFTransLikelyAddns.push(tran);
+      //test > 0 && bFTransLikelyAddns.push(tran);
+      bFTransLikelyAddns.push(tran);
       tran.processedAsAsset = true;
     }
   });
@@ -52,6 +53,7 @@ export const previewRelTrans = (session, registerType, setView) => {
 };
 
 export async function createRelTrans(session, registerType) {
+  console.log(session.newFATransactions);
   const relevantTrans = [];
   //session.activeAssignment.transactions.forEach((tran) => {
   //  if (
@@ -62,7 +64,6 @@ export async function createRelTrans(session, registerType) {
   //    relevantTrans.push(tran);
   //  }
   //});
-  console.log(session.newFATransactions);
   session.newFATransactions.forEach((tran) => {
     if (
       (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
@@ -76,6 +77,61 @@ export async function createRelTrans(session, registerType) {
   createTransSumm(session, relevantTrans, registerType);
   console.log(relevantTrans);
 }
+
+export const convertNewFATrans = (session) => {
+  const updatedTrans = [];
+  session.newFATransactions.forEach((origTran) => {
+    //session.activeAssignment.clientNL.forEach((tran) => {
+    //  if (tran.code === origTran.clientNominalCode) {
+    //    const trans = { ...origTran };
+    //    delete trans._id;
+    //    trans["transactionDate"] = convertExcelDate(tran.date);
+    //    trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+    //    trans["subTransactions"] = [
+    //      {
+    //        assetSubCategory: origTran.assetSubCategory,
+    //        assetSubCatCode: origTran.assetSubCatCode,
+    //        regColNameOne: origTran.regColNameOne,
+    //        regColNameTwo: origTran.regColNameTwo,
+    //        value: tran.value,
+    //      },
+    //    ];
+    //    trans["transactionDateClt"] = tran.date;
+    //    trans["clientNominalCode"] = tran.code;
+    //    trans["clientNominalName"] = tran.name;
+    //    trans["assetNarrative"] = tran.detail;
+    //    trans["value"] = tran.value;
+    //    updatedTrans.push(trans);
+    //  }
+    //});
+    const clientNL = session.activeAssignment.clientNL;
+    for (let i = 0; i < clientNL.length; i++) {
+      if (clientNL[i].code === origTran.clientNominalCode) {
+        const trans = { ...origTran };
+        delete trans._id;
+        trans["transactionDate"] = convertExcelDate(clientNL[i].date);
+        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+        trans["subTransactions"] = [
+          {
+            assetSubCategory: origTran.assetSubCategory,
+            assetSubCatCode: origTran.assetSubCatCode,
+            regColNameOne: origTran.regColNameOne,
+            regColNameTwo: origTran.regColNameTwo,
+            value: clientNL[i].value,
+          },
+        ];
+        trans["transactionDateClt"] = clientNL[i].date;
+        trans["clientNominalCode"] = clientNL[i].code;
+        trans["clientNominalName"] = clientNL[i].name;
+        trans["assetNarrative"] = clientNL[i].detail;
+        trans["value"] = clientNL[i].value;
+        updatedTrans.push(trans);
+      }
+    }
+  });
+  console.log(updatedTrans);
+  session.newFATransactions = updatedTrans;
+};
 
 export async function createTransSumm(session, relevantTrans, registerType) {
   try {
@@ -124,47 +180,62 @@ export async function createTransSumm(session, relevantTrans, registerType) {
         ],
       ];
       session[`${registerType}Transactions`] = [];
+      //relevantTrans.forEach((i) => {
+      //  if (i.clientTB) {
+      //    let trans;
+      //    session.activeAssignment.clientNL.forEach((tran) => {
+      //      if (tran.code === i.clientNominalCode) {
+      //        trans = i;
+      //        trans["transactionDate"] = convertExcelDate(tran.date);
+      //        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+      //        trans["subTransactions"] = [
+      //          {
+      //            assetSubCategory: i.assetSubCategory,
+      //            assetSubCatCode: i.assetSubCatCode,
+      //            regColNameOne: i.regColNameOne,
+      //            regColNameTwo: i.regColNameTwo,
+      //            value: tran.value,
+      //          },
+      //        ];
+      //        trans["transactionDateClt"] = tran.date;
+      //        trans["clientNominalCode"] = tran.code;
+      //        trans["clientNominalName"] = tran.name;
+      //        trans["assetNarrative"] = tran.detail;
+      //        trans["value"] = tran.value;
+      //        trans["rowNumber"] = session[`${registerType}Transactions`].length + 3;
+      //      }
+      //    });
+      //    session[`${registerType}Transactions`].push(trans);
+      //  } else {
+      //    i.rowNumber = session[`${registerType}Transactions`].length + 3;
+      //    i.assetNarrative = i.narrative;
+      //    i.assetSubCatCodes = [i.assetSubCatCode];
+      //    i["subTransactions"] = [
+      //      {
+      //        assetSubCategory: i.assetSubCategory,
+      //        assetSubCatCode: i.assetSubCatCode,
+      //        regColNameOne: i.regColNameOne,
+      //        regColNameTwo: i.regColNameTwo,
+      //        value: i.value,
+      //      },
+      //    ];
+      //    session[`${registerType}Transactions`].push(i);
+      //  }
+      //});
       relevantTrans.forEach((i) => {
-        if (i.clientTB) {
-          let trans;
-          session.activeAssignment.clientNL.forEach((tran) => {
-            if (tran.code === i.clientNominalCode) {
-              trans = i;
-              trans["transactionDate"] = convertExcelDate(tran.date);
-              trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-              trans["subTransactions"] = [
-                {
-                  assetSubCategory: i.assetSubCategory,
-                  assetSubCatCode: i.assetSubCatCode,
-                  regColNameOne: i.regColNameOne,
-                  regColNameTwo: i.regColNameTwo,
-                  value: tran.value,
-                },
-              ];
-              trans["transactionDateClt"] = tran.date;
-              trans["clientNominalCode"] = tran.code;
-              trans["clientNominalName"] = tran.name;
-              trans["assetNarrative"] = tran.detail;
-              trans["value"] = tran.value;
-              trans["rowNumber"] = session[`${registerType}Transactions`].length + 3;
-            }
-          });
-          session[`${registerType}Transactions`].push(trans);
-        } else {
-          i.rowNumber = session[`${registerType}Transactions`].length + 3;
-          i.assetNarrative = i.narrative;
-          i.assetSubCatCodes = [i.assetSubCatCode];
-          i["subTransactions"] = [
-            {
-              assetSubCategory: i.assetSubCategory,
-              assetSubCatCode: i.assetSubCatCode,
-              regColNameOne: i.regColNameOne,
-              regColNameTwo: i.regColNameTwo,
-              value: i.value,
-            },
-          ];
-          session[`${registerType}Transactions`].push(i);
-        }
+        i.rowNumber = session[`${registerType}Transactions`].length + 3;
+        //i.assetNarrative = i.narrative;
+        i.assetSubCatCodes = [i.assetSubCatCode];
+        i["subTransactions"] = [
+          {
+            assetSubCategory: i.assetSubCategory,
+            assetSubCatCode: i.assetSubCatCode,
+            regColNameOne: i.regColNameOne,
+            regColNameTwo: i.regColNameTwo,
+            value: i.value,
+          },
+        ];
+        session[`${registerType}Transactions`].push(i);
       });
       session[`${registerType}Transactions`].forEach((tran) => {
         const transVals = [];
@@ -191,6 +262,8 @@ export async function createTransSumm(session, relevantTrans, registerType) {
           transVals.push("Client TB");
         } else if (tran.clientAdjustment) {
           transVals.push("Client adjustment");
+        } else {
+          transVals.push("Sticking plaster");
         }
         transVals.push(tran.cerysCode);
         transVals.push(tran.cerysShortName);
@@ -508,9 +581,12 @@ export const populateDepnCols = (activeClient, transVals, tran, registerType) =>
 export function calculateCharge(session, tran, registerType) {
   const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
+  console.log(tran);
+  console.log(daysHeld);
   const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
   const rate = tran.amortRate ? tran.amortRate : tran.depnRate;
   const charge = Math.round(tran.value * (parseInt(rate) / 100) * (daysHeld / daysInPeriod));
+  console.log(charge);
   let amortOrDepn;
   if (registerType === "IFA") {
     amortOrDepn = "Amort";
@@ -691,15 +767,51 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
 export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
   const newArray = [];
   bFTransLikelyAddns.forEach((tran) => {
-    const newValue = tran.cerysCode + 1;
-    const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
-    session.chart.forEach((code) => {
-      if (code.cerysCode === newValue) {
-        newUpdate.cerysCodeObject = code;
+    if (tran._id) {
+      const newValue = tran.cerysCode + 1;
+      const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
+      session.chart.forEach((code) => {
+        if (code.cerysCode === newValue) {
+          newUpdate.cerysCodeObject = code;
+        }
+      });
+      newArray.push(newUpdate);
+    } else {
+      const chart = session.chart;
+      let drJnl;
+      let crJnl;
+      for (let i = 0; i < chart.length; i++) {
+        if (chart[i].cerysCode === tran.cerysCode + 1) {
+          drJnl = { ...chart[i] };
+          drJnl.value = tran.value;
+          drJnl.transactionDate = tran.transactionDate;
+          drJnl.journal = false;
+          drJnl.clientTB = false;
+          drJnl.transactionType = "autoAddition";
+          drJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
+          drJnl.assetNarrative = tran.assetNarrative;
+          drJnl.clientNominalCode = tran.clientNominalCode;
+          drJnl.clientNominalName = tran.clientNominalName;
+          session.activeJournal.journals.push(drJnl);
+        }
+        if (chart[i].cerysCode === tran.cerysCode) {
+          crJnl = { ...chart[i] };
+          crJnl.value = tran.value * -1;
+          crJnl.transactionDate = tran.transactionDate;
+          crJnl.journal = false;
+          crJnl.clientTB = false;
+          crJnl.transactionType = "autoAddition";
+          crJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
+          session.activeJournal.journals.push(crJnl);
+        }
       }
-    });
-    newArray.push(newUpdate);
+    }
   });
+  if (session.activeJournal.journals.length > 0) {
+    session.activeJournal.journal = false;
+    session.activeJournal.journalType = "autoAddition";
+  }
+  console.log(session.activeJournal);
   session.updatedTransactions = newArray;
 };
 

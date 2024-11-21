@@ -7,23 +7,23 @@ interface addCorpClientDepnProps {
 }
 
 const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, session }: addCorpClientDepnProps) => {
-  const [depnBasisFholdProp, setDepnBasisFholdProp] = useState("");
+  const [depnBasisFholdProp, setDepnBasisFholdProp] = useState("SL");
   const [depnRateFholdProp, setDepnRateFholdProp] = useState("");
-  const [depnBasisShortLhold, setDepnBasisShortLhold] = useState("");
+  const [depnBasisShortLhold, setDepnBasisShortLhold] = useState("SL");
   const [depnRateShortLhold, setDepnRateShortLhold] = useState("");
-  const [depnBasisLongLhold, setDepnBasisLongLhold] = useState("");
+  const [depnBasisLongLhold, setDepnBasisLongLhold] = useState("SL");
   const [depnRateLongLhold, setDepnRateLongLhold] = useState("");
-  const [depnBasisImprovements, setDepnBasisImprovements] = useState("");
+  const [depnBasisImprovements, setDepnBasisImprovements] = useState("SL");
   const [depnRateImprovements, setDepnRateImprovements] = useState("");
-  const [depnBasisPlantMachinery, setDepnBasisPlantMachinery] = useState("");
+  const [depnBasisPlantMachinery, setDepnBasisPlantMachinery] = useState("SL");
   const [depnRatePlantMachinery, setDepnRatePlantMachinery] = useState("");
-  const [depnBasisFixFittings, setDepnBasisFixFittings] = useState("");
+  const [depnBasisFixFittings, setDepnBasisFixFittings] = useState("SL");
   const [depnRateFixFittings, setDepnRateFixFittings] = useState("");
-  const [depnBasisMotorVehicles, setDepnBasisMotorVehicles] = useState("");
+  const [depnBasisMotorVehicles, setDepnBasisMotorVehicles] = useState("SL");
   const [depnRateMotorVehicles, setDepnRateMotorVehicles] = useState("");
-  const [depnBasisCompEquip, setDepnBasisCompEquip] = useState("");
+  const [depnBasisCompEquip, setDepnBasisCompEquip] = useState("SL");
   const [depnRateCompEquip, setDepnRateCompEquip] = useState("");
-  const [depnBasisOfficeEquip, setDepnBasisOfficeEquip] = useState("");
+  const [depnBasisOfficeEquip, setDepnBasisOfficeEquip] = useState("SL");
   const [depnRateOfficeEquip, setDepnRateOfficeEquip] = useState("");
 
   const onDepnBasisFHPChange = (e) => {
@@ -111,6 +111,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-fhprop-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisFHPChange}
                 ></input>
               </td>
@@ -146,6 +147,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-shortlh-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisSLHChange}
                 ></input>
               </td>
@@ -181,6 +183,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-longlh-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisLLHChange}
                 ></input>
               </td>
@@ -216,6 +219,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-improvements-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisItoPChange}
                 ></input>
               </td>
@@ -251,6 +255,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-plant-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisPMChange}
                 ></input>
               </td>
@@ -286,6 +291,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-fixfit-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisFFChange}
                 ></input>
               </td>
@@ -321,6 +327,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-mv-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisMVChange}
                 ></input>
               </td>
@@ -356,6 +363,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-comp-equip-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisCEChange}
                 ></input>
               </td>
@@ -391,6 +399,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
                   id="calc-basis-office-equip-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onDepnBasisOEChange}
                 ></input>
               </td>

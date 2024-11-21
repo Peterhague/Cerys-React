@@ -352,6 +352,7 @@ const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({ handleView, sessi
           >
             {!clientSoftware && <option>Please select</option>}
             <option value="Sage Line 50">Sage Line 50</option>
+            <option value="Sage One">Sage One</option>
             <option value="Xero">Xero</option>
             <option value="Quickbooks">Quickbooks</option>
             <option value="Kashflow">Kashflow</option>

@@ -7,13 +7,13 @@ interface addCorpClientAmortProps {
 }
 
 const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, session }: addCorpClientAmortProps) => {
-  const [amortBasisGwill, setAmortBasisGwill] = useState("");
+  const [amortBasisGwill, setAmortBasisGwill] = useState("SL");
   const [amortRateGwill, setAmortRateGwill] = useState("");
-  const [amortBasisPatsLics, setAmortBasisPatsLics] = useState("");
+  const [amortBasisPatsLics, setAmortBasisPatsLics] = useState("SL");
   const [amortRatePatsLics, setAmortRatePatsLics] = useState("");
-  const [amortBasisDevCosts, setAmortBasisDevCosts] = useState("");
+  const [amortBasisDevCosts, setAmortBasisDevCosts] = useState("SL");
   const [amortRateDevCosts, setAmortRateDevCosts] = useState("");
-  const [amortBasisCompSware, setAmortBasisCompSware] = useState("");
+  const [amortBasisCompSware, setAmortBasisCompSware] = useState("SL");
   const [amortRateCompSware, setAmortRateCompSware] = useState("");
 
   const onAmortBasisGWChange = (e) => {
@@ -71,6 +71,7 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, ses
                   id="calc-basis-gwill-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onAmortBasisGWChange}
                 ></input>
               </td>
@@ -106,6 +107,7 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, ses
                   id="calc-basis-pats-lics-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onAmortBasisPLChange}
                 ></input>
               </td>
@@ -141,6 +143,7 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, ses
                   id="calc-basis-dev-costs-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onAmortBasisDCChange}
                 ></input>
               </td>
@@ -176,6 +179,7 @@ const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, ses
                   id="calc-basis-comp-sware-SL"
                   className="form-control"
                   value="SL"
+                  checked
                   onChange={onAmortBasisCSChange}
                 ></input>
               </td>

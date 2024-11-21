@@ -4,12 +4,14 @@ import CerysButton from "../../CerysButton";
 import { createIFAR } from "../../../utils.ts/transactions/ifar-generation";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import {
+  checkFATranUpdatesForAssets,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import {
+  convertNewFATrans,
   finaliseAssetObjects,
   identifyLikelyAdditions,
   previewRelTrans,
@@ -21,7 +23,7 @@ interface promptIFARCreationProps {
 }
 
 const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({ handleView, session }: promptIFARCreationProps) => {
-  const nLEntered = session["activeAssignment"]["NLEntered"];
+  let nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].IFARCreationSetting);
   const journal = session["activeJournal"]["journal"];
@@ -38,6 +40,8 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({ handleView, ses
 
   const handleNLImport = async () => {
     await enterNL(session);
+    convertNewFATrans(session);
+    nLEntered = session["activeAssignment"]["NLEntered"];
     handleCreateRequest();
   };
 
@@ -59,9 +63,22 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({ handleView, ses
     checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
+  //const handleReanalysis = async () => {
+  //  await processUpdateBatch(session);
+  //  await updateAssignmentFigures(session);
+  //  previewRelTrans(session, registerType, setView);
+  //  };
+
   const handleReanalysis = async () => {
-    await processUpdateBatch(session);
-    await updateAssignmentFigures(session);
+    if (session["updatedTransactions"].length > 0) {
+      const updatedTransactions = await processUpdateBatch(session);
+      await updateAssignmentFigures(session);
+      checkFATranUpdatesForAssets(session, updatedTransactions);
+    }
+    if (session["activeJournal"].journals.length > 0) {
+      const newTransactions = await processTransBatch(session);
+      checkFATranUpdatesForAssets(session, newTransactions);
+    }
     previewRelTrans(session, registerType, setView);
   };
 

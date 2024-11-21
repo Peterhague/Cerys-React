@@ -7,7 +7,7 @@ import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
 export const processTransBatch = async (session) => {
-    console.log("yes still owrking here")
+  console.log("yes still owrking here");
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
@@ -112,39 +112,95 @@ export const checkAssetRegStatus = (session, handleView) => {
   //}
 };
 
+//export const checkNewTransForAssets = (session, newTransactions) => {
+//  //const newTransactions = session.latestTransactions;
+//  console.log(newTransactions);
+//  session.newFATransactions = newTransactions;
+//  let nextView = true;
+//  for (let i = 0; i < newTransactions.length; i++) {
+//    if (
+//      newTransactions[i].processedAsAsset === false &&
+//      (newTransactions[i].assetCodeType === "iFACostAddns" || newTransactions[i].assetCodeType === "iFACostBF")
+//    ) {
+//      session.handleView("promptIFARCreation");
+//      nextView = false;
+//      break;
+//    } else if (
+//      newTransactions[i].processedAsAsset === false &&
+//      (newTransactions[i].assetCodeType === "tFACostAddns" || newTransactions[i].assetCodeType === "tFACostBF")
+//    ) {
+//      session.handleView("promptTFARCreation");
+//      nextView = false;
+//      break;
+//    } else if (
+//      newTransactions[i].processedAsAsset === false &&
+//      (newTransactions[i].assetCodeType === "iPCostAddns" || newTransactions[i].assetCodeType === "iPCostBF")
+//    ) {
+//      session.handleView("promptIPRCreation");
+//      nextView = false;
+//      break;
+//    }
+//  }
+//  if (nextView) {
+//    callNextView(session);
+//    session.newFATranasctions = [];
+//  }
+//};
+
 export const checkNewTransForAssets = (session, newTransactions) => {
-  //const newTransactions = session.latestTransactions;
   console.log(newTransactions);
-  session.newFATransactions = newTransactions;
+  const newFATransactions = [];
+  let iFAPresent = false;
+  let tFAPresent = false;
+  let iPPresent = false;
   let nextView = true;
-  for (let i = 0; i < newTransactions.length; i++) {
+  newTransactions.forEach((tran) => {
     if (
-      newTransactions[i].processedAsAsset === false &&
-      (newTransactions[i].assetCodeType === "iFACostAddns" || newTransactions[i].assetCodeType === "iFACostBF")
+      tran.processedAsAsset === false &&
+      (tran.assetCodeType === "iFACostAddns" || tran.assetCodeType === "iFACostBF")
     ) {
-      session.handleView("promptIFARCreation");
+      iFAPresent = true;
       nextView = false;
-      break;
+      newFATransactions.push(tran);
     } else if (
-      newTransactions[i].processedAsAsset === false &&
-      (newTransactions[i].assetCodeType === "tFACostAddns" || newTransactions[i].assetCodeType === "tFACostBF")
+      tran.processedAsAsset === false &&
+      (tran.assetCodeType === "tFACostAddns" || tran.assetCodeType === "tFACostBF")
     ) {
-      session.handleView("promptTFARCreation");
+      tFAPresent = true;
       nextView = false;
-      break;
+      newFATransactions.push(tran);
     } else if (
-      newTransactions[i].processedAsAsset === false &&
-      (newTransactions[i].assetCodeType === "iPCostAddns" || newTransactions[i].assetCodeType === "iPCostBF")
+      tran.processedAsAsset === false &&
+      (tran.assetCodeType === "iPCostAddns" || tran.assetCodeType === "iPCostBF")
     ) {
-      session.handleView("promptIPRCreation");
+      iPPresent = true;
       nextView = false;
-      break;
+      newFATransactions.push(tran);
     }
-  }
+  });
+  session.newFATransactions = newFATransactions;
   if (nextView) {
     callNextView(session);
-    session.newFATranasctions = [];
+  } else if (iFAPresent) {
+    session.handleView("promptIFARCreation");
+  } else if (tFAPresent) {
+    session.handleView("promptTFARCreation");
+  } else if (iPPresent) {
+    session.handleView("promptIPRCreation");
   }
+};
+
+export const checkFATranUpdatesForAssets = (session, newTransactions) => {
+  console.log(newTransactions);
+  newTransactions.forEach((tran) => {
+    if (tran.processedAsAsset === false && tran.assetCodeType === "iFACostAddns") {
+      session.newFATransactions.push(tran);
+    } else if (tran.processedAsAsset === false && tran.assetCodeType === "tFACostAddns") {
+      session.newFATransactions.push(tran);
+    } else if (tran.processedAsAsset === false && tran.assetCodeType === "iPCostAddns") {
+      session.newFATransactions.push(tran);
+    }
+  });
 };
 
 const postTransactionsDb = async (transactions, transDtls, transactionType) => {
