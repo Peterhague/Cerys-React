@@ -30,6 +30,42 @@ export async function enterTB(session) {
   }
 }
 
+export async function checkTBMapping(session) {
+  try {
+    const unmappedCodeObjects = await Excel.run(async (context) => {
+      const ws = context.workbook.worksheets.getItem("Client TB");
+      const range = ws.getUsedRange();
+      range.load("values");
+      await context.sync();
+      const values = range.values;
+      const arrays = values.slice(3, values.length - 1);
+      const nomCodeObjs = [];
+      arrays.forEach((arr) => {
+        const obj = {
+          code: arr[0],
+          name: arr[1],
+          cerysCode: 0,
+          cerysShortName: "",
+        };
+        nomCodeObjs.push(obj);
+      });
+      const unmappedCodeObjects = [];
+      nomCodeObjs.forEach((code) => {
+        let matched = false;
+        session.clientChart.forEach((i) => {
+          if (code.code === i.clientCode) matched = true;
+        });
+        if (!matched) unmappedCodeObjects.push(code);
+      });
+      return unmappedCodeObjects;
+    });
+    return unmappedCodeObjects;
+  } catch (error) {
+    console.error(error);
+    return error;
+  }
+}
+
 export async function handleTBData(session, context) {
   const ws = context.workbook.worksheets.getItem("Client TB");
   const range = ws.getUsedRange();

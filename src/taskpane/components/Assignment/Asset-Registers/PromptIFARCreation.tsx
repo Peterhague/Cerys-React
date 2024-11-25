@@ -63,12 +63,6 @@ const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({ handleView, ses
     checkNewTransForAssets(session, session["newFATransactions"]);
   };
 
-  //const handleReanalysis = async () => {
-  //  await processUpdateBatch(session);
-  //  await updateAssignmentFigures(session);
-  //  previewRelTrans(session, registerType, setView);
-  //  };
-
   const handleReanalysis = async () => {
     if (session["updatedTransactions"].length > 0) {
       const updatedTransactions = await processUpdateBatch(session);

@@ -44,6 +44,7 @@ import DeleteSheetPrompt from "./Assignment/Transaction-Updates/DeleteSheetPromp
 import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClientDepnIP";
 import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageAssignmentDashHome";
 import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
+import MapUnmappedCodes from "./Assignment/MapUnmappedCodes";
 
 interface AppBodyProps {
   session: {};
@@ -119,17 +120,11 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         session["nextView"] = view;
         break;
       case "manageAssignmentDashHome":
-        body = <ManageAssignmentDashHome handleView={handleView}  session={session} />;
+        body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "userConfirmPrompt":
-        body = (
-          <UserConfirmPrompt
-            handleView={handleView}
-            session={session}
-            options={options}
-          />
-        );
+        body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
         session["nextView"] = view;
         break;
       case "customerClientsHome":
@@ -139,52 +134,52 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         body = <AddClientHome handleView={handleView} session={session} />;
         break;
       case "addCorpClientDtls":
-        body = <AddCorpClientDtls handleView={handleView}  session={session} />;
+        body = <AddCorpClientDtls handleView={handleView} session={session} />;
         break;
       case "addCorpClientShares":
-        body = <AddCorpClientShares handleView={handleView}  session={session} />;
+        body = <AddCorpClientShares handleView={handleView} session={session} />;
         break;
       case "addCorpClientOptions":
-        body = <AddCorpClientOptions handleView={handleView}  session={session} />;
+        body = <AddCorpClientOptions handleView={handleView} session={session} />;
         break;
       case "addCorpClientIndisHome":
-        body = <AddCorpClientIndisHome handleView={handleView}  session={session} />;
+        body = <AddCorpClientIndisHome handleView={handleView} session={session} />;
         break;
       case "addCorpClientIndiNew":
-        body = <AddCorpClientIndiNew handleView={handleView}  session={session} />;
+        body = <AddCorpClientIndiNew handleView={handleView} session={session} />;
         break;
       case "addCorpClientDirsHome":
-        body = <AddCorpClientDirsHome handleView={handleView}  session={session} />;
+        body = <AddCorpClientDirsHome handleView={handleView} session={session} />;
         break;
       case "addCorpClientDirNew":
-        body = <AddCorpClientDirNew handleView={handleView}  session={session} />;
+        body = <AddCorpClientDirNew handleView={handleView} session={session} />;
         break;
       case "addCorpClientSHHome":
-        body = <AddCorpClientSHHome handleView={handleView}  session={session} />;
+        body = <AddCorpClientSHHome handleView={handleView} session={session} />;
         break;
       case "addCorpClientSHNew":
-        body = <AddCorpClientSHNew handleView={handleView}  session={session} />;
+        body = <AddCorpClientSHNew handleView={handleView} session={session} />;
         break;
       case "addCorpClientAmort":
-        body = <AddCorpClientAmort handleView={handleView}  session={session} />;
+        body = <AddCorpClientAmort handleView={handleView} session={session} />;
         break;
       case "addCorpClientDepn":
-        body = <AddCorpClientDepn handleView={handleView}  session={session} />;
+        body = <AddCorpClientDepn handleView={handleView} session={session} />;
         break;
       case "addCorpClientDepnIP":
-        body = <AddCorpClientDepnIP handleView={handleView}  session={session} />;
+        body = <AddCorpClientDepnIP handleView={handleView} session={session} />;
         break;
       case "addIndiClientDtls":
-        body = <AddIndiClientDtls handleView={handleView}  session={session} />;
+        body = <AddIndiClientDtls handleView={handleView} session={session} />;
         break;
       case "addIndiClientAssocOptions":
-        body = <AddIndiClientAssocOptions handleView={handleView}  session={session} />;
+        body = <AddIndiClientAssocOptions handleView={handleView} session={session} />;
         break;
       case "addIndiClientAssocDir":
-        body = <AddIndiClientAssocDir handleView={handleView}  session={session} />;
+        body = <AddIndiClientAssocDir handleView={handleView} session={session} />;
         break;
       case "addIndiClientAssocSH":
-        body = <AddIndiClientAssocSH handleView={handleView}  session={session} />;
+        body = <AddIndiClientAssocSH handleView={handleView} session={session} />;
         break;
       case "customerIndisHome":
         body = <CustomerIndisHome handleView={handleView} session={session} />;
@@ -226,6 +221,9 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         break;
       case "deleteSheetPrompt":
         body = <DeleteSheetPrompt handleView={handleView} session={session} />;
+        break;
+      case "mapUnmappedCodes":
+        body = <MapUnmappedCodes handleView={handleView} session={session} />;
         break;
       default:
         body = <LandingPage handleView={handleView} />;

@@ -50,8 +50,29 @@ const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: ente
             value={nominalCode}
             onChange={(e) => setNominalCode(e.target.value)}
             ref={inputRef}
+            list="chart"
           ></input>
         </div>
+        <datalist id="chart">
+          {session["chart"].map((code) => (
+            <option key={code._id} value={code.cerysCode}>{`${code.cerysCode} ${code.cerysName}`}</option>
+          ))}
+        </datalist>
+        {/*<div>*/}
+        {/*  <select*/}
+        {/*    name="nominalSelection"*/}
+        {/*    id="nominalSelection"*/}
+        {/*    className="form-control"*/}
+        {/*    onChange={(e) => setNominalCode(e.target.value)}*/}
+        {/*  >*/}
+        {/*    <option>Please select</option>*/}
+        {/*    {session["chart"].map((code) => (*/}
+        {/*      <option key={code._id} value={code.cerysCode}>*/}
+        {/*        {code.cerysCode}*/}
+        {/*      </option>*/}
+        {/*    ))}*/}
+        {/*  </select>*/}
+        {/*</div>*/}
         <div>
           <input
             name="value"
