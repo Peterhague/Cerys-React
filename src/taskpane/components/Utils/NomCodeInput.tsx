@@ -2,10 +2,11 @@ import * as React from "react";
 import { useState } from "react";
 interface nomCodeInputProps {
   session: {};
+  nominalCode: string;
+  setNominalCode: (code) => void;
 }
 
-const NomCodeInput: React.FC<nomCodeInputProps> = ({ session }: nomCodeInputProps) => {
-  const [nominalCode, setNominalCode] = useState("");
+const NomCodeInput: React.FC<nomCodeInputProps> = ({ session, nominalCode, setNominalCode }: nomCodeInputProps) => {
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDisplay, setSearchDisplay] = useState("");

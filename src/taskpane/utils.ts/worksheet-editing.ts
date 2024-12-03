@@ -43,7 +43,12 @@ export const handleWorksheetSelection = async (session, e, wsName) => {
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
+    console.log(addressObj);
     session.handleView("nomCodeSelection");
+    session.activeEditableCell = {
+      addressObj,
+      wsName,
+    };
   }
 };
 

@@ -126,11 +126,9 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         break;
       case "nomCodeSelection":
         body = <NomCodeSelection handleView={handleView} session={session} />;
-        session["nextView"] = view;
         break;
       case "userConfirmPrompt":
         body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
-        session["nextView"] = view;
         break;
       case "customerClientsHome":
         body = <CustomerClientsHome handleView={handleView} session={session} />;
