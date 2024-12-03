@@ -66,7 +66,7 @@ const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({ handleView, s
           <button type="submit">Submit class</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

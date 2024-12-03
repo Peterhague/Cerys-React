@@ -26,9 +26,9 @@ const AddIndiClientAssocOptions: React.FC<addIndiClientAssocOptionsProps> = ({
   return (
     <>
       <p>Associate with existing corporate client?</p>
-      <CerysButton buttonText={"AS DIRECTOR"} handleView={() => handleView("addIndiClientAssocDir")} />
-      <CerysButton buttonText={"AS SHAREHOLDER"} handleView={() => handleView("addIndiClientAssocSH")} />
-      <CerysButton buttonText={"Submit Now"} handleView={() => processNewIndiClient()} />
+      <CerysButton buttonText={"AS DIRECTOR"} handleClick={() => handleView("addIndiClientAssocDir")} />
+      <CerysButton buttonText={"AS SHAREHOLDER"} handleClick={() => handleView("addIndiClientAssocSH")} />
+      <CerysButton buttonText={"Submit Now"} handleClick={() => processNewIndiClient()} />
     </>
   );
 };

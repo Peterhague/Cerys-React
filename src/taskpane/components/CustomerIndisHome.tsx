@@ -9,8 +9,8 @@ interface customerIndisHomeProps {
 const CustomerIndisHome: React.FC<customerIndisHomeProps> = (props: customerIndisHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"MANAGE INDIVIDUALS"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"ADD INDIVIDUAL"} handleView={() => props.handleView("addIndiDtls")} />
+      <CerysButton buttonText={"MANAGE INDIVIDUALS"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"ADD INDIVIDUAL"} handleClick={() => props.handleView("addIndiDtls")} />
     </>
   );
 };

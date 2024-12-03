@@ -131,7 +131,7 @@ const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, ses
         <button onClick={() => handleView("handleTransUpdates")}>Go back</button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
     </>
   );
 };

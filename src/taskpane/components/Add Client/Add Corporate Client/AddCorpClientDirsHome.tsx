@@ -9,9 +9,9 @@ interface addCorpClientDirsHomeProps {
 const AddCorpClientDirsHome: React.FC<addCorpClientDirsHomeProps> = (props: addCorpClientDirsHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"Select individual"} handleView={() => props.handleView("addCorpClientShares")} />
-      <CerysButton buttonText={"Add new individual"} handleView={() => props.handleView("addCorpClientDirNew")} />
-      <CerysButton buttonText={"Finish"} handleView={() => props.handleView("addCorpClientOptions")} />
+      <CerysButton buttonText={"Select individual"} handleClick={() => props.handleView("addCorpClientShares")} />
+      <CerysButton buttonText={"Add new individual"} handleClick={() => props.handleView("addCorpClientDirNew")} />
+      <CerysButton buttonText={"Finish"} handleClick={() => props.handleView("addCorpClientOptions")} />
     </>
   );
 };

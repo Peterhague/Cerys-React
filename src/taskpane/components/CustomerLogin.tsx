@@ -56,7 +56,7 @@ const CustomerLogin: React.FC<customerLoginProps> = ({ handleView, session, setE
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

@@ -94,7 +94,7 @@ const AddUser: React.FC<addUserProps> = ({ handleView, session }: addUserProps) 
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

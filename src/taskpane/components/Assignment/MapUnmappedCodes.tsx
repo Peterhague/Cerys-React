@@ -165,7 +165,7 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
         <button onClick={() => handleSubmit()}>Submit changes</button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
     </>
   );
 };

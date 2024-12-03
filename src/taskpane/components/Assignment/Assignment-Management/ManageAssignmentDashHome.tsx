@@ -23,9 +23,9 @@ const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
   };
   return (
     <>
-      <CerysButton buttonText={"FINALISE"} handleView={() => finaliseAssignment(session)} />
-      <CerysButton buttonText={"Closing Balance Adjustments"} handleView={() => console.log(transactions)} />
-      <CerysButton buttonText={"Test dynamic component"} handleView={() => test()} />
+      <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
+      <CerysButton buttonText={"Closing Balance Adjustments"} handleClick={() => console.log(transactions)} />
+      <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
     </>
   );
 };

@@ -222,9 +222,9 @@ const AddCorpClientIndisHome: React.FC<addCorpClientIndisHomeProps> = ({
         </>
       )}
 
-      <CerysButton buttonText={"Select individual"} handleView={() => handleView("addCorpClientShares")} />
-      <CerysButton buttonText={"Add new individual"} handleView={() => handleView("addCorpClientIndiNew")} />
-      <CerysButton buttonText={"Finish"} handleView={() => handleView("addCorpClientOptions")} />
+      <CerysButton buttonText={"Select individual"} handleClick={() => handleView("addCorpClientShares")} />
+      <CerysButton buttonText={"Add new individual"} handleClick={() => handleView("addCorpClientIndiNew")} />
+      <CerysButton buttonText={"Finish"} handleClick={() => handleView("addCorpClientOptions")} />
     </>
   );
 };

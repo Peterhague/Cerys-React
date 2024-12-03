@@ -47,8 +47,8 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({ session }: delete
         <>
           <p>{sheetsToDelete[0]} transactions all reposted. Would you like to delete this sheet?</p>
           <div>
-            <CerysButton buttonText={"YES"} handleView={() => deleteSheets()} />
-            <CerysButton buttonText={"NO"} handleView={() => skipDeleteSheets()} />
+            <CerysButton buttonText={"YES"} handleClick={() => deleteSheets()} />
+            <CerysButton buttonText={"NO"} handleClick={() => skipDeleteSheets()} />
           </div>
         </>
       )}
@@ -69,8 +69,8 @@ const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({ session }: delete
             </tbody>
           </table>
           <div>
-            <CerysButton buttonText={"DELETE ALL"} handleView={() => deleteSheets()} />
-            <CerysButton buttonText={"SKIP"} handleView={() => skipDeleteSheets()} />
+            <CerysButton buttonText={"DELETE ALL"} handleClick={() => deleteSheets()} />
+            <CerysButton buttonText={"SKIP"} handleClick={() => skipDeleteSheets()} />
           </div>
         </>
       )}

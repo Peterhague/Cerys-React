@@ -9,9 +9,9 @@ interface addCorpClientSHHomeProps {
 const AddCorpClientSHHome: React.FC<addCorpClientSHHomeProps> = (props: addCorpClientSHHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"Select individual"} handleView={() => props.handleView("addCorpClientShares")} />
-      <CerysButton buttonText={"Add new individual"} handleView={() => props.handleView("addCorpClientSHNew")} />
-      <CerysButton buttonText={"Finish"} handleView={() => props.handleView("addCorpClientOptions")} />
+      <CerysButton buttonText={"Select individual"} handleClick={() => props.handleView("addCorpClientShares")} />
+      <CerysButton buttonText={"Add new individual"} handleClick={() => props.handleView("addCorpClientSHNew")} />
+      <CerysButton buttonText={"Finish"} handleClick={() => props.handleView("addCorpClientOptions")} />
     </>
   );
 };

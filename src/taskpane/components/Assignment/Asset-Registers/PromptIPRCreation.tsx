@@ -67,13 +67,13 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({ handleView, sessi
           <p>Your data suggests this client owns investment property.</p>
           <p>You have not set up a relevant asset register.</p>
           <p>Would you like to create one automatically?</p>
-          <CerysButton buttonText={"CREATE IP REGISTER"} handleView={() => handleCreateRequest()} />
+          <CerysButton buttonText={"CREATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
         </>
       )}
       {view === "main" && registerCreated && (
         <>
           <p>Update your Investment Property Register for new transactions?</p>
-          <CerysButton buttonText={"UPDATE IP REGISTER"} handleView={() => handleCreateRequest()} />
+          <CerysButton buttonText={"UPDATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
         </>
       )}
 
@@ -81,23 +81,23 @@ const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({ handleView, sessi
         <>
           <p>You have not yet imported a nominal ledger to support the current period's client data.</p>
           <p>This is required for auto-generation of an Investment Property Register.</p>
-          <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleView={() => handleNLImport()} />
+          <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleClick={() => handleNLImport()} />
         </>
       )}
       {view === "confirmBFAreAddns" && (
         <>
           <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
           <p>Would you like to repost them as additions?</p>
-          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleView={() => handleReanalysis()} />
-          <CerysButton buttonText={"NO THANKS"} handleView={() => previewRelTrans(session, registerType, setView)} />
+          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleClick={() => handleReanalysis()} />
+          <CerysButton buttonText={"NO THANKS"} handleClick={() => previewRelTrans(session, registerType, setView)} />
         </>
       )}
-      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleView={() => handleSubmit()} />}
+      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
       {journal && (
-        <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleView={() => handleAbort("enterJournal")} />
+        <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />
       )}
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleAbort("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleAbort("assignmentDashHome")} />
     </>
   );
 };

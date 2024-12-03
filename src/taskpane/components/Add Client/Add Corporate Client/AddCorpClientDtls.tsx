@@ -364,7 +364,7 @@ const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({ handleView, sessi
           <button type="submit">Add share classes</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

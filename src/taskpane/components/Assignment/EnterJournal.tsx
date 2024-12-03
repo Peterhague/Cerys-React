@@ -116,7 +116,7 @@ const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: ente
           </div>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

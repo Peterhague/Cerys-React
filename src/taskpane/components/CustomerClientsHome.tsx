@@ -9,8 +9,8 @@ interface customerClientsHomeProps {
 const CustomerClientsHome: React.FC<customerClientsHomeProps> = (props: customerClientsHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"MANAGE CLIENTS"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"ADD CLIENT"} handleView={() => props.handleView("addClientHome")} />
+      <CerysButton buttonText={"MANAGE CLIENTS"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"ADD CLIENT"} handleClick={() => props.handleView("addClientHome")} />
     </>
   );
 };

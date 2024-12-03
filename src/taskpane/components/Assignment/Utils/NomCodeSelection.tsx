@@ -4,6 +4,7 @@ import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
 import { colNumToLetter } from "../../../utils.ts/excel-col-conversion";
+import { callNextView } from "../../../utils.ts/helperFunctions";
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};
@@ -29,9 +30,10 @@ const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session
         <NomCodeInput session={session} nominalCode={nominalCode} setNominalCode={setNominalCode} />
         <div>
           <button type="submit">Submit</button>
+          <button onClick={() => callNextView(session)}>Back</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

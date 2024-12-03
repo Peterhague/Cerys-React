@@ -109,7 +109,7 @@ const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ handleView, session }: addInd
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

@@ -8,9 +8,9 @@ interface LandingPageProps {
 const LandingPage: React.FC<LandingPageProps> = (props: LandingPageProps) => {
   return (
     <>
-      <CerysButton buttonText={"Sign Up"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"Sign in as user"} handleView={() => props.handleView("userLogin")} />
-      <CerysButton buttonText={"Sign in as customer"} handleView={() => props.handleView("customerLogin")} />
+      <CerysButton buttonText={"Sign Up"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"Sign in as user"} handleClick={() => props.handleView("userLogin")} />
+      <CerysButton buttonText={"Sign in as customer"} handleClick={() => props.handleView("customerLogin")} />
     </>
   );
 };

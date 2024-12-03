@@ -135,7 +135,7 @@ const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({ handleView, sessi
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

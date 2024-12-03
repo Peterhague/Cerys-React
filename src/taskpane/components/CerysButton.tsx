@@ -3,7 +3,7 @@ import { Button, tokens, makeStyles } from "@fluentui/react-components";
 
 interface CerysButtonProps {
   buttonText: string;
-  handleView: (view) => void;
+  handleClick: (view) => void;
 }
 
 const useStyles = makeStyles({
@@ -26,13 +26,13 @@ const useStyles = makeStyles({
   },
 });
 
-const CerysButton: React.FC<CerysButtonProps> = (props: CerysButtonProps) => {
+const CerysButton: React.FC<CerysButtonProps> = ({ buttonText, handleClick }: CerysButtonProps) => {
   const styles = useStyles();
 
   return (
     <div className={styles.textPromptAndInsertion}>
-      <Button appearance="primary" disabled={false} size="large" onClick={props.handleView}>
-        {props.buttonText}
+      <Button appearance="primary" disabled={false} size="large" onClick={handleClick}>
+        {buttonText}
       </Button>
     </div>
   );

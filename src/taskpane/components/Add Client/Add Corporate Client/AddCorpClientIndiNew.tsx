@@ -306,7 +306,7 @@ const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
           ))}
         {showShareClasses && <button onClick={finishSharesAllocation}>Submit details</button>}
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

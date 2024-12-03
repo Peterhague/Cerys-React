@@ -13,10 +13,14 @@ const Footer: React.FC<footerProps> = ({ editButton, session }: footerProps) => 
   return (
     <>
       <>
-        {editButton === "show" && <CerysButton buttonText={"Show"} handleView={() => handleEditButtonClick(session)} />}
+        {editButton === "show" && (
+          <CerysButton buttonText={"Show"} handleClick={() => handleEditButtonClick(session)} />
+        )}
       </>
       <>
-        {editButton === "hide" && <CerysButton buttonText={"Hide"} handleView={() => handleEditButtonClick(session)} />}
+        {editButton === "hide" && (
+          <CerysButton buttonText={"Hide"} handleClick={() => handleEditButtonClick(session)} />
+        )}
       </>
     </>
   );

@@ -431,7 +431,7 @@ const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, sessi
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

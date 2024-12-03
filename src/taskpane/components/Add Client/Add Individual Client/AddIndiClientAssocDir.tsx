@@ -96,7 +96,7 @@ const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

@@ -48,7 +48,7 @@ const CustomerSignUpPlan: React.FC<customerSignUpPlanProps> = ({ handleView, ses
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

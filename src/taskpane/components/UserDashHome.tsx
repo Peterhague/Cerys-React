@@ -8,9 +8,9 @@ interface userDashHomeProps {
 const UserDashHome: React.FC<userDashHomeProps> = (props: userDashHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"CLIENTS"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"MY ASSIGNMENTS"} handleView={() => props.handleView("userAssignmentsHome")} />
-      <CerysButton buttonText={"TIME MANAGEMENT"} handleView={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"CLIENTS"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"MY ASSIGNMENTS"} handleClick={() => props.handleView("userAssignmentsHome")} />
+      <CerysButton buttonText={"TIME MANAGEMENT"} handleClick={() => props.handleView("customerSignUp")} />
     </>
   );
 };

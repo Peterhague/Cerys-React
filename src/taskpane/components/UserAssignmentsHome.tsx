@@ -9,8 +9,8 @@ interface userAssignmentsHomeProps {
 const UserAssignmentsHome: React.FC<userAssignmentsHomeProps> = (props: userAssignmentsHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"NEW ASSIGNMENT"} handleView={() => props.handleView("newAssignmentDtls")} />
-      <CerysButton buttonText={"CONTINUE ASSIGNMENT"} handleView={() => props.handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"NEW ASSIGNMENT"} handleClick={() => props.handleView("newAssignmentDtls")} />
+      <CerysButton buttonText={"CONTINUE ASSIGNMENT"} handleClick={() => props.handleView("assignmentDashHome")} />
     </>
   );
 };

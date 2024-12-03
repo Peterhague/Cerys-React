@@ -1,7 +1,7 @@
-import { createEditableWs, handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
+import { createEditableWs, handleEditButtonClick, interpretEventAddress, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
-import { handleColumnSort, handleRowSort, handleWorksheetEdit, handleWorksheetSelection } from "../worksheet-editing";
+import { checkEditMode, handleColumnSort, handleRowSort, handleWorksheetEdit, handleWorksheetSelection } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -196,13 +196,50 @@ async function cerysNomDetailView(context, detail, session) {
   ws.activate();
   console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
-  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  ws.onSelectionChanged.add(async (e) => handleWorksheetSelection(session, e, wsName));
+  ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, wsName));
+  //ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+  //ws.onSelectionChanged.add(async (e) => handleWorksheetSelection(session, e, wsName));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
   await context.sync();
 }
+
+export const handleSingleClick = (session, e, wsName) => {
+  const editModeEnabled = checkEditMode(session, wsName);
+  const addressObj = interpretEventAddress(e);
+  let ws;
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name == wsName) {
+      ws = sheet;
+    }
+  });
+  if (addressObj.firstRow !== addressObj.lastRow || addressObj.firstCol !== addressObj.lastCol) return;
+  let withinEditableRange = false;
+  ws.editableRowRanges.forEach((range) => {
+    if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
+  });
+  if (!withinEditableRange) return;
+  let cerysCodeCol;
+  let clientCodeCol;
+  ws.definedCols.forEach((col) => {
+    if (col.type === "cerysCode" && editModeEnabled) {
+      cerysCodeCol = col.colNumber;
+    } else if (col.type === "clientCode") {
+      clientCodeCol = col.colNumber;
+    }
+  });
+  if (cerysCodeCol === addressObj.firstCol) {
+    session.handleView("nomCodeSelection");
+    session.activeEditableCell = {
+      addressObj,
+      wsName,
+    };
+  }
+  if (clientCodeCol === addressObj.firstCol) {
+    console.log("client code col clicked");
+  }
+};
 
 export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
   addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);

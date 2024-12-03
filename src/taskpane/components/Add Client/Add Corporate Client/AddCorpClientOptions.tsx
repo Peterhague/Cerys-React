@@ -26,13 +26,13 @@ const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
 
   return (
     <>
-      <CerysButton buttonText={"ADD ANOTHER CLASS"} handleView={() => handleView("addCorpClientShares")} />
-      <CerysButton buttonText={"ENTER AMORTISATION POLICIES"} handleView={() => handleView("addCorpClientAmort")} />
-      <CerysButton buttonText={"ENTER DEPRECIATION POLICIES"} handleView={() => handleView("addCorpClientDepn")} />
-      <CerysButton buttonText={"ENTER IP DEPN POLICIES"} handleView={() => handleView("addCorpClientDepnIP")} />
-      <CerysButton buttonText={"ENTER VAT DETAILS"} handleView={() => handleView("addClientHome")} />
-      <CerysButton buttonText={"ADD INDIVIDUALS"} handleView={() => handleView("addCorpClientIndisHome")} />
-      <CerysButton buttonText={"Submit client now"} handleView={() => handleSubmission()} />
+      <CerysButton buttonText={"ADD ANOTHER CLASS"} handleClick={() => handleView("addCorpClientShares")} />
+      <CerysButton buttonText={"ENTER AMORTISATION POLICIES"} handleClick={() => handleView("addCorpClientAmort")} />
+      <CerysButton buttonText={"ENTER DEPRECIATION POLICIES"} handleClick={() => handleView("addCorpClientDepn")} />
+      <CerysButton buttonText={"ENTER IP DEPN POLICIES"} handleClick={() => handleView("addCorpClientDepnIP")} />
+      <CerysButton buttonText={"ENTER VAT DETAILS"} handleClick={() => handleView("addClientHome")} />
+      <CerysButton buttonText={"ADD INDIVIDUALS"} handleClick={() => handleView("addCorpClientIndisHome")} />
+      <CerysButton buttonText={"Submit client now"} handleClick={() => handleSubmission()} />
     </>
   );
 };

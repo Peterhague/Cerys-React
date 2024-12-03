@@ -107,7 +107,7 @@ const AddCorpClientSHNew: React.FC<addCorpClientSHNewProps> = ({ handleView, ses
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

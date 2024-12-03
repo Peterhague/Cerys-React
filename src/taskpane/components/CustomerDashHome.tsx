@@ -9,12 +9,12 @@ interface customerDashHomeProps {
 const CustomerDashHome: React.FC<customerDashHomeProps> = (props: customerDashHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"CLIENTS"} handleView={() => props.handleView("customerClientsHome")} />
-      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleView={() => props.handleView("customerIndisHome")} />
-      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleView={() => props.handleView("customerCompaniesHome")} />
-      <CerysButton buttonText={"LICENCES"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"STAFF"} handleView={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"SIGN IN AS USER"} handleView={() => props.handleView("userLogin")} />
+      <CerysButton buttonText={"CLIENTS"} handleClick={() => props.handleView("customerClientsHome")} />
+      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleClick={() => props.handleView("customerIndisHome")} />
+      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleClick={() => props.handleView("customerCompaniesHome")} />
+      <CerysButton buttonText={"LICENCES"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"STAFF"} handleClick={() => props.handleView("customerSignUp")} />
+      <CerysButton buttonText={"SIGN IN AS USER"} handleClick={() => props.handleView("userLogin")} />
     </>
   );
 };

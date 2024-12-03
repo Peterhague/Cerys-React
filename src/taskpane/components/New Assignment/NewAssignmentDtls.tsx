@@ -328,7 +328,7 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
           </>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

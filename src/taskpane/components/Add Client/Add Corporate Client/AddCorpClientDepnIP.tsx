@@ -121,7 +121,7 @@ const AddCorpClientDepnIP: React.FC<addCorpClientDepnIPProps> = ({ handleView, s
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleView={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
     </>
   );
 };

@@ -24,11 +24,11 @@ const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, ses
 
   return (
     <>
-      <CerysButton buttonText={"REVIEW TRANSACTION CHANGES"} handleView={() => handleReview()} />
-      <CerysButton buttonText={"SUBMIT CHANGES NOW"} handleView={() => handleSubmit()} />
-      <CerysButton buttonText={"DISCARD TRANSACTION CHANGES"} handleView={() => handleDiscard()} />
+      <CerysButton buttonText={"REVIEW TRANSACTION CHANGES"} handleClick={() => handleReview()} />
+      <CerysButton buttonText={"SUBMIT CHANGES NOW"} handleClick={() => handleSubmit()} />
+      <CerysButton buttonText={"DISCARD TRANSACTION CHANGES"} handleClick={() => handleDiscard()} />
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleView={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
     </>
   );
 };

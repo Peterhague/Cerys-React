@@ -13,8 +13,8 @@ const UserConfirmPrompt: React.FC<userConfirmPromptProps> = ({ options }: userCo
     <>
       <div>
         <Message messageText={options.message} />
-        <CerysButton buttonText={"Yes"} handleView={() => options.handleYes()} />
-        <CerysButton buttonText={"No"} handleView={() => options.handleNo()} />
+        <CerysButton buttonText={"Yes"} handleClick={() => options.handleYes()} />
+        <CerysButton buttonText={"No"} handleClick={() => options.handleNo()} />
       </div>
     </>
   );
