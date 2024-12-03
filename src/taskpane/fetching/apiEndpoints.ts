@@ -12,6 +12,8 @@ export const clientUrl = "http://localhost:4000/api/client";
 
 export const addClientGlobalUrl = "http://localhost:4000/api/client/global";
 
+export const updateClientChartUrl = "http://localhost:4000/api/client/update-client-chart";
+
 export const addClientPrelimUrl = "http://localhost:4000/api/client/preliminary";
 
 export const addClientPrelimAmortUrl = "http://localhost:4000/api/client/add-amort-pols";

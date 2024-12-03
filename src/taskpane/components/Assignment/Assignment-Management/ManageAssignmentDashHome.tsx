@@ -12,6 +12,7 @@ const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
   session,
   //handleView,
 }: manageAssignmentDashHomeProps) => {
+  const transactions = session["activeAssignment"].transactions;
   const test = () => {
     const options = {
       handleYes: () => console.log("yes"),
@@ -23,6 +24,7 @@ const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
   return (
     <>
       <CerysButton buttonText={"FINALISE"} handleView={() => finaliseAssignment(session)} />
+      <CerysButton buttonText={"Closing Balance Adjustments"} handleView={() => console.log(transactions)} />
       <CerysButton buttonText={"Test dynamic component"} handleView={() => test()} />
     </>
   );

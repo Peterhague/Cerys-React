@@ -42,8 +42,8 @@ export async function checkTBMapping(session) {
       const nomCodeObjs = [];
       arrays.forEach((arr) => {
         const obj = {
-          code: arr[0],
-          name: arr[1],
+          clientCode: arr[0],
+          clientCodeName: arr[1],
           cerysCode: 0,
           cerysShortName: "",
         };
@@ -53,7 +53,7 @@ export async function checkTBMapping(session) {
       nomCodeObjs.forEach((code) => {
         let matched = false;
         session.clientChart.forEach((i) => {
-          if (code.code === i.clientCode) matched = true;
+          if (code.clientCode === i.clientCode) matched = true;
         });
         if (!matched) unmappedCodeObjects.push(code);
       });

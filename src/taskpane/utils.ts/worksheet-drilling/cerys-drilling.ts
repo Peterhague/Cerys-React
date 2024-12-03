@@ -1,7 +1,7 @@
 import { createEditableWs, handleEditButtonClick, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
-import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
+import { handleColumnSort, handleRowSort, handleWorksheetEdit, handleWorksheetSelection } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -197,6 +197,7 @@ async function cerysNomDetailView(context, detail, session) {
   console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+  ws.onSelectionChanged.add(async (e) => handleWorksheetSelection(session, e, wsName));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));

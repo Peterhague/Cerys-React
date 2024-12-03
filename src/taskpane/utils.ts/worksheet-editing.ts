@@ -1,5 +1,3 @@
-import { updateTransactionBatch } from "../fetching/apiEndpoints";
-import { fetchOptionsTransBatchUpdate } from "../fetching/generateOptions";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import {
   callNextView,
@@ -11,7 +9,7 @@ import {
   updateAssignmentFigures,
 } from "./helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "./transactions/asset-reg-generation";
-import { checkAssetRegStatus, checkNewTransForAssets, processUpdateBatch } from "./transactions/transactions";
+import { checkNewTransForAssets, processUpdateBatch } from "./transactions/transactions";
 import {
   deleteWorksheetRangeDown,
   deleteWorksheetRangesUp,
@@ -23,6 +21,31 @@ import {
   setExcelRangeValue,
   setManyWorksheetRangeValues,
 } from "./worksheet";
+
+export const handleWorksheetSelection = async (session, e, wsName) => {
+  const addressObj = interpretEventAddress(e);
+  let ws;
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name == wsName) {
+      ws = sheet;
+    }
+  });
+  if (addressObj.firstRow !== addressObj.lastRow || addressObj.firstCol !== addressObj.lastCol) return;
+  let withinEditableRange = false;
+  ws.editableRowRanges.forEach((range) => {
+    if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
+  });
+  if (!withinEditableRange) return;
+  let cerysCodeCol;
+  ws.definedCols.forEach((col) => {
+    if (col.type === "cerysCode") {
+      cerysCodeCol = col.colNumber;
+    }
+  });
+  if (cerysCodeCol === addressObj.firstCol) {
+    session.handleView("nomCodeSelection");
+  }
+};
 
 export const handleWorksheetEdit = async (session, e, wsName) => {
   console.log(e);
@@ -228,16 +251,6 @@ export const handleRowDeletion = async (session, e, wsName) => {
         if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
       });
       console.log(sheet.transactions);
-      //const newTransactions = [];
-      //sheet.transactions.forEach((tran) => {
-      //  if (tran.rowNumber > lastRow || tran.rowNumber < firstRow) {
-      //    if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
-      //    newTransactions.push(tran);
-      //  }
-      //});
-      //sheet.transactions = newTransactions;
-      //if (newTransactions.length === 0) console.log("omfg all trans deleted!!!");
-      //console.log(newTransactions);
       return;
     }
   });
@@ -868,7 +881,6 @@ export const submitTransactionUpdates = async (session) => {
       session.handleView("deleteSheetPrompt");
     } else {
       await updateAssignmentFigures(session);
-      //checkAssetRegStatus(session, session["handleView"]);
       checkNewTransForAssets(session, updatedTransactions);
     }
   } else {

@@ -45,6 +45,7 @@ import AddCorpClientDepnIP from "./Add Client/Add Corporate Client/AddCorpClient
 import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageAssignmentDashHome";
 import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
 import MapUnmappedCodes from "./Assignment/MapUnmappedCodes";
+import NomCodeSelection from "./Assignment/Utils/NomCodeSelection";
 
 interface AppBodyProps {
   session: {};
@@ -121,6 +122,10 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         break;
       case "manageAssignmentDashHome":
         body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
+        session["nextView"] = view;
+        break;
+      case "nomCodeSelection":
+        body = <NomCodeSelection handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "userConfirmPrompt":

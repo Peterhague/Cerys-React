@@ -178,6 +178,20 @@ export function fetchOptionsAddClient(client, customer) {
   };
 }
 
+export function fetchOptionsUpdateClientChart(newCodes, session) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      newCodes,
+      customerId: session.customer._id,
+      clientId: session.activeAssignment.clientId,
+    }),
+  };
+}
+
 export function fetchOptionsUpdateClientPrelim(update, customer) {
   return {
     method: "POST",

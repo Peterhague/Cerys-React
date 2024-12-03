@@ -1,6 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../CerysButton";
+import { fetchOptionsUpdateClientChart } from "../../fetching/generateOptions";
+import { updateClientChartUrl } from "../../fetching/apiEndpoints";
+import { enterTB } from "../../client-data-processing/trial-balance";
 
 interface mapUnmappedCodes {
   handleView: (view) => void;
@@ -10,90 +13,13 @@ interface mapUnmappedCodes {
 const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: mapUnmappedCodes) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [codeObjects, setCodeObjects] = useState(session["unmappedCodeObjects"]);
-  //const [nameOne, setNameOne] = useState("");
-  //const [nameTwo, setNameTwo] = useState("");
-  //const [nameThree, setNameThree] = useState("");
 
-  //const handleCodeMappingOne = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      console.log("matched");
-  //      obj.cerysCode = value;
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //  let matched = false;
-  //  session["chart"].forEach((code) => {
-  //    if (code.cerysCode === parseInt(value)) {
-  //      setNameOne(code.cerysShortName);
-  //      matched = true;
-  //      console.log(nameOne);
-  //    }
-  //  });
-  //  if (!matched) setNameOne("");
-  //  };
-
-  //const handleCodeMappingOne = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      console.log("matched");
-  //      obj.cerysCode = value;
-  //      let matched = false;
-  //      session["chart"].forEach((code) => {
-  //        if (code.cerysCode === parseInt(value)) {
-  //          setNameOne(code.cerysShortName);
-  //          matched = true;
-  //          console.log(nameOne);
-  //          obj.cerysShortName = code.cerysShortName;
-  //        }
-  //      });
-  //      if (!matched) setNameOne("");
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //};
-
-  //const handleCodeMappingTwo = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      obj.cerysCode = value;
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //  let matched = false;
-  //  session["chart"].forEach((code) => {
-  //    if (code.cerysCode === parseInt(value)) {
-  //      setNameTwo(code.cerysShortName);
-  //      matched = true;
-  //    }
-  //  });
-  //  if (!matched) setNameOne("");
-  //};
-
-  //const handleCodeMappingThree = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      obj.cerysCode = value;
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //  let matched = false;
-  //  session["chart"].forEach((code) => {
-  //    if (code.cerysCode === parseInt(value)) {
-  //      setNameThree(code.cerysShortName);
-  //      matched = true;
-  //      console.log(nameOne);
-  //    }
-  //  });
-  //  if (!matched) setNameOne("");
-  //  };
-
-  const handleCodeMappingOne = (value, clientCode) => {
+  const handleCodeMapping = (value, codeObject) => {
+    codeObject.cerysCode = parseInt(value);
+    const newArr = [...codeObjects];
+    setCodeObjects(newArr);
     codeObjects.forEach((obj) => {
-      if (obj.code === clientCode) {
-        obj.cerysCode = value;
-        const newArr = [...codeObjects];
-        setCodeObjects(newArr);
+      if (obj.clientCode === codeObject.clientCode) {
         let matched = false;
         session["chart"].forEach((code) => {
           if (code.cerysCode === parseInt(value)) {
@@ -104,42 +30,9 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
         if (!matched) obj.cerysShortName = "";
       }
     });
-    const newArr = [...codeObjects];
-    setCodeObjects(newArr);
+    const anotherNewArr = [...codeObjects];
+    setCodeObjects(anotherNewArr);
   };
-
-  //const handleCodeMappingTwo = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      obj.cerysCode = value;
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //  let matched = false;
-  //  session["chart"].forEach((code) => {
-  //    if (code.cerysCode === parseInt(value)) {
-  //      matched = true;
-  //    }
-  //  });
-  //};
-
-  //const handleCodeMappingThree = (value, clientCode) => {
-  //  codeObjects.forEach((obj) => {
-  //    if (obj.code === clientCode) {
-  //      obj.cerysCode = value;
-  //    }
-  //  });
-  //  setCodeObjects(codeObjects);
-  //  let matched = false;
-  //  session["chart"].forEach((code) => {
-  //    if (code.cerysCode === parseInt(value)) {
-  //      setNameThree(code.cerysShortName);
-  //      matched = true;
-  //      console.log(nameOne);
-  //    }
-  //  });
-  //  if (!matched) setNameOne("");
-  //};
 
   const handlePrevious = () => {
     setActiveIndex(activeIndex - 3);
@@ -150,8 +43,13 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
   };
 
   const handleSubmit = async () => {
-    console.log("submitted");
-    console.log(codeObjects);
+    const options = fetchOptionsUpdateClientChart(codeObjects, session);
+    const updatedCustAndClientDb = await fetch(updateClientChartUrl, options);
+    const { customer, client } = await updatedCustAndClientDb.json();
+    session["customer"] = customer;
+    session["clientChart"] = client.clientChart;
+    console.log(session);
+    enterTB(session);
   };
 
   return (
@@ -160,11 +58,11 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
         <tbody>
           <tr>
             <td>Client code</td>
-            <td>{codeObjects[activeIndex].code}</td>
+            <td>{codeObjects[activeIndex].clientCode}</td>
           </tr>
           <tr>
             <td></td>
-            <td>{codeObjects[activeIndex].name}</td>
+            <td>{codeObjects[activeIndex].clientCodeName}</td>
           </tr>
           <tr>
             <td>Cerys mapping</td>
@@ -176,8 +74,7 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
                 className="form-control"
                 placeholder="Enter nominal code"
                 value={codeObjects[activeIndex].cerysCode > 0 ? codeObjects[activeIndex].cerysCode : ""}
-                onChange={(e) => handleCodeMappingOne(e.target.value, codeObjects[activeIndex].code)}
-                list="chart"
+                onChange={(e) => handleCodeMapping(e.target.value, codeObjects[activeIndex])}
               ></input>
             </td>
           </tr>
@@ -192,11 +89,11 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
           <tbody>
             <tr>
               <td>Client code</td>
-              <td>{codeObjects[activeIndex + 1].code}</td>
+              <td>{codeObjects[activeIndex + 1].clientCode}</td>
             </tr>
             <tr>
               <td></td>
-              <td>{codeObjects[activeIndex + 1].name}</td>
+              <td>{codeObjects[activeIndex + 1].clientCodeName}</td>
             </tr>
             <tr>
               <td>Cerys mapping</td>
@@ -208,8 +105,7 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
                   className="form-control"
                   placeholder="Enter nominal code"
                   value={codeObjects[activeIndex + 1].cerysCode > 0 ? codeObjects[activeIndex + 1].cerysCode : ""}
-                  onChange={(e) => handleCodeMappingOne(e.target.value, codeObjects[activeIndex + 1].code)}
-                  list="chart"
+                  onChange={(e) => handleCodeMapping(e.target.value, codeObjects[activeIndex + 1])}
                 ></input>
               </td>
             </tr>
@@ -225,11 +121,11 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
           <tbody>
             <tr>
               <td>Client code</td>
-              <td>{codeObjects[activeIndex + 2].code}</td>
+              <td>{codeObjects[activeIndex + 2].clientCode}</td>
             </tr>
             <tr>
               <td></td>
-              <td>{codeObjects[activeIndex + 2].name}</td>
+              <td>{codeObjects[activeIndex + 2].clientCodeName}</td>
             </tr>
             <tr>
               <td>Cerys mapping</td>
@@ -241,8 +137,7 @@ const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: m
                   className="form-control"
                   placeholder="Enter nominal code"
                   value={codeObjects[activeIndex + 2].cerysCode > 0 ? codeObjects[activeIndex + 2].cerysCode : ""}
-                  onChange={(e) => handleCodeMappingOne(e.target.value, codeObjects[activeIndex + 2].code)}
-                  list="chart"
+                  onChange={(e) => handleCodeMapping(e.target.value, codeObjects[activeIndex + 2])}
                 ></input>
               </td>
             </tr>

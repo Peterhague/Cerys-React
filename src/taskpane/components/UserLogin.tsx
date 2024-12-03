@@ -47,6 +47,7 @@ const UserLogin: React.FC<userLoginProps> = ({
     session["handleDynamicView"] = handleDynamicView;
     session["setEditButton"] = setEditButton;
     session["unmappedCodeObjects"] = [];
+    session["arrowIndex"] = -1;
     session["options"] = {
       IFARCreationSetting: "main",
       TFARCreationSetting: "main",
