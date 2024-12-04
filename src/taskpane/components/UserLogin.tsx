@@ -3,7 +3,7 @@ import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
 import { getChartUrl } from "../fetching/apiEndpoints";
-import { registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
+import { registerWorksheetDeletionHandler, resetActiveEditableCellObj } from "../utils.ts/helperFunctions";
 
 interface userLoginProps {
   handleView: (view) => void;
@@ -48,6 +48,7 @@ const UserLogin: React.FC<userLoginProps> = ({
     session["setEditButton"] = setEditButton;
     session["unmappedCodeObjects"] = [];
     session["arrowIndex"] = -1;
+    session["activeEditableCell"] = resetActiveEditableCellObj();
     session["options"] = {
       IFARCreationSetting: "main",
       TFARCreationSetting: "main",

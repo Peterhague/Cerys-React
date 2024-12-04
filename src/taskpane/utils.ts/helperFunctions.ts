@@ -67,7 +67,7 @@ export const resetActiveJournal = (session) => {
 };
 
 export const callNextView = (session) => {
-    console.log(session.nextView)
+  console.log(session.nextView);
   session.handleView(session.nextView);
   session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
@@ -331,5 +331,17 @@ export const createEditableWs = (transactions, ws, definedCols, valuesToPost, ty
     dataCorrupted: false,
     transactions: transactions,
     usedRange: valuesToPost,
+  };
+};
+
+export const resetActiveEditableCellObj = () => {
+  return {
+    addressObj: {
+      firstRow: 0,
+      lastRow: 0,
+      firstCol: 0,
+      lastCol: 0,
+    },
+    wsName: "",
   };
 };

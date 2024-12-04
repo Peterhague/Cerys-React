@@ -21,6 +21,7 @@ const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session
     const row = session["activeEditableCell"].addressObj.firstRow;
     const range = `${col}${row}:${col}${row}`;
     await setExcelRangeValue(wsName, range, nominalCode);
+    session["activeEditableCell"] = {};
   };
 
   return (

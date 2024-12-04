@@ -504,11 +504,28 @@ export const handleRowSort = async (session, wsName, e) => {
         if (col.unique) uniqueCol = col.colNumber;
       });
       const protectedRowNumbers = [];
+      console.log(session.activeEditableCell);
       sheet.transactions.forEach((tran) => {
+        const currentRowNumber = tran.rowNumber;
+        let activeCellMatched = false;
+        if (session.activeEditableCell.addressObj.firstRow > 0) {
+          console.log("first test passed");
+          if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
+            console.log("second test passed");
+            activeCellMatched = true;
+          }
+        }
+        console.log(session.activeEditableCell.addressObj.firstRow);
+        console.log(currentRowNumber);
         usedRange.forEach((row, index) => {
           if (row[uniqueCol - 1] === tran.transactionNumber) {
             validateOtherValues(session, sheet, tran, row);
             tran.rowNumber = index + 1;
+            if (activeCellMatched) {
+              console.log(tran);
+              session.activeEditableCell.addressObj.firstRow = index + 1;
+              session.activeEditableCell.addressObj.lastRow = index + 1;
+            }
             protectedRowNumbers.push(index + 1);
           }
         });
@@ -786,6 +803,7 @@ export const updateIfExistingUpdate = (session, tran, tests, change, validationO
 export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => {
   const updatedTran: {
     transactionId: string;
+    transactionNumber: number;
     code: number;
     updatedCode?: number;
     date: string;
@@ -801,6 +819,7 @@ export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => 
     cerysCodeObject?: {};
   } = {
     transactionId: tran._id,
+    transactionNumber: tran.transactionNumber,
     code: tran.cerysCode,
     date: tran.transactionDate,
     dateExcel: tran.transactionDateExcel,
@@ -897,6 +916,7 @@ export const submitTransactionUpdates = async (session) => {
 export const reverseTransactionUpdates = async (session) => {
   const reversals = [];
   const updatedTrans = session.updatedTransactions;
+  console.log(updatedTrans);
   updatedTrans.forEach((tran) => {
     const wsName = tran.worksheetName;
     let ws;
