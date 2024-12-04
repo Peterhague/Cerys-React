@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
 import { colNumToLetter } from "../../../utils.ts/excel-col-conversion";
-import { callNextView } from "../../../utils.ts/helperFunctions";
+import { callNextView, resetActiveEditableCellObj } from "../../../utils.ts/helperFunctions";
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};
@@ -21,7 +21,17 @@ const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session
     const row = session["activeEditableCell"].addressObj.firstRow;
     const range = `${col}${row}:${col}${row}`;
     await setExcelRangeValue(wsName, range, nominalCode);
-    session["activeEditableCell"] = {};
+    session["activeEditableCell"] = resetActiveEditableCellObj();
+  };
+
+  const handleGoBack = (e) => {
+    e.preventDefault();
+    session["activeEditableCell"] = resetActiveEditableCellObj();
+    if (session["updatedTransactions"].length > 0) {
+      handleView("handleTransUpdates");
+    } else {
+      callNextView(session);
+    }
   };
 
   return (
@@ -31,7 +41,7 @@ const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session
         <NomCodeInput session={session} nominalCode={nominalCode} setNominalCode={setNominalCode} />
         <div>
           <button type="submit">Submit</button>
-          <button onClick={() => callNextView(session)}>Back</button>
+          <button onClick={(e) => handleGoBack(e)}>Back</button>
         </div>
       </form>
       <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />

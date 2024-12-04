@@ -4,6 +4,7 @@ import {
   convertExcelDate,
   interpretEventAddress,
   interpretExcelAddress,
+  resetActiveEditableCellObj,
   setNextViewButOne,
   simulateEditButtonClick,
   updateAssignmentFigures,
@@ -110,6 +111,13 @@ export const handleColumnInsertion = async (session, e, wsName) => {
   const { firstCol, lastCol } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
   session.editableSheets.forEach((sheet) => {
+    if (
+      session.activeEditableCell.wsName === sheet.name &&
+      firstCol <= session.activeEditableCell.addressObj.firstCol
+    ) {
+      session.activeEditableCell.addressObj.firstCol += colsInserted;
+      session.activeEditableCell.addressObj.lastCol += colsInserted;
+    }
     if (sheet.name === wsName) {
       if (firstCol <= sheet.protectedRange.firstCol) {
         sheet.protectedRange.firstCol += colsInserted;
@@ -131,6 +139,21 @@ export const handleColumnDeletion = async (session, e, wsName) => {
   const { firstCol, lastCol } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
   session.editableSheets.forEach((sheet) => {
+    if (session.activeEditableCell.wsName === sheet.name) {
+      if (
+        firstCol < session.activeEditableCell.addressObj.firstCol &&
+        lastCol < session.activeEditableCell.addressObj.firstCol
+      ) {
+        session.activeEditableCell.addressObj.firstCol -= colsDeleted;
+        session.activeEditableCell.addressObj.lastCol -= colsDeleted;
+      } else if (
+        firstCol <= session.activeEditableCell.addressObj.firstCol &&
+        lastCol >= session.activeEditableCell.addressObj.firstCol
+      ) {
+        session.activeEditableCell = resetActiveEditableCellObj();
+        callNextView(session);
+      }
+    }
     if (sheet.name === wsName) {
       if (lastCol < sheet.protectedRange.firstCol) {
         sheet.protectedRange.firstCol -= colsDeleted;
@@ -172,6 +195,13 @@ export const handleRowInsertion = async (session, e, wsName) => {
   const { firstRow, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
   session.editableSheets.forEach((sheet) => {
+    if (
+      session.activeEditableCell.wsName === sheet.name &&
+      firstRow <= session.activeEditableCell.addressObj.firstRow
+    ) {
+      session.activeEditableCell.addressObj.firstRow += rowsInserted;
+      session.activeEditableCell.addressObj.lastRow += rowsInserted;
+    }
     if (sheet.name === wsName) {
       if (firstRow <= sheet.protectedRange.firstRow) {
         sheet.protectedRange.firstRow += rowsInserted;
@@ -209,6 +239,21 @@ export const handleRowDeletion = async (session, e, wsName) => {
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   session.editableSheets.forEach((sheet) => {
+    if (session.activeEditableCell.wsName === sheet.name) {
+      if (
+        firstRow < session.activeEditableCell.addressObj.firstRow &&
+        lastRow < session.activeEditableCell.addressObj.firstRow
+      ) {
+        session.activeEditableCell.addressObj.firstRow -= rowsDeleted;
+        session.activeEditableCell.addressObj.lastRow -= rowsDeleted;
+      } else if (
+        firstRow <= session.activeEditableCell.addressObj.firstRow &&
+        lastRow >= session.activeEditableCell.addressObj.firstRow
+      ) {
+        session.activeEditableCell = resetActiveEditableCellObj();
+        callNextView(session);
+      }
+    }
     if (sheet.name === wsName) {
       if (lastRow < sheet.protectedRange.firstRow) {
         sheet.protectedRange.firstRow -= rowsDeleted;
@@ -270,6 +315,21 @@ export const handleCellDeletionUp = async (session, e, wsName) => {
   const { firstCol, firstRow, lastCol, lastRow } = eventAddressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   session.editableSheets.forEach((sheet) => {
+    if (session.activeEditableCell.wsName === sheet.name) {
+      if (
+        firstRow < session.activeEditableCell.addressObj.firstRow &&
+        lastRow < session.activeEditableCell.addressObj.firstRow
+      ) {
+        session.activeEditableCell.addressObj.firstRow -= rowsDeleted;
+        session.activeEditableCell.addressObj.lastRow -= rowsDeleted;
+      } else if (
+        firstRow <= session.activeEditableCell.addressObj.firstRow &&
+        lastRow >= session.activeEditableCell.addressObj.firstRow
+      ) {
+        session.activeEditableCell = resetActiveEditableCellObj();
+        callNextView(session);
+      }
+    }
     if (sheet.name === wsName) {
       if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
         if (lastRow < sheet.protectedRange.firstRow) {
@@ -345,6 +405,21 @@ export const handleCellDeletionLeft = async (session, e, wsName) => {
   const { firstCol, firstRow, lastCol, lastRow } = eventAddressObj;
   const colsDeleted = lastCol - firstCol + 1;
   session.editableSheets.forEach((sheet) => {
+    if (session.activeEditableCell.wsName === sheet.name) {
+      if (
+        firstCol < session.activeEditableCell.addressObj.firstCol &&
+        lastCol < session.activeEditableCell.addressObj.firstCol
+      ) {
+        session.activeEditableCell.addressObj.firstCol -= colsDeleted;
+        session.activeEditableCell.addressObj.lastCol -= colsDeleted;
+      } else if (
+        firstCol <= session.activeEditableCell.addressObj.firstCol &&
+        lastCol >= session.activeEditableCell.addressObj.firstCol
+      ) {
+        session.activeEditableCell = resetActiveEditableCellObj();
+        callNextView(session);
+      }
+    }
     if (sheet.name === wsName) {
       if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
         if (lastCol < sheet.protectedRange.firstCol) {
@@ -402,6 +477,13 @@ export const handleCellInsertionDown = (session, e, wsName) => {
   const { firstCol, firstRow, lastCol, lastRow } = eventAddressObj;
   const rowsInserted = lastRow - firstRow + 1;
   session.editableSheets.forEach((sheet) => {
+    if (
+      session.activeEditableCell.wsName === sheet.name &&
+      session.activeEditableCell.addressObj.firstRow >= firstRow
+    ) {
+      session.activeEditableCell.addressObj.firstRow += rowsInserted;
+      session.activeEditableCell.addressObj.lastRow += rowsInserted;
+    }
     if (sheet.name === wsName) {
       if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
         console.log("something");
@@ -449,6 +531,13 @@ export const handleCellInsertionRight = (session, e, wsName) => {
   const { firstCol, firstRow, lastCol, lastRow } = eventAddressObj;
   const colsInserted = lastCol - firstCol + 1;
   session.editableSheets.forEach((sheet) => {
+    if (
+      session.activeEditableCell.wsName === sheet.name &&
+      session.activeEditableCell.addressObj.firstCol >= firstCol
+    ) {
+      session.activeEditableCell.addressObj.firstRow += colsInserted;
+      session.activeEditableCell.addressObj.lastRow += colsInserted;
+    }
     if (sheet.name === wsName) {
       if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
         if (firstCol <= sheet.protectedRange.firstCol) {
@@ -504,25 +593,19 @@ export const handleRowSort = async (session, wsName, e) => {
         if (col.unique) uniqueCol = col.colNumber;
       });
       const protectedRowNumbers = [];
-      console.log(session.activeEditableCell);
       sheet.transactions.forEach((tran) => {
         const currentRowNumber = tran.rowNumber;
         let activeCellMatched = false;
-        if (session.activeEditableCell.addressObj.firstRow > 0) {
-          console.log("first test passed");
+        if (session.activeEditableCell.wsName === sheet.name) {
           if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
-            console.log("second test passed");
             activeCellMatched = true;
           }
         }
-        console.log(session.activeEditableCell.addressObj.firstRow);
-        console.log(currentRowNumber);
         usedRange.forEach((row, index) => {
           if (row[uniqueCol - 1] === tran.transactionNumber) {
             validateOtherValues(session, sheet, tran, row);
             tran.rowNumber = index + 1;
             if (activeCellMatched) {
-              console.log(tran);
               session.activeEditableCell.addressObj.firstRow = index + 1;
               session.activeEditableCell.addressObj.lastRow = index + 1;
             }
