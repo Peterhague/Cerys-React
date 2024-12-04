@@ -4,6 +4,7 @@ import { useRef } from "react";
 import CerysButton from "../CerysButton";
 import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
+import NomCodeInput from "../Utils/NomCodeInput";
 
 interface enterJournalProps {
   handleView: (view) => void;
@@ -12,10 +13,13 @@ interface enterJournalProps {
 
 const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: enterJournalProps) => {
   const [nominalCode, setNominalCode] = useState("");
+  const [nominalCodeName, setNominalCodeName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchDisplay, setSearchDisplay] = useState("");
   const [value, setValue] = useState("");
   const [narrative, setNarrative] = useState("");
   const [transactionDate, setTransactionDate] = useState("");
-  const inputRef = useRef(null);
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -30,6 +34,9 @@ const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: ente
     session["activeJournal"].journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.value;
     setNominalCode("");
+    setNominalCodeName("");
+    setSearchTerm("");
+    setSearchDisplay("");
     setValue("");
     setNarrative("");
     setTransactionDate("");
@@ -40,38 +47,18 @@ const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: ente
     <>
       <form onSubmit={handleSubmit} id="journalForm" action="">
         <h3>Enter journal</h3>
-        <div>
-          <input
-            name="nominalCode"
-            type="text"
-            id="nominalCode"
-            className="form-control"
-            placeholder="Enter nominal code"
-            value={nominalCode}
-            onChange={(e) => setNominalCode(e.target.value)}
-            ref={inputRef}
-          ></input>
-        </div>
-        {/*<datalist id="chart">*/}
-        {/*  {session["chart"].map((code) => (*/}
-        {/*    <option key={code._id} value={code.cerysCode}>{`${code.cerysCode} ${code.cerysName}`}</option>*/}
-        {/*  ))}*/}
-        {/*</datalist>*/}
-        {/*<div>*/}
-        {/*  <select*/}
-        {/*    name="nominalSelection"*/}
-        {/*    id="nominalSelection"*/}
-        {/*    className="form-control"*/}
-        {/*    onChange={(e) => setNominalCode(e.target.value)}*/}
-        {/*  >*/}
-        {/*    <option>Please select</option>*/}
-        {/*    {session["chart"].map((code) => (*/}
-        {/*      <option key={code._id} value={code.cerysCode}>*/}
-        {/*        {code.cerysCode}*/}
-        {/*      </option>*/}
-        {/*    ))}*/}
-        {/*  </select>*/}
-        {/*</div>*/}
+        <NomCodeInput
+          ref={inputRef}
+          session={session}
+          nominalCode={nominalCode}
+          setNominalCode={setNominalCode}
+          nominalCodeName={nominalCodeName}
+          setNominalCodeName={setNominalCodeName}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          searchDisplay={searchDisplay}
+          setSearchDisplay={setSearchDisplay}
+        />
         <div>
           <input
             name="value"

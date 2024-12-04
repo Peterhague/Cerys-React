@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useState, useRef } from "react";
 import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
@@ -12,6 +12,10 @@ interface nomCodeSelectionProps {
 
 const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session }: nomCodeSelectionProps) => {
   const [nominalCode, setNominalCode] = useState("");
+  const [nominalCodeName, setNominalCodeName] = useState("");
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchDisplay, setSearchDisplay] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -38,7 +42,18 @@ const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session
     <>
       <form onSubmit={handleSubmit} id="nomcodeSelectionForm" action="">
         <h3>Select Nominal Code</h3>
-        <NomCodeInput session={session} nominalCode={nominalCode} setNominalCode={setNominalCode} />
+        <NomCodeInput
+          ref={inputRef}
+          session={session}
+          nominalCode={nominalCode}
+          setNominalCode={setNominalCode}
+          nominalCodeName={nominalCodeName}
+          setNominalCodeName={setNominalCodeName}
+          searchTerm={searchTerm}
+          setSearchTerm={setSearchTerm}
+          searchDisplay={searchDisplay}
+          setSearchDisplay={setSearchDisplay}
+        />
         <div>
           <button type="submit">Submit</button>
           <button onClick={(e) => handleGoBack(e)}>Back</button>
