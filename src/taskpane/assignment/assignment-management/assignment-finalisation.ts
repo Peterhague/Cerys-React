@@ -1,5 +1,5 @@
-import { finaliseAssignmentUrl } from "../fetching/apiEndpoints";
-import { fetchOptionsFinaliseAssignment } from "../fetching/generateOptions";
+import { finaliseAssignmentUrl } from "../../fetching/apiEndpoints";
+import { fetchOptionsFinaliseAssignment } from "../../fetching/generateOptions";
 
 export const finaliseAssignment = async (session) => {
   const activeAssignment = session.activeAssignment;

@@ -78,7 +78,7 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
     );
     switch (view) {
       case "landingPage":
-        body = <LandingPage handleView={handleView} />;
+        body = <LandingPage handleView={handleView} session={session} />;
         footer = null;
         break;
       case "userLogin":
@@ -229,7 +229,7 @@ const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
         body = <MapUnmappedCodes handleView={handleView} session={session} />;
         break;
       default:
-        body = <LandingPage handleView={handleView} />;
+        body = <LandingPage handleView={handleView} session={session} />;
     }
     return (
       <>

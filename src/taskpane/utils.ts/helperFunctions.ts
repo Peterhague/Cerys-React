@@ -12,6 +12,13 @@ import {
 } from "./worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
+export const getExcelContext = async () => {
+  const ctx = await Excel.run(async (context) => {
+    return context;
+  });
+  return ctx;
+};
+
 export const registerWorksheetDeletionHandler = async (session) => {
   await Excel.run(async (context) => {
     let sheets = context.workbook.worksheets;

@@ -1,7 +1,7 @@
 import { createEditableWs, handleEditButtonClick, interpretEventAddress, setEditButtonValue } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
-import { checkEditMode, handleColumnSort, handleRowSort, handleWorksheetEdit, handleWorksheetSelection } from "../worksheet-editing";
+import { checkEditMode, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -114,7 +114,6 @@ async function cerysNomDetailView(context, detail, session) {
     line.rowNumberOrig = rowNumber;
     rowNumber += 1;
   });
-  console.log("working here??");
   range.values = valuesToPost;
   const headerRange = ws.getRange("A1:G2");
   headerRange.format.font.bold = true;
@@ -194,11 +193,8 @@ async function cerysNomDetailView(context, detail, session) {
   ws.onActivated.add(() => setEditButtonValue(session));
   ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.activate();
-  console.log(sheetInMidEdit);
   if (sheetInMidEdit) handleEditButtonClick(session);
   ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, wsName));
-  //ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
-  //ws.onSelectionChanged.add(async (e) => handleWorksheetSelection(session, e, wsName));
   ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
@@ -238,6 +234,7 @@ export const handleSingleClick = (session, e, wsName) => {
   }
   if (clientCodeCol === addressObj.firstCol) {
     console.log("client code col clicked");
+    showClientNominalDetail(e, session);
   }
 };
 

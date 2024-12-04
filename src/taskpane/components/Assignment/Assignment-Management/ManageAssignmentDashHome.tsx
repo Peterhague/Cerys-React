@@ -1,7 +1,8 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
-import { finaliseAssignment } from "../../../assignment/assignment-management";
+import { finaliseAssignment } from "../../../assignment/assignment-management/assignment-finalisation";
 import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
+import { oBARelevantTransView } from "../../../assignment/assignment-management/opening-balance-adjustments";
 
 interface manageAssignmentDashHomeProps {
   handleView: (view) => void;
@@ -10,7 +11,7 @@ interface manageAssignmentDashHomeProps {
 
 const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
   session,
-  //handleView,
+  handleView,
 }: manageAssignmentDashHomeProps) => {
   const transactions = session["activeAssignment"].transactions;
   const test = () => {
@@ -24,8 +25,12 @@ const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
   return (
     <>
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
-      <CerysButton buttonText={"Closing Balance Adjustments"} handleClick={() => console.log(transactions)} />
+      <CerysButton
+        buttonText={"Opening Balance Adjustments"}
+        handleClick={() => oBARelevantTransView(transactions, session)}
+      />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
+      <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />
     </>
   );
 };
