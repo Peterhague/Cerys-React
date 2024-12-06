@@ -10,7 +10,7 @@ interface mapUnmappedCodes {
   session: {};
 }
 
-const MapUnmappedCodes: React.FC<mapUnmappedCodes> = ({ handleView, session }: mapUnmappedCodes) => {
+const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [codeObjects, setCodeObjects] = useState(session["unmappedCodeObjects"]);
 

@@ -6,7 +6,7 @@ interface addCorpClientIndiNewProps {
   session: {};
 }
 
-const AddCorpClientIndiNew: React.FC<addCorpClientIndiNewProps> = ({
+const AddCorpClientIndiNew = ({
   handleView,
   session,
 }: addCorpClientIndiNewProps) => {

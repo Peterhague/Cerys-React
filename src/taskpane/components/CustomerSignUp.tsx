@@ -7,7 +7,7 @@ interface customerSignUpProps {
   session: {};
 }
 
-const CustomerSignUp: React.FC<customerSignUpProps> = ({ handleView, session }: customerSignUpProps) => {
+const CustomerSignUp = ({ handleView, session }: customerSignUpProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");

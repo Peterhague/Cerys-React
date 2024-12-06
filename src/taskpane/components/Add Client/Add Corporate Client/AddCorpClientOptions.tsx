@@ -8,7 +8,7 @@ interface addCorpClientOptionsProps {
   session: {};
 }
 
-const AddCorpClientOptions: React.FC<addCorpClientOptionsProps> = ({
+const AddCorpClientOptions = ({
   handleView,
   session,
 }: addCorpClientOptionsProps) => {

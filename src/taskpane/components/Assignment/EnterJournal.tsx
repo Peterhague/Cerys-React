@@ -11,7 +11,7 @@ interface enterJournalProps {
   session: {};
 }
 
-const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: enterJournalProps) => {
+const EnterJournal = ({ handleView, session }: enterJournalProps) => {
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,8 +28,8 @@ const EnterJournal: React.FC<enterJournalProps> = ({ handleView, session }: ente
   };
 
   const handleJournal = async (e) => {
-    e.preventDefault();
-    const cerysObj = await cerysCodeToCerysObject(nominalCode);
+      e.preventDefault();
+      const cerysObj = session["chart"].find((code) => code.cerysCode === parseInt(nominalCode));
     const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
     session["activeJournal"].journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.value;

@@ -6,7 +6,7 @@ interface addCorpClientDtlsProps {
   session: {};
 }
 
-const AddCorpClientDtls: React.FC<addCorpClientDtlsProps> = ({ handleView, session }: addCorpClientDtlsProps) => {
+const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
   const [clientCode, setClientCode] = useState("");
   const [clientName, setClientName] = useState("");
   const [companyNumber, setCompanyNumber] = useState("");

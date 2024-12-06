@@ -6,7 +6,7 @@ interface addIndiClientAssocSHProps {
   session: {};
 }
 
-const AddIndiClientAssocSH: React.FC<addIndiClientAssocSHProps> = ({
+const AddIndiClientAssocSH = ({
   handleView,
   session,
 }: addIndiClientAssocSHProps) => {

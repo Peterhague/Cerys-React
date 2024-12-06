@@ -8,7 +8,7 @@ interface addIndiDtlsprops {
   session: {};
 }
 
-const AddIndiDtls: React.FC<addIndiDtlsprops> = ({ handleView, session }: addIndiDtlsprops) => {
+const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

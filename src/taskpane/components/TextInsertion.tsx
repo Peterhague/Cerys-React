@@ -28,7 +28,7 @@ const useStyles = makeStyles({
   },
 });
 
-const TextInsertion: React.FC<TextInsertionProps> = (props: TextInsertionProps) => {
+const TextInsertion = (props: TextInsertionProps) => {
   const [text, setText] = useState<string>("Some text.");
 
   const handleTextInsertion = async () => {

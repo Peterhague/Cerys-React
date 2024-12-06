@@ -8,7 +8,7 @@ interface addIndiClientDtlsprops {
   session: {};
 }
 
-const AddIndiClientDtls: React.FC<addIndiClientDtlsprops> = ({ handleView, session }: addIndiClientDtlsprops) => {
+const AddIndiClientDtls = ({ handleView, session }: addIndiClientDtlsprops) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [clientCode, setClientCode] = useState("");

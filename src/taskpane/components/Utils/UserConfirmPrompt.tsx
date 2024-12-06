@@ -8,7 +8,7 @@ interface userConfirmPromptProps {
   options: { handleYes: () => void; handleNo: () => void; message: React.ReactNode };
 }
 
-const UserConfirmPrompt: React.FC<userConfirmPromptProps> = ({ options }: userConfirmPromptProps) => {
+const UserConfirmPrompt = ({ options }: userConfirmPromptProps) => {
   return (
     <>
       <div>

@@ -8,7 +8,7 @@ interface enterClientDataHomeProps {
   session: {};
 }
 
-const EnterClientDataHome: React.FC<enterClientDataHomeProps> = ({ handleView, session }: enterClientDataHomeProps) => {
+const EnterClientDataHome = ({ handleView, session }: enterClientDataHomeProps) => {
   const handleTBEntry = async () => {
     const unmappedCodeObjects = await checkTBMapping(session);
     if (unmappedCodeObjects.length > 0) {

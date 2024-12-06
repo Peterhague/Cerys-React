@@ -26,7 +26,7 @@ const useStyles = makeStyles({
   },
 });
 
-const CerysButton: React.FC<CerysButtonProps> = ({ buttonText, handleClick }: CerysButtonProps) => {
+const CerysButton = ({ buttonText, handleClick }: CerysButtonProps) => {
   const styles = useStyles();
 
   return (

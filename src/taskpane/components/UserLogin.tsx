@@ -12,7 +12,7 @@ interface userLoginProps {
   setEditButton: (state) => void;
 }
 
-const UserLogin: React.FC<userLoginProps> = ({
+const UserLogin = ({
   handleView,
   handleDynamicView,
   session,

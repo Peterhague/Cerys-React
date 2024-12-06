@@ -6,7 +6,7 @@ interface addCorpClientAmortProps {
   session: {};
 }
 
-const AddCorpClientAmort: React.FC<addCorpClientAmortProps> = ({ handleView, session }: addCorpClientAmortProps) => {
+const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) => {
   const [amortBasisGwill, setAmortBasisGwill] = useState("SL");
   const [amortRateGwill, setAmortRateGwill] = useState("");
   const [amortBasisPatsLics, setAmortBasisPatsLics] = useState("SL");

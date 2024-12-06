@@ -12,7 +12,7 @@ interface newAssignmentDtlsProps {
   session: {};
 }
 
-const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, session }: newAssignmentDtlsProps) => {
+const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
   const [clientObject, setClientObject] = useState({});
@@ -145,8 +145,8 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
-      console.log(updatedCustAndNewAss);
-      session["chart"] = updatedCustAndNewAss.client.cerysChart;
+    console.log(updatedCustAndNewAss);
+    session["chart"] = updatedCustAndNewAss.client.cerysChart;
     return updatedCustAndNewAss;
   };
 

@@ -16,7 +16,7 @@ interface promptIPRCreationProps {
   session: {};
 }
 
-const PromptIPRCreation: React.FC<promptIPRCreationProps> = ({ handleView, session }: promptIPRCreationProps) => {
+const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
   const nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].IPRCreationSetting);

@@ -51,7 +51,7 @@ interface AppBodyProps {
   session: {};
 }
 
-const AppBody: React.FC<AppBodyProps> = ({ session }: AppBodyProps) => {
+const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
   const [options, setOptions] = useState({

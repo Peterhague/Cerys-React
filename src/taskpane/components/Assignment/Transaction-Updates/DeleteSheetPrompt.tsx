@@ -10,7 +10,7 @@ interface deleteSheetPromptProps {
   session: {};
 }
 
-const DeleteSheetPrompt: React.FC<deleteSheetPromptProps> = ({ session }: deleteSheetPromptProps) => {
+const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   const sheetsToDelete = [];
   session["editableSheets"].forEach((sheet) => {
     if (sheet.promptDeletion) {

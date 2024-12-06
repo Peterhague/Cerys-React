@@ -22,7 +22,7 @@ interface promptIFARCreationProps {
   session: {};
 }
 
-const PromptIFARCreation: React.FC<promptIFARCreationProps> = ({ handleView, session }: promptIFARCreationProps) => {
+const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) => {
   let nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].IFARCreationSetting);

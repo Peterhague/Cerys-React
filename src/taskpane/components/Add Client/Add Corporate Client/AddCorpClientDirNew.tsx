@@ -6,7 +6,7 @@ interface addCorpClientDirNewProps {
   session: {};
 }
 
-const AddCorpClientDirNew: React.FC<addCorpClientDirNewProps> = ({ handleView, session }: addCorpClientDirNewProps) => {
+const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

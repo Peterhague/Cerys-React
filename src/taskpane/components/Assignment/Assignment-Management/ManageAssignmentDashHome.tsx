@@ -10,7 +10,7 @@ interface manageAssignmentDashHomeProps {
   session: {};
 }
 
-const ManageAssignmentDashHome: React.FC<manageAssignmentDashHomeProps> = ({
+const ManageAssignmentDashHome = ({
   session,
   handleView,
 }: manageAssignmentDashHomeProps) => {

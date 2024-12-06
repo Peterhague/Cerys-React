@@ -9,7 +9,7 @@ interface addUserProps {
   session: {};
 }
 
-const AddUser: React.FC<addUserProps> = ({ handleView, session }: addUserProps) => {
+const AddUser = ({ handleView, session }: addUserProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

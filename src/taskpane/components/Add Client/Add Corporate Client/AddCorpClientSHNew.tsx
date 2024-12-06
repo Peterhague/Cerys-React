@@ -6,7 +6,7 @@ interface addCorpClientSHNewProps {
   session: {};
 }
 
-const AddCorpClientSHNew: React.FC<addCorpClientSHNewProps> = ({ handleView, session }: addCorpClientSHNewProps) => {
+const AddCorpClientSHNew = ({ handleView, session }: addCorpClientSHNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");

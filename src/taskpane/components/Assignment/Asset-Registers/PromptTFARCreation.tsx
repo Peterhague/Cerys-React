@@ -22,7 +22,7 @@ interface promptTFARCreationProps {
   session: {};
 }
 
-const PromptTFARCreation: React.FC<promptTFARCreationProps> = ({ handleView, session }: promptTFARCreationProps) => {
+const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) => {
   let nLEntered = session["activeAssignment"]["NLEntered"];
   const tBEntered = session["activeAssignment"]["TBEntered"];
   const [view, setView] = useState(session["options"].TFARCreationSetting);

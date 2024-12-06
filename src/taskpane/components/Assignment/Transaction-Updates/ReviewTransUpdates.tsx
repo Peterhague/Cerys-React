@@ -9,7 +9,7 @@ interface reviewTransUpdatesProps {
   session: {};
 }
 
-const ReviewTransUpdates: React.FC<reviewTransUpdatesProps> = ({ handleView, session }: reviewTransUpdatesProps) => {
+const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   session["updatedTransactions"].sort((a, b) => {
     return a.rowNumber - b.rowNumber;

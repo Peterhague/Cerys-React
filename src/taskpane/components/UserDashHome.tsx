@@ -5,7 +5,7 @@ interface userDashHomeProps {
   handleView: (view) => void;
 }
 
-const UserDashHome: React.FC<userDashHomeProps> = (props: userDashHomeProps) => {
+const UserDashHome = (props: userDashHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"CLIENTS"} handleClick={() => props.handleView("customerSignUp")} />

@@ -6,7 +6,7 @@ interface addCorpClientSHHomeProps {
   session: {};
 }
 
-const AddCorpClientSHHome: React.FC<addCorpClientSHHomeProps> = (props: addCorpClientSHHomeProps) => {
+const AddCorpClientSHHome = (props: addCorpClientSHHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"Select individual"} handleClick={() => props.handleView("addCorpClientShares")} />

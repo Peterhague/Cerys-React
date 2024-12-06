@@ -7,7 +7,7 @@ interface customerSignUpDtlsProps {
   session: {};
 }
 
-const CustomerSignUpDtls: React.FC<customerSignUpDtlsProps> = ({ handleView, session }: customerSignUpDtlsProps) => {
+const CustomerSignUpDtls = ({ handleView, session }: customerSignUpDtlsProps) => {
   const [orgName, setOrgName] = useState("");
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");

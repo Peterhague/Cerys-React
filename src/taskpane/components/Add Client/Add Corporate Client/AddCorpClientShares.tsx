@@ -7,7 +7,7 @@ interface addCorpClientSharesProps {
   session: {};
 }
 
-const AddCorpClientShares: React.FC<addCorpClientSharesProps> = ({ handleView, session }: addCorpClientSharesProps) => {
+const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) => {
   const [shareClassName, setShareClassName] = useState("");
   const [numberIssued, setNumberIssued] = useState(0);
   const [nomValue, setNomValue] = useState(0);

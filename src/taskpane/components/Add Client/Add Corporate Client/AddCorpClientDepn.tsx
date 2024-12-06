@@ -6,7 +6,7 @@ interface addCorpClientDepnProps {
   session: {};
 }
 
-const AddCorpClientDepn: React.FC<addCorpClientDepnProps> = ({ handleView, session }: addCorpClientDepnProps) => {
+const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
   const [depnBasisFholdProp, setDepnBasisFholdProp] = useState("SL");
   const [depnRateFholdProp, setDepnRateFholdProp] = useState("");
   const [depnBasisShortLhold, setDepnBasisShortLhold] = useState("SL");

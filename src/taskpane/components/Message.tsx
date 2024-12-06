@@ -5,7 +5,7 @@ interface MessageProps {
   messageText: React.ReactNode;
 }
 
-const Message: React.FC<MessageProps> = ({ messageText }: MessageProps) => {
+const Message = ({ messageText }: MessageProps) => {
   return <div>{messageText}</div>;
 };
 

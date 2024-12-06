@@ -6,7 +6,7 @@ interface customerClientsHomeProps {
   session: {};
 }
 
-const CustomerClientsHome: React.FC<customerClientsHomeProps> = (props: customerClientsHomeProps) => {
+const CustomerClientsHome = (props: customerClientsHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"MANAGE CLIENTS"} handleClick={() => props.handleView("customerSignUp")} />

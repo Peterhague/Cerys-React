@@ -6,7 +6,7 @@ interface userAssignmentsHomeProps {
   session: {};
 }
 
-const UserAssignmentsHome: React.FC<userAssignmentsHomeProps> = (props: userAssignmentsHomeProps) => {
+const UserAssignmentsHome = (props: userAssignmentsHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"NEW ASSIGNMENT"} handleClick={() => props.handleView("newAssignmentDtls")} />

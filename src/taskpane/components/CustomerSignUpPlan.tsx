@@ -9,7 +9,7 @@ interface customerSignUpPlanProps {
   session: {};
 }
 
-const CustomerSignUpPlan: React.FC<customerSignUpPlanProps> = ({ handleView, session }: customerSignUpPlanProps) => {
+const CustomerSignUpPlan = ({ handleView, session }: customerSignUpPlanProps) => {
   const [licences, setLicences] = useState("");
 
   const handleSubmit = async (e) => {

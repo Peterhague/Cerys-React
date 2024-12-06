@@ -6,7 +6,7 @@ interface newCustomerLandingProps {
   session: {};
 }
 
-const NewCustomerLanding: React.FC<newCustomerLandingProps> = ({ handleView, session }: newCustomerLandingProps) => {
+const NewCustomerLanding = ({ handleView, session }: newCustomerLandingProps) => {
   const unusedLicences = session["customer"]["unusedLicences"];
   return (
     <>

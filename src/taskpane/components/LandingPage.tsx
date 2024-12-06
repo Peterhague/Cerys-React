@@ -7,7 +7,7 @@ interface LandingPageProps {
   session: {};
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ handleView }: LandingPageProps) => {
+const LandingPage = ({ handleView }: LandingPageProps) => {
   const handleClick = async (path) => {
     handleView(path);
   };

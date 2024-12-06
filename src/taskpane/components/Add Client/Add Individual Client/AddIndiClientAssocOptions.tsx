@@ -8,7 +8,7 @@ interface addIndiClientAssocOptionsProps {
   session: {};
 }
 
-const AddIndiClientAssocOptions: React.FC<addIndiClientAssocOptionsProps> = ({
+const AddIndiClientAssocOptions = ({
   handleView,
   session,
 }: addIndiClientAssocOptionsProps) => {

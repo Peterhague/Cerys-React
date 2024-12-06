@@ -9,7 +9,7 @@ interface footerProps {
   session: {};
 }
 
-const Footer: React.FC<footerProps> = ({ editButton, session }: footerProps) => {
+const Footer = ({ editButton, session }: footerProps) => {
   return (
     <>
       <>

@@ -6,7 +6,7 @@ interface addCorpClientDirsHomeProps {
   session: {};
 }
 
-const AddCorpClientDirsHome: React.FC<addCorpClientDirsHomeProps> = (props: addCorpClientDirsHomeProps) => {
+const AddCorpClientDirsHome = (props: addCorpClientDirsHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"Select individual"} handleClick={() => props.handleView("addCorpClientShares")} />

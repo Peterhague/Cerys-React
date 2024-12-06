@@ -6,7 +6,7 @@ interface assignmentDashHomeProps {
   session: {};
 }
 
-const AssignmentDashHome: React.FC<assignmentDashHomeProps> = ({ handleView }: assignmentDashHomeProps) => {
+const AssignmentDashHome = ({ handleView }: assignmentDashHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"ENTER CLIENT DATA"} handleClick={() => handleView("enterClientDataHome")} />

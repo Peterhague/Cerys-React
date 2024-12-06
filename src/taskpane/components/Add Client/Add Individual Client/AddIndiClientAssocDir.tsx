@@ -6,7 +6,7 @@ interface addIndiClientAssocDirProps {
   session: {};
 }
 
-const AddIndiClientAssocDir: React.FC<addIndiClientAssocDirProps> = ({
+const AddIndiClientAssocDir = ({
   handleView,
   session,
 }: addIndiClientAssocDirProps) => {

@@ -30,7 +30,7 @@ export async function oBARelevantTransView(transactions, session) {
   const ws = addWorksheet(context, wsName);
   ws.load(["id", "name"]);
   await context.sync();
-  const range = ws.getRange(`A1:G${relTrans.length + 2}`);
+  const range = ws.getRange(`A1:I${relTrans.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Cerys", "Transaction", "Value", "Client", "Client"],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Name", "Narrative", "DR/(CR)", "Nominal Code", "Nominal Name"],
@@ -61,20 +61,23 @@ export async function oBARelevantTransView(transactions, session) {
     } else {
       arr.push(line.narrative);
     }
-    arr.push(line.value / 100);
+      arr.push(line.value / 100);
+      arr.push(line.currentClientMapping.clientCode);
+      arr.push(line.currentClientMapping.clientCodeName);
     //line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
     line.rowNumber = rowNumber;
     line.rowNumberOrig = rowNumber;
     rowNumber += 1;
   });
-  console.log(valuesToPost);
+    console.log(valuesToPost);
+    console.log(range);
   range.values = valuesToPost;
-  const headerRange = ws.getRange("A1:G2");
+  const headerRange = ws.getRange("A1:I2");
   headerRange.format.font.bold = true;
   const columnA = ws.getRange("B:B");
   columnA.numberFormat = "dd/mm/yyyy";
-  const columnsRange = ws.getRange("A:G");
+  const columnsRange = ws.getRange("A:I");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const definedCols = [

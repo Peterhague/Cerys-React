@@ -10,7 +10,7 @@ interface customerLoginProps {
   session: {};
 }
 
-const CustomerLogin: React.FC<customerLoginProps> = ({ handleView, session, setEditButton }: customerLoginProps) => {
+const CustomerLogin = ({ handleView, session, setEditButton }: customerLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 

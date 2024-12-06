@@ -8,7 +8,7 @@ interface handleTransUpdatesProps {
   session: {};
 }
 
-const HandleTransUpdates: React.FC<handleTransUpdatesProps> = ({ handleView, session }: handleTransUpdatesProps) => {
+const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) => {
   const handleReview = () => {
     handleView("reviewTransUpdates");
   };

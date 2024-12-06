@@ -10,7 +10,7 @@ interface nomCodeSelectionProps {
   session: {};
 }
 
-const NomCodeSelection: React.FC<nomCodeSelectionProps> = ({ handleView, session }: nomCodeSelectionProps) => {
+const NomCodeSelection = ({ handleView, session }: nomCodeSelectionProps) => {
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
