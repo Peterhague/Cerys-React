@@ -13,18 +13,22 @@ import {
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
 
 export const getExcelContext = async () => {
-  const ctx = await Excel.run(async (context) => {
-    return context;
-  });
-  return ctx;
+  try {
+    const ctx = await Excel.run(async (context) => {
+      return context;
+    });
+    return ctx;
+  } catch (e) {
+    console.error(e);
+    return null;
+  }
 };
 
 export const registerWorksheetDeletionHandler = async (session) => {
-  await Excel.run(async (context) => {
-    let sheets = context.workbook.worksheets;
-    sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
+    const context = await getExcelContext();
+  let sheets = context.workbook.worksheets;
+  sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
     await context.sync();
-  });
 };
 
 export const handleSheetDeletion = (e, session) => {
@@ -237,7 +241,7 @@ export const updateAssignmentFigures = async (session) => {
   await wsPLAccount(session);
   await wsBalanceSheet(session);
   addTbClickListener(session);
-  addPlClickListener(session["activeAssignment"]);
+  addPlClickListener(session);
   addBsClickListener(session["activeAssignment"]);
 };
 

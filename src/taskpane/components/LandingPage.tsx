@@ -7,9 +7,8 @@ interface LandingPageProps {
   session: {};
 }
 
-const LandingPage: React.FC<LandingPageProps> = ({ session, handleView }: LandingPageProps) => {
+const LandingPage: React.FC<LandingPageProps> = ({ handleView }: LandingPageProps) => {
   const handleClick = async (path) => {
-    session["context"] = await getExcelContext();
     handleView(path);
   };
 

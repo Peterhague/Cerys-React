@@ -1,35 +1,31 @@
-import { createEditableWs, handleEditButtonClick, interpretEventAddress, setEditButtonValue } from "../helperFunctions";
+import {
+  getExcelContext,
+  createEditableWs,
+  handleEditButtonClick,
+  interpretEventAddress,
+  setEditButtonValue,
+} from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { checkEditMode, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
-  try {
-    await Excel.run(async (context) => {
-      const ws = context.workbook.worksheets.getItem("Trial Balance");
-      ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, session));
-      session.activeAssignment.tbListenerAdded = true;
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem("Trial Balance");
+  ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, session));
+  session.activeAssignment.tbListenerAdded = true;
 
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  await context.sync();
 }
 
-export async function addPlClickListener(activeAssignment) {
-  try {
-    await Excel.run(async (context) => {
-      const ws = context.workbook.worksheets.getItem("Profit & loss account");
-      ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, activeAssignment, context));
-      activeAssignment.pLListenerAdded = true;
+export async function addPlClickListener(session) {
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem("Profit & loss account");
+  ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session, context));
+  session.activeAssignment.pLListenerAdded = true;
 
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  await context.sync();
 }
 
 export async function showNominalDetail(context, e, session) {
@@ -45,7 +41,8 @@ export async function showNominalDetail(context, e, session) {
   cerysNomDetailView(context, detail, session);
 }
 
-export async function showNominalDetailPL(e, activeAssignment, context) {
+export async function showNominalDetailPL(e, session, context) {
+  console.log(e);
   const address = e.address;
   if (address[0] !== "A") return;
   const ws = context.workbook.worksheets.getItem("Profit & loss account");
@@ -55,10 +52,10 @@ export async function showNominalDetailPL(e, activeAssignment, context) {
   const innerValues = values.values;
   const category = innerValues[0][0];
   console.log(category);
-  const detail = getCerysNomDetailPL(category, activeAssignment);
+  const detail = getCerysNomDetailPL(category, session);
   await context.sync();
   console.log(detail);
-  cerysNomDetailViewPL(context, detail, activeAssignment);
+  cerysNomDetailViewPL(context, detail, session);
 }
 
 async function cerysNomDetailView(context, detail, session) {
@@ -264,17 +261,12 @@ export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
 }
 
 export async function addBsClickListener(activeAssignment) {
-  try {
-    await Excel.run(async (context) => {
-      const ws = context.workbook.worksheets.getItem("Balance sheet");
-      ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, e, activeAssignment));
-      activeAssignment.bSListenerAdded = true;
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem("Balance sheet");
+  ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, e, activeAssignment));
+  activeAssignment.bSListenerAdded = true;
 
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  await context.sync();
 }
 
 export async function showNominalDetailBS(context, e, activeAssignment) {

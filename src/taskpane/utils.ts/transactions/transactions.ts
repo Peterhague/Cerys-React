@@ -43,7 +43,7 @@ export const processTransBatch = async (session) => {
   await wsPLAccount(session);
   await wsBalanceSheet(session);
   addTbClickListener(session);
-  addPlClickListener(session["activeAssignment"]);
+  addPlClickListener(session);
   addBsClickListener(session["activeAssignment"]);
   return updatedCustAndAss.newTransactions;
 };

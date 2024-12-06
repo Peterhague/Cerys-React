@@ -1,3 +1,4 @@
+import { getExcelContext } from "../helperFunctions";
 import { getClientNomDetail } from "../taskpane/client-system-access";
 import { addWorksheet, getWorksheet } from "../worksheet";
 
@@ -5,21 +6,16 @@ import { addWorksheet, getWorksheet } from "../worksheet";
 // Generates an array of client's relevant transactions and calls
 // clientNomDetailView to generate a worksheet-based view to display the data.
 export async function showClientNominalDetail(e, session) {
-  try {
-    await Excel.run(async (context) => {
-      const address = e.address;
-      const ws = context.workbook.worksheets.getActiveWorksheet();
-      const range = ws.getRange(`${address}:${address}`);
-      const values = range.load("values");
-      await context.sync();
-      const innerValues = values.values;
-      const clientCode = innerValues[0][0];
-      const detail = getClientNomDetail(clientCode, session);
-      clientNomDetailView(context, detail);
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  const context = await getExcelContext();
+  const address = e.address;
+  const ws = context.workbook.worksheets.getActiveWorksheet();
+  const range = ws.getRange(`${address}:${address}`);
+  const values = range.load("values");
+  await context.sync();
+  const innerValues = values.values;
+  const clientCode = innerValues[0][0];
+  const detail = getClientNomDetail(clientCode, session);
+  clientNomDetailView(context, detail);
 }
 
 // called by showClientNominalDetail to generate a worksheet-based view of the client

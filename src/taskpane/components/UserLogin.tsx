@@ -32,7 +32,7 @@ const UserLogin: React.FC<userLoginProps> = ({
   const processUser = async (userAndCustomerFromDb) => {
     const chartDB = await fetch(getChartUrl);
     const chart = await chartDB.json();
-    session["chart"] = chart;
+    //session["chart"] = chart;
     const userAndCustomerObject = await userAndCustomerFromDb.json();
     session["user"] = userAndCustomerObject.user;
     session["customer"] = userAndCustomerObject.customer;

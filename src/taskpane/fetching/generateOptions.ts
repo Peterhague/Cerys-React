@@ -351,7 +351,7 @@ export function fetchOptionsGetCustomerClients(customer) {
   };
 }
 
-export function fetchOptionsNewAssignment(prelimAssignment, customerId, chart) {
+export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
   return {
     method: "POST",
     headers: {
@@ -360,7 +360,6 @@ export function fetchOptionsNewAssignment(prelimAssignment, customerId, chart) {
     body: JSON.stringify({
       prelimAssignment,
       customerId,
-      chart,
     }),
   };
 }

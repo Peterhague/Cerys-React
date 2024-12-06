@@ -1,4 +1,4 @@
-import { postIFA, createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
+import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
@@ -6,6 +6,7 @@ import {
   calculateDiffInDays,
   convertExcelDate,
   createEditableWs,
+  getExcelContext,
   setEditButtonValue,
   updateNomCode,
 } from "../helperFunctions";
@@ -29,294 +30,289 @@ export function createRelTransIFA(session) {
 }
 
 export async function createIFATransSumm(session, relevantTrans) {
-  try {
-    await Excel.run(async (context) => {
-      const ws = addWorksheet(context, "IFA Transactions");
-      ws.load(["id", "name"]);
-      await context.sync();
-      let activeClient;
-      session.customer.clients.forEach((client) => {
-        if (client._id === session.activeAssignment.clientId) {
-          activeClient = client;
-        }
-      });
-      const valuesToPost = [
-        [
-          "TRANSACTION",
-          "CERYS",
-          "CERYS",
-          "POSTING",
-          "CERYS",
-          "CERYS",
-          "CLIENT",
-          "CLIENT",
-          "CLIENT",
-          "DEBIT/",
-          "AMORT",
-          "AMORT",
-          "AMORT",
-        ],
-        [
-          "NUMBER",
-          "DATE",
-          "NARRATIVE",
-          "SOURCE",
-          "CODE",
-          "NOMINAL",
-          "NC",
-          "NOMINAL",
-          "NARRATIVE",
-          "(CREDIT)",
-          "BASIS",
-          "RATE",
-          "CHARGE",
-        ],
-      ];
-      session["IFATransactions"] = [];
-      relevantTrans.forEach((i) => {
-        if (i.clientTB) {
-          let trans;
-          session.activeAssignment.clientNL.forEach((tran) => {
-            if (tran.code === i.clientNominalCode) {
-              trans = i;
-              trans["transactionDate"] = convertExcelDate(tran.date);
-              trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-              trans["subTransactions"] = [
-                {
-                  assetSubCategory: i.assetSubCategory,
-                  assetSubCatCode: i.assetSubCatCode,
-                  regColNameOne: i.regColNameOne,
-                  regColNameTwo: i.regColNameTwo,
-                  value: tran.value,
-                },
-              ];
-              trans["transactionDateClt"] = tran.date;
-              trans["clientNominalCode"] = tran.code;
-              trans["clientNominalName"] = tran.name;
-              trans["assetNarrative"] = tran.detail;
-              trans["value"] = tran.value;
-              trans["rowNumber"] = session["IFATransactions"].length + 3;
-            }
-          });
-          session["IFATransactions"].push(trans);
-        } else {
-          i.rowNumber = session["IFATransactions"].length + 3;
-          i.assetNarrative = i.narrative;
-          i.assetSubCatCodes = [i.assetSubCatCode];
-          i["subTransactions"] = [
+  const context = await getExcelContext();
+  const ws = addWorksheet(context, "IFA Transactions");
+  ws.load(["id", "name"]);
+  await context.sync();
+  let activeClient;
+  session.customer.clients.forEach((client) => {
+    if (client._id === session.activeAssignment.clientId) {
+      activeClient = client;
+    }
+  });
+  const valuesToPost = [
+    [
+      "TRANSACTION",
+      "CERYS",
+      "CERYS",
+      "POSTING",
+      "CERYS",
+      "CERYS",
+      "CLIENT",
+      "CLIENT",
+      "CLIENT",
+      "DEBIT/",
+      "AMORT",
+      "AMORT",
+      "AMORT",
+    ],
+    [
+      "NUMBER",
+      "DATE",
+      "NARRATIVE",
+      "SOURCE",
+      "CODE",
+      "NOMINAL",
+      "NC",
+      "NOMINAL",
+      "NARRATIVE",
+      "(CREDIT)",
+      "BASIS",
+      "RATE",
+      "CHARGE",
+    ],
+  ];
+  session["IFATransactions"] = [];
+  relevantTrans.forEach((i) => {
+    if (i.clientTB) {
+      let trans;
+      session.activeAssignment.clientNL.forEach((tran) => {
+        if (tran.code === i.clientNominalCode) {
+          trans = i;
+          trans["transactionDate"] = convertExcelDate(tran.date);
+          trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+          trans["subTransactions"] = [
             {
               assetSubCategory: i.assetSubCategory,
               assetSubCatCode: i.assetSubCatCode,
               regColNameOne: i.regColNameOne,
               regColNameTwo: i.regColNameTwo,
-              value: i.value,
+              value: tran.value,
             },
           ];
-          session["IFATransactions"].push(i);
+          trans["transactionDateClt"] = tran.date;
+          trans["clientNominalCode"] = tran.code;
+          trans["clientNominalName"] = tran.name;
+          trans["assetNarrative"] = tran.detail;
+          trans["value"] = tran.value;
+          trans["rowNumber"] = session["IFATransactions"].length + 3;
         }
       });
-      //session.activeJournal.clientTB = false;
-      //session.activeJournal.journal = false;
-      //session.activeJournal.journalType = "auto-journal";
-      session["IFATransactions"].forEach((tran) => {
-        const transVals = [];
-        transVals.push(tran.transactionNumber);
-        if (tran.transactionDate) {
-          const dateString = tran.transactionDate.split("T")[0];
-          const dateStringSplit = dateString.split("-");
-          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
-          transVals.push(dateConverted);
-          tran.transactionDateUser = dateConverted;
-        } else if (tran.transactionDateClt) {
-          transVals.push(tran.transactionDateClt);
-        } else {
-          transVals.push("Not provided");
-        }
-        transVals.push(tran.narrative);
-        if (tran.journal) {
-          transVals.push("Journal");
-        } else if (tran.finalJournal) {
-          transVals.push("Final journal");
-        } else if (tran.reviewJournal) {
-          transVals.push("Review journal");
-        } else if (tran.clientTB) {
-          transVals.push("Client TB");
-        } else if (tran.clientAdjustment) {
-          transVals.push("Client adjustment");
-        }
-        transVals.push(tran.cerysCode);
-        transVals.push(tran.cerysShortName);
-        if (tran.clientNominalCode >= 0) {
-          transVals.push(tran.clientNominalCode);
-        } else {
-          transVals.push("NA");
-        }
-        if (tran.clientNominalName) {
-          transVals.push(tran.clientNominalName);
-        } else {
-          transVals.push("NA");
-        }
-        if (tran.assetNarrative) {
-          transVals.push(tran.assetNarrative);
-        } else {
-          transVals.push("NA");
-        }
-        transVals.push(tran.value / 100);
-        if (tran.assetCategoryNo === 1) {
-          transVals.push(activeClient.amortBasisGwill);
-          transVals.push(activeClient.amortRateGwill);
-          tran.amortBasis = activeClient.amortBasisGwill;
-          tran.amortRate = activeClient.amortRateGwill;
-        } else if (tran.assetCategoryNo === 2) {
-          transVals.push(activeClient.amortBasisPatsLics);
-          transVals.push(activeClient.amortRatePatsLics);
-          tran.amortBasis = activeClient.amortBasisPatsLics;
-          tran.amortRate = activeClient.amortRatePatsLics;
-        } else if (tran.assetCategoryNo === 3) {
-          transVals.push(activeClient.amortBasisDevCosts);
-          transVals.push(activeClient.amortRateDevCosts);
-          tran.amortBasis = activeClient.amortBasisDevCosts;
-          tran.amortRate = activeClient.amortRateDevCosts;
-        } else if (tran.assetCategoryNo === 4) {
-          transVals.push(activeClient.amortBasisCompSware);
-          transVals.push(activeClient.amortRateCompSware);
-          tran.amortBasis = activeClient.amortBasisCompSware;
-          tran.amortRate = activeClient.amortRateCompSware;
-        }
-        calculateAmortChg(session, tran);
-        transVals.push(tran.amortChg / 100);
-        //transVals.push(excelAmortFormula);
-        valuesToPost.push(transVals);
-      });
-      const headerRange = ws.getRange("A1:M2");
-      headerRange.format.font.bold = true;
-      const range = ws.getRange(`A1:M${valuesToPost.length}`);
-      range.values = valuesToPost;
-      const rangeB = ws.getRange("B:B");
-      rangeB.numberFormat = "dd/mm/yyyy";
-      const rangeJ = ws.getRange("J:J");
-      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
-      const rangeM = ws.getRange("M:M");
-      rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
-      const rangeAM = ws.getRange("A:M");
-      rangeAM.format.autofitColumns();
-      const definedCols = [
+      session["IFATransactions"].push(trans);
+    } else {
+      i.rowNumber = session["IFATransactions"].length + 3;
+      i.assetNarrative = i.narrative;
+      i.assetSubCatCodes = [i.assetSubCatCode];
+      i["subTransactions"] = [
         {
-          type: "transNo",
-          colNumber: 1,
-          mutable: false,
-          format: "0",
-          deleted: false,
-        },
-        {
-          type: "date",
-          colNumber: 2,
-          mutable: true,
-          format: "dd/mm/yyyy",
-          deleted: false,
-          updateKey: "updatedDate",
-        },
-        {
-          type: "cerysNarrative",
-          colNumber: 3,
-          mutable: true,
-          format: "",
-          deleted: false,
-          updateKey: "updatedNarrative",
-        },
-        {
-          type: "transType",
-          colNumber: 4,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "cerysCode",
-          colNumber: 5,
-          mutable: true,
-          format: "0",
-          deleted: false,
-          updateKey: "updatedCode",
-        },
-        {
-          type: "cerysName",
-          colNumber: 6,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "clientCode",
-          colNumber: 7,
-          mutable: false,
-          format: "0",
-          deleted: false,
-        },
-        {
-          type: "clientNominal",
-          colNumber: 8,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "clientNarrative",
-          colNumber: 9,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "value",
-          colNumber: 10,
-          mutable: false,
-          format: "#,##0.00;(#,##0.00);-",
-          deleted: false,
-        },
-        {
-          type: "amortBasis",
-          colNumber: 11,
-          mutable: true,
-          format: "",
-          deleted: false,
-          updateKey: "updatedAmortBasis",
-        },
-        {
-          type: "amortRate",
-          colNumber: 12,
-          mutable: true,
-          format: "0",
-          deleted: false,
-          updateKey: "updatedAmortRate",
-        },
-        {
-          type: "amortCharge",
-          colNumber: 13,
-          format: "#,##0.00;(#,##0.00);-",
-          deleted: false,
+          assetSubCategory: i.assetSubCategory,
+          assetSubCatCode: i.assetSubCatCode,
+          regColNameOne: i.regColNameOne,
+          regColNameTwo: i.regColNameTwo,
+          value: i.value,
         },
       ];
-      // edit here please
-      const transactions = _.cloneDeep(session.IFATransactions);
-      const editableWs = createEditableWs(transactions, ws, definedCols, valuesToPost, "IFARPreview");
-      const arr = [editableWs];
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name !== editableWs.name) arr.push(sheet);
-      });
-      session.editableSheets = arr;
-      ws.onActivated.add(() => setEditButtonValue(session));
-      ws.onDeactivated.add(() => session.setEditButton("off"));
-      //ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
-      ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, "IFA Transactions"));
-      ws.onColumnSorted.add(async () => handleColumnSort(session));
-      ws.onRowSorted.add(async (e) => handleRowSort(session, "IFA Transactions", e));
-      await context.sync();
-      ws.activate();
-    });
-  } catch (e) {
-    console.error(e);
-  }
+      session["IFATransactions"].push(i);
+    }
+  });
+  //session.activeJournal.clientTB = false;
+  //session.activeJournal.journal = false;
+  //session.activeJournal.journalType = "auto-journal";
+  session["IFATransactions"].forEach((tran) => {
+    const transVals = [];
+    transVals.push(tran.transactionNumber);
+    if (tran.transactionDate) {
+      const dateString = tran.transactionDate.split("T")[0];
+      const dateStringSplit = dateString.split("-");
+      const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+      transVals.push(dateConverted);
+      tran.transactionDateUser = dateConverted;
+    } else if (tran.transactionDateClt) {
+      transVals.push(tran.transactionDateClt);
+    } else {
+      transVals.push("Not provided");
+    }
+    transVals.push(tran.narrative);
+    if (tran.journal) {
+      transVals.push("Journal");
+    } else if (tran.finalJournal) {
+      transVals.push("Final journal");
+    } else if (tran.reviewJournal) {
+      transVals.push("Review journal");
+    } else if (tran.clientTB) {
+      transVals.push("Client TB");
+    } else if (tran.clientAdjustment) {
+      transVals.push("Client adjustment");
+    }
+    transVals.push(tran.cerysCode);
+    transVals.push(tran.cerysShortName);
+    if (tran.clientNominalCode >= 0) {
+      transVals.push(tran.clientNominalCode);
+    } else {
+      transVals.push("NA");
+    }
+    if (tran.clientNominalName) {
+      transVals.push(tran.clientNominalName);
+    } else {
+      transVals.push("NA");
+    }
+    if (tran.assetNarrative) {
+      transVals.push(tran.assetNarrative);
+    } else {
+      transVals.push("NA");
+    }
+    transVals.push(tran.value / 100);
+    if (tran.assetCategoryNo === 1) {
+      transVals.push(activeClient.amortBasisGwill);
+      transVals.push(activeClient.amortRateGwill);
+      tran.amortBasis = activeClient.amortBasisGwill;
+      tran.amortRate = activeClient.amortRateGwill;
+    } else if (tran.assetCategoryNo === 2) {
+      transVals.push(activeClient.amortBasisPatsLics);
+      transVals.push(activeClient.amortRatePatsLics);
+      tran.amortBasis = activeClient.amortBasisPatsLics;
+      tran.amortRate = activeClient.amortRatePatsLics;
+    } else if (tran.assetCategoryNo === 3) {
+      transVals.push(activeClient.amortBasisDevCosts);
+      transVals.push(activeClient.amortRateDevCosts);
+      tran.amortBasis = activeClient.amortBasisDevCosts;
+      tran.amortRate = activeClient.amortRateDevCosts;
+    } else if (tran.assetCategoryNo === 4) {
+      transVals.push(activeClient.amortBasisCompSware);
+      transVals.push(activeClient.amortRateCompSware);
+      tran.amortBasis = activeClient.amortBasisCompSware;
+      tran.amortRate = activeClient.amortRateCompSware;
+    }
+    calculateAmortChg(session, tran);
+    transVals.push(tran.amortChg / 100);
+    //transVals.push(excelAmortFormula);
+    valuesToPost.push(transVals);
+  });
+  const headerRange = ws.getRange("A1:M2");
+  headerRange.format.font.bold = true;
+  const range = ws.getRange(`A1:M${valuesToPost.length}`);
+  range.values = valuesToPost;
+  const rangeB = ws.getRange("B:B");
+  rangeB.numberFormat = "dd/mm/yyyy";
+  const rangeJ = ws.getRange("J:J");
+  rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+  const rangeM = ws.getRange("M:M");
+  rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
+  const rangeAM = ws.getRange("A:M");
+  rangeAM.format.autofitColumns();
+  const definedCols = [
+    {
+      type: "transNo",
+      colNumber: 1,
+      mutable: false,
+      format: "0",
+      deleted: false,
+    },
+    {
+      type: "date",
+      colNumber: 2,
+      mutable: true,
+      format: "dd/mm/yyyy",
+      deleted: false,
+      updateKey: "updatedDate",
+    },
+    {
+      type: "cerysNarrative",
+      colNumber: 3,
+      mutable: true,
+      format: "",
+      deleted: false,
+      updateKey: "updatedNarrative",
+    },
+    {
+      type: "transType",
+      colNumber: 4,
+      mutable: false,
+      format: "",
+      deleted: false,
+    },
+    {
+      type: "cerysCode",
+      colNumber: 5,
+      mutable: true,
+      format: "0",
+      deleted: false,
+      updateKey: "updatedCode",
+    },
+    {
+      type: "cerysName",
+      colNumber: 6,
+      mutable: false,
+      format: "",
+      deleted: false,
+    },
+    {
+      type: "clientCode",
+      colNumber: 7,
+      mutable: false,
+      format: "0",
+      deleted: false,
+    },
+    {
+      type: "clientNominal",
+      colNumber: 8,
+      mutable: false,
+      format: "",
+      deleted: false,
+    },
+    {
+      type: "clientNarrative",
+      colNumber: 9,
+      mutable: false,
+      format: "",
+      deleted: false,
+    },
+    {
+      type: "value",
+      colNumber: 10,
+      mutable: false,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+    },
+    {
+      type: "amortBasis",
+      colNumber: 11,
+      mutable: true,
+      format: "",
+      deleted: false,
+      updateKey: "updatedAmortBasis",
+    },
+    {
+      type: "amortRate",
+      colNumber: 12,
+      mutable: true,
+      format: "0",
+      deleted: false,
+      updateKey: "updatedAmortRate",
+    },
+    {
+      type: "amortCharge",
+      colNumber: 13,
+      format: "#,##0.00;(#,##0.00);-",
+      deleted: false,
+    },
+  ];
+  // edit here please
+  const transactions = _.cloneDeep(session.IFATransactions);
+  const editableWs = createEditableWs(transactions, ws, definedCols, valuesToPost, "IFARPreview");
+  const arr = [editableWs];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name !== editableWs.name) arr.push(sheet);
+  });
+  session.editableSheets = arr;
+  ws.onActivated.add(() => setEditButtonValue(session));
+  ws.onDeactivated.add(() => session.setEditButton("off"));
+  //ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, "IFA Transactions"));
+  ws.onColumnSorted.add(async () => handleColumnSort(session));
+  ws.onRowSorted.add(async (e) => handleRowSort(session, "IFA Transactions", e));
+  await context.sync();
+  ws.activate();
 }
 
 export function calculateAmortChg(session, tran) {
@@ -464,15 +460,10 @@ export function updateAmortRate(e, transToPost, eRowNumber) {
 }
 
 export async function createIFAR(session) {
-  try {
-    await Excel.run(async (context) => {
-      const assignment = await postIFAtoDB(session);
-      session["activeAssignment"] = assignment;
-      createIFARWs(context, session);
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  const context = await getExcelContext();
+  const assignment = await postIFAtoDB(session);
+  session["activeAssignment"] = assignment;
+  createIFARWs(context, session);
 }
 
 export async function postIFAtoDB(session) {

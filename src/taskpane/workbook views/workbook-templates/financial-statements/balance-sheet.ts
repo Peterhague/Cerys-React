@@ -1,166 +1,162 @@
+import { getExcelContext } from "../../../utils.ts/helperFunctions";
 import { addWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsBalanceSheet(session) {
-  try {
-    await Excel.run(async (context) => {
-      let ws = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
-      ws.load("values");
-      await context.sync();
-      if (ws.isNullObject) {
-        ws = addWorksheet(context, "Balance Sheet");
-      } else {
-        ws.getUsedRange().clear();
-      }
-      const headerValues = worksheetHeader(session, "Balance Sheet");
-      applyWorkhseetHeader(ws, headerValues);
-      const values = [
-        ["", "", "", "", "£", "£"],
-        ["", "", "", "", "", ""],
-      ];
-      if (
-        session.activeAssignment.activeCategories.includes("Intangible assets") ||
-        session.activeAssignment.activeCategories.includes("Tangible assets") ||
-        session.activeAssignment.activeCategories.includes("Fixed asset investments") ||
-        session.activeAssignment.activeCategories.includes("Investment property")
-      ) {
-        const nextArrays = displayFixedAssets(session.activeAssignment);
-        nextArrays.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      if (
-        session.activeAssignment.activeCategories.includes("Stocks") ||
-        session.activeAssignment.activeCategories.includes("Debtors") ||
-        session.activeAssignment.activeCategories.includes("Financial assets") ||
-        session.activeAssignment.activeCategories.includes("Cash")
-      ) {
-        const arrays = displayCurrentAssets(session.activeAssignment);
-        arrays.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      if (session.activeAssignment.activeCategories.includes("Creditors < 1 year")) {
-        const nextArrays = displayCurrentLiabilities(session.activeAssignment);
-        nextArrays.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      values.push(["", "", "", "", "", ""]);
-      const netCA = calculateNCA(session.activeAssignment);
-      if (netCA) {
-        if (netCA > 0) {
-          values.push(["Net current assets", "", "", "", "", netCA]);
-        } else {
-          values.push(["Net current liabilities", "", "", "", "", netCA]);
-        }
-      }
-      values.push(["", "", "", "", "", ""]);
-      const tALCL = totalAssetsLessCL(session.activeAssignment);
-      if (tALCL >= 0) {
-        values.push(["Total assets less current liabilities", "", "", "", "", tALCL.toString()]);
-      } else {
-        values.push(["Current liabilities less total assets", "", "", "", "", tALCL.toString()]);
-      }
-      if (session.activeAssignment.activeCategories.includes("Creditors > 1 year")) {
-        const nextArrays = displayNonCurrentLiabilities(session.activeAssignment);
-        nextArrays.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      if (session.activeAssignment.activeCategories.includes("Provisions for liabilities")) {
-        const nextArrays = displayProvisions(session.activeAssignment);
-        nextArrays.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      values.push(["", "", "", "", "", ""]);
-      const netAssets = calculateNetAssets(session.activeAssignment);
-      if (netAssets >= 0) {
-        values.push(["Net assets", "", "", "", "", netAssets.toString()]);
-      } else {
-        values.push(["Net liabilities", "", "", "", "", netAssets.toString()]);
-      }
-      if (netAssets !== 0) {
-        const arrs = [
-          ["", "", "", "", "", ""],
-          ["", "", "", "", "", ""],
-          ["Capital and reserves", "", "", "", "", ""],
-          ["", "", "", "", "", ""],
-        ];
-        arrs.forEach((arr) => {
-          values.push(arr);
-        });
-      }
-      if (session.activeAssignment.activeCategories.includes("Share capital")) {
-        const arr = displayShareCapital(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Share premium")) {
-        const arr = displaySharePremium(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Capital redemption reserve")) {
-        const arr = displayCRR(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Other reserves 1")) {
-        const arr = displayOtherRes(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Fair value reserve")) {
-        const arr = displayFVRes(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Other reserves 2")) {
-        const arr = displayOtherRes2(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Other reserves 3")) {
-        const arr = displayOtherRes3(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Other reserves 4")) {
-        const arr = displayOtherRes4(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Other reserves 5")) {
-        const arr = displayOtherRes5(session.activeAssignment);
-        values.push(arr);
-      }
-      if (session.activeAssignment.activeCategories.includes("Minority interest")) {
-        const arr = displayMinorityInt(session.activeAssignment);
-        values.push(arr);
-      }
-      if (
-        session.activeAssignment.activeCategories.includes("Profit & loss reserve") ||
-        session.activeAssignment.profit !== 0
-      ) {
-        const arr = displayPLRes(session.activeAssignment);
-        values.push(arr);
-      }
-      values.push(["", "", "", "", "", ""]);
-      let equity = 0;
-      session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
-        if (obj.cerysCategory === "Capital & reserves") equity = obj.value / 100;
-      });
-      session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
-        if (obj.cerysCategory === "Profit & loss reserve") equity += obj.value / 100;
-      });
-      values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
-      const range = ws.getRange(`a9:f${values.length + 8}`);
-      const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
-      numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
-      const cleansedValues = cleanseValues(values);
-      range.values = cleansedValues;
-      const currencyRange = ws.getRange("E9:F9");
-      currencyRange.format.horizontalAlignment = "Right";
-      currencyRange.format.font.bold = true;
-      wsBSAccountFormat(ws, values);
-    });
-  } catch (e) {
-    console.error(e);
+  const context = await getExcelContext();
+  let ws = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
+  ws.load("values");
+  await context.sync();
+  if (ws.isNullObject) {
+    ws = addWorksheet(context, "Balance Sheet");
+  } else {
+    ws.getUsedRange().clear();
   }
+  const headerValues = worksheetHeader(session, "Balance Sheet");
+  applyWorkhseetHeader(ws, headerValues);
+  const values = [
+    ["", "", "", "", "£", "£"],
+    ["", "", "", "", "", ""],
+  ];
+  if (
+    session.activeAssignment.activeCategories.includes("Intangible assets") ||
+    session.activeAssignment.activeCategories.includes("Tangible assets") ||
+    session.activeAssignment.activeCategories.includes("Fixed asset investments") ||
+    session.activeAssignment.activeCategories.includes("Investment property")
+  ) {
+    const nextArrays = displayFixedAssets(session.activeAssignment);
+    nextArrays.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  if (
+    session.activeAssignment.activeCategories.includes("Stocks") ||
+    session.activeAssignment.activeCategories.includes("Debtors") ||
+    session.activeAssignment.activeCategories.includes("Financial assets") ||
+    session.activeAssignment.activeCategories.includes("Cash")
+  ) {
+    const arrays = displayCurrentAssets(session.activeAssignment);
+    arrays.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  if (session.activeAssignment.activeCategories.includes("Creditors < 1 year")) {
+    const nextArrays = displayCurrentLiabilities(session.activeAssignment);
+    nextArrays.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  values.push(["", "", "", "", "", ""]);
+  const netCA = calculateNCA(session.activeAssignment);
+  if (netCA) {
+    if (netCA > 0) {
+      values.push(["Net current assets", "", "", "", "", netCA]);
+    } else {
+      values.push(["Net current liabilities", "", "", "", "", netCA]);
+    }
+  }
+  values.push(["", "", "", "", "", ""]);
+  const tALCL = totalAssetsLessCL(session.activeAssignment);
+  if (tALCL >= 0) {
+    values.push(["Total assets less current liabilities", "", "", "", "", tALCL.toString()]);
+  } else {
+    values.push(["Current liabilities less total assets", "", "", "", "", tALCL.toString()]);
+  }
+  if (session.activeAssignment.activeCategories.includes("Creditors > 1 year")) {
+    const nextArrays = displayNonCurrentLiabilities(session.activeAssignment);
+    nextArrays.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  if (session.activeAssignment.activeCategories.includes("Provisions for liabilities")) {
+    const nextArrays = displayProvisions(session.activeAssignment);
+    nextArrays.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  values.push(["", "", "", "", "", ""]);
+  const netAssets = calculateNetAssets(session.activeAssignment);
+  if (netAssets >= 0) {
+    values.push(["Net assets", "", "", "", "", netAssets.toString()]);
+  } else {
+    values.push(["Net liabilities", "", "", "", "", netAssets.toString()]);
+  }
+  if (netAssets !== 0) {
+    const arrs = [
+      ["", "", "", "", "", ""],
+      ["", "", "", "", "", ""],
+      ["Capital and reserves", "", "", "", "", ""],
+      ["", "", "", "", "", ""],
+    ];
+    arrs.forEach((arr) => {
+      values.push(arr);
+    });
+  }
+  if (session.activeAssignment.activeCategories.includes("Share capital")) {
+    const arr = displayShareCapital(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Share premium")) {
+    const arr = displaySharePremium(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Capital redemption reserve")) {
+    const arr = displayCRR(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Other reserves 1")) {
+    const arr = displayOtherRes(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Fair value reserve")) {
+    const arr = displayFVRes(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Other reserves 2")) {
+    const arr = displayOtherRes2(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Other reserves 3")) {
+    const arr = displayOtherRes3(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Other reserves 4")) {
+    const arr = displayOtherRes4(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Other reserves 5")) {
+    const arr = displayOtherRes5(session.activeAssignment);
+    values.push(arr);
+  }
+  if (session.activeAssignment.activeCategories.includes("Minority interest")) {
+    const arr = displayMinorityInt(session.activeAssignment);
+    values.push(arr);
+  }
+  if (
+    session.activeAssignment.activeCategories.includes("Profit & loss reserve") ||
+    session.activeAssignment.profit !== 0
+  ) {
+    const arr = displayPLRes(session.activeAssignment);
+    values.push(arr);
+  }
+  values.push(["", "", "", "", "", ""]);
+  let equity = 0;
+  session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+    if (obj.cerysCategory === "Capital & reserves") equity = obj.value / 100;
+  });
+  session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+    if (obj.cerysCategory === "Profit & loss reserve") equity += obj.value / 100;
+  });
+  values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
+  const range = ws.getRange(`a9:f${values.length + 8}`);
+  const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
+  numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
+  const cleansedValues = cleanseValues(values);
+  range.values = cleansedValues;
+  const currencyRange = ws.getRange("E9:F9");
+  currencyRange.format.horizontalAlignment = "Right";
+  currencyRange.format.font.bold = true;
+  wsBSAccountFormat(ws, values);
 }
 
 export async function wsBSAccountFormat(ws, values) {

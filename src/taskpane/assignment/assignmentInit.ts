@@ -1,17 +1,13 @@
+import { getExcelContext } from "../utils.ts/helperFunctions";
 import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 
 export async function addPrimarySheets(session) {
-  try {
-    await Excel.run(async (context) => {
+    const context = await getExcelContext();
       addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"]);
       const arrForDATA = convertDataForWbook(session);
       await writeToDATA(context, arrForDATA);
       await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
 }
 
 function convertDataForWbook(session) {

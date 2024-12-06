@@ -2,6 +2,7 @@ import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import {
   callNextView,
   convertExcelDate,
+  getExcelContext,
   interpretEventAddress,
   interpretExcelAddress,
   resetActiveEditableCellObj,
@@ -918,12 +919,11 @@ export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => 
 };
 
 export const cancelAutoFill = async (wsName, address) => {
-  await Excel.run(async (context) => {
-    const sheet = context.workbook.worksheets.getItem(wsName);
-    const range = sheet.getRange(address);
-    range.format.fill.clear();
-    await context.sync();
-  });
+  const context = await getExcelContext();
+  const sheet = context.workbook.worksheets.getItem(wsName);
+  const range = sheet.getRange(address);
+  range.format.fill.clear();
+  await context.sync();
 };
 
 export const submitTransactionUpdates = async (session) => {
@@ -1078,39 +1078,37 @@ export const simulateAutoFillChanges = async (session, wsName, autoFillObj) => {
 };
 
 export const resetToPreviousValues = async (wsName, sheet) => {
-  await Excel.run(async (context) => {
-    const ws = context.workbook.worksheets.getItem(wsName);
-    const usedRange = ws.getUsedRange();
-    usedRange.load("address");
-    await context.sync();
-    const fullAddress = usedRange.address;
-    const fullAddressSplit = fullAddress.split("!");
-    const addressObj = interpretExcelAddress(fullAddressSplit[1]);
-    const blankValues = [];
-    for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
-      const row = [];
-      for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
-        row.push("");
-      }
-      blankValues.push(row);
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem(wsName);
+  const usedRange = ws.getUsedRange();
+  usedRange.load("address");
+  await context.sync();
+  const fullAddress = usedRange.address;
+  const fullAddressSplit = fullAddress.split("!");
+  const addressObj = interpretExcelAddress(fullAddressSplit[1]);
+  const blankValues = [];
+  for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
+    const row = [];
+    for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
+      row.push("");
     }
-    usedRange.values = blankValues;
-    const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
-    const wsNewRange = ws.getRange(newRange);
-    wsNewRange.values = sheet.usedRange;
-    sheet.dataCorrupted = false;
-    await context.sync();
-  });
+    blankValues.push(row);
+  }
+  usedRange.values = blankValues;
+  const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
+  const wsNewRange = ws.getRange(newRange);
+  wsNewRange.values = sheet.usedRange;
+  sheet.dataCorrupted = false;
+  await context.sync();
 };
 
 export const reinstateNumberFormats = async (sheet) => {
-  await Excel.run(async (context) => {
-    const ws = context.workbook.worksheets.getItem(sheet.name);
-    sheet.definedCols.forEach((col) => {
-      const colLetter = colNumToLetter(col.colNumber);
-      const range = ws.getRange(`${colLetter}:${colLetter}`);
-      range.numberFormat = col.format;
-    });
-    await context.sync();
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem(sheet.name);
+  sheet.definedCols.forEach((col) => {
+    const colLetter = colNumToLetter(col.colNumber);
+    const range = ws.getRange(`${colLetter}:${colLetter}`);
+    range.numberFormat = col.format;
   });
+  await context.sync();
 };

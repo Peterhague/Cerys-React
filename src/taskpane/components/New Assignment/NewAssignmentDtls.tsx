@@ -142,10 +142,11 @@ const NewAssignmentDtls: React.FC<newAssignmentDtlsProps> = ({ handleView, sessi
 
   const processNewAssignment = async (prelimAssignment) => {
     const customerId = session["customer"]["_id"];
-    const options = fetchOptionsNewAssignment(prelimAssignment, customerId, session["chart"]);
+    const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
-    console.log(updatedCustAndNewAss);
+      console.log(updatedCustAndNewAss);
+      session["chart"] = updatedCustAndNewAss.client.cerysChart;
     return updatedCustAndNewAss;
   };
 
