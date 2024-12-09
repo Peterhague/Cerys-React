@@ -781,9 +781,6 @@ export const captureReanalysis = async (session, e, sheet, addressObj, change) =
   if (isValidTransactionUpdate)
     processTransactionUpdate(session, tran, tests, change, validationObj, e, newValue, sheet);
   if (session.options.isQuasiUpdate) tests.isValid = true;
-  //if (tests.isValid) {
-  //  sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
-  //}
   const range = `${e.address}:${e.address}`;
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
@@ -861,7 +858,7 @@ export const validateChange = (session, tran, change, e) => {
   } else if (change.type === "cerysNarrative") {
     if (e.details.valueAfter === tran.narrative) obj.isNegation = true;
   } else if (change.type === "clientCodeMapping") {
-    validateClientCode(session);
+    validateClientCode(session, tran, e, obj);
   } else if (change.type === "cerysName") {
     obj.isError = false;
   } else obj.isError = true;
@@ -890,8 +887,14 @@ export const validateTransactionDate = (session, tran, e, obj) => {
   }
 };
 
-export const validateClientCode = (session) => {
-  console.log(session.clientChart);
+export const validateClientCode = (session, tran, e, obj) => {
+  const valueAfter = e.details.valueAfter;
+  if (valueAfter === tran.mapping.clientCode) obj.isNegation = true;
+  let inValidCode = true;
+  session.clientChart.forEach((code) => {
+    if (code.clientCode === e.details.valueAfter) inValidCode = false;
+  });
+  obj.isInvalid = inValidCode;
 };
 
 export const updateIfExistingUpdate = (session, tran, tests, change, validationObj, newArray, e) => {
@@ -901,20 +904,26 @@ export const updateIfExistingUpdate = (session, tran, tests, change, validationO
       tests.updated = true;
       if (validationObj.isNegation) {
         if (change.type === "cerysCode") {
-          if (updatedTran.updatedDate || updatedTran.updatedNarrative) {
+          if (updatedTran.updatedDate || updatedTran.updatedNarrative || updatedTran.updatedClientCodeMapping) {
             delete updatedTran.updatedCode;
             newArray.push(updatedTran);
           }
         }
         if (change.type === "date") {
-          if (updatedTran.updatedCode || updatedTran.cerysNarrative) {
+          if (updatedTran.updatedCode || updatedTran.cerysNarrative || updatedTran.updatedClientCodeMapping) {
             delete updatedTran.updatedDate;
             newArray.push(updatedTran);
           }
         }
         if (change.type === "cerysNarrative") {
-          if (updatedTran.updatedCode || updatedTran.updatedDate) {
+          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedClientCodeMapping) {
             delete updatedTran.updatedNarrative;
+            newArray.push(updatedTran);
+          }
+        }
+        if (change.type === "clientCodeMapping") {
+          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedNarrative) {
+            delete updatedTran.updatedClientCodeMapping;
             newArray.push(updatedTran);
           }
         }
@@ -937,6 +946,8 @@ export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => 
     dateExcel: number;
     narrative: string;
     updatedNarrative?: string;
+    clientCodeMapping: number;
+    updatedClientCodeMapping?: number;
     value: number;
     rowNumber: number;
     rowNumberOrig: number;
@@ -950,6 +961,7 @@ export const createNewTransactionUpdate = (tran, newValue, sheet, updateKey) => 
     date: tran.transactionDate,
     dateExcel: tran.transactionDateExcel,
     narrative: tran.narrative,
+    clientCodeMapping: tran.mapping.clientCode,
     value: tran.value,
     rowNumber: tran.rowNumber,
     rowNumberOrig: tran.rowNumberOrig,

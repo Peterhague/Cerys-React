@@ -2,7 +2,6 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { getChartUrl } from "../fetching/apiEndpoints";
 import { registerWorksheetDeletionHandler, resetActiveEditableCellObj } from "../utils.ts/helperFunctions";
 
 interface userLoginProps {

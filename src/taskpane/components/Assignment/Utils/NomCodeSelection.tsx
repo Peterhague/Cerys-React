@@ -5,6 +5,7 @@ import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
 import { colNumToLetter } from "../../../utils.ts/excel-col-conversion";
 import { callNextView, resetActiveEditableCellObj } from "../../../utils.ts/helperFunctions";
+import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};
@@ -35,8 +36,21 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     const col = colNumToLetter(colNum);
     const row = session["activeEditableCell"].addressObj.firstRow;
     const range = `${col}${row}:${col}${row}`;
-    await setExcelRangeValue(wsName, range, nominalCode);
+    if (session["activeEditableCell"].options.action === "clientCodeMapping") {
+      handleClientCodeMapping(wsName, range);
+    } else {
+      await setExcelRangeValue(wsName, range, nominalCode);
+    }
     session["activeEditableCell"] = resetActiveEditableCellObj();
+  };
+
+  const handleClientCodeMapping = (wsName, range) => {
+    const options = {
+      handleYes: () => console.log("yes"),
+      handleNo: () => setExcelRangeValue(wsName, range, nominalCode),
+      message: bFPrevPeriodMessage,
+    };
+    session["handleDynamicView"]("userConfirmPrompt", options);
   };
 
   const handleGoBack = (e) => {

@@ -71,6 +71,18 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             )}
             {!updatedTransactions[activeIndex].updatedCode && <td>{updatedTransactions[activeIndex].code}</td>}
           </tr>
+          <tr>
+            <td>Client mapping</td>
+            {updatedTransactions[activeIndex].updatedClientCodeMapping && (
+              <td>
+                {updatedTransactions[activeIndex].clientCodeMapping} {"=> "}
+                {updatedTransactions[activeIndex].updatedClientCodeMapping}
+              </td>
+            )}
+            {!updatedTransactions[activeIndex].updatedClientCodeMapping && (
+              <td>{updatedTransactions[activeIndex].clientCodeMapping}</td>
+            )}
+          </tr>
         </tbody>
       </table>
       {updatedTransactions.length > activeIndex + 1 && (
@@ -114,6 +126,18 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
               )}
               {!updatedTransactions[activeIndex + 1].updatedCode && (
                 <td>{updatedTransactions[activeIndex + 1].code}</td>
+              )}
+            </tr>
+            <tr>
+              <td>Client mapping</td>
+              {updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
+                <td>
+                  {updatedTransactions[activeIndex + 1].clientCodeMapping} {"=> "}
+                  {updatedTransactions[activeIndex + 1].updatedClientCodeMapping}
+                </td>
+              )}
+              {!updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
+                <td>{updatedTransactions[activeIndex + 1].clientCodeMapping}</td>
               )}
             </tr>
           </tbody>

@@ -158,6 +158,7 @@ export async function oBARelevantTransView(transactions, session) {
       mutable: true,
       format: "0",
       deleted: false,
+      updateKey: "updatedClientCodeMapping",
       unique: false,
     },
     {

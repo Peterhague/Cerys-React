@@ -202,19 +202,13 @@ export const handleSingleClick = (session, e, wsName) => {
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const editModeEnabled = checkEditMode(sheet);
   const addressObj = interpretEventAddress(e);
-  let ws;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name == wsName) {
-      ws = sheet;
-    }
-  });
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   if (addressObj.firstRow !== addressObj.lastRow || addressObj.firstCol !== addressObj.lastCol) return;
   let withinEditableRange = false;
   ws.editableRowRanges.forEach((range) => {
     if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
   });
   if (!withinEditableRange) return;
-  console.log("within ed range");
   let cerysCodeCol;
   let clientCodeCol;
   let clientCodeMappingCol;

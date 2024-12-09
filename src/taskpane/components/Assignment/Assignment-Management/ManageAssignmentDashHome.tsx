@@ -10,10 +10,7 @@ interface manageAssignmentDashHomeProps {
   session: {};
 }
 
-const ManageAssignmentDashHome = ({
-  session,
-  handleView,
-}: manageAssignmentDashHomeProps) => {
+const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashHomeProps) => {
   const transactions = session["activeAssignment"].transactions;
 
   const test = () => {
@@ -23,11 +20,11 @@ const ManageAssignmentDashHome = ({
       message: bFPrevPeriodMessage,
     };
     session["handleDynamicView"]("userConfirmPrompt", options);
-    };
+  };
 
-    const tbreq = async () => {
-        await fetch(trialBalanceUrl);
-    }
+  const tbreq = async () => {
+    await fetch(trialBalanceUrl);
+  };
   return (
     <>
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
@@ -36,8 +33,8 @@ const ManageAssignmentDashHome = ({
         handleClick={() => oBARelevantTransView(transactions, session)}
       />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
-          <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />
-          <CerysButton buttonText={"test"} handleClick={() => tbreq()} />
+      <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"test"} handleClick={() => tbreq()} />
     </>
   );
 };
