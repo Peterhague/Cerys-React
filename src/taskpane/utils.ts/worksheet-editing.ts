@@ -60,29 +60,27 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
   const change = determineChangeType(sheet, addressObj.firstCol);
   const isRangeEdit = await handleEditByChangeType(session, e, wsName, sheet, addressObj);
   const rangeEditAccepted = isRangeEdit && (await handleRangeEdit(session, e, wsName, sheet, addressObj, change));
-  for (let i = 0; i < session.editableSheets.length; i++) {
-    if (session.editableSheets[i].name == wsName) {
-      if (session.editableSheets[i].dataCorrupted) {
-        if (
-          session.editableSheets[i].editButtonStatus === "hide" ||
-          session.editableSheets[i].editButtonStatus === "inProgress"
-        ) {
-          simulateEditButtonClick(session);
-        }
-        session.options.autoFillOverride = true;
-        await resetToPreviousValues(wsName, session.editableSheets[i]);
-      }
+  if (sheet.dataCorrupted) {
+    if (sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress") {
+      simulateEditButtonClick(session);
     }
+    session.options.autoFillOverride = true;
+    await resetToPreviousValues(wsName, sheet);
   }
+
   const usedRange = await getWorksheetUsedRange(wsName);
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      sheet.usedRange = usedRange;
-    }
-  });
+  sheet.usedRange = usedRange;
   session.options.autoFillOverride = false;
+  console.log(session.options);
   console.log(change);
   console.log(rangeEditAccepted);
+  if (rangeEditAccepted && change.type === "cerysCode") {
+    completeCerysCodeUpdate(session, e, sheet, addressObj);
+  //} else if (rangeEditAccepted && change.type === "cerysName") {
+  //  completeCerysNameUpdate(session, e, sheet, addressObj);
+  } else if (rangeEditAccepted && change.type === "clientCodeMapping") {
+    completeClientCodeMappingUpdate(session, e, sheet, addressObj);
+  }
 };
 
 export const handleEditByChangeType = async (session, e, wsName, sheet, addressObj) => {
@@ -116,7 +114,7 @@ export const handleRangeEdit = async (session, e, wsName, sheet, addressObj, cha
   const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
   console.log(autoFillObj);
   if (!autoFillObj.isAutoFill)
-    await testChangesForRejction(session, e, wsName, sheet, addressObj, change, isEditModeEnabled); // runs even if autoFillObj === false
+    await testChangesForRejection(session, e, wsName, sheet, addressObj, change, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
     await simulateAutoFillChanges(session, wsName, sheet, autoFillObj);
   } else {
@@ -647,14 +645,16 @@ export const checkEditMode = (sheet) => {
   return sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress" ? true : false;
 };
 
-export const testChangesForRejction = async (session, e, wsName, sheet, addressObj, definedCol, editModeEnabled) => {
+export const testChangesForRejection = async (session, e, wsName, sheet, addressObj, definedCol, editModeEnabled) => {
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
   let withinProtectedRange = false;
   let changeRejected = sheet.changeRejected;
   sheet.changeRejected = !sheet.changeRejected;
   if (session.options.allowImmutableCellEdit) {
+    console.log("reset immutability");
     session.options.allowImmutableCellEdit = false; // toggle so returns options field to original status so can't be edited manually via ws
+    sheet.changeRejected = !sheet.changeRejected;
     return;
   }
   if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.mutable)) {
@@ -663,11 +663,14 @@ export const testChangesForRejction = async (session, e, wsName, sheet, addressO
     });
   }
   if (!withinProtectedRange) sheet.edited = true;
+  console.log(withinProtectedRange);
+  console.log(changeRejected);
   if (withinProtectedRange && !changeRejected) {
     const range = `${e.address}:${e.address}`;
     console.log("path for rejecting value??");
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
   } else {
+    console.log("not working...");
     if (sheet.changeRejected) sheet.changeRejected = !sheet.changeRejected;
   }
 };
@@ -777,9 +780,13 @@ export const captureReanalysis = async (session, e, wsName, addressObj, change) 
   const { isError, isInvalid, isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
   tests.changeRejected = isInvalid;
+  console.log(isError);
+  console.log(isInvalid);
   if (!isError && !isInvalid) {
     let newArray = [];
     updateIfExistingUpdate(session, tran, tests, change, validationObj, newArray, e);
+    console.log(tests.updated);
+    console.log(validationObj.isNegation);
     if (!tests.updated && !validationObj.isNegation) {
       const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, change.updateKey);
       newArray.push(newUpdate);
@@ -844,6 +851,8 @@ export const validateChange = (session, tran, change, e) => {
     if (e.details.valueAfter === tran.narrative) obj.isNegation = true;
   } else if (change.type === "clientCodeMapping") {
     validateClientCode(session);
+  } else if (change.type === "cerysName") {
+    obj.isError = false;
   } else obj.isError = true;
   return obj;
 };
@@ -1128,4 +1137,56 @@ export const reinstateNumberFormats = async (sheet) => {
     range.numberFormat = col.format;
   });
   await context.sync();
+};
+
+export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => {
+  const { firstRow } = addressObj;
+  let cerysNameCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "cerysName") {
+      cerysNameCol = col.colNumber;
+    }
+  });
+  if (cerysNameCol > 0) {
+    const nomCodeObj = session.chart.find((code) => code.cerysCode === e.details.valueAfter);
+    const colLetter = colNumToLetter(cerysNameCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    session.options.allowImmutableCellEdit = true;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.cerysShortName);
+  }
+};
+
+export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => {
+  console.log("mapping update triggered");
+  const { firstRow } = addressObj;
+  let clientCodeMappingCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "clientCodeMapping") {
+      clientCodeMappingCol = col.colNumber;
+    }
+  });
+  if (clientCodeMappingCol > 0) {
+    const nomCodeObj = session.chart.find((code) => code.cerysShortName === e.details.valueAfter);
+    const colLetter = colNumToLetter(clientCodeMappingCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    //session.options.allowImmutableCellEdit = true;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+  }
+};
+
+export const completeClientCodeMappingUpdate = async (session, e, sheet, addressObj) => {
+  const { firstRow } = addressObj;
+  let clientCodeNameMappingCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "clientCodeNameMapping") {
+      clientCodeNameMappingCol = col.colNumber;
+    }
+  });
+  if (clientCodeNameMappingCol > 0) {
+    const nomCodeObj = session.clientChart.find((code) => code.clientCode === e.details.valueAfter);
+    const colLetter = colNumToLetter(clientCodeNameMappingCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    session.options.allowImmutableCellEdit = true;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.clientCodeName);
+  }
 };

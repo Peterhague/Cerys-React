@@ -199,7 +199,8 @@ async function cerysNomDetailView(context, detail, session) {
 }
 
 export const handleSingleClick = (session, e, wsName) => {
-  const editModeEnabled = checkEditMode(session, wsName);
+  const sheet = session.editableSheets.find((ws) => ws.name === wsName);
+  const editModeEnabled = checkEditMode(sheet);
   const addressObj = interpretEventAddress(e);
   let ws;
   session.editableSheets.forEach((sheet) => {

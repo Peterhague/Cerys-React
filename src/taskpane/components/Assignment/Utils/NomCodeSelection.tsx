@@ -36,14 +36,6 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     const row = session["activeEditableCell"].addressObj.firstRow;
     const range = `${col}${row}:${col}${row}`;
     await setExcelRangeValue(wsName, range, nominalCode);
-    const edSheet = session["editableSheets"].find((sheet) => sheet.name === wsName);
-    if (session["activeEditableCell"].options.action === "clientCodeMapping") {
-      const definedCol = edSheet.definedCols.find((col) => col.type === "clientCodeNameMapping");
-      const suppCol = colNumToLetter(definedCol.colNumber);
-      const suppRange = `${suppCol}${row}:${suppCol}${row}`;
-      session["options"].allowImmutableCellEdit = true;
-      await setExcelRangeValue(wsName, suppRange, nominalCodeName);
-    }
     session["activeEditableCell"] = resetActiveEditableCellObj();
   };
 

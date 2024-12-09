@@ -88,7 +88,8 @@ export const getWorksheetUsedRange = async (wsName) => {
 };
 
 export const setExcelRangeValue = async (wsName, range, value) => {
-  const context = await getExcelContext();
+    const context = await getExcelContext();
+    console.log(value);
   console.log("setting value....");
   const ws = context.workbook.worksheets.getItem(wsName);
   const wsRange = ws.getRange(range);
