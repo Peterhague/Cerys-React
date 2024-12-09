@@ -47,6 +47,7 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
       IPRCreationSetting: "main",
       allowImmutableCellEdit: false,
       autoFillOverride: false,
+      isQuasiUpdate: false,
       updatedTransactions: [],
     };
     session["nextViewButOne"] = "";

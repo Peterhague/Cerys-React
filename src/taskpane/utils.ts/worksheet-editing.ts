@@ -67,17 +67,17 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
     session.options.autoFillOverride = true;
     await resetToPreviousValues(wsName, sheet);
   }
-
   const usedRange = await getWorksheetUsedRange(wsName);
   sheet.usedRange = usedRange;
   session.options.autoFillOverride = false;
   console.log(session.options);
   console.log(change);
   console.log(rangeEditAccepted);
+  session.options.isQuasiUpdate = false;
   if (rangeEditAccepted && change.type === "cerysCode") {
     completeCerysCodeUpdate(session, e, sheet, addressObj);
-  //} else if (rangeEditAccepted && change.type === "cerysName") {
-  //  completeCerysNameUpdate(session, e, sheet, addressObj);
+  } else if (rangeEditAccepted && change.type === "cerysName") {
+    completeCerysNameUpdate(session, e, sheet, addressObj);
   } else if (rangeEditAccepted && change.type === "clientCodeMapping") {
     completeClientCodeMappingUpdate(session, e, sheet, addressObj);
   }
@@ -815,7 +815,7 @@ export const captureReanalysis = async (session, e, wsName, addressObj, change) 
   if (tests.isValid) {
     handledSuccessfully = true;
     const color = tests.isNotNegation ? "lightGreen" : "yellow";
-    highlightRanges(wsName, [range], color);
+    !session.options.isQuasiUpdate && highlightRanges(wsName, [range], color);
     if (
       session.currentView === "promptIFARCreation" ||
       session.currentView === "promptTFARCreation" ||
@@ -1148,6 +1148,7 @@ export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => 
     }
   });
   if (cerysNameCol > 0) {
+    session.options.isQuasiUpdate = true;
     const nomCodeObj = session.chart.find((code) => code.cerysCode === e.details.valueAfter);
     const colLetter = colNumToLetter(cerysNameCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
@@ -1166,6 +1167,7 @@ export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => 
     }
   });
   if (clientCodeMappingCol > 0) {
+    session.options.isQuasiUpdate = true;
     const nomCodeObj = session.chart.find((code) => code.cerysShortName === e.details.valueAfter);
     const colLetter = colNumToLetter(clientCodeMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
@@ -1183,6 +1185,7 @@ export const completeClientCodeMappingUpdate = async (session, e, sheet, address
     }
   });
   if (clientCodeNameMappingCol > 0) {
+    session.options.isQuasiUpdate = true;
     const nomCodeObj = session.clientChart.find((code) => code.clientCode === e.details.valueAfter);
     const colLetter = colNumToLetter(clientCodeNameMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
