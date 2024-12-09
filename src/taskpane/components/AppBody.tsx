@@ -125,7 +125,10 @@ const AppBody = ({ session }: AppBodyProps) => {
         session["nextView"] = view;
         break;
       case "nomCodeSelection":
-        body = <NomCodeSelection handleView={handleView} session={session} />;
+        body = <NomCodeSelection handleView={handleView} session={session} chart={session["chart"]} />;
+        break;
+      case "clientNomCodeSelection":
+        body = <NomCodeSelection handleView={handleView} session={session} chart={session["clientChart"]} />;
         break;
       case "userConfirmPrompt":
         body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
@@ -205,7 +208,7 @@ const AppBody = ({ session }: AppBodyProps) => {
         session["nextView"] = view;
         break;
       case "enterJournal":
-        body = <EnterJournal handleView={handleView} session={session} />;
+        body = <EnterJournal handleView={handleView} session={session} chart={session["chart"]} />;
         break;
       case "promptIFARCreation":
         body = <PromptIFARCreation handleView={handleView} session={session} />;

@@ -12,6 +12,13 @@ export async function oBARelevantTransView(transactions, session) {
   const relTrans = transactions.filter((tran) => {
     return tran && tran.clientAdj;
   });
+  relTrans.forEach((tran) => {
+    const codeObj = session.chart.find((code) => code.cerysCode === tran.cerysCode);
+    tran.mapping = {
+      clientCode: codeObj.currentClientMapping.clientCode,
+      clientCodeName: codeObj.currentClientMapping.clientCodeName,
+    };
+  });
   console.log(relTrans);
   const context = await getExcelContext();
   let sheetInMidEdit = false;
@@ -32,10 +39,19 @@ export async function oBARelevantTransView(transactions, session) {
   await context.sync();
   const range = ws.getRange(`A1:I${relTrans.length + 2}`);
   const valuesToPost = [
-    ["Transaction", "Transaction", "Transaction", "Cerys", "Cerys", "Transaction", "Value", "Client", "Client"],
+    [
+      "Transaction",
+      "Transaction",
+      "Transaction",
+      "Cerys",
+      "Cerys",
+      "Transaction",
+      "Value",
+      "Mapped Client",
+      "Mapped Client",
+    ],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Name", "Narrative", "DR/(CR)", "Nominal Code", "Nominal Name"],
   ];
-  //transactions[0].defaultSign === "credit" ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
   relTrans.forEach((line) => {
     let arr = [];
@@ -54,24 +70,20 @@ export async function oBARelevantTransView(transactions, session) {
       arr.push(line.cerysCode);
     }
     arr.push(line.cerysShortName);
-    //line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
     if (line.narrativeUpdated) {
       arr.push(line.narrativeUpdated);
       delete line.narrativeUpdated;
     } else {
       arr.push(line.narrative);
     }
-      arr.push(line.value / 100);
-      arr.push(line.currentClientMapping.clientCode);
-      arr.push(line.currentClientMapping.clientCodeName);
-    //line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
+    arr.push(line.value / 100);
+    arr.push(line.mapping.clientCode);
+    arr.push(line.mapping.clientCodeName);
     valuesToPost.push(arr);
     line.rowNumber = rowNumber;
     line.rowNumberOrig = rowNumber;
     rowNumber += 1;
   });
-    console.log(valuesToPost);
-    console.log(range);
   range.values = valuesToPost;
   const headerRange = ws.getRange("A1:I2");
   headerRange.format.font.bold = true;
@@ -116,10 +128,10 @@ export async function oBARelevantTransView(transactions, session) {
       unique: false,
     },
     {
-      type: "clientCode",
+      type: "cerysName",
       colNumber: 5,
       mutable: false,
-      format: "0",
+      format: "",
       deleted: false,
       unique: false,
     },
@@ -140,8 +152,24 @@ export async function oBARelevantTransView(transactions, session) {
       deleted: false,
       unique: false,
     },
+    {
+      type: "clientCodeMapping",
+      colNumber: 8,
+      mutable: true,
+      format: "0",
+      deleted: false,
+      unique: false,
+    },
+    {
+      type: "clientCodeNameMapping",
+      colNumber: 9,
+      mutable: false,
+      format: "",
+      deleted: false,
+      unique: false,
+    },
   ];
-  const editableWs = createEditableWs(relTrans, ws, definedCols, valuesToPost, "cerysCodeAnalysis");
+  const editableWs = createEditableWs(relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments");
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name !== editableWs.name) arr.push(sheet);

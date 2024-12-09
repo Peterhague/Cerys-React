@@ -8,9 +8,19 @@ import { callNextView, resetActiveEditableCellObj } from "../../../utils.ts/help
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};
+  chart: [
+    {
+      cerysCode: number;
+      cerysName: string;
+      cerysExcelName: string;
+      clientCode: number;
+      clientCodeName: string;
+      _id: string;
+    },
+  ];
 }
 
-const NomCodeSelection = ({ handleView, session }: nomCodeSelectionProps) => {
+const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps) => {
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -19,12 +29,21 @@ const NomCodeSelection = ({ handleView, session }: nomCodeSelectionProps) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    if (!nominalCode) return;
     const wsName = session["activeEditableCell"].wsName;
     const colNum = session["activeEditableCell"].addressObj.firstCol;
     const col = colNumToLetter(colNum);
     const row = session["activeEditableCell"].addressObj.firstRow;
     const range = `${col}${row}:${col}${row}`;
     await setExcelRangeValue(wsName, range, nominalCode);
+    const edSheet = session["editableSheets"].find((sheet) => sheet.name === wsName);
+    if (session["activeEditableCell"].options.action === "clientCodeMapping") {
+      const definedCol = edSheet.definedCols.find((col) => col.type === "clientCodeNameMapping");
+      const suppCol = colNumToLetter(definedCol.colNumber);
+      const suppRange = `${suppCol}${row}:${suppCol}${row}`;
+      session["options"].allowImmutableCellEdit = true;
+      await setExcelRangeValue(wsName, suppRange, nominalCodeName);
+    }
     session["activeEditableCell"] = resetActiveEditableCellObj();
   };
 
@@ -44,6 +63,7 @@ const NomCodeSelection = ({ handleView, session }: nomCodeSelectionProps) => {
         <h3>Select Nominal Code</h3>
         <NomCodeInput
           ref={inputRef}
+          chart={chart}
           session={session}
           nominalCode={nominalCode}
           setNominalCode={setNominalCode}

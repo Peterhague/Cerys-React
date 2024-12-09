@@ -2,16 +2,25 @@ import * as React from "react";
 import { useState } from "react";
 import { useRef } from "react";
 import CerysButton from "../CerysButton";
-import { cerysCodeToCerysObject } from "../../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 
 interface enterJournalProps {
   handleView: (view) => void;
   session: {};
+  chart: [
+    {
+      cerysCode: number;
+      cerysName: string;
+      cerysExcelName: string;
+      clientCode: number;
+      clientCodeName: string;
+      _id: string;
+    },
+  ];
 }
 
-const EnterJournal = ({ handleView, session }: enterJournalProps) => {
+const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -28,8 +37,8 @@ const EnterJournal = ({ handleView, session }: enterJournalProps) => {
   };
 
   const handleJournal = async (e) => {
-      e.preventDefault();
-      const cerysObj = session["chart"].find((code) => code.cerysCode === parseInt(nominalCode));
+    e.preventDefault();
+    const cerysObj = session["chart"].find((code) => code.cerysCode === parseInt(nominalCode));
     const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
     session["activeJournal"].journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.value;
@@ -50,6 +59,7 @@ const EnterJournal = ({ handleView, session }: enterJournalProps) => {
         <NomCodeInput
           ref={inputRef}
           session={session}
+          chart={chart}
           nominalCode={nominalCode}
           setNominalCode={setNominalCode}
           nominalCodeName={nominalCodeName}

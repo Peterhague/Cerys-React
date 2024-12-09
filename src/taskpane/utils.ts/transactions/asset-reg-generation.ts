@@ -638,7 +638,7 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   });
   const colLetter = colNumToLetter(depnChgColNumber);
   const range = `${colLetter}${tran.rowNumber}:${colLetter}${tran.rowNumber}`;
-  session.options.allowDepnChgEdit = true;
+  session.options.allowImmutableCellEdit = true;
   await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {

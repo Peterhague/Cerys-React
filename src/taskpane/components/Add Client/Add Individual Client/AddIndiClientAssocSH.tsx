@@ -6,10 +6,7 @@ interface addIndiClientAssocSHProps {
   session: {};
 }
 
-const AddIndiClientAssocSH = ({
-  handleView,
-  session,
-}: addIndiClientAssocSHProps) => {
+const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps) => {
   const [clientId, setClientId] = useState({});
   const [shareClasses, setShareClasses] = useState(null);
   const [showShareClasses, setShowShareClasses] = useState(false);
@@ -60,7 +57,6 @@ const AddIndiClientAssocSH = ({
       }
     });
   };
-
 
   const finishSharesAllocation = () => {
     setShowShareClasses(false);

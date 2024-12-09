@@ -213,13 +213,17 @@ export const handleSingleClick = (session, e, wsName) => {
     if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
   });
   if (!withinEditableRange) return;
+  console.log("within ed range");
   let cerysCodeCol;
   let clientCodeCol;
+  let clientCodeMappingCol;
   ws.definedCols.forEach((col) => {
     if (col.type === "cerysCode" && editModeEnabled) {
       cerysCodeCol = col.colNumber;
     } else if (col.type === "clientCode") {
       clientCodeCol = col.colNumber;
+    } else if (col.type === "clientCodeMapping") {
+      clientCodeMappingCol = col.colNumber;
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
@@ -227,6 +231,19 @@ export const handleSingleClick = (session, e, wsName) => {
     session.activeEditableCell = {
       addressObj,
       wsName,
+      options: {
+        action: "cerysCoding",
+      },
+    };
+  }
+  if (clientCodeMappingCol === addressObj.firstCol) {
+    session.handleView("clientNomCodeSelection");
+    session.activeEditableCell = {
+      addressObj,
+      wsName,
+      options: {
+        action: "clientCodeMapping",
+      },
     };
   }
   if (clientCodeCol === addressObj.firstCol) {

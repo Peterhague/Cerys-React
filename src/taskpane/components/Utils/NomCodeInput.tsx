@@ -2,6 +2,16 @@ import * as React from "react";
 import { useState } from "react";
 interface nomCodeInputProps {
   session: {};
+  chart: [
+    {
+      cerysCode: number;
+      cerysName: string;
+      cerysExcelName: string;
+      clientCode: number;
+      clientCodeName: string;
+      _id: string;
+    },
+  ];
   nominalCode: string;
   setNominalCode: (code) => void;
   nominalCodeName: string;
@@ -16,6 +26,7 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
   (
     {
       session,
+      chart,
       nominalCode,
       setNominalCode,
       nominalCodeName,
@@ -28,7 +39,6 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
     ref
   ) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
-    const chart = session["chart"];
 
     const handleChange = (value) => {
       if (nominalCodeName) {
@@ -48,11 +58,19 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
       }
     };
 
-    const handleSelect = (cerysCodeObj) => {
-      setNominalCode(cerysCodeObj.cerysCode.toString());
-      setNominalCodeName(cerysCodeObj.cerysExcelName);
-      setSearchTerm(`${cerysCodeObj.cerysCode} ${cerysCodeObj.cerysExcelName}`);
-      setSearchDisplay(`${cerysCodeObj.cerysCode} ${cerysCodeObj.cerysExcelName}`);
+    const handleSelect = (codeObj) => {
+      setNominalCode(codeObj.clientCode ? codeObj.clientCode.toString() : codeObj.cerysCode.toString());
+      setNominalCodeName(codeObj.cerysExcelName ? codeObj.cerysExcelName : codeObj.clientCodeName);
+      setSearchTerm(
+        codeObj.clientCode
+          ? `${codeObj.clientCode} ${codeObj.clientCodeName}`
+          : `${codeObj.cerysCode} ${codeObj.cerysExcelName}`
+      );
+      setSearchDisplay(
+        codeObj.clientCode
+          ? `${codeObj.clientCode} ${codeObj.clientCodeName}`
+          : `${codeObj.cerysCode} ${codeObj.cerysExcelName}`
+      );
       setShowSuggestions(false);
       session["arrowIndex"] = -1;
     };
@@ -67,14 +85,16 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
           setSearchTerm(searchDisplay);
         } else {
           chart.forEach((code) => {
-            const codeStr = code.cerysCode.toString();
+            const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
+            const name = code.cerysName ? code.cerysName : code.clientCodeName;
+            const shortName = code.cerysExcelName ? code.cerysExcelName : code.clientCodeName;
             let check = false;
-            if (code.cerysName.toLowerCase() === searchTerm.toLowerCase() || codeStr === searchTerm) check = true;
+            if (name.toLowerCase() === searchTerm.toLowerCase() || codeStr === searchTerm) check = true;
             if (check) {
-              setNominalCode(code.cerysCode.toString());
-              setNominalCodeName(code.cerysExcelName);
-              setSearchTerm(`${code.cerysCode} ${code.cerysExcelName}`);
-              setSearchDisplay(`${code.cerysCode} ${code.cerysExcelName}`);
+              setNominalCode(codeStr);
+              setNominalCodeName(shortName);
+              setSearchTerm(`${codeStr} ${shortName}`);
+              setSearchDisplay(`${codeStr} ${shortName}`);
             }
           });
         }
@@ -86,35 +106,48 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const filteredChart = chart.filter((code) => {
-            const codeStr = code.cerysCode.toString();
+            const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
+            const name = code.cerysName ? code.cerysName : code.clientCodeName;
             let check = true;
             for (let i = 0; i < searchTerm.length; i++) {
               if (codeStr[i] !== searchTerm[i]) check = false;
             }
-            if (code.cerysName.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
+            if (name.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
             return searchTerm && check;
           });
           if (e.key === "ArrowDown") {
             if (session["arrowIndex"] < filteredChart.length - 1) {
               session["arrowIndex"] += 1;
-              setNominalCode(filteredChart[session["arrowIndex"]].cerysCode.toString());
-              setNominalCodeName(filteredChart[session["arrowIndex"]].cerysExcelName);
-              setSearchDisplay(
-                `${filteredChart[session["arrowIndex"]].cerysCode} ${filteredChart[session["arrowIndex"]].cerysExcelName}`
-              );
+              const codeStr = filteredChart[session["arrowIndex"]].clientCode
+                ? filteredChart[session["arrowIndex"]].clientCode.toString()
+                : filteredChart[session["arrowIndex"]].cerysCode.toString();
+              const shortName = filteredChart[session["arrowIndex"]].cerysExcelName
+                ? filteredChart[session["arrowIndex"]].cerysExcelName
+                : filteredChart[session["arrowIndex"]].clientCodeName;
+              setNominalCode(codeStr);
+              setNominalCodeName(shortName);
+              setSearchDisplay(`${codeStr} ${shortName}`);
             }
           } else {
             if (session["arrowIndex"] > 0) {
               session["arrowIndex"] -= 1;
-              setNominalCode(filteredChart[session["arrowIndex"]].cerysCode.toString());
-              setNominalCodeName(filteredChart[session["arrowIndex"]].cerysExcelName);
-              setSearchDisplay(
-                `${filteredChart[session["arrowIndex"]].cerysCode} ${filteredChart[session["arrowIndex"]].cerysExcelName}`
-              );
+              const codeStr = filteredChart[session["arrowIndex"]].clientCode
+                ? filteredChart[session["arrowIndex"]].clientCode.toString()
+                : filteredChart[session["arrowIndex"]].cerysCode.toString();
+              const shortName = filteredChart[session["arrowIndex"]].cerysExcelName
+                ? filteredChart[session["arrowIndex"]].cerysExcelName
+                : filteredChart[session["arrowIndex"]].clientCodeName;
+              setNominalCode(codeStr);
+              setNominalCodeName(shortName);
+              setSearchDisplay(`${codeStr} ${shortName}`);
             }
           }
         }
       }
+    };
+
+    const getSuggestion = (code) => {
+      return code.clientCode ? `${code.clientCode} ${code.clientCodeName}` : `${code.cerysCode} ${code.cerysExcelName}`;
     };
 
     return (
@@ -135,17 +168,18 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
             {showSuggestions &&
               chart
                 .filter((code) => {
-                  const codeStr = code.cerysCode.toString();
+                  const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
+                  const name = code.cerysName ? code.cerysName : code.clientCodeName;
                   let check = true;
                   for (let i = 0; i < searchTerm.length; i++) {
                     if (codeStr[i] !== searchTerm[i]) check = false;
                   }
-                  if (code.cerysName.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
+                  if (name.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
                   return searchTerm && check;
                 })
                 .map((code) => (
                   <div onClick={() => handleSelect(code)} key={code._id} tabIndex={-1}>
-                    {code.cerysCode + " " + code.cerysExcelName}
+                    {getSuggestion(code)}
                   </div>
                 ))}
           </div>

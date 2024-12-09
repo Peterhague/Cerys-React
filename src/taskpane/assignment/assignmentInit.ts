@@ -3,11 +3,11 @@ import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 
 export async function addPrimarySheets(session) {
-    const context = await getExcelContext();
-      addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"]);
-      const arrForDATA = convertDataForWbook(session);
-      await writeToDATA(context, arrForDATA);
-      await context.sync();
+  const context = await getExcelContext();
+  addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"]);
+  const arrForDATA = convertDataForWbook(session);
+  await writeToDATA(context, arrForDATA);
+  await context.sync();
 }
 
 function convertDataForWbook(session) {

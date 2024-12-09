@@ -12,12 +12,7 @@ interface userLoginProps {
   setEditButton: (state) => void;
 }
 
-const UserLogin = ({
-  handleView,
-  handleDynamicView,
-  session,
-  setEditButton,
-}: userLoginProps) => {
+const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -30,9 +25,6 @@ const UserLogin = ({
   };
 
   const processUser = async (userAndCustomerFromDb) => {
-    const chartDB = await fetch(getChartUrl);
-    const chart = await chartDB.json();
-    //session["chart"] = chart;
     const userAndCustomerObject = await userAndCustomerFromDb.json();
     session["user"] = userAndCustomerObject.user;
     session["customer"] = userAndCustomerObject.customer;
@@ -53,7 +45,8 @@ const UserLogin = ({
       IFARCreationSetting: "main",
       TFARCreationSetting: "main",
       IPRCreationSetting: "main",
-      allowDepnChgEdit: false,
+      allowImmutableCellEdit: false,
+      autoFillOverride: false,
       updatedTransactions: [],
     };
     session["nextViewButOne"] = "";

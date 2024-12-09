@@ -25,10 +25,10 @@ export const getExcelContext = async () => {
 };
 
 export const registerWorksheetDeletionHandler = async (session) => {
-    const context = await getExcelContext();
+  const context = await getExcelContext();
   let sheets = context.workbook.worksheets;
   sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
-    await context.sync();
+  await context.sync();
 };
 
 export const handleSheetDeletion = (e, session) => {
@@ -161,14 +161,17 @@ export const handleEditButtonClick = async (session) => {
       let dateCol;
       let cerysCodeCol;
       let cerysNarrativeCol;
+      let clientCodeMappingCol;
       sheet.definedCols.forEach((col) => {
         if (col.type === "date") dateCol = col.colNumber;
         if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
         if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
+        if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
       });
       const dateColLetter = colNumToLetter(dateCol);
       const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
       const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
+      const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
       session.updatedTransactions.forEach((tran) => {
         if (tran.worksheetName === wsName) {
           if (tran.updatedCode) {
@@ -181,6 +184,10 @@ export const handleEditButtonClick = async (session) => {
           }
           if (tran.updatedNarrative) {
             const range = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
+            highlightGreenRanges.push(range);
+          }
+          if (tran.clientCodeMapping) {
+            const range = `${clientCodeMappingColLetter}${tran.rowNumber}:${clientCodeMappingColLetter}${tran.rowNumber}`;
             highlightGreenRanges.push(range);
           }
         }
@@ -354,5 +361,8 @@ export const resetActiveEditableCellObj = () => {
       lastCol: 0,
     },
     wsName: "",
+    options: {
+      action: "",
+    },
   };
 };
