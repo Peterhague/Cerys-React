@@ -59,7 +59,7 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
   const addressObj = interpretEventAddress(e);
   const change = determineChangeType(sheet, addressObj.firstCol);
   const isRangeEdit = await handleEditByChangeType(session, e, wsName, sheet, addressObj);
-  const rangeEditAccepted = isRangeEdit && (await handleRangeEdit(session, e, wsName, sheet, addressObj, change));
+  const rangeEditAccepted = isRangeEdit && (await handleRangeEdit(session, e, sheet, addressObj, change));
   if (sheet.dataCorrupted) {
     if (sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress") {
       simulateEditButtonClick(session);
@@ -107,19 +107,15 @@ export const handleEditByChangeType = async (session, e, wsName, sheet, addressO
   return isRangeEdit;
 };
 
-export const handleRangeEdit = async (session, e, wsName, sheet, addressObj, change) => {
+export const handleRangeEdit = async (session, e, sheet, addressObj, change) => {
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
-  console.log(session.options);
   const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
-  console.log(autoFillObj);
-  if (!autoFillObj.isAutoFill)
-    await testChangesForRejection(session, e, wsName, sheet, addressObj, change, isEditModeEnabled); // runs even if autoFillObj === false
+  if (!autoFillObj.isAutoFill) await testChangesForRejection(session, e, sheet, addressObj, change, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
-    await simulateAutoFillChanges(session, wsName, sheet, autoFillObj);
+    await simulateAutoFillChanges(session, sheet, autoFillObj);
   } else {
-    console.log("here???");
-    handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, wsName, addressObj, change));
+    handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, change));
   }
   return handledSuccessfully;
 };
@@ -645,7 +641,8 @@ export const checkEditMode = (sheet) => {
   return sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress" ? true : false;
 };
 
-export const testChangesForRejection = async (session, e, wsName, sheet, addressObj, definedCol, editModeEnabled) => {
+export const testChangesForRejection = async (session, e, sheet, addressObj, definedCol, editModeEnabled) => {
+  const wsName = sheet.name;
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
   let withinProtectedRange = false;
@@ -768,69 +765,83 @@ export const checkForAutoFill = (e) => {
 //  }
 //};
 
-export const captureReanalysis = async (session, e, wsName, addressObj, change) => {
+export const captureReanalysis = async (session, e, sheet, addressObj, change) => {
+  const wsName = sheet.name;
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
   const tests = { changeRejected: false, isValid: false, isNotNegation: true, updated: false };
-  const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const tran = sheet.transactions.find((line) => line.rowNumber === eRowNumber);
   const validationObj = validateChange(session, tran, change, e);
-  const { isError, isInvalid, isNegation } = validationObj;
+  const { isInvalid, isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
   tests.changeRejected = isInvalid;
-  console.log(isError);
-  console.log(isInvalid);
-  if (!isError && !isInvalid) {
-    let newArray = [];
-    updateIfExistingUpdate(session, tran, tests, change, validationObj, newArray, e);
-    console.log(tests.updated);
-    console.log(validationObj.isNegation);
-    if (!tests.updated && !validationObj.isNegation) {
-      const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, change.updateKey);
-      newArray.push(newUpdate);
-      tests.isValid = true;
-    }
-    newArray.forEach((update) => {
-      if (update.updatedCode && !update.cerysCodeObject) {
-        session["chart"].forEach((code) => {
-          if (code.cerysCode === newValue) update.cerysCodeObject = code;
-        });
-      }
-    });
-    if (change.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
-      recalculateCharge(session, sheet, tran, e);
-    if (change.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
-      updateAssetNarrative(session, sheet, tran, e);
-    session.updatedTransactions = newArray;
-  }
-  if (tests.isValid) {
-    sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
-  }
+  const isValidTransactionUpdate = combineAllValidation(session, validationObj);
+  if (isValidTransactionUpdate)
+    processTransactionUpdate(session, tran, tests, change, validationObj, e, newValue, sheet);
+  if (session.options.isQuasiUpdate) tests.isValid = true;
+  //if (tests.isValid) {
+  //  sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
+  //}
   const range = `${e.address}:${e.address}`;
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    return handledSuccessfully;
   }
   if (tests.isValid) {
+    processTransUpdateEffects(session, sheet, range, tests);
     handledSuccessfully = true;
-    const color = tests.isNotNegation ? "lightGreen" : "yellow";
-    !session.options.isQuasiUpdate && highlightRanges(wsName, [range], color);
-    if (
-      session.currentView === "promptIFARCreation" ||
-      session.currentView === "promptTFARCreation" ||
-      session.currentView === "propmptIPRCreation"
-    )
-      setNextViewButOne(session);
-    const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
-    session.handleView(view);
-    if (session.updatedTransactions.length > 0) {
-      session.setEditButton("off");
-    } else {
-      session.setEditButton("hide");
-    }
   }
   return handledSuccessfully;
+};
+
+export const combineAllValidation = (session, validationObj) => {
+  const { isError, isInvalid } = validationObj;
+  if (!isError && !isInvalid && !session.options.isQuasiUpdate) {
+    return true;
+  } else return false;
+};
+
+export const processTransactionUpdate = (session, tran, tests, change, validationObj, e, newValue, sheet) => {
+  let newArray = [];
+  updateIfExistingUpdate(session, tran, tests, change, validationObj, newArray, e);
+  if (!tests.updated && !validationObj.isNegation) {
+    const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, change.updateKey);
+    newArray.push(newUpdate);
+    tests.isValid = true;
+  }
+  newArray.forEach((update) => {
+    if (update.updatedCode && !update.cerysCodeObject) {
+      session["chart"].forEach((code) => {
+        if (code.cerysCode === newValue) update.cerysCodeObject = code;
+      });
+    }
+  });
+  if (change.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+    recalculateCharge(session, sheet, tran, e);
+  if (change.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+    updateAssetNarrative(session, sheet, tran, e);
+  session.updatedTransactions = newArray;
+};
+
+export const processTransUpdateEffects = (session, sheet, range, tests) => {
+  sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
+  const color = tests.isNotNegation ? "lightGreen" : "yellow";
+  !session.options.isQuasiUpdate && highlightRanges(sheet.name, [range], color);
+  if (
+    session.currentView === "promptIFARCreation" ||
+    session.currentView === "promptTFARCreation" ||
+    session.currentView === "propmptIPRCreation"
+  )
+    setNextViewButOne(session);
+  const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
+  session.handleView(view);
+  if (session.updatedTransactions.length > 0) {
+    session.setEditButton("off");
+  } else {
+    session.setEditButton("hide");
+  }
 };
 
 export const determineChangeType = (sheet, addressCol) => {
@@ -1071,7 +1082,8 @@ export const reverseTransactionUpdates = async (session) => {
   session.setEditButton("hide");
 };
 
-export const simulateAutoFillChanges = async (session, wsName, sheet, autoFillObj) => {
+export const simulateAutoFillChanges = async (session, sheet, autoFillObj) => {
+  const wsName = sheet.name;
   const ranges = [];
   if (autoFillObj.autoFillCols) {
     for (let i = autoFillObj.firstColNumber; i < autoFillObj.lastColNumber + 1; i++) {
