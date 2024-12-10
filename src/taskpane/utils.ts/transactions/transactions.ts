@@ -49,9 +49,11 @@ export const processTransBatch = async (session) => {
 };
 
 export const processUpdateBatch = async (session) => {
+    console.log(session);
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
   const updatedAssignmentAndTrans = await updatedAssignmentAndTransDB.json();
+  console.log(updatedAssignmentAndTrans);
   const updatedTransactions = updatedAssignmentAndTrans.processedTrans;
   updatedTransactions.forEach((tran) => {
     tran.processedAsAsset = false;

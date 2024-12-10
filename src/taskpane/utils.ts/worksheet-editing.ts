@@ -1016,6 +1016,11 @@ export const submitTransactionUpdates = async (session) => {
           if (transaction._id === tran.transactionId) {
             if (tran.updatedDate) transaction.transactionDateExcel = tran.updatedDate;
             if (tran.updatedNarrative) transaction.narrative = tran.updatedNarrative;
+            if (tran.updatedClientCodeMapping) {
+              const nomCode = session.clientChart.find((code) => code.clientCode === tran.updatedClientCodeMapping);
+              transaction.mapping.clientCode = nomCode.clientCode;
+              transaction.mapping.clientCodeName = nomCode.clientCodeName;
+            }
           }
         });
       });
@@ -1066,14 +1071,17 @@ export const reverseTransactionUpdates = async (session) => {
     let dateCol;
     let cerysCodeCol;
     let cerysNarrativeCol;
+    let clientCodeMappingCol;
     ws.definedCols.forEach((col) => {
       if (col.type === "date") dateCol = col.colNumber;
       if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
       if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
+      if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
     });
     const dateColLetter = colNumToLetter(dateCol);
     const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
     const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
+    const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
     if (tran.updatedCode) {
       const address = `${cerysCodeColLetter}${tran.rowNumber}:${cerysCodeColLetter}${tran.rowNumber}`;
       const reversal = { wsName, address, value: tran.code };
@@ -1087,6 +1095,11 @@ export const reverseTransactionUpdates = async (session) => {
     if (tran.updatedNarrative) {
       const address = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
       const reversal = { wsName, address, value: tran.narrative };
+      reversals.push(reversal);
+    }
+    if (tran.updatedClientCodeMapping) {
+      const address = `${clientCodeMappingColLetter}${tran.rowNumber}:${clientCodeMappingColLetter}${tran.rowNumber}`;
+      const reversal = { wsName, address, value: tran.clientCodeMapping };
       reversals.push(reversal);
     }
   });

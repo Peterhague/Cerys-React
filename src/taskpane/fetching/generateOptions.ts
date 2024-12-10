@@ -96,6 +96,8 @@ export function fetchOptionsTransBatchUpdate(session) {
       updatedTransactions: session.updatedTransactions,
       customerId: session.customer._id,
       assignmentId: session.activeAssignment._id,
+      clientSoftware: session.activeAssignment.clientSoftware,
+      clientChart: session.clientChart,
     }),
   };
 }
