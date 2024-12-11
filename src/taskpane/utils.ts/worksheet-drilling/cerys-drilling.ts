@@ -4,6 +4,7 @@ import {
   handleEditButtonClick,
   interpretEventAddress,
   setEditButtonValue,
+  createEditableCell,
 } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
@@ -223,23 +224,11 @@ export const handleSingleClick = (session, e, wsName) => {
   });
   if (cerysCodeCol === addressObj.firstCol) {
     session.handleView("nomCodeSelection");
-    session.activeEditableCell = {
-      addressObj,
-      wsName,
-      options: {
-        action: "cerysCoding",
-      },
-    };
+    session.activeEditableCell = createEditableCell(addressObj, wsName, "cerysCoding");
   }
   if (clientCodeMappingCol === addressObj.firstCol) {
     session.handleView("clientNomCodeSelection");
-    session.activeEditableCell = {
-      addressObj,
-      wsName,
-      options: {
-        action: "clientCodeMapping",
-      },
-    };
+    session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
   }
   if (clientCodeCol === addressObj.firstCol) {
     console.log("client code col clicked");

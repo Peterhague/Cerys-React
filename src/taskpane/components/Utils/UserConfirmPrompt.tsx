@@ -5,7 +5,13 @@ import Message from "../Message";
 interface userConfirmPromptProps {
   handleView: (view) => void;
   session: {};
-  options: { handleYes: () => void; handleNo: () => void; message: React.ReactNode };
+  options: {
+    handleYes: () => void;
+    handleNo: () => void;
+    message: React.ReactNode;
+    yesButtonText: string;
+    noButtonText: string;
+  };
 }
 
 const UserConfirmPrompt = ({ options }: userConfirmPromptProps) => {
@@ -13,8 +19,8 @@ const UserConfirmPrompt = ({ options }: userConfirmPromptProps) => {
     <>
       <div>
         <Message messageText={options.message} />
-        <CerysButton buttonText={"Yes"} handleClick={() => options.handleYes()} />
-        <CerysButton buttonText={"No"} handleClick={() => options.handleNo()} />
+        <CerysButton buttonText={options.yesButtonText} handleClick={() => options.handleYes()} />
+        <CerysButton buttonText={options.noButtonText} handleClick={() => options.handleNo()} />
       </div>
     </>
   );

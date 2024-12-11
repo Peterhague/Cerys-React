@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { registerWorksheetDeletionHandler, resetActiveEditableCellObj } from "../utils.ts/helperFunctions";
+import { createEditableCell, registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
 
 interface userLoginProps {
   handleView: (view) => void;
@@ -39,7 +39,7 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
     session["setEditButton"] = setEditButton;
     session["unmappedCodeObjects"] = [];
     session["arrowIndex"] = -1;
-    session["activeEditableCell"] = resetActiveEditableCellObj();
+    session["activeEditableCell"] = createEditableCell(null, null, null);
     session["options"] = {
       IFARCreationSetting: "main",
       TFARCreationSetting: "main",

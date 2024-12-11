@@ -83,3 +83,5 @@ export const updateIPRStatus = "http://localhost:4000/api/ip/update-ipr-status";
 export const postJournalBatch = "http://localhost:4000/api/transaction/batch-post";
 
 export const updateTransactionBatch = "http://localhost:4000/api/transaction/batch-update";
+
+export const updateCerysCodeMappingUrl = "http://localhost:4000/api/client/update-cerys-code-mapping";

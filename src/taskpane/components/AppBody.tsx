@@ -58,7 +58,11 @@ const AppBody = ({ session }: AppBodyProps) => {
     handleYes: () => console.log("yes"),
     handleNo: () => console.log("no"),
     message: <p>Message</p>,
+    yesButtonText: "Yes",
+    noButtonText: "No",
   });
+
+  console.log(session);
 
   const handleView = (view) => {
     session["currentView"] = view;

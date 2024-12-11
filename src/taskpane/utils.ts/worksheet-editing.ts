@@ -2,10 +2,10 @@ import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import {
   callNextView,
   convertExcelDate,
+  createEditableCell,
   getExcelContext,
   interpretEventAddress,
   interpretExcelAddress,
-  resetActiveEditableCellObj,
   setNextViewButOne,
   simulateEditButtonClick,
   updateAssignmentFigures,
@@ -45,12 +45,8 @@ export const handleWorksheetSelection = async (session, e, wsName) => {
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
-    console.log(addressObj);
     session.handleView("nomCodeSelection");
-    session.activeEditableCell = {
-      addressObj,
-      wsName,
-    };
+    session.activeEditableCell = createEditableCell(addressObj, wsName, null);
   }
 };
 
@@ -154,7 +150,7 @@ export const handleColumnDeletion = async (session, sheet, addressObj) => {
       firstCol <= session.activeEditableCell.addressObj.firstCol &&
       lastCol >= session.activeEditableCell.addressObj.firstCol
     ) {
-      session.activeEditableCell = resetActiveEditableCellObj();
+      session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
@@ -240,7 +236,7 @@ export const handleRowDeletion = async (session, sheet, addressObj) => {
       firstRow <= session.activeEditableCell.addressObj.firstRow &&
       lastRow >= session.activeEditableCell.addressObj.firstRow
     ) {
-      session.activeEditableCell = resetActiveEditableCellObj();
+      session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
@@ -308,7 +304,7 @@ export const handleCellDeletionUp = async (session, sheet, addressObj) => {
       firstRow <= session.activeEditableCell.addressObj.firstRow &&
       lastRow >= session.activeEditableCell.addressObj.firstRow
     ) {
-      session.activeEditableCell = resetActiveEditableCellObj();
+      session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
@@ -391,7 +387,7 @@ export const handleCellDeletionLeft = async (session, sheet, addressObj) => {
       firstCol <= session.activeEditableCell.addressObj.firstCol &&
       lastCol >= session.activeEditableCell.addressObj.firstCol
     ) {
-      session.activeEditableCell = resetActiveEditableCellObj();
+      session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }

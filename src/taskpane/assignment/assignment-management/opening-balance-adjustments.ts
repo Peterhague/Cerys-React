@@ -1,10 +1,13 @@
+import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
+import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import {
   createEditableWs,
   getExcelContext,
   handleEditButtonClick,
   setEditButtonValue,
 } from "../../utils.ts/helperFunctions";
-import { addWorksheet } from "../../utils.ts/worksheet";
+import { getClientCodeMappingMessage } from "../../utils.ts/messages";
+import { addWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { handleSingleClick } from "../../utils.ts/worksheet-drilling/cerys-drilling";
 import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../../utils.ts/worksheet-editing";
 
@@ -187,3 +190,30 @@ export async function oBARelevantTransView(transactions, session) {
   ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
   await context.sync();
 }
+
+export const handleClientCodeMapping = (session, nominalCode, nominalCodeName) => {
+  const tran = session.activeEditableCell.getActiveTransaction(session);
+  const cerysCode = tran.cerysCode;
+  const wsName = session.activeEditableCell.wsName;
+  const range = session.activeEditableCell.getRange();
+  const options = {
+    handleYes: () => updateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode),
+    handleNo: () => setExcelRangeValue(wsName, range, nominalCode),
+    message: getClientCodeMappingMessage(nominalCode, nominalCodeName),
+    yesButtonText: "All transactions",
+    noButtonText: "This transaction only",
+  };
+  session["handleDynamicView"]("userConfirmPrompt", options);
+};
+
+export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeName, cerysCode) => {
+  updateOpenSheetsForCerysMapping(session);
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode);
+  const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
+  const updatedClient = await updatedClientDb.json();
+  console.log(updatedClient);
+};
+
+export const updateOpenSheetsForCerysMapping = (session) => {
+  console.log(session);
+};

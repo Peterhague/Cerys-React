@@ -3,9 +3,8 @@ import { useState, useRef } from "react";
 import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
-import { colNumToLetter } from "../../../utils.ts/excel-col-conversion";
-import { callNextView, resetActiveEditableCellObj } from "../../../utils.ts/helperFunctions";
-import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
+import { callNextView, createEditableCell } from "../../../utils.ts/helperFunctions";
+import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};
@@ -32,30 +31,18 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     e.preventDefault();
     if (!nominalCode) return;
     const wsName = session["activeEditableCell"].wsName;
-    const colNum = session["activeEditableCell"].addressObj.firstCol;
-    const col = colNumToLetter(colNum);
-    const row = session["activeEditableCell"].addressObj.firstRow;
-    const range = `${col}${row}:${col}${row}`;
+    const range = session["activeEditableCell"].getRange();
     if (session["activeEditableCell"].options.action === "clientCodeMapping") {
-      handleClientCodeMapping(wsName, range);
+      handleClientCodeMapping(session, nominalCode, nominalCodeName);
     } else {
       await setExcelRangeValue(wsName, range, nominalCode);
     }
-    session["activeEditableCell"] = resetActiveEditableCellObj();
-  };
-
-  const handleClientCodeMapping = (wsName, range) => {
-    const options = {
-      handleYes: () => console.log("yes"),
-      handleNo: () => setExcelRangeValue(wsName, range, nominalCode),
-      message: bFPrevPeriodMessage,
-    };
-    session["handleDynamicView"]("userConfirmPrompt", options);
+    session["activeEditableCell"] = createEditableCell(null, null, null);
   };
 
   const handleGoBack = (e) => {
     e.preventDefault();
-    session["activeEditableCell"] = resetActiveEditableCellObj();
+    session["activeEditableCell"] = createEditableCell(null, null, null);
     if (session["updatedTransactions"].length > 0) {
       handleView("handleTransUpdates");
     } else {

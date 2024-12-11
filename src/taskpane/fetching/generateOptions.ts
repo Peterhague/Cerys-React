@@ -556,3 +556,20 @@ export function fetchOptionsIPRStatusUpdate(workbookId) {
     }),
   };
 }
+
+export function fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      customerId: session.customer._id,
+      clientId: session.activeAssignment.clientId,
+      clientSoftware: session.activeAssignment.clientSoftware,
+      clientCode: nominalCode,
+      clientCodeName: nominalCodeName,
+      cerysCode,
+    }),
+  };
+}
