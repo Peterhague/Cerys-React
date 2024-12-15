@@ -2,6 +2,7 @@ import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { colNumToLetter } from "../../utils.ts/excel-col-conversion";
 import {
+  callNextView,
   createEditableWs,
   getExcelContext,
   handleEditButtonClick,
@@ -209,11 +210,12 @@ export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeNa
       ])
   );
   updateEdSheetTransValues(session, session.editableSheets[0], relTrans);
-  await updateOpenSheetsForCerysMapping(session, cerysCode, nominalCode);
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
-  const updatedClient = await updatedClientDb.json();
-  console.log(updatedClient);
+  const { customer, assignment } = await updatedClientDb.json();
+  session.customer = customer;
+  session.activeAssignment = assignment;
+  callNextView(session);
 };
 
 export const updateOpenSheetsForCerysMapping = async (session, cerysCode, nominalCode) => {

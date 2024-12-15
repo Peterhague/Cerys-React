@@ -513,6 +513,7 @@ export function fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominal
       clientCode: nominalCode,
       clientCodeName: nominalCodeName,
       cerysCode,
+      workbookId: session.activeAssignment._id,
     }),
   };
 }

@@ -6,7 +6,7 @@ import {
   interpretExcelAddress,
   simulateEditButtonClick,
 } from ".././helperFunctions";
-import { getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
+import { getWorksheetUsedRange, setExcelRangeValue, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
 import { handleOtherChange } from "./ws-col-row-manipulation";
 import {
@@ -45,35 +45,29 @@ export const handleWorksheetSelection = async (session, e, wsName) => {
 };
 
 export const handleWorksheetEdit = async (session, e, wsName) => {
-  const allowEffects = session.options.allowEffects;
   if (session.options.allowEffects > 0) {
-    console.log(session.options.allowEffects);
     session.options.allowEffects -= 1;
-  }
-  if (allowEffects > 0) {
     return;
-  } else {
-    console.log("returned?");
-    const isRangeEdited = parseChangeEventObjectType(e);
-    const { sheet, addressObj, definedCol } = parseChangeEventDetails(session, e, wsName);
-    if (!isRangeEdited) {
-      handleOtherChange(session, e, wsName, sheet, addressObj);
-      return;
-    }
-    const handledSuccessfully = isRangeEdited && (await handleRangeEdit(session, e, sheet, addressObj, definedCol));
-    await handleSheetDataCorruption(session, wsName, sheet);
-    const usedRange = await getWorksheetUsedRange(wsName);
-    sheet.usedRange = usedRange;
-    session.options.autoFillOverride = false;
-    if (handledSuccessfully && definedCol.type === "cerysCode") {
-      await completeCerysCodeUpdate(session, e, sheet, addressObj);
-    } else if (handledSuccessfully && definedCol.type === "cerysName") {
-      await completeCerysNameUpdate(session, e, sheet, addressObj);
-    } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
-      await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
-    }
-    handleEdSheetCallback(session, definedCol);
   }
+  const isRangeEdited = parseChangeEventObjectType(e);
+  const { sheet, addressObj, definedCol } = parseChangeEventDetails(session, e, wsName);
+  if (!isRangeEdited) {
+    handleOtherChange(session, e, wsName, sheet, addressObj);
+    return;
+  }
+  const handledSuccessfully = isRangeEdited && (await handleRangeEdit(session, e, sheet, addressObj, definedCol));
+  await handleSheetDataCorruption(session, wsName, sheet);
+  const usedRange = await getWorksheetUsedRange(wsName);
+  sheet.usedRange = usedRange;
+  session.options.autoFillOverride = false;
+  if (handledSuccessfully && definedCol.type === "cerysCode") {
+    await completeCerysCodeUpdate(session, e, sheet, addressObj);
+  } else if (handledSuccessfully && definedCol.type === "cerysName") {
+    await completeCerysNameUpdate(session, e, sheet, addressObj);
+  } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
+    await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
+  }
+  handleEdSheetCallback(session, definedCol);
 };
 
 export const parseChangeEventObjectType = (e) => {
@@ -113,7 +107,6 @@ export const updateEdSheetTransValues = async (session, sheet, affectedTransacti
             };
             if (definedCol.type === updatedItem.updateType) {
               update.value = updatedItem.value;
-
               update.value && updates.push(update);
             }
           });
@@ -122,6 +115,5 @@ export const updateEdSheetTransValues = async (session, sheet, affectedTransacti
     });
   });
   session.options.allowEffects = updates.length;
-  console.log(updates);
-  await setManyExcelRangeValues(sheet.name, updates);
+  setManyExcelRangeValues(sheet.name, updates);
 };
