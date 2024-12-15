@@ -1,0 +1,544 @@
+import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
+import {
+  callNextView,
+  checkEditMode,
+  convertExcelDate,
+  getExcelContext,
+  interpretExcelAddress,
+  resetEdSheetCallBack,
+  setNextViewButOne,
+  updateAssignmentFigures,
+} from "../helperFunctions";
+import { recalculateCharge, updateAssetNarrative } from "../transactions/asset-reg-generation";
+import { checkNewTransForAssets, processUpdateBatch } from "../transactions/transactions";
+import {
+  deleteWorksheetRangesUp,
+  getWorksheetRangeValues,
+  highlightEditableRanges,
+  highlightRanges,
+  setExcelRangeValue,
+  setManyWorksheetRangeValues,
+} from "../worksheet";
+import { handleWorksheetEdit } from "./ws-editing";
+
+export const handleRangeEdit = async (session, e, sheet, addressObj, definedCol) => {
+  console.log(e);
+  let handledSuccessfully = false;
+  const isEditModeEnabled = checkEditMode(sheet);
+  const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
+  if (!autoFillObj.isAutoFill) await testChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
+  if (autoFillObj.isAutoFill) {
+    await simulateAutoFillChanges(session, sheet, autoFillObj);
+  } else {
+    handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, definedCol));
+  }
+  return handledSuccessfully;
+};
+
+export const testChangesForRejection = async (e, sheet, addressObj, definedCol, editModeEnabled) => {
+  const wsName = sheet.name;
+  const { firstRow } = addressObj;
+  const eRowNumber = firstRow;
+  let withinProtectedRange = false;
+  if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.mutable)) {
+    sheet.editableRowRanges.forEach((range) => {
+      if (eRowNumber >= range.firstRow && eRowNumber <= range.lastRow) withinProtectedRange = true;
+    });
+  }
+  if (!withinProtectedRange) sheet.edited = true;
+  if (withinProtectedRange && e.triggerSource !== "ThisLocalAddin") {
+    const range = `${e.address}:${e.address}`;
+    await setExcelRangeValue(wsName, range, e.details.valueBefore);
+  }
+};
+
+export const checkForAutoFill = (e) => {
+  const autoFillObj = { isAutoFill: false };
+  const addressSplit = e.address.split(":");
+  if (!addressSplit[1]) return autoFillObj;
+  autoFillObj.isAutoFill = true;
+  autoFillObj["firstColLetter"] = parseInt(addressSplit[0][1])
+    ? addressSplit[0].substr(0, 1)
+    : addressSplit[0].substr(0, 2);
+  autoFillObj["firstColNumber"] = colLetterToNum(autoFillObj["firstColLetter"]);
+  autoFillObj["lastColLetter"] = parseInt(addressSplit[1][1])
+    ? addressSplit[1].substr(0, 1)
+    : addressSplit[1].substr(0, 2);
+  autoFillObj["lastColNumber"] = colLetterToNum(autoFillObj["lastColLetter"]);
+  autoFillObj["autoFillCols"] = autoFillObj["firstColLetter"] === autoFillObj["lastColLetter"] ? false : true;
+  autoFillObj["firstRow"] = parseInt(addressSplit[0][1])
+    ? parseInt(addressSplit[0].substr(1))
+    : parseInt(addressSplit[0].substr(2));
+  autoFillObj["lastRow"] = parseInt(addressSplit[1][1])
+    ? parseInt(addressSplit[1].substr(1))
+    : parseInt(addressSplit[1].substr(2));
+  autoFillObj["autoFillRows"] = autoFillObj["firstRow"] === autoFillObj["lastRow"] ? false : true;
+  let repRange = `${autoFillObj["firstColLetter"]}${autoFillObj["firstRow"]}`;
+  autoFillObj["repRange"] = repRange;
+  return autoFillObj;
+};
+
+export const captureReanalysis = async (session, e, sheet, addressObj, definedCol) => {
+  const wsName = sheet.name;
+  let handledSuccessfully = false;
+  const newValue = e.details.valueAfter;
+  const { firstRow } = addressObj;
+  const eRowNumber = firstRow;
+  const tests = { changeRejected: false, isValid: false, isNotNegation: true, updated: false };
+  const tran = sheet.transactions.find((line) => line.rowNumber === eRowNumber);
+  const validationObj = validateChange(session, tran, definedCol, e);
+  const { isNegation } = validationObj;
+  tests.isNotNegation = !isNegation;
+  const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
+  if (isValidTransactionUpdate)
+    processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
+  if (definedCol.isQuasiMutable) tests.isValid = true;
+  const range = `${e.address}:${e.address}`;
+  console.log(tests.changeRejected);
+  if (tests.changeRejected) {
+    console.log("here laddy");
+    await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    return handledSuccessfully;
+  }
+  if (tests.isValid) {
+    processTransUpdateEffects(session, sheet, definedCol, range, tests);
+    handledSuccessfully = true;
+  }
+  return handledSuccessfully;
+};
+
+export const combineAllValidation = (definedCol, validationObj) => {
+  const { isError, isInvalid } = validationObj;
+  if (!isError && !isInvalid && !definedCol.isQuasiMutable) {
+    return true;
+  } else return false;
+};
+
+export const processTransactionUpdate = (session, tran, tests, definedCol, validationObj, e, newValue, sheet) => {
+  let newArray = [];
+  updateIfExistingUpdate(session, tran, tests, definedCol, validationObj, newArray, e);
+  if (!tests.updated && !validationObj.isNegation) {
+    const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, definedCol);
+    newArray.push(newUpdate);
+    tests.isValid = true;
+  }
+  newArray.forEach((update) => {
+    if (update.updatedCode && !update.cerysCodeObject) {
+      session["chart"].forEach((code) => {
+        if (code.cerysCode === newValue) update.cerysCodeObject = code;
+      });
+    }
+  });
+  if (definedCol.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+    recalculateCharge(session, sheet, tran, e);
+  if (definedCol.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+    updateAssetNarrative(session, sheet, tran, e);
+  session.updatedTransactions = newArray;
+};
+
+export const processTransUpdateEffects = (session, sheet, definedCol, range, tests) => {
+  sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
+  const color = tests.isNotNegation ? "lightGreen" : "yellow";
+  !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
+  if (
+    session.currentView === "promptIFARCreation" ||
+    session.currentView === "promptTFARCreation" ||
+    session.currentView === "propmptIPRCreation"
+  )
+    setNextViewButOne(session);
+  const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
+  session.handleView(view);
+  if (session.updatedTransactions.length > 0) {
+    session.setEditButton("off");
+  } else {
+    session.setEditButton("hide");
+  }
+};
+
+export const validateChange = (session, tran, change, e) => {
+  const obj = { isNegation: false, isInvalid: false, isError: false };
+  if (change.type === "cerysCode") {
+    validateCerysCode(session, tran, e, obj);
+  } else if (change.type === "date") {
+    validateTransactionDate(session, tran, e, obj);
+  } else if (change.type === "cerysNarrative") {
+    if (e.details.valueAfter === tran.narrative) obj.isNegation = true;
+  } else if (change.type === "clientCodeMapping") {
+    validateClientCode(session, tran, e, obj);
+  } else if (change.type === "cerysName") {
+    obj.isError = false;
+  } else obj.isError = true;
+  return obj;
+};
+
+export const validateCerysCode = (session, tran, e, obj) => {
+  if (e.details.valueAfter === tran.cerysCode) obj.isNegation = true;
+  let inValidCode = true;
+  session.chart.forEach((code) => {
+    if (code.cerysCode === e.details.valueAfter) inValidCode = false;
+  });
+  obj.isInvalid = inValidCode;
+};
+
+export const validateTransactionDate = (session, tran, e, obj) => {
+  if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
+  if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
+  if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
+    obj.isInvalid = true;
+  } else if (
+    e.details.valueAfter <=
+    session.activeAssignment.reportingPeriod.reportingDateExcel - session.activeAssignment.reportingPeriod.noOfDays
+  ) {
+    obj.isInvalid = true;
+  }
+};
+
+export const validateClientCode = (session, tran, e, obj) => {
+  const valueAfter = e.details.valueAfter;
+  if (valueAfter === tran.defaultClientMapping.clientCode) obj.isNegation = true;
+  let inValidCode = true;
+  session.clientChart.forEach((code) => {
+    if (code.clientCode === e.details.valueAfter) inValidCode = false;
+  });
+  obj.isInvalid = inValidCode;
+};
+
+export const updateIfExistingUpdate = (session, tran, tests, definedCol, validationObj, newArray, e) => {
+  session.updatedTransactions.forEach((updatedTran) => {
+    if (updatedTran.transactionId === tran._id) {
+      tests.isValid = true;
+      tests.updated = true;
+      if (validationObj.isNegation) {
+        if (definedCol.type === "cerysCode") {
+          if (updatedTran.updatedDate || updatedTran.updatedNarrative || updatedTran.updatedClientCodeMapping) {
+            delete updatedTran.updatedCode;
+            newArray.push(updatedTran);
+          }
+        }
+        if (definedCol.type === "date") {
+          if (updatedTran.updatedCode || updatedTran.cerysNarrative || updatedTran.updatedClientCodeMapping) {
+            delete updatedTran.updatedDate;
+            newArray.push(updatedTran);
+          }
+        }
+        if (definedCol.type === "cerysNarrative") {
+          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedClientCodeMapping) {
+            delete updatedTran.updatedNarrative;
+            newArray.push(updatedTran);
+          }
+        }
+        if (definedCol.type === "clientCodeMapping") {
+          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedNarrative) {
+            delete updatedTran.updatedClientCodeMapping;
+            newArray.push(updatedTran);
+          }
+        }
+      } else {
+        updatedTran[definedCol.updateKey] = e.details.valueAfter;
+        newArray.push(updatedTran);
+      }
+    } else newArray.push(updatedTran);
+  });
+};
+
+export const createNewTransactionUpdate = (tran, newValue, sheet, definedCol) => {
+  const updatedTran: {
+    transactionId: string;
+    transactionNumber: number;
+    code: number;
+    updatedCode?: number;
+    date: string;
+    updatedDate?: number;
+    dateExcel: number;
+    narrative: string;
+    updatedNarrative?: string;
+    clientCodeMapping: number;
+    updatedClientCodeMapping?: number;
+    value: number;
+    rowNumber: number;
+    rowNumberOrig: number;
+    worksheetId?: string;
+    worksheetName?: string;
+    cerysCodeObject?: {};
+  } = {
+    transactionId: tran._id,
+    transactionNumber: tran.transactionNumber,
+    code: tran.cerysCode,
+    date: tran.transactionDate,
+    dateExcel: tran.transactionDateExcel,
+    narrative: tran.narrative,
+    clientCodeMapping: tran.defaultClientMapping.clientCode,
+    value: tran.value,
+    rowNumber: tran.rowNumber,
+    rowNumberOrig: tran.rowNumberOrig,
+    worksheetId: sheet.worksheetId && sheet.worksheetId,
+    worksheetName: sheet.name && sheet.name,
+    [definedCol.updateKey]: newValue,
+  };
+  return updatedTran;
+};
+
+export const cancelAutoFill = async (wsName, address) => {
+  const context = await getExcelContext();
+  const sheet = context.workbook.worksheets.getItem(wsName);
+  const range = sheet.getRange(address);
+  range.format.fill.clear();
+  await context.sync();
+};
+
+export const submitTransactionUpdates = async (session) => {
+  let tbUpdated = false;
+  let otherUpdated = false;
+  const updatedTrans = session.updatedTransactions;
+  const deletionObjs = [];
+  let promptSheetDeletion = false;
+  session.updatedTransactions.forEach((tran) => {
+    tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
+    if (tran.updatedCode) {
+      tbUpdated = true;
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === tran.worksheetName) {
+          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${tran.rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${tran.rowNumber}`;
+          const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber: tran.rowNumber };
+          deletionObjs.push(deletionObj);
+          sheet.editButtonStatus = "hide";
+          const newTransactions = [];
+          sheet.transactions.forEach((i) => {
+            if (i._id !== tran.transactionId) {
+              newTransactions.push(i);
+            }
+          });
+          sheet.transactions = newTransactions;
+          if (newTransactions.length === 0) {
+            sheet.promptDeletion = true;
+            promptSheetDeletion = true;
+          }
+        }
+      });
+    } else {
+      otherUpdated = true;
+      session.editableSheets.forEach((sheet) => {
+        sheet.transactions.forEach((transaction) => {
+          if (transaction._id === tran.transactionId) {
+            if (tran.updatedDate) transaction.transactionDateExcel = tran.updatedDate;
+            if (tran.updatedNarrative) transaction.narrative = tran.updatedNarrative;
+            if (tran.updatedClientCodeMapping) {
+              const nomCode = session.clientChart.find((code) => code.clientCode === tran.updatedClientCodeMapping);
+              transaction.defaultClientMapping.clientCode = nomCode.clientCode;
+              transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
+            }
+          }
+        });
+      });
+    }
+  });
+  if (otherUpdated) {
+    updatedTrans.forEach((tran) => {
+      session.editableSheets.forEach((sheet) => {
+        if (tran.worksheetName === sheet.name) {
+          highlightEditableRanges(sheet);
+        }
+      });
+    });
+  }
+  deletionObjs.sort((a, b) => {
+    return b.rowNumber - a.rowNumber;
+  });
+  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
+  const updatedTransactions = await processUpdateBatch(session);
+  if (tbUpdated) {
+    if (promptSheetDeletion) {
+      await updateAssignmentFigures(session);
+      session.options.updatedTransactions = updatedTransactions;
+      session.handleView("deleteSheetPrompt");
+    } else {
+      await updateAssignmentFigures(session);
+      checkNewTransForAssets(session, updatedTransactions);
+    }
+  } else {
+    callNextView(session);
+  }
+  session.setEditButton("hide");
+};
+
+export const reverseTransactionUpdates = async (session) => {
+  const reversals = [];
+  const updatedTrans = session.updatedTransactions;
+  updatedTrans.forEach((tran) => {
+    const wsName = tran.worksheetName;
+    let ws;
+    session.editableSheets.forEach((sheet) => {
+      if (sheet.name === wsName) {
+        sheet.editButtonStatus = "hide";
+        ws = sheet;
+      }
+    });
+    let dateCol;
+    let cerysCodeCol;
+    let cerysNarrativeCol;
+    let clientCodeMappingCol;
+    ws.definedCols.forEach((col) => {
+      if (col.type === "date") dateCol = col.colNumber;
+      if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
+      if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
+      if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
+    });
+    const dateColLetter = colNumToLetter(dateCol);
+    const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
+    const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
+    const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
+    if (tran.updatedCode) {
+      const address = `${cerysCodeColLetter}${tran.rowNumber}:${cerysCodeColLetter}${tran.rowNumber}`;
+      const reversal = { wsName, address, value: tran.code };
+      reversals.push(reversal);
+    }
+    if (tran.updatedDate) {
+      const address = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
+      const reversal = { wsName, address, value: tran.dateExcel };
+      reversals.push(reversal);
+    }
+    if (tran.updatedNarrative) {
+      const address = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
+      const reversal = { wsName, address, value: tran.narrative };
+      reversals.push(reversal);
+    }
+    if (tran.updatedClientCodeMapping) {
+      const address = `${clientCodeMappingColLetter}${tran.rowNumber}:${clientCodeMappingColLetter}${tran.rowNumber}`;
+      const reversal = { wsName, address, value: tran.clientCodeMapping };
+      reversals.push(reversal);
+    }
+  });
+  await setManyWorksheetRangeValues(reversals);
+  session.setEditButton("hide");
+};
+
+export const simulateAutoFillChanges = async (session, sheet, autoFillObj) => {
+  const wsName = sheet.name;
+  const ranges = [];
+  if (autoFillObj.autoFillCols) {
+    for (let i = autoFillObj.firstColNumber; i < autoFillObj.lastColNumber + 1; i++) {
+      const rangeObj = { colNumber: i, rowNumber: autoFillObj.firstRow };
+      ranges.push(rangeObj);
+    }
+  } else if (autoFillObj.autoFillRows) {
+    for (let i = autoFillObj.firstRow; i < autoFillObj.lastRow + 1; i++) {
+      const rangeObj = { colNumber: autoFillObj.firstColNumber, rowNumber: i };
+      ranges.push(rangeObj);
+    }
+  }
+  ranges.forEach((range) => {
+    if (sheet.usedRange.length < range.rowNumber || sheet.usedRange[0].length < range.colNumber) {
+      range.valueBefore = "";
+    } else {
+      range.valueBefore = sheet.usedRange[range.rowNumber - 1][range.colNumber - 1];
+    }
+  });
+  for (let i = 0; i < ranges.length; i++) {
+    const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
+    const valueAfter = await getWorksheetRangeValues(wsName, valueAfterRange);
+    const event = {
+      address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
+      details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
+      changeType: "RangeEdited",
+    };
+    await handleWorksheetEdit(session, event, wsName);
+  }
+};
+
+export const resetToPreviousValues = async (wsName, sheet) => {
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem(wsName);
+  const usedRange = ws.getUsedRange();
+  usedRange.load("address");
+  await context.sync();
+  const fullAddress = usedRange.address;
+  const fullAddressSplit = fullAddress.split("!");
+  const addressObj = interpretExcelAddress(fullAddressSplit[1]);
+  const blankValues = [];
+  for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
+    const row = [];
+    for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
+      row.push("");
+    }
+    blankValues.push(row);
+  }
+  usedRange.values = blankValues;
+  const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
+  const wsNewRange = ws.getRange(newRange);
+  wsNewRange.values = sheet.usedRange;
+  sheet.dataCorrupted = false;
+  await context.sync();
+};
+
+export const reinstateNumberFormats = async (sheet) => {
+  const context = await getExcelContext();
+  const ws = context.workbook.worksheets.getItem(sheet.name);
+  sheet.definedCols.forEach((col) => {
+    const colLetter = colNumToLetter(col.colNumber);
+    const range = ws.getRange(`${colLetter}:${colLetter}`);
+    range.numberFormat = col.format;
+  });
+  await context.sync();
+};
+
+export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => {
+  const { firstRow } = addressObj;
+  let cerysNameCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "cerysName") {
+      cerysNameCol = col.colNumber;
+    }
+  });
+  if (cerysNameCol > 0) {
+    const nomCodeObj = session.chart.find((code) => code.cerysCode === e.details.valueAfter);
+    const colLetter = colNumToLetter(cerysNameCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.cerysShortName);
+  }
+};
+
+export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => {
+  const { firstRow } = addressObj;
+  let clientCodeMappingCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "clientCodeMapping") {
+      clientCodeMappingCol = col.colNumber;
+    }
+  });
+  if (clientCodeMappingCol > 0) {
+    const nomCodeObj = session.chart.find((code) => code.cerysShortName === e.details.valueAfter);
+    const colLetter = colNumToLetter(clientCodeMappingCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+  }
+};
+
+export const completeClientCodeMappingUpdate = async (session, e, sheet, addressObj) => {
+  const { firstRow } = addressObj;
+  let clientCodeNameMappingCol = 0;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === "clientCodeNameMapping") {
+      clientCodeNameMappingCol = col.colNumber;
+    }
+  });
+  if (clientCodeNameMappingCol > 0) {
+    const nomCodeObj = session.clientChart.find((code) => code.clientCode === e.details.valueAfter);
+    const colLetter = colNumToLetter(clientCodeNameMappingCol);
+    const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    setExcelRangeValue(sheet.name, range, nomCodeObj.clientCodeName);
+  }
+};
+
+export const handleEdSheetCallback = (session, definedCol) => {
+  console.log(session);
+  const callback = session.options.editableSheetCallback;
+  console.log(callback);
+  if (callback.args.length > callback.count) {
+    if (definedCol.isQuasiMutable) {
+      callback.function(...callback.args[callback.count]);
+      callback.count += 1;
+    }
+  } else {
+    session.options.editableSheetCallback = resetEdSheetCallBack();
+  }
+};

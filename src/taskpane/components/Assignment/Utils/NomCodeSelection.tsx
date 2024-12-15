@@ -3,8 +3,9 @@ import { useState, useRef } from "react";
 import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
-import { callNextView, createEditableCell } from "../../../utils.ts/helperFunctions";
+import { callNextView } from "../../../utils.ts/helperFunctions";
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
+import { createEditableCell } from "../../../classes/editable-cell";
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: {};

@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { convertExcelDate, convertMongoDate, convertValueToString } from "../../../utils.ts/helperFunctions";
-import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing";
+import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
 
 interface reviewTransUpdatesProps {
   handleView: (view) => void;

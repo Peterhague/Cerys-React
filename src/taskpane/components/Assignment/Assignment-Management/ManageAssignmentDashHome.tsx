@@ -11,8 +11,6 @@ interface manageAssignmentDashHomeProps {
 }
 
 const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashHomeProps) => {
-  const transactions = session["activeAssignment"].transactions;
-
   const test = () => {
     const options = {
       handleYes: () => console.log("yes"),
@@ -28,10 +26,7 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
   return (
     <>
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
-      <CerysButton
-        buttonText={"Opening Balance Adjustments"}
-        handleClick={() => oBARelevantTransView(transactions, session)}
-      />
+      <CerysButton buttonText={"Opening Balance Adjustments"} handleClick={() => oBARelevantTransView(session)} />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
       <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />
       <CerysButton buttonText={"test"} handleClick={() => tbreq()} />

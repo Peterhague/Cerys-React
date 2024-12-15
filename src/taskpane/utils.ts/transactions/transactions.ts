@@ -7,7 +7,6 @@ import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 
 export const processTransBatch = async (session) => {
-  console.log("yes still owrking here");
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
@@ -31,10 +30,9 @@ export const processTransBatch = async (session) => {
     transactions.push(jnl);
   });
   const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
-  const transactionType = activeJournal.journalType;
-  const updatedCustAndAss = await postTransactionsDb(transactions, transDtls, transactionType);
-  session["activeAssignment"] = updatedCustAndAss.assignment;
-  updatedCustAndAss.newTransactions.forEach((tran) => {
+  const { assignment, newTransactions } = await postTransactionsDb(session, transactions, transDtls);
+  session["activeAssignment"] = assignment;
+  newTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
@@ -45,15 +43,13 @@ export const processTransBatch = async (session) => {
   addTbClickListener(session);
   addPlClickListener(session);
   addBsClickListener(session["activeAssignment"]);
-  return updatedCustAndAss.newTransactions;
+  return newTransactions;
 };
 
 export const processUpdateBatch = async (session) => {
-    console.log(session);
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
   const updatedAssignmentAndTrans = await updatedAssignmentAndTransDB.json();
-  console.log(updatedAssignmentAndTrans);
   const updatedTransactions = updatedAssignmentAndTrans.processedTrans;
   updatedTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
@@ -205,8 +201,8 @@ export const checkFATranUpdatesForAssets = (session, newTransactions) => {
   });
 };
 
-const postTransactionsDb = async (transactions, transDtls, transactionType) => {
-  const options = fetchOptionsTransBatch(transactions, transDtls, transactionType);
+const postTransactionsDb = async (session, transactions, transDtls) => {
+  const options = fetchOptionsTransBatch(session, transactions, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
   return objs;

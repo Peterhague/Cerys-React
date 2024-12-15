@@ -2,7 +2,8 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { createEditableCell, registerWorksheetDeletionHandler } from "../utils.ts/helperFunctions";
+import { registerWorksheetDeletionHandler, resetEdSheetCallBack } from "../utils.ts/helperFunctions";
+import { createEditableCell } from "../classes/editable-cell";
 
 interface userLoginProps {
   handleView: (view) => void;
@@ -44,10 +45,10 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
       IFARCreationSetting: "main",
       TFARCreationSetting: "main",
       IPRCreationSetting: "main",
-      allowImmutableCellEdit: false,
       autoFillOverride: false,
-      isQuasiUpdate: false,
       updatedTransactions: [],
+      editableSheetCallback: resetEdSheetCallBack(),
+      allowEffects: 0,
     };
     session["nextViewButOne"] = "";
     await registerWorksheetDeletionHandler(session);

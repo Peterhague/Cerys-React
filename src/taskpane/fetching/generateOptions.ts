@@ -12,66 +12,7 @@ export function fetchOptionsNC(nominalCode) {
   };
 }
 
-// takes a Cerys object (and optional options object) and returns a valid
-// fetch options object with various embedded values depending on the arguments.
-// Designed for returning options for the fetch request used when posting transactions.
-//export function fetchOptionsTransaction(cerysObject, options, session) {
-//  return {
-//    method: "POST",
-//    headers: {
-//      "Content-Type": "application/json",
-//    },
-//    body: JSON.stringify({
-//      cerysCategory: cerysObject.category,
-//      cerysSubCategory: cerysObject.subCategory,
-//      assetCategory: cerysObject.assetCategory,
-//      assetCategoryNo: cerysObject.assetCategoryNo,
-//      cerysCode: cerysObject.code,
-//      cerysName: cerysObject.name,
-//      cerysShortName: cerysObject.shortName,
-//      value: cerysObject.value,
-//      narrative: cerysObject.narrative,
-//      transactionDate: cerysObject.date,
-//      cerysId: cerysObject._id,
-//      clientNominalCode: cerysObject.clientNominalCode,
-//      transactionType: options.transactionType,
-//      clientTB: options.clientTB,
-//      journal: options.journal,
-//      customerId: session.user.customerId,
-//      workbookId: session.activeAssignment.workbookId,
-//    }),
-//  };
-//}
-
-//export function fetchOptionsTransaction(session, i) {
-//  return {
-//    method: "POST",
-//    headers: {
-//      "Content-Type": "application/json",
-//    },
-//    body: JSON.stringify({
-//      cerysCategory: cerysObject.category,
-//      cerysSubCategory: cerysObject.subCategory,
-//      assetCategory: cerysObject.assetCategory,
-//      assetCategoryNo: cerysObject.assetCategoryNo,
-//      cerysCode: cerysObject.code,
-//      cerysName: cerysObject.name,
-//      cerysShortName: cerysObject.shortName,
-//      value: cerysObject.value,
-//      narrative: cerysObject.narrative,
-//      transactionDate: cerysObject.date,
-//      cerysId: cerysObject._id,
-//      clientNominalCode: cerysObject.clientNominalCode,
-//      transactionType: options.transactionType,
-//      clientTB: options.clientTB,
-//      journal: options.journal,
-//      customerId: session.user.customerId,
-//      workbookId: session.activeAssignment.workbookId,
-//    }),
-//  };
-//}
-
-export function fetchOptionsTransBatch(journals, transDtls, transactionType) {
+export function fetchOptionsTransBatch(session, journals, transDtls) {
   return {
     method: "POST",
     headers: {
@@ -81,7 +22,9 @@ export function fetchOptionsTransBatch(journals, transDtls, transactionType) {
       journals,
       customerId: transDtls.customerId,
       assignmentId: transDtls.assignmentId,
-      transactionType,
+      transactionType: session.activeJournal.journalType,
+      chart: session.chart,
+      clientSoftware: session.activeAssignment.clientSoftware,
     }),
   };
 }

@@ -10,7 +10,14 @@ import {
   highlightRanges,
   unhighlightEditableRanges,
 } from "./worksheet";
-import { addBsClickListener, addPlClickListener, addTbClickListener } from "./worksheet-drilling/cerys-drilling";
+import {
+  addBsClickListener,
+  addPlClickListener,
+  addTbClickListener,
+  handleSingleClick,
+} from "./worksheet-drilling/cerys-drilling";
+import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-manipulation";
+import { handleWorksheetEdit } from "./worksheet-editing/ws-editing";
 
 export const getExcelContext = async () => {
   try {
@@ -330,8 +337,18 @@ export const interpretExcelAddress = (excelAddress) => {
   return { firstRow, lastRow, firstCol, lastCol };
 };
 
-export const createEditableWs = (transactions, ws, definedCols, valuesToPost, type) => {
-  return {
+//export const mapTransToClientCodes = (session, transactions) => {
+//  transactions.forEach((tran) => {
+//    const codeObj = session.chart.find((code) => code.cerysCode === tran.cerysCode);
+//    tran.mapping = {
+//      clientCode: codeObj.currentClientMapping.clientCode,
+//      clientCodeName: codeObj.currentClientMapping.clientCodeName,
+//    };
+//  });
+//};
+
+export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type) => {
+  const editableWs = {
     name: ws.name,
     type,
     edited: false,
@@ -342,7 +359,6 @@ export const createEditableWs = (transactions, ws, definedCols, valuesToPost, ty
     protectedRangeDeleted: false,
     definedCols,
     editButtonStatus: "show",
-    changeRejected: false,
     columnsSorted: false,
     rowsSorted: false,
     dataCompromised: false,
@@ -350,53 +366,54 @@ export const createEditableWs = (transactions, ws, definedCols, valuesToPost, ty
     transactions: transactions,
     usedRange: valuesToPost,
   };
+  const arr = [editableWs];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name !== editableWs.name) arr.push(sheet);
+  });
+  session.editableSheets = arr;
+  addEditableSheetEventHandlers(session, ws);
+  return editableWs;
 };
 
-export class EditableCell {
-  addressObj: {
-    firstRow: number;
-    lastRow: number;
-    firstCol: number;
-    lastCol: number;
+export const addEditableSheetEventHandlers = (session, ws) => {
+  ws.onActivated.add(() => setEditButtonValue(session));
+  ws.onDeactivated.add(() => session.setEditButton("off"));
+  ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, ws.name));
+  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, ws.name));
+  ws.onColumnSorted.add(async () => handleColumnSort(session));
+  ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
+};
+
+export const hasDefinedColOf = (sheet, colType) => {
+  let definedCol;
+  sheet.definedCols.forEach((col) => {
+    if (col.type === colType) definedCol = col;
+  });
+  return definedCol;
+};
+
+export const resetEdSheetCallBack = () => {
+  return {
+    function: () => console.log("void"),
+    args: [],
+    count: 0,
   };
-  wsName: string;
-  options: {
-    action: string;
-  };
+};
 
-  constructor(addressObj: { firstRow; lastRow; firstCol; lastCol }, wsName: string, options: { action }) {
-    this.addressObj = addressObj;
-    this.wsName = wsName;
-    this.options = options;
-  }
-  getCol() {
-    return colNumToLetter(this.addressObj.firstCol);
-  }
+export const getActiveEdSheet = async (session) => {
+  const wsName = await getActiveWorksheetName();
+  let ws;
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) ws = sheet;
+  });
+  return ws;
+};
 
-  getRange() {
-    const col = this.getCol();
-    const row = this.addressObj.firstRow;
-    return `${col}${row}:${col}${row}`;
-  }
+export const checkEditMode = (sheet) => {
+  return sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress" ? true : false;
+};
 
-  getActiveTransaction(session) {
-    const tran = session.editableSheets
-      .find((sheet) => sheet.name === this.wsName)
-      .transactions.find((t) => t.rowNumber === this.addressObj.firstRow);
-    return tran;
-  }
-}
-
-export const createEditableCell = (addressArg, wsNameArg, actionArg) => {
-  const defaultAddressObj = {
-    firstRow: 0,
-    lastRow: 0,
-    firstCol: 0,
-    lastCol: 0,
-  };
-  const addressObj = addressArg ? addressArg : defaultAddressObj;
-  const wsName = wsNameArg ? wsNameArg : "";
-  const action = actionArg ? actionArg : "";
-  const editableCell = new EditableCell(addressObj, wsName, { action });
-  return editableCell;
+export const getDefinedCol = (sheet, addressCol) => {
+  const definedCol = sheet.definedCols.find((col) => col.colNumber === addressCol);
+  return definedCol;
 };

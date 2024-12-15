@@ -1,14 +1,8 @@
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  calculateDiffInDays,
-  convertExcelDate,
-  createEditableWs,
-  getExcelContext,
-  setEditButtonValue,
-} from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, createEditableWs, getExcelContext } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
-import { createNewTransactionUpdate, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
+import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
 
@@ -403,17 +397,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   ];
   const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
   const sheetName = `${registerType}RPreview`;
-  const editableWs = createEditableWs(transactions, ws, definedCols, valuesToPost, sheetName);
-  const arr = [editableWs];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name !== editableWs.name) arr.push(sheet);
-  });
-  session.editableSheets = arr;
-  ws.onActivated.add(() => setEditButtonValue(session));
-  ws.onDeactivated.add(() => session.setEditButton("off"));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, `${registerType} Transactions`));
-  ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, `${registerType} Transactions`, e));
+  createEditableWs(session, transactions, ws, definedCols, valuesToPost, sheetName);
   await context.sync();
   ws.activate();
 }
@@ -638,7 +622,6 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   });
   const colLetter = colNumToLetter(depnChgColNumber);
   const range = `${colLetter}${tran.rowNumber}:${colLetter}${tran.rowNumber}`;
-  session.options.allowImmutableCellEdit = true;
   await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {

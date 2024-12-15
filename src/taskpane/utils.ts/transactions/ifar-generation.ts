@@ -7,11 +7,9 @@ import {
   convertExcelDate,
   createEditableWs,
   getExcelContext,
-  setEditButtonValue,
   updateNomCode,
 } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
-import { handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
@@ -299,18 +297,7 @@ export async function createIFATransSumm(session, relevantTrans) {
   ];
   // edit here please
   const transactions = _.cloneDeep(session.IFATransactions);
-  const editableWs = createEditableWs(transactions, ws, definedCols, valuesToPost, "IFARPreview");
-  const arr = [editableWs];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name !== editableWs.name) arr.push(sheet);
-  });
-  session.editableSheets = arr;
-  ws.onActivated.add(() => setEditButtonValue(session));
-  ws.onDeactivated.add(() => session.setEditButton("off"));
-  //ws.onChanged.add(async (e) => captureIFARSummChange(context, e, session["IFATransactions"], ws));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, "IFA Transactions"));
-  ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, "IFA Transactions", e));
+  createEditableWs(session, transactions, ws, definedCols, valuesToPost, "IFARPreview");
   await context.sync();
   ws.activate();
 }

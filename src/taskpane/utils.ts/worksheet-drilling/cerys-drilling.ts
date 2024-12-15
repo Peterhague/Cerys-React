@@ -1,14 +1,13 @@
+import { createEditableCell } from "../../classes/editable-cell";
 import {
   getExcelContext,
   createEditableWs,
   handleEditButtonClick,
   interpretEventAddress,
-  setEditButtonValue,
-  createEditableCell,
+  checkEditMode,
 } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
-import { checkEditMode, handleColumnSort, handleRowSort, handleWorksheetEdit } from "../worksheet-editing";
 import { showClientNominalDetail } from "./client-drilling";
 
 export async function addTbClickListener(session) {
@@ -181,21 +180,10 @@ async function cerysNomDetailView(context, detail, session) {
       unique: false,
     },
   ];
-  const editableWs = createEditableWs(detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis");
-  const arr = [editableWs];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name !== editableWs.name) arr.push(sheet);
-  });
-  session.editableSheets = arr;
+  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis");
   columnsRange.format.autofitColumns();
-  ws.onActivated.add(() => setEditButtonValue(session));
-  ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
-  ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, wsName));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, wsName));
-  ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async (e) => handleRowSort(session, wsName, e));
   await context.sync();
 }
 
@@ -213,15 +201,16 @@ export const handleSingleClick = (session, e, wsName) => {
   let cerysCodeCol;
   let clientCodeCol;
   let clientCodeMappingCol;
-  ws.definedCols.forEach((col) => {
-    if (col.type === "cerysCode" && editModeEnabled) {
-      cerysCodeCol = col.colNumber;
-    } else if (col.type === "clientCode") {
-      clientCodeCol = col.colNumber;
-    } else if (col.type === "clientCodeMapping") {
-      clientCodeMappingCol = col.colNumber;
-    }
-  });
+  editModeEnabled &&
+    ws.definedCols.forEach((col) => {
+      if (col.type === "cerysCode") {
+        cerysCodeCol = col.colNumber;
+      } else if (col.type === "clientCode") {
+        clientCodeCol = col.colNumber;
+      } else if (col.type === "clientCodeMapping") {
+        clientCodeMappingCol = col.colNumber;
+      }
+    });
   if (cerysCodeCol === addressObj.firstCol) {
     session.handleView("nomCodeSelection");
     session.activeEditableCell = createEditableCell(addressObj, wsName, "cerysCoding");
@@ -231,7 +220,6 @@ export const handleSingleClick = (session, e, wsName) => {
     session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
   }
   if (clientCodeCol === addressObj.firstCol) {
-    console.log("client code col clicked");
     showClientNominalDetail(e, session);
   }
 };
