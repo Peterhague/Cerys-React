@@ -12,7 +12,11 @@ export class EditableCell {
     action: string;
   };
 
-  constructor(addressObj: { firstRow; lastRow; firstCol; lastCol }, wsName: string, options: { action }) {
+  constructor(
+    addressObj: { firstRow: number; lastRow: number; firstCol: number; lastCol: number },
+    wsName: string,
+    options: { action: string }
+  ) {
     this.addressObj = addressObj;
     this.wsName = wsName;
     this.options = options;
@@ -28,9 +32,9 @@ export class EditableCell {
   }
 
   getActiveTransaction(session) {
-    const tran = session.editableSheets
-      .find((sheet) => sheet.name === this.wsName)
-      .transactions.find((t) => t.rowNumber === this.addressObj.firstRow);
+    const sheet = session.editableSheets.find((sheet) => sheet.name === this.wsName);
+    const map = sheet.sheetMapping.find((map) => map.rowNumber === this.addressObj.firstRow);
+    const tran = sheet.transactions.find((t) => t._id === map.transactionId);
     return tran;
   }
 }

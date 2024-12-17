@@ -147,7 +147,7 @@ export const highlightEditableRanges = async (sheet) => {
   const ws = context.workbook.worksheets.getItem(sheet.name);
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
-      if (!col.deleted && col.mutable) {
+      if (!col.isDeleted && col.isMutable) {
         const colLetter = colNumToLetter(col.colNumber);
         const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
         const wsColRange = ws.getRange(colRange);
@@ -163,7 +163,7 @@ export const unhighlightEditableRanges = async (sheet) => {
   const ws = context.workbook.worksheets.getActiveWorksheet();
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
-      if (!col.deleted && col.mutable) {
+      if (!col.isDeleted && col.isMutable) {
         const colLetter = colNumToLetter(col.colNumber);
         const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
         const wsColRange = ws.getRange(colRange);

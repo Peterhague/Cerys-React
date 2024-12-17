@@ -4,6 +4,7 @@ import {
   checkEditMode,
   convertExcelDate,
   getExcelContext,
+  getTransRowNumber,
   interpretExcelAddress,
   resetEdSheetCallBack,
   setNextViewButOne,
@@ -40,7 +41,7 @@ export const testChangesForRejection = async (e, sheet, addressObj, definedCol, 
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
   let withinProtectedRange = false;
-  if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.mutable)) {
+  if ((definedCol && !editModeEnabled) || (definedCol && !definedCol.isMutable)) {
     sheet.editableRowRanges.forEach((range) => {
       if (eRowNumber >= range.firstRow && eRowNumber <= range.lastRow) withinProtectedRange = true;
     });
@@ -85,7 +86,8 @@ export const captureReanalysis = async (session, e, sheet, addressObj, definedCo
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
   const tests = { changeRejected: false, isValid: false, isNotNegation: true, updated: false };
-  const tran = sheet.transactions.find((line) => line.rowNumber === eRowNumber);
+  const map = sheet.sheetMapping.find((m) => m.rowNumber === eRowNumber);
+  const tran = map.getTran(sheet.transactions);
   const validationObj = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
@@ -205,7 +207,7 @@ export const validateClientCode = (session, tran, e, obj) => {
 
 export const updateIfExistingUpdate = (session, tran, tests, definedCol, validationObj, newArray, e) => {
   session.updatedTransactions.forEach((updatedTran) => {
-    if (updatedTran.transactionId === tran._id) {
+    if (updatedTran._id === tran._id) {
       tests.isValid = true;
       tests.updated = true;
       if (validationObj.isNegation) {
@@ -242,40 +244,44 @@ export const updateIfExistingUpdate = (session, tran, tests, definedCol, validat
 };
 
 export const createNewTransactionUpdate = (tran, newValue, sheet, definedCol) => {
-  const updatedTran: {
-    transactionId: string;
-    transactionNumber: number;
-    code: number;
-    updatedCode?: number;
-    date: string;
-    updatedDate?: number;
-    dateExcel: number;
-    narrative: string;
-    updatedNarrative?: string;
-    clientCodeMapping: number;
-    updatedClientCodeMapping?: number;
-    value: number;
-    rowNumber: number;
-    rowNumberOrig: number;
-    worksheetId?: string;
-    worksheetName?: string;
-    cerysCodeObject?: {};
-  } = {
-    transactionId: tran._id,
-    transactionNumber: tran.transactionNumber,
-    code: tran.cerysCode,
-    date: tran.transactionDate,
-    dateExcel: tran.transactionDateExcel,
-    narrative: tran.narrative,
-    clientCodeMapping: tran.defaultClientMapping.clientCode,
-    value: tran.value,
-    rowNumber: tran.rowNumber,
-    rowNumberOrig: tran.rowNumberOrig,
-    worksheetId: sheet.worksheetId && sheet.worksheetId,
-    worksheetName: sheet.name && sheet.name,
-    [definedCol.updateKey]: newValue,
-  };
-  return updatedTran;
+  //const updatedTran: {
+  //  transactionId: string;
+  //  transactionNumber: number;
+  //  code: number;
+  //  updatedCode?: number;
+  //  date: string;
+  //  updatedDate?: number;
+  //  dateExcel: number;
+  //  narrative: string;
+  //  updatedNarrative?: string;
+  //  clientCodeMapping: number;
+  //  updatedClientCodeMapping?: number;
+  //  value: number;
+  //  rowNumber: number;
+  //  rowNumberOrig: number;
+  //  worksheetId?: string;
+  //  worksheetName?: string;
+  //  cerysCodeObject?: {};
+  //} = {
+  //  transactionId: tran._id,
+  //  transactionNumber: tran.transactionNumber,
+  //  code: tran.cerysCode,
+  //  date: tran.transactionDate,
+  //  dateExcel: tran.transactionDateExcel,
+  //  narrative: tran.narrative,
+  //  clientCodeMapping: tran.defaultClientMapping.clientCode,
+  //  value: tran.value,
+  //  rowNumber: tran.rowNumber,
+  //  rowNumberOrig: tran.rowNumberOrig,
+  //  worksheetId: sheet.worksheetId && sheet.worksheetId,
+  //  worksheetName: sheet.name && sheet.name,
+  //  [definedCol.updateKey]: newValue,
+  //};
+  console.log(newValue);
+  console.log(sheet);
+  console.log(definedCol);
+    const updatedTran = tran;
+    return updatedTran;
 };
 
 export const cancelAutoFill = async (wsName, address) => {
@@ -298,13 +304,14 @@ export const submitTransactionUpdates = async (session) => {
       tbUpdated = true;
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === tran.worksheetName) {
-          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${tran.rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${tran.rowNumber}`;
-          const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber: tran.rowNumber };
+          const rowNumber = getTransRowNumber(tran, sheet);
+          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
+          const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber };
           deletionObjs.push(deletionObj);
           sheet.editButtonStatus = "hide";
           const newTransactions = [];
           sheet.transactions.forEach((i) => {
-            if (i._id !== tran.transactionId) {
+            if (i._id !== tran._id) {
               newTransactions.push(i);
             }
           });
@@ -319,7 +326,7 @@ export const submitTransactionUpdates = async (session) => {
       otherUpdated = true;
       session.editableSheets.forEach((sheet) => {
         sheet.transactions.forEach((transaction) => {
-          if (transaction._id === tran.transactionId) {
+          if (transaction._id === tran._id) {
             if (tran.updatedDate) transaction.transactionDateExcel = tran.updatedDate;
             if (tran.updatedNarrative) transaction.narrative = tran.updatedNarrative;
             if (tran.updatedClientCodeMapping) {
@@ -366,18 +373,14 @@ export const reverseTransactionUpdates = async (session) => {
   const updatedTrans = session.updatedTransactions;
   updatedTrans.forEach((tran) => {
     const wsName = tran.worksheetName;
-    let ws;
-    session.editableSheets.forEach((sheet) => {
-      if (sheet.name === wsName) {
-        sheet.editButtonStatus = "hide";
-        ws = sheet;
-      }
-    });
+    const sheet = session.editableSheets.find((ws) => ws.name === wsName);
+    sheet.editButtonStatus = "hide";
+    const rowNumber = getTransRowNumber(tran, sheet);
     let dateCol;
     let cerysCodeCol;
     let cerysNarrativeCol;
     let clientCodeMappingCol;
-    ws.definedCols.forEach((col) => {
+    sheet.definedCols.forEach((col) => {
       if (col.type === "date") dateCol = col.colNumber;
       if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
       if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
@@ -388,23 +391,23 @@ export const reverseTransactionUpdates = async (session) => {
     const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
     const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
     if (tran.updatedCode) {
-      const address = `${cerysCodeColLetter}${tran.rowNumber}:${cerysCodeColLetter}${tran.rowNumber}`;
-      const reversal = { wsName, address, value: tran.code };
+      const address = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
+      const reversal = { wsName, address, value: tran.cerysCode };
       reversals.push(reversal);
     }
     if (tran.updatedDate) {
-      const address = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
-      const reversal = { wsName, address, value: tran.dateExcel };
+      const address = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
+      const reversal = { wsName, address, value: tran.transactionDateExcel };
       reversals.push(reversal);
     }
     if (tran.updatedNarrative) {
-      const address = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
+      const address = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
       const reversal = { wsName, address, value: tran.narrative };
       reversals.push(reversal);
     }
     if (tran.updatedClientCodeMapping) {
-      const address = `${clientCodeMappingColLetter}${tran.rowNumber}:${clientCodeMappingColLetter}${tran.rowNumber}`;
-      const reversal = { wsName, address, value: tran.clientCodeMapping };
+      const address = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
+      const reversal = { wsName, address, value: tran.defaultClientCodeMapping.clientCode };
       reversals.push(reversal);
     }
   });

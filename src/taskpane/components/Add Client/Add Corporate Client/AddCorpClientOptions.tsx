@@ -8,10 +8,7 @@ interface addCorpClientOptionsProps {
   session: {};
 }
 
-const AddCorpClientOptions = ({
-  handleView,
-  session,
-}: addCorpClientOptionsProps) => {
+const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps) => {
   const handleSubmission = async () => {
     const client = session["newClientPrelim"];
     const customerId = session["customer"]["_id"];

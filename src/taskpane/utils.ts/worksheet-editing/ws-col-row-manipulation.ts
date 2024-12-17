@@ -89,7 +89,7 @@ export const handleColumnDeletion = async (session, sheet, addressObj) => {
     if (col.colNumber > firstCol && col.colNumber > lastCol) {
       col.colNumber -= colsDeleted;
     } else if (!(firstCol > col.colNumber)) {
-      col.deleted = true;
+      col.isDeleted = true;
     }
   });
   return;
@@ -122,11 +122,14 @@ export const handleRowInsertion = async (session, e, wsName, sheet, addressObj) 
   });
   sheet.editableRowRanges = newRowRanges;
   sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-  sheet.transactions.forEach((tran) => {
-    if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
-  });
-  session.updatedTransactions.forEach((tran) => {
-    if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+  //sheet.transactions.forEach((tran) => {
+  //  if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+  //});
+  //session.updatedTransactions.forEach((tran) => {
+  //  if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+  //});
+  sheet.sheetMapping.forEach((map) => {
+    if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
   });
 };
 
@@ -190,11 +193,14 @@ export const handleRowDeletion = async (session, sheet, addressObj) => {
     }
   });
   sheet.editableRowRanges = newRowRanges;
-  sheet.transactions.forEach((tran) => {
-    if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
-  });
-  session.updatedTransactions.forEach((tran) => {
-    if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+  //sheet.transactions.forEach((tran) => {
+  //  if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+  //});
+  //session.updatedTransactions.forEach((tran) => {
+  //  if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+  //});
+  sheet.sheetMapping.forEach((map) => {
+    if (map.rowNumber > lastRow) map.rowNumber -= rowsDeleted;
   });
 };
 
@@ -259,11 +265,14 @@ export const handleCellDeletionUp = async (session, sheet, addressObj) => {
       }
     });
     sheet.editableRowRanges = newRowRanges;
-    sheet.transactions.forEach((tran) => {
-      if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
-    });
-    session.updatedTransactions.forEach((tran) => {
-      if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+    //sheet.transactions.forEach((tran) => {
+    //  if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+    //});
+    //session.updatedTransactions.forEach((tran) => {
+    //  if (tran.rowNumber > lastRow) tran.rowNumber -= rowsDeleted;
+    //});
+    sheet.sheetMapping.forEach((map) => {
+      if (map.rowNumber > lastRow) map.rowNumber -= rowsDeleted;
     });
     return;
   } else if (
@@ -327,7 +336,7 @@ export const handleCellDeletionLeft = async (session, sheet, addressObj) => {
       if (col.colNumber > firstCol && col.colNumber > lastCol) {
         col.colNumber -= colsDeleted;
       } else if (!(firstCol > col.colNumber)) {
-        col.deleted = true;
+        col.isDeleted = true;
       }
     });
     return;
@@ -375,11 +384,14 @@ export const handleCellInsertionDown = (session, e, wsName, sheet, addressObj) =
     });
     sheet.editableRowRanges = newRowRanges;
     sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-    sheet.transactions.forEach((tran) => {
-      if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
-    });
-    session.updatedTransactions.forEach((tran) => {
-      if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+    //sheet.transactions.forEach((tran) => {
+    //  if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+    //});
+    //session.updatedTransactions.forEach((tran) => {
+    //  if (tran.rowNumber >= firstRow) tran.rowNumber += rowsInserted;
+    //});
+    sheet.sheetMapping.forEach((map) => {
+      if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
     });
     return;
   } else if (firstCol < sheet.protectedRange.lastCol || lastCol > sheet.protectedRange.firstCol) {
@@ -436,11 +448,32 @@ export const handleRowSort = async (session, wsName) => {
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
       sheet.definedCols.forEach((col) => {
-        if (col.unique) uniqueCol = col.colNumber;
+        if (col.isUnique) uniqueCol = col.colNumber;
       });
       const protectedRowNumbers = [];
-      sheet.transactions.forEach((tran) => {
-        const currentRowNumber = tran.rowNumber;
+      //sheet.transactions.forEach((tran) => {
+      //  const currentRowNumber = tran.rowNumber;
+      //  let activeCellMatched = false;
+      //  if (session.activeEditableCell.wsName === sheet.name) {
+      //    if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
+      //      activeCellMatched = true;
+      //    }
+      //  }
+      //  usedRange.forEach((row, index) => {
+      //    if (row[uniqueCol - 1] === tran.transactionNumber) {
+      //      validateOtherValues(session, sheet, tran, row);
+      //      tran.rowNumber = index + 1;
+      //      if (activeCellMatched) {
+      //        session.activeEditableCell.addressObj.firstRow = index + 1;
+      //        session.activeEditableCell.addressObj.lastRow = index + 1;
+      //      }
+      //      protectedRowNumbers.push(index + 1);
+      //    }
+      //  });
+      //});
+      sheet.sheetMapping.forEach((map) => {
+        const transaction = map.getTran(sheet.transactions);
+        const currentRowNumber = map.rowNumber;
         let activeCellMatched = false;
         if (session.activeEditableCell.wsName === sheet.name) {
           if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
@@ -448,9 +481,9 @@ export const handleRowSort = async (session, wsName) => {
           }
         }
         usedRange.forEach((row, index) => {
-          if (row[uniqueCol - 1] === tran.transactionNumber) {
-            validateOtherValues(session, sheet, tran, row);
-            tran.rowNumber = index + 1;
+          if (row[uniqueCol - 1] === transaction.transactionNumber) {
+            validateOtherValues(session, sheet, transaction, row);
+            map.rowNumber = index + 1;
             if (activeCellMatched) {
               session.activeEditableCell.addressObj.firstRow = index + 1;
               session.activeEditableCell.addressObj.lastRow = index + 1;
@@ -459,13 +492,13 @@ export const handleRowSort = async (session, wsName) => {
           }
         });
       });
-      session.updatedTransactions.forEach((tran) => {
-        usedRange.forEach((row, index) => {
-          if (row[uniqueCol - 1] === tran.transactionNumber) {
-            tran.rowNumber = index + 1;
-          }
-        });
-      });
+      //session.updatedTransactions.forEach((tran) => {
+      //  usedRange.forEach((row, index) => {
+      //    if (row[uniqueCol - 1] === tran.transactionNumber) {
+      //      tran.rowNumber = index + 1;
+      //    }
+      //  });
+      //});
       protectedRowNumbers.sort((a, b) => {
         return a - b;
       });
@@ -486,7 +519,7 @@ export const handleRowSort = async (session, wsName) => {
 export const validateOtherValues = (session, sheet, tran, row) => {
   let updatedTran = { updatedDate: false, updatedNarrative: false };
   session.updatedTransactions.forEach((update) => {
-    if (update.transactionId === tran._id) updatedTran = update;
+    if (update._id === tran._id) updatedTran = update;
   });
   sheet.type === "cerysCodeAnalysis" && validateCerysTransaction(sheet, tran, updatedTran, row);
 };

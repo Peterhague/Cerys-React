@@ -1,10 +1,12 @@
 import { createEditableCell } from "../../classes/editable-cell";
+import { TransactionMap } from "../../classes/transaction-map";
 import {
   getExcelContext,
   createEditableWs,
   handleEditButtonClick,
   interpretEventAddress,
   checkEditMode,
+  callNextView,
 } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addWorksheet, getWorksheet } from "../worksheet";
@@ -62,12 +64,12 @@ async function cerysNomDetailView(context, detail, session) {
   let sheetInMidEdit = false;
   session.updatedTransactions.forEach((update) => {
     detail.forEach((tran) => {
-      if (update.transactionId === tran._id) {
+      if (update._id === tran._id) {
         sheetInMidEdit = true;
         tran.cerysCodeUpdated = update.updatedCode && update.updatedCode;
         tran.transactionDateExcelUpdated = update.updatedDate && update.updatedDate;
         tran.narrativeUpdated = update.updatedNarrative && update.updatedNarrative;
-        update.rowNumber = update.rowNumberOrig;
+        //update.rowNumber = update.rowNumberOrig;
       }
     });
   });
@@ -82,6 +84,7 @@ async function cerysNomDetailView(context, detail, session) {
   ];
   detail[0].defaultSign === "credit" ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
+  const sheetMapping = [];
   detail.forEach((line) => {
     let arr = [];
     arr.push(line.transactionNumber);
@@ -107,8 +110,10 @@ async function cerysNomDetailView(context, detail, session) {
     }
     line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
-    line.rowNumber = rowNumber;
-    line.rowNumberOrig = rowNumber;
+    //line.rowNumber = rowNumber;
+    //line.rowNumberOrig = rowNumber;
+    const map = new TransactionMap(line._id, rowNumber);
+    sheetMapping.push(map);
     rowNumber += 1;
   });
   range.values = valuesToPost;
@@ -180,7 +185,7 @@ async function cerysNomDetailView(context, detail, session) {
       unique: false,
     },
   ];
-  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis");
+  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping);
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
@@ -197,7 +202,6 @@ export const handleSingleClick = (session, e, wsName) => {
   ws.editableRowRanges.forEach((range) => {
     if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
   });
-  if (!withinEditableRange) return;
   let cerysCodeCol;
   let clientCodeCol;
   let clientCodeMappingCol;
@@ -211,15 +215,27 @@ export const handleSingleClick = (session, e, wsName) => {
         clientCodeMappingCol = col.colNumber;
       }
     });
-  if (cerysCodeCol === addressObj.firstCol) {
+  if (withinEditableRange && cerysCodeCol === addressObj.firstCol) {
     session.handleView("nomCodeSelection");
     session.activeEditableCell = createEditableCell(addressObj, wsName, "cerysCoding");
+  } else if (withinEditableRange && clientCodeMappingCol === addressObj.firstCol) {
+    handleClientMappingCellClick(session, addressObj, wsName);
+  } else {
+    handleOtherCellClick(session, e, addressObj, clientCodeCol, withinEditableRange);
   }
-  if (clientCodeMappingCol === addressObj.firstCol) {
-    session.handleView("clientNomCodeSelection");
-    session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
+};
+
+export const handleClientMappingCellClick = (session, addressObj, wsName) => {
+  session.handleView("clientNomCodeSelection");
+  session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
+};
+
+export const handleOtherCellClick = (session, e, addressObj, clientCodeCol, withinEditableRange) => {
+  if (session.currentView === "nomCodeSelection" || session.currentView === "clientNomCodeSelection") {
+    callNextView(session);
+    session.activeEditableCell = createEditableCell(null, null, null);
   }
-  if (clientCodeCol === addressObj.firstCol) {
+  if (withinEditableRange && clientCodeCol === addressObj.firstCol) {
     showClientNominalDetail(e, session);
   }
 };

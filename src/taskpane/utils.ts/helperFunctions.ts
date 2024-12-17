@@ -66,18 +66,18 @@ export async function updateAssignmentDb(
   return updatedCustAndAss;
 }
 
-export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: any[], eRowNumber: number) {
-  const updatedTransToPost = [];
-  transToPost.forEach((i: { rowNumber: any; cerysCode: any }) => {
-    if (i.rowNumber === eRowNumber) {
-      i.cerysCode = e.details.valueAfter;
-      updatedTransToPost.push(i);
-    } else {
-      updatedTransToPost.push(i);
-    }
-  });
-  return updatedTransToPost;
-}
+//export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: any[], eRowNumber: number) {
+//  const updatedTransToPost = [];
+//  transToPost.forEach((i: { rowNumber: any; cerysCode: any }) => {
+//    if (i.rowNumber === eRowNumber) {
+//      i.cerysCode = e.details.valueAfter;
+//      updatedTransToPost.push(i);
+//    } else {
+//      updatedTransToPost.push(i);
+//    }
+//  });
+//  return updatedTransToPost;
+//}
 
 export const resetActiveJournal = (session) => {
   const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
@@ -180,21 +180,22 @@ export const handleEditButtonClick = async (session) => {
       const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
       const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
       session.updatedTransactions.forEach((tran) => {
-        if (tran.worksheetName === wsName) {
+          if (tran.worksheetName === wsName) {
+              const rowNumber = getTransRowNumber(tran, sheet);
           if (tran.updatedCode) {
-            const range = `${cerysCodeColLetter}${tran.rowNumber}:${cerysCodeColLetter}${tran.rowNumber}`;
+            const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedDate) {
-            const range = `${dateColLetter}${tran.rowNumber}:${dateColLetter}${tran.rowNumber}`;
+            const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedNarrative) {
-            const range = `${cerysNarrativeColLetter}${tran.rowNumber}:${cerysNarrativeColLetter}${tran.rowNumber}`;
+            const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
-          if (tran.clientCodeMapping) {
-            const range = `${clientCodeMappingColLetter}${tran.rowNumber}:${clientCodeMappingColLetter}${tran.rowNumber}`;
+              if (tran.defaultClientCodeMapping.clientCode) {
+            const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
         }
@@ -227,17 +228,18 @@ export const simulateEditButtonClick = async (session) => {
         if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
       });
       session.updatedTransactions.forEach((tran) => {
+        const rowNumber = getTransRowNumber(tran, sheet);
         if (tran.worksheetName === wsName) {
           if (tran.updatedCode) {
-            const range = `${colNumToLetter(codeColNumber)}${tran.rowNumber}:${colNumToLetter(codeColNumber)}${tran.rowNumber}`;
+            const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedDate) {
-            const range = `${colNumToLetter(dateColNumber)}${tran.rowNumber}:${colNumToLetter(dateColNumber)}${tran.rowNumber}`;
+            const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
           if (tran.updatedNarrative) {
-            const range = `${colNumToLetter(narrColNumber)}${tran.rowNumber}:${colNumToLetter(narrColNumber)}${tran.rowNumber}`;
+            const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
             highlightGreenRanges.push(range);
           }
         }
@@ -347,7 +349,7 @@ export const interpretExcelAddress = (excelAddress) => {
 //  });
 //};
 
-export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type) => {
+export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type, sheetMapping) => {
   const editableWs = {
     name: ws.name,
     type,
@@ -365,6 +367,7 @@ export const createEditableWs = (session, transactions, ws, definedCols, valuesT
     dataCorrupted: false,
     transactions: transactions,
     usedRange: valuesToPost,
+    sheetMapping,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -416,4 +419,9 @@ export const checkEditMode = (sheet) => {
 export const getDefinedCol = (sheet, addressCol) => {
   const definedCol = sheet.definedCols.find((col) => col.colNumber === addressCol);
   return definedCol;
+};
+
+export const getTransRowNumber = (transaction, sheet) => {
+  const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
+  return map.rowNumber;
 };

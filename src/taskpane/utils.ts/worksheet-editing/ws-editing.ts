@@ -95,13 +95,13 @@ export const updateEdSheetTransValues = async (session, sheet, affectedTransacti
   console.log(sheet);
   console.log(affectedTransactions);
   const updates = [];
-  sheet.transactions.forEach((sheetTran) => {
+  sheet.sheetMapping.forEach((map) => {
     affectedTransactions.forEach((affectedTran) => {
-      if (sheetTran._id === affectedTran._id) {
+      if (map.transactionId === affectedTran._id) {
         affectedTran.updates.forEach((updatedItem) => {
           sheet.definedCols.forEach((definedCol) => {
             const col = colNumToLetter(definedCol.colNumber);
-            const row = sheetTran.rowNumber;
+            const row = map.rowNumber;
             let update: { address: string; value?: string | number } = {
               address: `${col}${row}:${col}${row}`,
             };

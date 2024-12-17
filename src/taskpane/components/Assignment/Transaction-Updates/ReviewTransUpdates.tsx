@@ -35,7 +35,7 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
         <tbody>
           <tr>
             <td>Date</td>
-            <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].dateExcel))}</td>
+            <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].transactionDateExcel))}</td>
           </tr>
           {updatedTransactions[activeIndex].updatedDate && (
             <tr>
@@ -65,22 +65,22 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             <td>Nominal code</td>
             {updatedTransactions[activeIndex].updatedCode && (
               <td>
-                {updatedTransactions[activeIndex].code} {"=> "}
+                {updatedTransactions[activeIndex].cerysCode} {"=> "}
                 {updatedTransactions[activeIndex].updatedCode}
               </td>
             )}
-            {!updatedTransactions[activeIndex].updatedCode && <td>{updatedTransactions[activeIndex].code}</td>}
+            {!updatedTransactions[activeIndex].updatedCode && <td>{updatedTransactions[activeIndex].cerysCode}</td>}
           </tr>
           <tr>
             <td>Client mapping</td>
             {updatedTransactions[activeIndex].updatedClientCodeMapping && (
               <td>
-                {updatedTransactions[activeIndex].clientCodeMapping} {"=> "}
+                              {updatedTransactions[activeIndex].defaultClientCodeMapping.clientCode} {"=> "}
                 {updatedTransactions[activeIndex].updatedClientCodeMapping}
               </td>
             )}
             {!updatedTransactions[activeIndex].updatedClientCodeMapping && (
-              <td>{updatedTransactions[activeIndex].clientCodeMapping}</td>
+                          <td>{updatedTransactions[activeIndex].defaultClientCodeMapping.clientCode}</td>
             )}
           </tr>
         </tbody>
@@ -90,7 +90,7 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
           <tbody>
             <tr>
               <td>Date</td>
-              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].dateExcel))}</td>
+              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].transactionDateExcel))}</td>
             </tr>
             {updatedTransactions[activeIndex + 1].updatedDate && (
               <tr>
@@ -120,24 +120,24 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
               <td>Nominal code</td>
               {updatedTransactions[activeIndex + 1].updatedCode && (
                 <td>
-                  {updatedTransactions[activeIndex + 1].code} {"=> "}
+                  {updatedTransactions[activeIndex + 1].cerysCode} {"=> "}
                   {updatedTransactions[activeIndex + 1].updatedCode}
                 </td>
               )}
               {!updatedTransactions[activeIndex + 1].updatedCode && (
-                <td>{updatedTransactions[activeIndex + 1].code}</td>
+                <td>{updatedTransactions[activeIndex + 1].cerysCode}</td>
               )}
             </tr>
             <tr>
               <td>Client mapping</td>
               {updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
                 <td>
-                  {updatedTransactions[activeIndex + 1].clientCodeMapping} {"=> "}
+                  {updatedTransactions[activeIndex + 1].defaultClientCodeMapping.clientCode} {"=> "}
                   {updatedTransactions[activeIndex + 1].updatedClientCodeMapping}
                 </td>
               )}
               {!updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
-                <td>{updatedTransactions[activeIndex + 1].clientCodeMapping}</td>
+                              <td>{updatedTransactions[activeIndex + 1].defaultClientCodeMapping.clientCode}</td>
               )}
             </tr>
           </tbody>

@@ -1,6 +1,7 @@
+import { TransactionMap } from "../../classes/transaction-map";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import { calculateDiffInDays, convertExcelDate, createEditableWs, getExcelContext } from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, createEditableWs, getExcelContext, getTransRowNumber } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -132,6 +133,7 @@ export const convertNewFATrans = (session) => {
 };
 
 export async function createTransSumm(session, relevantTrans, registerType) {
+  const sheetMapping = [];
   const context = await getExcelContext();
   const name = `${registerType} Transactions`;
   const ws = addWorksheet(context, name);
@@ -220,8 +222,10 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   //  }
   //});
   relevantTrans.forEach((i) => {
-    i.rowNumber = session[`${registerType}Transactions`].length + 3;
-    //i.assetNarrative = i.narrative;
+    //i.rowNumber = session[`${registerType}Transactions`].length + 3;
+      //i.assetNarrative = i.narrative;
+      const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
+      sheetMapping.push(map);
     i.assetSubCatCodes = [i.assetSubCatCode];
     i["subTransactions"] = [
       {
@@ -397,7 +401,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   ];
   const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
   const sheetName = `${registerType}RPreview`;
-  createEditableWs(session, transactions, ws, definedCols, valuesToPost, sheetName);
+  createEditableWs(session, transactions, ws, definedCols, valuesToPost, sheetName, sheetMapping);
   await context.sync();
   ws.activate();
 }
@@ -620,8 +624,9 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   sheet.definedCols.forEach((col) => {
     if (col.type === "depnCharge") depnChgColNumber = col.colNumber;
   });
-  const colLetter = colNumToLetter(depnChgColNumber);
-  const range = `${colLetter}${tran.rowNumber}:${colLetter}${tran.rowNumber}`;
+    const colLetter = colNumToLetter(depnChgColNumber);
+    const rowNumber = getTransRowNumber(tran, sheet);
+  const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
   await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {
