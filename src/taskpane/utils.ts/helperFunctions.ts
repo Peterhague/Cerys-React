@@ -179,26 +179,28 @@ export const handleEditButtonClick = async (session) => {
       const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
       const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
       const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
-      session.updatedTransactions.forEach((tran) => {
-          if (tran.worksheetName === wsName) {
-              const rowNumber = getTransRowNumber(tran, sheet);
-          if (tran.updatedCode) {
-            const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
-            highlightGreenRanges.push(range);
+      getUpdatedTransactions(session).forEach((tran) => {
+        tran.updates.forEach((update) => {
+          if (update.worksheetName === wsName) {
+            const rowNumber = getTransRowNumber(tran, sheet);
+            if (update.type === "cerysCode") {
+              const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "date") {
+              const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "cerysNarrative") {
+              const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "clientCodeMapping") {
+              const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
           }
-          if (tran.updatedDate) {
-            const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
-            highlightGreenRanges.push(range);
-          }
-          if (tran.updatedNarrative) {
-            const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
-            highlightGreenRanges.push(range);
-          }
-              if (tran.defaultClientCodeMapping.clientCode) {
-            const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
-            highlightGreenRanges.push(range);
-          }
-        }
+        });
       });
       if (sheet.editButtonStatus === "show") {
         highlightEditableRanges(sheet);
@@ -217,32 +219,41 @@ export const handleEditButtonClick = async (session) => {
 export const simulateEditButtonClick = async (session) => {
   const wsName = await getActiveWorksheetName();
   const highlightGreenRanges = [];
+  const updatedTrans = getUpdatedTransactions(session);
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {
       let codeColNumber;
       let dateColNumber;
       let narrColNumber;
+      let clientCodeMappingNumber;
       sheet.definedCols.forEach((col) => {
         if (col.type === "cerysCode") codeColNumber = col.colNumber;
         if (col.type === "date") dateColNumber = col.colNumber;
         if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
+        if (col.type === "clientCodeMapping") clientCodeMappingNumber = col.colNumber;
       });
-      session.updatedTransactions.forEach((tran) => {
+      updatedTrans.forEach((tran) => {
         const rowNumber = getTransRowNumber(tran, sheet);
-        if (tran.worksheetName === wsName) {
-          if (tran.updatedCode) {
-            const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
-            highlightGreenRanges.push(range);
+        tran.updates.forEach((update) => {
+          if (update.worksheetName === wsName) {
+            if (update.type === "cerysCode") {
+              const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "date") {
+              const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "cerysNarrative") {
+              const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "clientCodeMapping") {
+              const range = `${colNumToLetter(clientCodeMappingNumber)}${rowNumber}:${colNumToLetter(clientCodeMappingNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
           }
-          if (tran.updatedDate) {
-            const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
-            highlightGreenRanges.push(range);
-          }
-          if (tran.updatedNarrative) {
-            const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
-            highlightGreenRanges.push(range);
-          }
-        }
+        });
       });
       highlightEditableRanges(sheet);
       highlightRanges(wsName, highlightGreenRanges, "lightGreen");
@@ -424,4 +435,59 @@ export const getDefinedCol = (sheet, addressCol) => {
 export const getTransRowNumber = (transaction, sheet) => {
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
   return map.rowNumber;
+};
+
+export const getUpdatedDate = (tran) => {
+  let date = undefined;
+  tran.updates.forEach((update) => {
+    if (update.type === "date") {
+      date = { mongoDate: update.mongoDate, value: update.value };
+    }
+  });
+  return date;
+};
+
+export const getUpdatedNarrative = (tran) => {
+  let narrative = undefined;
+  tran.updates.forEach((update) => {
+    if (update.type === "cerysNarrative") {
+      narrative = update.value;
+    }
+  });
+  return narrative;
+};
+
+export const getUpdatedCerysCode = (tran) => {
+  let code = undefined;
+  tran.updates.forEach((update) => {
+    if (update.type === "cerysCode") {
+      code = update.value;
+    }
+  });
+  return code;
+};
+
+export const getUpdatedClientCodeMapping = (tran) => {
+  let mapping = undefined;
+  tran.updates.forEach((update) => {
+    if (update.type === "clientCodeMapping") {
+      mapping = update.value;
+    }
+  });
+  return mapping;
+};
+
+export const getUpdatedTransactions = (session) => {
+  const updatedTrans = session.activeAssignment.transactions.filter((tran) => tran.updates.length > 0);
+  return updatedTrans;
+};
+
+export const getActiveClientCodeMapping = (session, transaction) => {
+  let obj = transaction.clientMappingOverride ? transaction.customClientMapping : transaction.defaultClientMapping;
+  console.log(obj);
+  const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
+  console.log(update);
+  if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
+  console.log("here");
+  return obj;
 };

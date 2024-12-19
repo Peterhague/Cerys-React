@@ -9,7 +9,7 @@ import {
   processTransBatch,
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
-import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import {
   convertNewFATrans,
   finaliseAssetObjects,
@@ -64,7 +64,7 @@ const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) =>
   };
 
   const handleReanalysis = async () => {
-    if (session["updatedTransactions"].length > 0) {
+    if (getUpdatedTransactions(session).length > 0) {
       const updatedTransactions = await processUpdateBatch(session);
       await updateAssignmentFigures(session);
       checkFATranUpdatesForAssets(session, updatedTransactions);

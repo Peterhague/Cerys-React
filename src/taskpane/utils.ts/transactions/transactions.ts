@@ -55,7 +55,6 @@ export const processUpdateBatch = async (session) => {
     tran.processedAsAsset = false;
   });
   session["activeAssignment"] = updatedAssignmentAndTrans.assignment;
-  session["updatedTransactions"] = [];
   return updatedTransactions;
 };
 

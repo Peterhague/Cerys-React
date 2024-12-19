@@ -1,7 +1,16 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { convertExcelDate, convertMongoDate, convertValueToString } from "../../../utils.ts/helperFunctions";
+import {
+  convertExcelDate,
+  convertMongoDate,
+  convertValueToString,
+  getUpdatedCerysCode,
+  getUpdatedClientCodeMapping,
+  getUpdatedDate,
+  getUpdatedNarrative,
+  getUpdatedTransactions,
+} from "../../../utils.ts/helperFunctions";
 import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
 
 interface reviewTransUpdatesProps {
@@ -11,11 +20,10 @@ interface reviewTransUpdatesProps {
 
 const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  session["updatedTransactions"].sort((a, b) => {
+  const updatedTransactions = getUpdatedTransactions(session);
+  updatedTransactions.sort((a, b) => {
     return a.rowNumber - b.rowNumber;
   });
-
-  const updatedTransactions = session["updatedTransactions"];
 
   const handlePrevious = () => {
     setActiveIndex(activeIndex - 2);
@@ -37,20 +45,20 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             <td>Date</td>
             <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].transactionDateExcel))}</td>
           </tr>
-          {updatedTransactions[activeIndex].updatedDate && (
+          {getUpdatedDate(updatedTransactions[activeIndex]) && (
             <tr>
               <td>Updated Date</td>
-              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].updatedDate))}</td>
+              <td>{convertMongoDate(getUpdatedDate(updatedTransactions[activeIndex]).mongoDate)}</td>
             </tr>
           )}
           <tr>
             <td>Narrative</td>
             <td>{updatedTransactions[activeIndex].narrative}</td>
           </tr>
-          {updatedTransactions[activeIndex].updatedNarrative && (
+          {getUpdatedNarrative(updatedTransactions[activeIndex]) && (
             <tr>
               <td>Updated Narrative</td>
-              <td>{updatedTransactions[activeIndex].updatedNarrative}</td>
+              <td>{getUpdatedNarrative(updatedTransactions[activeIndex])}</td>
             </tr>
           )}
           <tr>
@@ -63,24 +71,33 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
           </tr>
           <tr>
             <td>Nominal code</td>
-            {updatedTransactions[activeIndex].updatedCode && (
+            {getUpdatedCerysCode(updatedTransactions[activeIndex]) && (
               <td>
                 {updatedTransactions[activeIndex].cerysCode} {"=> "}
-                {updatedTransactions[activeIndex].updatedCode}
+                {getUpdatedCerysCode(updatedTransactions[activeIndex])}
               </td>
             )}
-            {!updatedTransactions[activeIndex].updatedCode && <td>{updatedTransactions[activeIndex].cerysCode}</td>}
+            {!getUpdatedCerysCode(updatedTransactions[activeIndex]) && (
+              <td>{updatedTransactions[activeIndex].cerysCode}</td>
+            )}
           </tr>
           <tr>
             <td>Client mapping</td>
-            {updatedTransactions[activeIndex].updatedClientCodeMapping && (
+            {getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
               <td>
-                              {updatedTransactions[activeIndex].defaultClientCodeMapping.clientCode} {"=> "}
-                {updatedTransactions[activeIndex].updatedClientCodeMapping}
+                {updatedTransactions[activeIndex].clientMappingOverride
+                  ? updatedTransactions[activeIndex].customClientMapping.clientCode
+                  : updatedTransactions[activeIndex].defaultClientMapping.clientCode}{" "}
+                {"=> "}
+                {getUpdatedClientCodeMapping(updatedTransactions[activeIndex])}
               </td>
             )}
-            {!updatedTransactions[activeIndex].updatedClientCodeMapping && (
-                          <td>{updatedTransactions[activeIndex].defaultClientCodeMapping.clientCode}</td>
+            {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
+              <td>
+                {updatedTransactions[activeIndex].clientMappingOverride
+                  ? updatedTransactions[activeIndex].customClientMapping.clientCode
+                  : updatedTransactions[activeIndex].defaultClientMapping.clientCode}
+              </td>
             )}
           </tr>
         </tbody>
@@ -92,20 +109,20 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
               <td>Date</td>
               <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].transactionDateExcel))}</td>
             </tr>
-            {updatedTransactions[activeIndex + 1].updatedDate && (
+            {getUpdatedDate(updatedTransactions[activeIndex + 1]) && (
               <tr>
                 <td>Updated Date</td>
-                <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].updatedDate))}</td>
+                <td>{convertMongoDate(getUpdatedDate(updatedTransactions[activeIndex + 1]).mongoDate)}</td>
               </tr>
             )}
             <tr>
               <td>Narrative</td>
               <td>{updatedTransactions[activeIndex + 1].narrative}</td>
             </tr>
-            {updatedTransactions[activeIndex + 1].updatedNarrative && (
+            {getUpdatedNarrative(updatedTransactions[activeIndex + 1]) && (
               <tr>
                 <td>Updated Narrative</td>
-                <td>{updatedTransactions[activeIndex + 1].updatedNarrative}</td>
+                <td>{getUpdatedNarrative(updatedTransactions[activeIndex + 1])}</td>
               </tr>
             )}
             <tr>
@@ -118,26 +135,33 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             </tr>
             <tr>
               <td>Nominal code</td>
-              {updatedTransactions[activeIndex + 1].updatedCode && (
+              {getUpdatedCerysCode(updatedTransactions[activeIndex + 1]) && (
                 <td>
                   {updatedTransactions[activeIndex + 1].cerysCode} {"=> "}
-                  {updatedTransactions[activeIndex + 1].updatedCode}
+                  {getUpdatedCerysCode(updatedTransactions[activeIndex + 1])}
                 </td>
               )}
-              {!updatedTransactions[activeIndex + 1].updatedCode && (
+              {!getUpdatedCerysCode(updatedTransactions[activeIndex + 1]) && (
                 <td>{updatedTransactions[activeIndex + 1].cerysCode}</td>
               )}
             </tr>
             <tr>
               <td>Client mapping</td>
-              {updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
+              {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
                 <td>
-                  {updatedTransactions[activeIndex + 1].defaultClientCodeMapping.clientCode} {"=> "}
-                  {updatedTransactions[activeIndex + 1].updatedClientCodeMapping}
+                  {updatedTransactions[activeIndex + 1].clientMappingOverride
+                    ? updatedTransactions[activeIndex + 1].customClientMapping.clientCode
+                    : updatedTransactions[activeIndex + 1].defaultClientMapping.clientCode}{" "}
+                  {"=> "}
+                  {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1])}
                 </td>
               )}
-              {!updatedTransactions[activeIndex + 1].updatedClientCodeMapping && (
-                              <td>{updatedTransactions[activeIndex + 1].defaultClientCodeMapping.clientCode}</td>
+              {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
+                <td>
+                  {updatedTransactions[activeIndex + 1].clientMappingOverride
+                    ? updatedTransactions[activeIndex + 1].customClientMapping.clientCode
+                    : updatedTransactions[activeIndex + 1].defaultClientMapping.clientCode}
+                </td>
               )}
             </tr>
           </tbody>

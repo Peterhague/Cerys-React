@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
 import {
   convertNewFATrans,
   finaliseAssetObjects,
@@ -64,7 +64,7 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
   };
 
   const handleReanalysis = async () => {
-    if (session["updatedTransactions"].length > 0) {
+    if (getUpdatedTransactions(session).length > 0) {
       const updatedTransactions = await processUpdateBatch(session);
       await updateAssignmentFigures(session);
       checkFATranUpdatesForAssets(session, updatedTransactions);

@@ -1,7 +1,13 @@
 import { TransactionMap } from "../../classes/transaction-map";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import { calculateDiffInDays, convertExcelDate, createEditableWs, getExcelContext, getTransRowNumber } from "../helperFunctions";
+import {
+  calculateDiffInDays,
+  convertExcelDate,
+  createEditableWs,
+  getExcelContext,
+  getTransRowNumber,
+} from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -223,9 +229,9 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   //});
   relevantTrans.forEach((i) => {
     //i.rowNumber = session[`${registerType}Transactions`].length + 3;
-      //i.assetNarrative = i.narrative;
-      const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
-      sheetMapping.push(map);
+    //i.assetNarrative = i.narrative;
+    const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
+    sheetMapping.push(map);
     i.assetSubCatCodes = [i.assetSubCatCode];
     i["subTransactions"] = [
       {
@@ -624,8 +630,8 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   sheet.definedCols.forEach((col) => {
     if (col.type === "depnCharge") depnChgColNumber = col.colNumber;
   });
-    const colLetter = colNumToLetter(depnChgColNumber);
-    const rowNumber = getTransRowNumber(tran, sheet);
+  const colLetter = colNumToLetter(depnChgColNumber);
+  const rowNumber = getTransRowNumber(tran, sheet);
   const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
   await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
@@ -747,17 +753,18 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
 };
 
 export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
-  const newArray = [];
   bFTransLikelyAddns.forEach((tran) => {
     if (tran._id) {
       const newValue = tran.cerysCode + 1;
-      const newUpdate = createNewTransactionUpdate(tran, newValue, "sheet", "updatedCode");
-      session.chart.forEach((code) => {
-        if (code.cerysCode === newValue) {
-          newUpdate.cerysCodeObject = code;
-        }
-      });
-      newArray.push(newUpdate);
+      const update = createNewTransactionUpdate(session, tran, newValue, "sheet", "updatedCode"); // Issue: this code is fudged, needs to be looked at... see code commented out below
+      //session.chart.forEach((code) => {
+      //  if (code.cerysCode === newValue) {
+      //      update.cerysCodeObject = code;
+      //  }
+      //});
+      //if (!tran.cerysCodeObject) tran.cerysCodeObject = session.chart.find(code => code.cerysCode = update.value)
+      //newArray.push(newUpdate);
+      console.log(update);
     } else {
       const chart = session.chart;
       let drJnl;
@@ -794,7 +801,6 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
     session.activeJournal.journalType = "autoAddition";
   }
   console.log(session.activeJournal);
-  session.updatedTransactions = newArray;
 };
 
 //export async function createIFAR(session) {

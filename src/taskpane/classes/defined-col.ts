@@ -45,7 +45,7 @@ export const createDefinedCols = (type) => {
 
 export const getDefinedColsSchema = (schema) => {
   switch (schema) {
-    case "OBA relevant transactions":
+    case "OBARelevantAdjustments":
       return [
         cols.transNo,
         cols.date,
@@ -56,6 +56,16 @@ export const getDefinedColsSchema = (schema) => {
         cols.value,
         cols.clientCodeMapping,
         cols.clientCodeNameMapping,
+      ];
+    case "cerysCodeAnalysis":
+      return [
+        cols.transNo,
+        cols.date,
+        cols.transType,
+        cols.cerysCode,
+        cols.clientCode,
+        cols.cerysNarrative,
+        cols.value,
       ];
     default:
       return null;

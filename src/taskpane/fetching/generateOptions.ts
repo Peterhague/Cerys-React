@@ -1,4 +1,7 @@
 // takes a variable and returns it embedded in a valid fetch options
+
+import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
+
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
 export function fetchOptionsNC(nominalCode) {
   return {
@@ -36,7 +39,7 @@ export function fetchOptionsTransBatchUpdate(session) {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      updatedTransactions: session.updatedTransactions,
+      updatedTransactions: getUpdatedTransactions(session),
       customerId: session.customer._id,
       assignmentId: session.activeAssignment._id,
       clientSoftware: session.activeAssignment.clientSoftware,

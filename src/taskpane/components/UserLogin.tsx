@@ -33,7 +33,6 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
     session["activeJournal"] = activeJournal;
     session["newFATransactions"] = [];
     session["editableSheets"] = [];
-    session["updatedTransactions"] = [];
     session["IFARegister"] = [];
     session["handleView"] = handleView;
     session["handleDynamicView"] = handleDynamicView;

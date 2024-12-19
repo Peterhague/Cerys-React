@@ -2,35 +2,30 @@ import { createDefinedCols } from "../../classes/defined-col";
 import { TransactionMap } from "../../classes/transaction-map";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
-import { colNumToLetter } from "../../utils.ts/excel-col-conversion";
 import {
   callNextView,
   createEditableWs,
+  getActiveClientCodeMapping,
   getExcelContext,
+  getUpdatedCerysCode,
+  getUpdatedDate,
+  getUpdatedNarrative,
+  getUpdatedTransactions,
   handleEditButtonClick,
-  hasDefinedColOf,
 } from "../../utils.ts/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils.ts/messages";
 import { addWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { updateEdSheetTransValues } from "../../utils.ts/worksheet-editing/ws-editing";
-import { handleEdSheetCallback } from "../../utils.ts/worksheet-editing/ws-range-editing";
 
 export async function oBARelevantTransView(session) {
   const relTrans = session.activeAssignment.transactions.filter((tran) => {
     return tran.clientAdj;
   });
+  console.log(relTrans);
   const context = await getExcelContext();
   let sheetInMidEdit = false;
-  session.updatedTransactions.forEach((update) => {
-    relTrans.forEach((tran) => {
-      if (update._id === tran._id) {
-        sheetInMidEdit = true;
-        tran.cerysCodeUpdated = update.updatedCode && update.updatedCode;
-        tran.transactionDateExcelUpdated = update.updatedDate && update.updatedDate;
-        tran.narrativeUpdated = update.updatedNarrative && update.updatedNarrative;
-        //update.rowNumber = update.rowNumberOrig;
-      }
-    });
+  relTrans.forEach((tran) => {
+    if (tran.updates.length > 0) sheetInMidEdit = true;
   });
   const wsName = "OBA relevant transactions";
   const ws = addWorksheet(context, wsName);
@@ -54,35 +49,31 @@ export async function oBARelevantTransView(session) {
   let rowNumber = 3;
   const sheetMapping = [];
   relTrans.forEach((line) => {
+    const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
+    console.log("here");
+    const hasUpdatedCerysCode = line.updates.find((update) => update.type === "cerysCode");
+    console.log("here");
+    const cerysCode = hasUpdatedCerysCode ? hasUpdatedCerysCode.value : line.cerysCode;
+    console.log("here");
+    const shortName = hasUpdatedCerysCode ? hasUpdatedCerysCode.cerysCodeObject.cerysShortName : line.cerysShortName;
+    console.log("here");
+    const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
+    console.log("here");
+    const { clientCode, clientCodeName } = getActiveClientCodeMapping(session, line);
+    console.log("here");
     let arr = [];
     arr.push(line.transactionNumber);
-    if (line.transactionDateExcelUpdated) {
-      arr.push(line.transactionDateExcelUpdated);
-      delete line.transactionDateExcelUpdated;
-    } else {
-      arr.push(line.transactionDateExcel);
-    }
+    arr.push(date);
     arr.push(line.transactionType);
-    if (line.cerysCodeUpdated) {
-      arr.push(line.cerysCodeUpdated);
-      delete line.cerysCodeUpdated;
-    } else {
-      arr.push(line.cerysCode);
-    }
-    arr.push(line.cerysShortName);
-    if (line.narrativeUpdated) {
-      arr.push(line.narrativeUpdated);
-      delete line.narrativeUpdated;
-    } else {
-      arr.push(line.narrative);
-    }
+    arr.push(cerysCode);
+    arr.push(shortName);
+    arr.push(narrative);
     arr.push(line.value / 100);
-    arr.push(line.clientMappingOverride ? line.customClientMapping.clientCode : line.defaultClientMapping.clientCode);
-    arr.push(
-      line.clientMappingOverride ? line.customClientMapping.clientCodeName : line.defaultClientMapping.clientCodeName
-    );
+    arr.push(clientCode);
+    arr.push(clientCodeName);
     valuesToPost.push(arr);
     const map = new TransactionMap(line._id, rowNumber);
+    console.log("here");
     sheetMapping.push(map);
     rowNumber += 1;
   });
@@ -95,95 +86,7 @@ export async function oBARelevantTransView(session) {
   const columnsRange = ws.getRange("A:I");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
-  const definedCols = createDefinedCols(wsName);
-  console.log(definedCols);
-  //const definedCols = [
-  //  {
-  //    type: "transNo",
-  //    colNumber: 1,
-  //    mutable: false,
-  //    isQuasiMutable: false,
-  //    format: "0",
-  //    deleted: false,
-  //    unique: true,
-  //  },
-  //  {
-  //    type: "date",
-  //    colNumber: 2,
-  //    mutable: true,
-  //    isQuasiMutable: false,
-  //    format: "dd/mm/yyyy",
-  //    deleted: false,
-  //    updateKey: "updatedDate",
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "transType",
-  //    colNumber: 3,
-  //    mutable: false,
-  //    isQuasiMutable: false,
-  //    format: "",
-  //    deleted: false,
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "cerysCode",
-  //    colNumber: 4,
-  //    mutable: true,
-  //    isQuasiMutable: false,
-  //    format: "0",
-  //    deleted: false,
-  //    updateKey: "updatedCode",
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "cerysName",
-  //    colNumber: 5,
-  //    mutable: false,
-  //    isQuasiMutable: true,
-  //    format: "",
-  //    deleted: false,
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "cerysNarrative",
-  //    colNumber: 6,
-  //    mutable: true,
-  //    isQuasiMutable: false,
-  //    format: "",
-  //    deleted: false,
-  //    updateKey: "updatedNarrative",
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "value",
-  //    colNumber: 7,
-  //    mutable: false,
-  //    isQuasiMutable: false,
-  //    format: "#,##0.00;(#,##0.00);-",
-  //    deleted: false,
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "clientCodeMapping",
-  //    colNumber: 8,
-  //    mutable: true,
-  //    isQuasiMutable: false,
-  //    format: "0",
-  //    deleted: false,
-  //    updateKey: "updatedClientCodeMapping",
-  //    unique: false,
-  //  },
-  //  {
-  //    type: "clientCodeNameMapping",
-  //    colNumber: 9,
-  //    mutable: false,
-  //    isQuasiMutable: true,
-  //    format: "",
-  //    deleted: false,
-  //    unique: false,
-  //  },
-  //];
+  const definedCols = createDefinedCols("OBARelevantAdjustments");
   createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping);
   columnsRange.format.autofitColumns();
   ws.activate();

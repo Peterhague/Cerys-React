@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils.ts/worksheet";
-import { callNextView } from "../../../utils.ts/helperFunctions";
+import { callNextView, getUpdatedTransactions } from "../../../utils.ts/helperFunctions";
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { createEditableCell } from "../../../classes/editable-cell";
 interface nomCodeSelectionProps {
@@ -44,7 +44,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
   const handleGoBack = (e) => {
     e.preventDefault();
     session["activeEditableCell"] = createEditableCell(null, null, null);
-    if (session["updatedTransactions"].length > 0) {
+    if (getUpdatedTransactions(session).length > 0) {
       handleView("handleTransUpdates");
     } else {
       callNextView(session);

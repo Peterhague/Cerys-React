@@ -5,6 +5,7 @@ import {
   convertExcelDate,
   getExcelContext,
   getTransRowNumber,
+  getUpdatedTransactions,
   interpretExcelAddress,
   resetEdSheetCallBack,
   setNextViewButOne,
@@ -90,15 +91,15 @@ export const captureReanalysis = async (session, e, sheet, addressObj, definedCo
   const tran = map.getTran(sheet.transactions);
   const validationObj = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
+  console.log(isNegation);
   tests.isNotNegation = !isNegation;
+  console.log(tests.isNotNegation);
   const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
   if (isValidTransactionUpdate)
     processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
   if (definedCol.isQuasiMutable) tests.isValid = true;
   const range = `${e.address}:${e.address}`;
-  console.log(tests.changeRejected);
   if (tests.changeRejected) {
-    console.log("here laddy");
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
     return handledSuccessfully;
   }
@@ -117,29 +118,21 @@ export const combineAllValidation = (definedCol, validationObj) => {
 };
 
 export const processTransactionUpdate = (session, tran, tests, definedCol, validationObj, e, newValue, sheet) => {
-  let newArray = [];
-  updateIfExistingUpdate(session, tran, tests, definedCol, validationObj, newArray, e);
-  if (!tests.updated && !validationObj.isNegation) {
-    const newUpdate = createNewTransactionUpdate(tran, newValue, sheet, definedCol);
-    newArray.push(newUpdate);
+  deleteExistingUpdate(session, tests, definedCol);
+  if (!validationObj.isNegation) {
+    createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
     tests.isValid = true;
   }
-  newArray.forEach((update) => {
-    if (update.updatedCode && !update.cerysCodeObject) {
-      session["chart"].forEach((code) => {
-        if (code.cerysCode === newValue) update.cerysCodeObject = code;
-      });
-    }
-  });
   if (definedCol.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
     recalculateCharge(session, sheet, tran, e);
   if (definedCol.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
     updateAssetNarrative(session, sheet, tran, e);
-  session.updatedTransactions = newArray;
 };
 
 export const processTransUpdateEffects = (session, sheet, definedCol, range, tests) => {
-  sheet.editButtonStatus = session.updatedTransactions.length > 0 ? "inProgress" : "hide";
+  const updatedTrans = getUpdatedTransactions(session);
+  sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
+  console.log(tests.isNotNegation);
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
   !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
   if (
@@ -148,9 +141,9 @@ export const processTransUpdateEffects = (session, sheet, definedCol, range, tes
     session.currentView === "propmptIPRCreation"
   )
     setNextViewButOne(session);
-  const view = session.updatedTransactions.length > 0 ? "handleTransUpdates" : session.nextView;
+  const view = updatedTrans.length > 0 ? "handleTransUpdates" : session.nextView;
   session.handleView(view);
-  if (session.updatedTransactions.length > 0) {
+  if (updatedTrans.length > 0) {
     session.setEditButton("off");
   } else {
     session.setEditButton("hide");
@@ -205,83 +198,50 @@ export const validateClientCode = (session, tran, e, obj) => {
   obj.isInvalid = inValidCode;
 };
 
-export const updateIfExistingUpdate = (session, tran, tests, definedCol, validationObj, newArray, e) => {
-  session.updatedTransactions.forEach((updatedTran) => {
-    if (updatedTran._id === tran._id) {
+export const deleteExistingUpdate = (session, tests, definedCol) => {
+  getUpdatedTransactions(session).forEach((updatedTran) => {
+    const existingUpdate = updatedTran.updates.find((update) => update.type === definedCol.type);
+    if (existingUpdate) {
       tests.isValid = true;
-      tests.updated = true;
-      if (validationObj.isNegation) {
-        if (definedCol.type === "cerysCode") {
-          if (updatedTran.updatedDate || updatedTran.updatedNarrative || updatedTran.updatedClientCodeMapping) {
-            delete updatedTran.updatedCode;
-            newArray.push(updatedTran);
-          }
-        }
-        if (definedCol.type === "date") {
-          if (updatedTran.updatedCode || updatedTran.cerysNarrative || updatedTran.updatedClientCodeMapping) {
-            delete updatedTran.updatedDate;
-            newArray.push(updatedTran);
-          }
-        }
-        if (definedCol.type === "cerysNarrative") {
-          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedClientCodeMapping) {
-            delete updatedTran.updatedNarrative;
-            newArray.push(updatedTran);
-          }
-        }
-        if (definedCol.type === "clientCodeMapping") {
-          if (updatedTran.updatedCode || updatedTran.updatedDate || updatedTran.updatedNarrative) {
-            delete updatedTran.updatedClientCodeMapping;
-            newArray.push(updatedTran);
-          }
-        }
-      } else {
-        updatedTran[definedCol.updateKey] = e.details.valueAfter;
-        newArray.push(updatedTran);
-      }
-    } else newArray.push(updatedTran);
+      updatedTran.updates = updatedTran.updates.filter((update) => update.type !== existingUpdate.type);
+    }
   });
 };
 
-export const createNewTransactionUpdate = (tran, newValue, sheet, definedCol) => {
-  //const updatedTran: {
-  //  transactionId: string;
-  //  transactionNumber: number;
-  //  code: number;
-  //  updatedCode?: number;
-  //  date: string;
-  //  updatedDate?: number;
-  //  dateExcel: number;
-  //  narrative: string;
-  //  updatedNarrative?: string;
-  //  clientCodeMapping: number;
-  //  updatedClientCodeMapping?: number;
-  //  value: number;
-  //  rowNumber: number;
-  //  rowNumberOrig: number;
-  //  worksheetId?: string;
-  //  worksheetName?: string;
-  //  cerysCodeObject?: {};
-  //} = {
-  //  transactionId: tran._id,
-  //  transactionNumber: tran.transactionNumber,
-  //  code: tran.cerysCode,
-  //  date: tran.transactionDate,
-  //  dateExcel: tran.transactionDateExcel,
-  //  narrative: tran.narrative,
-  //  clientCodeMapping: tran.defaultClientMapping.clientCode,
-  //  value: tran.value,
-  //  rowNumber: tran.rowNumber,
-  //  rowNumberOrig: tran.rowNumberOrig,
-  //  worksheetId: sheet.worksheetId && sheet.worksheetId,
-  //  worksheetName: sheet.name && sheet.name,
-  //  [definedCol.updateKey]: newValue,
-  //};
-  console.log(newValue);
-  console.log(sheet);
-  console.log(definedCol);
-    const updatedTran = tran;
-    return updatedTran;
+export const createNewTransactionUpdate = (session, tran, newValue, sheet, definedCol) => {
+  let reversion;
+  if (definedCol.type === "date") {
+    reversion = tran.transactionDateExcel;
+  } else if (definedCol.type === "cerysCode") {
+    reversion = tran.cerysCode;
+  } else if (definedCol.type === "cerysNarrative") {
+    reversion = tran.narrative;
+  } else if (definedCol.type === "clientCodeMapping") {
+    if (tran.clientMappingOverride) {
+      reversion = tran.customClientMapping.clientCode;
+    } else {
+      reversion = tran.defaultClientMapping.clientCode;
+    }
+  }
+  const update: {
+    worksheetName: string;
+    worksheetId: string;
+    type: string;
+    value: string | number;
+    reversion: string | number;
+    mongoDate: string | null;
+    cerysCodeObject?: {} | null;
+  } = {
+    worksheetName: sheet.name,
+    worksheetId: sheet.worksheetId,
+    type: definedCol.type,
+    value: newValue,
+    reversion,
+    mongoDate: definedCol.type === "date" ? convertExcelDate(newValue) : null,
+    cerysCodeObject: definedCol.type === "cerysCode" ? session.chart.find((code) => code.cerysCode === newValue) : null,
+  };
+  tran.updates.push(update);
+  return update;
 };
 
 export const cancelAutoFill = async (wsName, address) => {
@@ -295,56 +255,60 @@ export const cancelAutoFill = async (wsName, address) => {
 export const submitTransactionUpdates = async (session) => {
   let tbUpdated = false;
   let otherUpdated = false;
-  const updatedTrans = session.updatedTransactions;
+  const updatedTrans = getUpdatedTransactions(session);
   const deletionObjs = [];
   let promptSheetDeletion = false;
-  session.updatedTransactions.forEach((tran) => {
-    tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
-    if (tran.updatedCode) {
-      tbUpdated = true;
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name === tran.worksheetName) {
-          const rowNumber = getTransRowNumber(tran, sheet);
-          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
-          const deletionObj = { wsName: tran.worksheetName, range: deletionRange, rowNumber };
-          deletionObjs.push(deletionObj);
-          sheet.editButtonStatus = "hide";
-          const newTransactions = [];
-          sheet.transactions.forEach((i) => {
-            if (i._id !== tran._id) {
-              newTransactions.push(i);
-            }
-          });
-          sheet.transactions = newTransactions;
-          if (newTransactions.length === 0) {
-            sheet.promptDeletion = true;
-            promptSheetDeletion = true;
-          }
-        }
-      });
-    } else {
-      otherUpdated = true;
-      session.editableSheets.forEach((sheet) => {
-        sheet.transactions.forEach((transaction) => {
-          if (transaction._id === tran._id) {
-            if (tran.updatedDate) transaction.transactionDateExcel = tran.updatedDate;
-            if (tran.updatedNarrative) transaction.narrative = tran.updatedNarrative;
-            if (tran.updatedClientCodeMapping) {
-              const nomCode = session.clientChart.find((code) => code.clientCode === tran.updatedClientCodeMapping);
-              transaction.defaultClientMapping.clientCode = nomCode.clientCode;
-              transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
+  updatedTrans.forEach((tran) => {
+    tran.updates.forEach((update) => {
+      //tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
+      if (update.type === "cerysCode") {
+        tbUpdated = true;
+        session.editableSheets.forEach((sheet) => {
+          if (sheet.name === update.worksheetName) {
+            const rowNumber = getTransRowNumber(tran, sheet);
+            const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
+            const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
+            deletionObjs.push(deletionObj);
+            sheet.editButtonStatus = "hide";
+            const newTransactions = [];
+            sheet.transactions.forEach((i) => {
+              if (i._id !== tran._id) {
+                newTransactions.push(i);
+              }
+            });
+            sheet.transactions = newTransactions;
+            if (newTransactions.length === 0) {
+              sheet.promptDeletion = true;
+              promptSheetDeletion = true;
             }
           }
         });
-      });
-    }
+      } else {
+        otherUpdated = true;
+        session.editableSheets.forEach((sheet) => {
+          sheet.transactions.forEach((transaction) => {
+            if (transaction._id === tran._id) {
+              if (update.type === "date") transaction.transactionDateExcel = update.value;
+              if (update.type === "cerysNarrative") transaction.narrative = update.value;
+              if (update.type === "clientCodeMapping") {
+                const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
+                transaction.defaultClientMapping.clientCode = nomCode.clientCode;
+                transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
+              }
+            }
+          });
+        });
+      }
+    });
   });
   if (otherUpdated) {
     updatedTrans.forEach((tran) => {
-      session.editableSheets.forEach((sheet) => {
-        if (tran.worksheetName === sheet.name) {
-          highlightEditableRanges(sheet);
-        }
+      tran.updates.forEach((update) => {
+        session.editableSheets.forEach((sheet) => {
+          if (update.worksheetName === sheet.name) {
+            highlightEditableRanges(sheet);
+          }
+        });
       });
     });
   }
@@ -370,46 +334,19 @@ export const submitTransactionUpdates = async (session) => {
 
 export const reverseTransactionUpdates = async (session) => {
   const reversals = [];
-  const updatedTrans = session.updatedTransactions;
+  const updatedTrans = getUpdatedTransactions(session);
   updatedTrans.forEach((tran) => {
-    const wsName = tran.worksheetName;
-    const sheet = session.editableSheets.find((ws) => ws.name === wsName);
-    sheet.editButtonStatus = "hide";
-    const rowNumber = getTransRowNumber(tran, sheet);
-    let dateCol;
-    let cerysCodeCol;
-    let cerysNarrativeCol;
-    let clientCodeMappingCol;
-    sheet.definedCols.forEach((col) => {
-      if (col.type === "date") dateCol = col.colNumber;
-      if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
-      if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
-      if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
+    tran.updates.forEach((update) => {
+      const wsName = update.worksheetName;
+      const sheet = session.editableSheets.find((ws) => ws.name === wsName);
+      sheet.editButtonStatus = "hide";
+      const rowNumber = getTransRowNumber(tran, sheet);
+      const definedCol = sheet.definedCols.find((col) => col.type === update.type);
+      const definedColLetter = colNumToLetter(definedCol.colNumber);
+      const address = `${definedColLetter}${rowNumber}:${definedColLetter}${rowNumber}`;
+      const reversal = { wsName, address, value: update.reversion };
+      reversals.push(reversal);
     });
-    const dateColLetter = colNumToLetter(dateCol);
-    const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
-    const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
-    const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
-    if (tran.updatedCode) {
-      const address = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
-      const reversal = { wsName, address, value: tran.cerysCode };
-      reversals.push(reversal);
-    }
-    if (tran.updatedDate) {
-      const address = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
-      const reversal = { wsName, address, value: tran.transactionDateExcel };
-      reversals.push(reversal);
-    }
-    if (tran.updatedNarrative) {
-      const address = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
-      const reversal = { wsName, address, value: tran.narrative };
-      reversals.push(reversal);
-    }
-    if (tran.updatedClientCodeMapping) {
-      const address = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
-      const reversal = { wsName, address, value: tran.defaultClientCodeMapping.clientCode };
-      reversals.push(reversal);
-    }
   });
   await setManyWorksheetRangeValues(reversals);
   session.setEditButton("hide");
