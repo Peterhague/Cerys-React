@@ -44,7 +44,7 @@ export async function showNominalDetail(context, e, session) {
   await context.sync();
   const innerValues = values.values;
   const code = innerValues[0][0];
-  const detail = await getCerysNomDetail(context, code, session);
+  const detail = getCerysNomDetail(session.activeAssignment.transactions, code);
   cerysNomDetailView(context, detail, session);
 }
 
@@ -108,7 +108,18 @@ async function cerysNomDetailView(context, detail, session) {
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const definedCols = createDefinedCols("cerysCodeAnalysis");
-  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping);
+  const filter = detail[0].cerysCode;
+  createEditableWs(
+    session,
+    detail,
+    ws,
+    definedCols,
+    valuesToPost,
+    "cerysCodeAnalysis",
+    sheetMapping,
+    getCerysNomDetail,
+    filter
+  );
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);

@@ -1,10 +1,8 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { callNextView } from "../../../utils.ts/helperFunctions";
-import {
-  reverseTransactionUpdates,
-  submitTransactionUpdates,
-} from "../../../utils.ts/worksheet-editing/ws-range-editing";
+import { reverseTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
+import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
 
 interface handleTransUpdatesProps {
   handleView: (view) => void;

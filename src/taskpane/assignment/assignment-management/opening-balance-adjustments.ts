@@ -7,21 +7,23 @@ import {
   createEditableWs,
   getActiveClientCodeMapping,
   getExcelContext,
-  getUpdatedCerysCode,
   getUpdatedDate,
   getUpdatedNarrative,
-  getUpdatedTransactions,
   handleEditButtonClick,
 } from "../../utils.ts/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils.ts/messages";
 import { addWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
-import { updateEdSheetTransValues } from "../../utils.ts/worksheet-editing/ws-editing";
+import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
 
+
+export const getOBARelTrans = (transactions) => {
+    return transactions.filter(tran => tran.clientAdj);
+}
 export async function oBARelevantTransView(session) {
-  const relTrans = session.activeAssignment.transactions.filter((tran) => {
-    return tran.clientAdj;
-  });
-  console.log(relTrans);
+  //const relTrans = session.activeAssignment.transactions.filter((tran) => {
+  //  return tran.clientAdj;
+  //});
+  const relTrans = getOBARelTrans(session.activeAssignment.transactions);
   const context = await getExcelContext();
   let sheetInMidEdit = false;
   relTrans.forEach((tran) => {
@@ -50,17 +52,11 @@ export async function oBARelevantTransView(session) {
   const sheetMapping = [];
   relTrans.forEach((line) => {
     const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
-    console.log("here");
     const hasUpdatedCerysCode = line.updates.find((update) => update.type === "cerysCode");
-    console.log("here");
     const cerysCode = hasUpdatedCerysCode ? hasUpdatedCerysCode.value : line.cerysCode;
-    console.log("here");
     const shortName = hasUpdatedCerysCode ? hasUpdatedCerysCode.cerysCodeObject.cerysShortName : line.cerysShortName;
-    console.log("here");
     const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
-    console.log("here");
     const { clientCode, clientCodeName } = getActiveClientCodeMapping(session, line);
-    console.log("here");
     let arr = [];
     arr.push(line.transactionNumber);
     arr.push(date);
@@ -73,11 +69,9 @@ export async function oBARelevantTransView(session) {
     arr.push(clientCodeName);
     valuesToPost.push(arr);
     const map = new TransactionMap(line._id, rowNumber);
-    console.log("here");
     sheetMapping.push(map);
     rowNumber += 1;
   });
-  console.log(sheetMapping);
   range.values = valuesToPost;
   const headerRange = ws.getRange("A1:I2");
   headerRange.format.font.bold = true;
@@ -87,7 +81,7 @@ export async function oBARelevantTransView(session) {
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const definedCols = createDefinedCols("OBARelevantAdjustments");
-  createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping);
+  createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping, getOBARelTrans, null);
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
@@ -118,7 +112,7 @@ export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeNa
         { updateType: "clientCodeNameMapping", value: nominalCodeName },
       ])
   );
-  updateEdSheetTransValues(session, wsName, relTrans);
+  updateEdSheetClientCodeMapping(session, wsName, relTrans);
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, client, assignment } = await updatedClientDb.json();

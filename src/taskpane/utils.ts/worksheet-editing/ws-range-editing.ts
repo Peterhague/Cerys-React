@@ -1,6 +1,5 @@
 import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
 import {
-  callNextView,
   checkEditMode,
   convertExcelDate,
   getExcelContext,
@@ -9,14 +8,10 @@ import {
   interpretExcelAddress,
   resetEdSheetCallBack,
   setNextViewButOne,
-  updateAssignmentFigures,
 } from "../helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "../transactions/asset-reg-generation";
-import { checkNewTransForAssets, processUpdateBatch } from "../transactions/transactions";
 import {
-  deleteWorksheetRangesUp,
   getWorksheetRangeValues,
-  highlightEditableRanges,
   highlightRanges,
   setExcelRangeValue,
   setManyWorksheetRangeValues,
@@ -24,7 +19,6 @@ import {
 import { handleWorksheetEdit } from "./ws-editing";
 
 export const handleRangeEdit = async (session, e, sheet, addressObj, definedCol) => {
-  console.log(e);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
   const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
@@ -91,10 +85,9 @@ export const captureReanalysis = async (session, e, sheet, addressObj, definedCo
   const tran = map.getTran(sheet.transactions);
   const validationObj = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
-  console.log(isNegation);
   tests.isNotNegation = !isNegation;
-  console.log(tests.isNotNegation);
   const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
+  console.log(isValidTransactionUpdate);
   if (isValidTransactionUpdate)
     processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
   if (definedCol.isQuasiMutable) tests.isValid = true;
@@ -118,6 +111,7 @@ export const combineAllValidation = (definedCol, validationObj) => {
 };
 
 export const processTransactionUpdate = (session, tran, tests, definedCol, validationObj, e, newValue, sheet) => {
+  console.log("here");
   deleteExistingUpdate(session, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
@@ -130,9 +124,9 @@ export const processTransactionUpdate = (session, tran, tests, definedCol, valid
 };
 
 export const processTransUpdateEffects = (session, sheet, definedCol, range, tests) => {
+  console.log("here");
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
-  console.log(tests.isNotNegation);
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
   !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
   if (
@@ -141,6 +135,7 @@ export const processTransUpdateEffects = (session, sheet, definedCol, range, tes
     session.currentView === "propmptIPRCreation"
   )
     setNextViewButOne(session);
+  console.log(updatedTrans);
   const view = updatedTrans.length > 0 ? "handleTransUpdates" : session.nextView;
   session.handleView(view);
   if (updatedTrans.length > 0) {
@@ -209,6 +204,7 @@ export const deleteExistingUpdate = (session, tests, definedCol) => {
 };
 
 export const createNewTransactionUpdate = (session, tran, newValue, sheet, definedCol) => {
+  console.log("here");
   let reversion;
   if (definedCol.type === "date") {
     reversion = tran.transactionDateExcel;
@@ -250,86 +246,6 @@ export const cancelAutoFill = async (wsName, address) => {
   const range = sheet.getRange(address);
   range.format.fill.clear();
   await context.sync();
-};
-
-export const submitTransactionUpdates = async (session) => {
-  let tbUpdated = false;
-  let otherUpdated = false;
-  const updatedTrans = getUpdatedTransactions(session);
-  const deletionObjs = [];
-  let promptSheetDeletion = false;
-  updatedTrans.forEach((tran) => {
-    tran.updates.forEach((update) => {
-      //tran.mongoDate = tran.updatedDate && convertExcelDate(tran.updatedDate);
-      if (update.type === "cerysCode") {
-        tbUpdated = true;
-        session.editableSheets.forEach((sheet) => {
-          if (sheet.name === update.worksheetName) {
-            const rowNumber = getTransRowNumber(tran, sheet);
-            const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
-            const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
-            deletionObjs.push(deletionObj);
-            sheet.editButtonStatus = "hide";
-            const newTransactions = [];
-            sheet.transactions.forEach((i) => {
-              if (i._id !== tran._id) {
-                newTransactions.push(i);
-              }
-            });
-            sheet.transactions = newTransactions;
-            if (newTransactions.length === 0) {
-              sheet.promptDeletion = true;
-              promptSheetDeletion = true;
-            }
-          }
-        });
-      } else {
-        otherUpdated = true;
-        session.editableSheets.forEach((sheet) => {
-          sheet.transactions.forEach((transaction) => {
-            if (transaction._id === tran._id) {
-              if (update.type === "date") transaction.transactionDateExcel = update.value;
-              if (update.type === "cerysNarrative") transaction.narrative = update.value;
-              if (update.type === "clientCodeMapping") {
-                const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
-                transaction.defaultClientMapping.clientCode = nomCode.clientCode;
-                transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
-              }
-            }
-          });
-        });
-      }
-    });
-  });
-  if (otherUpdated) {
-    updatedTrans.forEach((tran) => {
-      tran.updates.forEach((update) => {
-        session.editableSheets.forEach((sheet) => {
-          if (update.worksheetName === sheet.name) {
-            highlightEditableRanges(sheet);
-          }
-        });
-      });
-    });
-  }
-  deletionObjs.sort((a, b) => {
-    return b.rowNumber - a.rowNumber;
-  });
-  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
-  const updatedTransactions = await processUpdateBatch(session);
-  if (tbUpdated) {
-    if (promptSheetDeletion) {
-      await updateAssignmentFigures(session);
-      session.options.updatedTransactions = updatedTransactions;
-      session.handleView("deleteSheetPrompt");
-    } else {
-      await updateAssignmentFigures(session);
-      checkNewTransForAssets(session, updatedTransactions);
-    }
-  } else {
-    callNextView(session);
-  }
-  session.setEditButton("hide");
 };
 
 export const reverseTransactionUpdates = async (session) => {

@@ -2,9 +2,18 @@ import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndp
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
-import { calculateExcelDate, callNextView } from "../helperFunctions";
+import { colNumToLetter } from "../excel-col-conversion";
+import {
+  calculateExcelDate,
+  callNextView,
+  getTransRowNumber,
+  getUpdatedTransactions,
+  updateAssignmentFigures,
+} from "../helperFunctions";
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
+import { deleteWorksheetRangesUp, highlightEditableRanges } from "../worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
+import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
 
 export const processTransBatch = async (session) => {
   const activeJournal = session["activeJournal"];
@@ -44,6 +53,89 @@ export const processTransBatch = async (session) => {
   addPlClickListener(session);
   addBsClickListener(session["activeAssignment"]);
   return newTransactions;
+};
+
+export const submitTransactionUpdates = async (session) => {
+  let tbUpdated = false;
+  let otherUpdated = false;
+  let updatedTrans = getUpdatedTransactions(session);
+  const deletionObjs = [];
+  let promptSheetDeletion = false;
+  updatedTrans.forEach((tran) => {
+    tran.updates.forEach((update) => {
+      if (update.type === "cerysCode") {
+        tbUpdated = true;
+        session.editableSheets.forEach((sheet) => {
+          if (sheet.name === update.worksheetName) {
+            const rowNumber = getTransRowNumber(tran, sheet);
+            const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
+            const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
+            deletionObjs.push(deletionObj);
+            sheet.editButtonStatus = "hide";
+            const newTransactions = [];
+            sheet.transactions.forEach((i) => {
+              if (i._id !== tran._id) {
+                newTransactions.push(i);
+              }
+            });
+            sheet.transactions = newTransactions;
+            if (newTransactions.length === 0) {
+              sheet.promptDeletion = true;
+              promptSheetDeletion = true;
+            }
+          }
+        });
+      } else {
+        otherUpdated = true;
+        session.editableSheets.forEach((sheet) => {
+          sheet.transactions.forEach((transaction) => {
+            if (transaction._id === tran._id) {
+              if (update.type === "date") transaction.transactionDateExcel = update.value;
+              if (update.type === "cerysNarrative") transaction.narrative = update.value;
+              if (update.type === "clientCodeMapping") {
+                const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
+                transaction.defaultClientMapping.clientCode = nomCode.clientCode;
+                transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
+              }
+            }
+          });
+        });
+      }
+    });
+  });
+  if (otherUpdated) {
+    updatedTrans.forEach((tran) => {
+      tran.updates.forEach((update) => {
+        session.editableSheets.forEach((sheet) => {
+          if (update.worksheetName === sheet.name) {
+            highlightEditableRanges(sheet);
+          }
+        });
+      });
+    });
+  }
+  deletionObjs.sort((a, b) => {
+    return b.rowNumber - a.rowNumber;
+  });
+  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
+  await updateEdSheetsTransValues(session, updatedTrans);
+  const updatedTransactionsDb = await processUpdateBatch(session);
+  await renewEdSheetsTransRefs(session);
+  console.log(updatedTransactionsDb);
+  console.log(updatedTrans);
+  if (tbUpdated) {
+    if (promptSheetDeletion) {
+      await updateAssignmentFigures(session);
+      session.options.updatedTransactions = updatedTransactionsDb;
+      session.handleView("deleteSheetPrompt");
+    } else {
+      await updateAssignmentFigures(session);
+      checkNewTransForAssets(session, updatedTransactionsDb);
+    }
+  } else {
+    callNextView(session);
+  }
+  session.setEditButton("hide");
 };
 
 export const processUpdateBatch = async (session) => {

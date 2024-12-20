@@ -360,7 +360,7 @@ export const interpretExcelAddress = (excelAddress) => {
 //  });
 //};
 
-export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type, sheetMapping) => {
+export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type, sheetMapping, renewTransactions, filter) => {
   const editableWs = {
     name: ws.name,
     type,
@@ -378,7 +378,9 @@ export const createEditableWs = (session, transactions, ws, definedCols, valuesT
     dataCorrupted: false,
     transactions: transactions,
     usedRange: valuesToPost,
-    sheetMapping,
+      sheetMapping,
+      renewTransactions,
+    filter,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -484,10 +486,7 @@ export const getUpdatedTransactions = (session) => {
 
 export const getActiveClientCodeMapping = (session, transaction) => {
   let obj = transaction.clientMappingOverride ? transaction.customClientMapping : transaction.defaultClientMapping;
-  console.log(obj);
   const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
-  console.log(update);
   if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
-  console.log("here");
   return obj;
 };

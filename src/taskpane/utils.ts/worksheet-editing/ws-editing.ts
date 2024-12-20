@@ -1,12 +1,6 @@
 import { createEditableCell } from "../../classes/editable-cell";
-import {
-  getDefinedCol,
-  getExcelContext,
-  interpretEventAddress,
-  interpretExcelAddress,
-  simulateEditButtonClick,
-} from ".././helperFunctions";
-import { getWorksheetUsedRange, setExcelRangeValue, setManyExcelRangeValues } from ".././worksheet";
+import { getDefinedCol, interpretEventAddress, simulateEditButtonClick } from ".././helperFunctions";
+import { getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
 import { handleOtherChange } from "./ws-col-row-manipulation";
 import {
@@ -45,7 +39,9 @@ export const handleWorksheetSelection = async (session, e, wsName) => {
 };
 
 export const handleWorksheetEdit = async (session, e, wsName) => {
+    console.log(e)
   if (session.options.allowEffects > 0) {
+    console.log(session.options.allowEffects);
     session.options.allowEffects -= 1;
     return;
   }
@@ -91,9 +87,8 @@ export const handleSheetDataCorruption = async (session, wsName, sheet) => {
   }
 };
 
-export const updateEdSheetTransValues = async (session, sheet, affectedTransactions) => {
-  console.log(sheet);
-  console.log(affectedTransactions);
+export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTransactions) => {
+  const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const updates = [];
   sheet.sheetMapping.forEach((map) => {
     affectedTransactions.forEach((affectedTran) => {
@@ -117,3 +112,43 @@ export const updateEdSheetTransValues = async (session, sheet, affectedTransacti
   session.options.allowEffects = updates.length;
   setManyExcelRangeValues(sheet.name, updates);
 };
+
+export const updateEdSheetsTransValues = async (session, updatedTrans) => {
+  const sheetUpdateObjects = [];
+  session.editableSheets.forEach((edSheet) => {
+    const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
+    edSheet.transactions.forEach((edShtTran) => {
+      updatedTrans.forEach((updatedTran) => {
+        if (edShtTran._id === updatedTran._id) {
+          const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
+          updatedTran.updates.forEach((update) => {
+            if (update.worksheetId !== edSheet.worksheetId) {
+              const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+              const col = colNumToLetter(definedCol.colNumber);
+              const row = map.rowNumber;
+              const sheetUpdate: { address: string; value?: string | number } = {
+                address: `${col}${row}:${col}${row}`,
+                value: update.value,
+              };
+              sheetUpdateObj.updates.push(sheetUpdate);
+            }
+          });
+        }
+      });
+    });
+    sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
+  });
+  console.log(sheetUpdateObjects);
+  session.options.allowEffects = sheetUpdateObjects.reduce((obj) => obj.updates.length++);
+  sheetUpdateObjects.forEach((obj) => {
+    setManyExcelRangeValues(obj.wsName, obj.updates);
+  });
+};
+
+export const renewEdSheetsTransRefs = (session) => {
+    session.editableSheets.forEach(sheet => {
+        const newTrans = sheet.filter ? sheet.renewTransactions(session.activeAssignment.transactions, sheet.filter) : sheet.renewTransactions(session.activeAssignment.transactions);
+        sheet.transactions = newTrans;
+        console.log(sheet.transactions);
+    });
+}

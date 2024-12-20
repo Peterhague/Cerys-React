@@ -11,7 +11,7 @@ import {
   getUpdatedNarrative,
   getUpdatedTransactions,
 } from "../../../utils.ts/helperFunctions";
-import { submitTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
+import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
 
 interface reviewTransUpdatesProps {
   handleView: (view) => void;

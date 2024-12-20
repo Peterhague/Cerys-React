@@ -99,15 +99,8 @@ export async function cerysCodeToCerysObject(cerysCode) {
 
 // takes a Cerys code and the Cerys NL object and returns an array with all the
 // nominal activity.
-export async function getCerysNomDetail(context, code, session) {
-  const selection = [];
-  session.activeAssignment.transactions.forEach((transaction) => {
-    if (transaction.cerysCode === code) {
-      selection.push(transaction);
-    }
-  });
-  await context.sync();
-  return selection;
+export function getCerysNomDetail(transactions, cerysCode) {
+  return transactions.filter((tran) => tran.cerysCode === cerysCode);
 }
 
 export function getCerysNomDetailPL(category, session) {

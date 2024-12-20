@@ -1,6 +1,12 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { colNumToLetter } from "../excel-col-conversion";
-import { callNextView, getActiveEdSheet, getUpdatedTransactions } from "../helperFunctions";
+import {
+  callNextView,
+  getActiveEdSheet,
+  getUpdatedDate,
+  getUpdatedNarrative,
+  getUpdatedTransactions,
+} from "../helperFunctions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange } from "../worksheet";
 import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 
@@ -438,7 +444,7 @@ export const handleRowSort = async (session, wsName) => {
         }
         usedRange.forEach((row, index) => {
           if (row[uniqueCol - 1] === transaction.transactionNumber) {
-            validateOtherValues(session, sheet, transaction, row);
+            validateOtherValues(sheet, transaction, row);
             map.rowNumber = index + 1;
             if (activeCellMatched) {
               session.activeEditableCell.addressObj.firstRow = index + 1;
@@ -465,17 +471,13 @@ export const handleRowSort = async (session, wsName) => {
   });
 };
 
-export const validateOtherValues = (session, sheet, tran, row) => {
-  let updatedTran = { updatedDate: false, updatedNarrative: false };
-  getUpdatedTransactions(session).forEach((update) => {
-    if (update._id === tran._id) updatedTran = update;
-  });
-  sheet.type === "cerysCodeAnalysis" && validateCerysTransaction(sheet, tran, updatedTran, row);
+export const validateOtherValues = (sheet, tran, row) => {
+  sheet.type === "cerysCodeAnalysis" && validateCerysTransaction(sheet, tran, row);
 };
 
-export const validateCerysTransaction = (sheet, tran, updatedTran, row) => {
-  const date = updatedTran.updatedDate ? updatedTran.updatedDate : tran.transactionDateExcel;
-  const narrative = updatedTran.updatedNarrative ? updatedTran.updatedNarrative : tran.narrative;
+export const validateCerysTransaction = (sheet, tran, row) => {
+  const date = getUpdatedDate(tran) ? getUpdatedDate(tran).value : tran.transactionDateExcel;
+  const narrative = getUpdatedNarrative(tran) ? getUpdatedNarrative(tran) : tran.narrative;
   const value = tran.defaultSign === "credit" ? tran.value * -1 : tran.value;
   let transDateCol;
   let transTypeCol;
