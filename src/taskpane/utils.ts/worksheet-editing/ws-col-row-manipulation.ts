@@ -1,12 +1,6 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  callNextView,
-  getActiveEdSheet,
-  getUpdatedDate,
-  getUpdatedNarrative,
-  getUpdatedTransactions,
-} from "../helperFunctions";
+import { callNextView, getActiveEdSheet, getUpdatedDate, getUpdatedNarrative } from "../helperFunctions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange } from "../worksheet";
 import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 
@@ -201,14 +195,17 @@ export const handleRowDeletion = async (session, sheet, addressObj) => {
 export const handleCellDeletionUp = async (session, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
+  console.log(session.activeEditableCell);
   if (session.activeEditableCell.wsName === sheet.name) {
     if (
+      // ie deleted cells are all "above" activeCell range and therefore not not deleted
       firstRow < session.activeEditableCell.addressObj.firstRow &&
       lastRow < session.activeEditableCell.addressObj.firstRow
     ) {
       session.activeEditableCell.addressObj.firstRow -= rowsDeleted;
       session.activeEditableCell.addressObj.lastRow -= rowsDeleted;
     } else if (
+      // ie activeEditableCell range is deleted
       firstRow <= session.activeEditableCell.addressObj.firstRow &&
       lastRow >= session.activeEditableCell.addressObj.firstRow
     ) {

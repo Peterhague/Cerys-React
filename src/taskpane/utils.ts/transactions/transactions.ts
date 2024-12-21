@@ -11,7 +11,7 @@ import {
   updateAssignmentFigures,
 } from "../helperFunctions";
 import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
-import { deleteWorksheetRangesUp, highlightEditableRanges } from "../worksheet";
+import { highlightEditableRanges } from "../worksheet";
 import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
 
@@ -77,7 +77,7 @@ export const submitTransactionUpdates = async (session) => {
   });
   const updatedTransactionsDb = await processUpdateBatch(session);
   await updateEdSheetsTransValues(session); // pertains to all other sheets, ie effects of the update
-  const promptSheetDeletion = await renewEdSheetsTransRefs(session);
+  const promptSheetDeletion = renewEdSheetsTransRefs(session);
   if (isTBUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);

@@ -1,3 +1,4 @@
+import { createEditableCell } from "../../classes/editable-cell";
 import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
@@ -18,6 +19,8 @@ import {
 import { handleWorksheetEdit } from "./ws-editing";
 
 export const handleRangeEdit = async (session, e, sheet, addressObj, definedCol) => {
+  session.activeEditableCell = createEditableCell(null, null, null);
+  console.log(session.activeEditableCell);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
   const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
@@ -390,17 +393,3 @@ export const completeClientCodeMappingUpdate = async (session, e, sheet, address
     setExcelRangeValue(sheet.name, range, nomCodeObj.clientCodeName);
   }
 };
-
-//export const handleEdSheetCallback = (session, definedCol) => {
-//  console.log(session);
-//  const callback = session.options.editableSheetCallback;
-//  console.log(callback);
-//  if (callback.args.length > callback.count) {
-//    if (definedCol.isQuasiMutable) {
-//      callback.function(...callback.args[callback.count]);
-//      callback.count += 1;
-//    }
-//  } else {
-//    session.options.editableSheetCallback = resetEdSheetCallBack();
-//  }
-//};

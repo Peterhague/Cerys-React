@@ -85,7 +85,6 @@ export const resetActiveJournal = (session) => {
 };
 
 export const callNextView = (session) => {
-  console.log(session.nextView);
   session.handleView(session.nextView);
   session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
@@ -97,7 +96,6 @@ export const setNextViewButOne = (session) => {
 };
 
 export const clearNextViewButOne = (session) => {
-  console.log(session.nextViewButOne);
   if (session.nextViewButOne) session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
 };
@@ -139,8 +137,6 @@ export const convertExcelDate = (excelDate) => {
 };
 
 export const calculateDiffInDays = (inputDate1, inputDate2) => {
-  console.log(inputDate1);
-  console.log(inputDate2);
   const date1 = new Date(inputDate1);
   const date2 = new Date(inputDate2);
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
@@ -448,8 +444,8 @@ export const getDefinedCol = (sheet, addressCol) => {
 };
 
 export const getTransRowNumber = (transaction, sheet) => {
-    console.log(sheet)
-    console.log(transaction);
+  console.log(sheet);
+  console.log(transaction);
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
   return map.rowNumber;
 };

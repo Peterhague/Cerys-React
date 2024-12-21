@@ -106,7 +106,6 @@ export const handleClientCodeMapping = (session, nominalCode, nominalCodeName) =
 };
 
 export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeName, cerysCode, wsName) => {
-    console.log("update cerys code mapping")
   const relTrans = session.activeAssignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   relTrans.forEach(
     (tran) =>
@@ -124,24 +123,3 @@ export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeNa
   session.chart = client.cerysChart;
   callNextView(session);
 };
-
-//export const updateOpenSheetsForCerysMapping = async (session, cerysCode, nominalCode) => {
-//  session.editableSheets.forEach((sheet) => {
-//    const definedCol = hasDefinedColOf(sheet, "clientCodeMapping");
-//    if (definedCol) {
-//      const colLetter = colNumToLetter(definedCol.colNumber);
-//      sheet.transactions.forEach((tran) => {
-//        if (tran.cerysCode === cerysCode) {
-//          const range = `${colLetter}${tran.rowNumber}:${colLetter}${tran.rowNumber}`;
-//          const args = [sheet.name, range, nominalCode];
-//          session.options.editableSheetCallback.args.push(args);
-//        }
-//      });
-//    }
-//  });
-//  if (session.options.editableSheetCallback.args.length > 0)
-//    session.options.editableSheetCallback.function = setExcelRangeValue;
-//  console.log(session.options);
-//  //fudge:
-//  handleEdSheetCallback(session, { isQuasiMutable: true });
-//};

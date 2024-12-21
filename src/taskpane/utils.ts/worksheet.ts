@@ -23,10 +23,10 @@ export const deleteManyWorksheets = async (sheetsToDelete) => {
     const ws = context.workbook.worksheets.getItemOrNullObject(sheet);
     sheets.push(ws);
   });
-  await context.sync();
   sheets.forEach((sheet) => {
     if (sheet) sheet.delete();
   });
+  await context.sync();
 };
 
 export function getWorksheet(context, sheetName) {
