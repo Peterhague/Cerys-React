@@ -15,10 +15,9 @@ import { getClientCodeMappingMessage } from "../../utils.ts/messages";
 import { addWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
 
-
 export const getOBARelTrans = (transactions) => {
-    return transactions.filter(tran => tran.clientAdj);
-}
+  return transactions.filter((tran) => tran.clientAdj);
+};
 export async function oBARelevantTransView(session) {
   //const relTrans = session.activeAssignment.transactions.filter((tran) => {
   //  return tran.clientAdj;
@@ -81,7 +80,10 @@ export async function oBARelevantTransView(session) {
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const definedCols = createDefinedCols("OBARelevantAdjustments");
-  createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping, getOBARelTrans, null);
+  createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping, null, {
+    target: "clientAdj",
+    value: true,
+  });
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);

@@ -8,7 +8,6 @@ import {
   interpretEventAddress,
   checkEditMode,
   callNextView,
-  getUpdatedTransactions,
   getUpdatedDate,
   getUpdatedCerysCode,
   getUpdatedNarrative,
@@ -109,17 +108,10 @@ async function cerysNomDetailView(context, detail, session) {
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
   const definedCols = createDefinedCols("cerysCodeAnalysis");
   const filter = detail[0].cerysCode;
-  createEditableWs(
-    session,
-    detail,
-    ws,
-    definedCols,
-    valuesToPost,
-    "cerysCodeAnalysis",
-    sheetMapping,
-    getCerysNomDetail,
-    filter
-  );
+  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping, null, {
+    target: "cerysCode",
+    value: filter,
+  });
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);

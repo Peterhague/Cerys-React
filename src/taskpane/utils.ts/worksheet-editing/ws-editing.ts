@@ -1,7 +1,8 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { getDefinedCol, interpretEventAddress, simulateEditButtonClick } from ".././helperFunctions";
-import { getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
+import { deleteWorksheetRangesUp, getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
+import { createDeletionObject } from "../transactions/transactions";
 import { handleOtherChange } from "./ws-col-row-manipulation";
 import {
   completeCerysCodeUpdate,
@@ -39,7 +40,7 @@ export const handleWorksheetSelection = async (session, e, wsName) => {
 };
 
 export const handleWorksheetEdit = async (session, e, wsName) => {
-    console.log(e)
+  console.log(e);
   if (session.options.allowEffects > 0) {
     console.log(session.options.allowEffects);
     session.options.allowEffects -= 1;
@@ -113,42 +114,47 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
   setManyExcelRangeValues(sheet.name, updates);
 };
 
+// operates on only the editable sheets that didn't call the change
 export const updateEdSheetsTransValues = async (session, updatedTrans) => {
+  console.log(updatedTrans);
   const sheetUpdateObjects = [];
+  const deletionObjs = [];
   session.editableSheets.forEach((edSheet) => {
     const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
     edSheet.transactions.forEach((edShtTran) => {
       updatedTrans.forEach((updatedTran) => {
         if (edShtTran._id === updatedTran._id) {
           const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
-          updatedTran.updates.forEach((update) => {
-            if (update.worksheetId !== edSheet.worksheetId) {
-              const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
-              const col = colNumToLetter(definedCol.colNumber);
-              const row = map.rowNumber;
-              const sheetUpdate: { address: string; value?: string | number } = {
-                address: `${col}${row}:${col}${row}`,
-                value: update.value,
-              };
-              sheetUpdateObj.updates.push(sheetUpdate);
-            }
-          });
+          if (edShtTran[edSheet.filterObj.target] !== updatedTran[edSheet.filterObj.target]) {
+            deletionObjs.push(createDeletionObject(edShtTran, edSheet));
+          } else {
+            updatedTran.updates.forEach((update) => {
+              if (update.worksheetId !== edSheet.worksheetId) {
+                const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+                const col = colNumToLetter(definedCol.colNumber);
+                const row = map.rowNumber;
+                const sheetUpdate: { address: string; value?: string | number } = {
+                  address: `${col}${row}:${col}${row}`,
+                  value: update.value,
+                };
+                sheetUpdateObj.updates.push(sheetUpdate);
+              }
+            });
+          }
         }
       });
     });
     sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
   });
-  console.log(sheetUpdateObjects);
-  session.options.allowEffects = sheetUpdateObjects.reduce((obj) => obj.updates.length++);
   sheetUpdateObjects.forEach((obj) => {
     setManyExcelRangeValues(obj.wsName, obj.updates);
   });
+  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
 };
 
 export const renewEdSheetsTransRefs = (session) => {
-    session.editableSheets.forEach(sheet => {
-        const newTrans = sheet.filter ? sheet.renewTransactions(session.activeAssignment.transactions, sheet.filter) : sheet.renewTransactions(session.activeAssignment.transactions);
-        sheet.transactions = newTrans;
-        console.log(sheet.transactions);
-    });
-}
+  session.editableSheets.forEach((sheet) => {
+    sheet.transactions = sheet.renewTransactions(session.activeAssignment.transactions);
+    console.log(sheet.transactions);
+  });
+};

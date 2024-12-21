@@ -111,7 +111,6 @@ export const combineAllValidation = (definedCol, validationObj) => {
 };
 
 export const processTransactionUpdate = (session, tran, tests, definedCol, validationObj, e, newValue, sheet) => {
-  console.log("here");
   deleteExistingUpdate(session, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
@@ -124,7 +123,6 @@ export const processTransactionUpdate = (session, tran, tests, definedCol, valid
 };
 
 export const processTransUpdateEffects = (session, sheet, definedCol, range, tests) => {
-  console.log("here");
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
@@ -204,7 +202,6 @@ export const deleteExistingUpdate = (session, tests, definedCol) => {
 };
 
 export const createNewTransactionUpdate = (session, tran, newValue, sheet, definedCol) => {
-  console.log("here");
   let reversion;
   if (definedCol.type === "date") {
     reversion = tran.transactionDateExcel;

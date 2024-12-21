@@ -56,53 +56,53 @@ export const processTransBatch = async (session) => {
 };
 
 export const submitTransactionUpdates = async (session) => {
-  let tbUpdated = false;
-  let otherUpdated = false;
   let updatedTrans = getUpdatedTransactions(session);
-  const deletionObjs = [];
+  recreateDBUpdatesInMem(session, updatedTrans);
+  const isTBUpdated = checkTransForRecoding(updatedTrans);
+  const { deletionObjs } = createDeletionObjects(session, updatedTrans);
+  const otherUpdated = !isTBUpdated;
   let promptSheetDeletion = false;
-  updatedTrans.forEach((tran) => {
-    tran.updates.forEach((update) => {
-      if (update.type === "cerysCode") {
-        tbUpdated = true;
-        session.editableSheets.forEach((sheet) => {
-          if (sheet.name === update.worksheetName) {
-            const rowNumber = getTransRowNumber(tran, sheet);
-            const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
-            const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
-            deletionObjs.push(deletionObj);
-            sheet.editButtonStatus = "hide";
-            const newTransactions = [];
-            sheet.transactions.forEach((i) => {
-              if (i._id !== tran._id) {
-                newTransactions.push(i);
-              }
-            });
-            sheet.transactions = newTransactions;
-            if (newTransactions.length === 0) {
-              sheet.promptDeletion = true;
-              promptSheetDeletion = true;
-            }
-          }
-        });
-      } else {
-        otherUpdated = true;
-        session.editableSheets.forEach((sheet) => {
-          sheet.transactions.forEach((transaction) => {
-            if (transaction._id === tran._id) {
-              if (update.type === "date") transaction.transactionDateExcel = update.value;
-              if (update.type === "cerysNarrative") transaction.narrative = update.value;
-              if (update.type === "clientCodeMapping") {
-                const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
-                transaction.defaultClientMapping.clientCode = nomCode.clientCode;
-                transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
-              }
-            }
-          });
-        });
-      }
-    });
-  });
+  //updatedTrans.forEach((tran) => {
+  //  tran.updates.forEach((update) => {
+  //    if (update.type === "cerysCode") {
+  //      tbUpdated = true;
+  //      session.editableSheets.forEach((sheet) => {
+  //        if (sheet.name === update.worksheetName) {
+  //          const rowNumber = getTransRowNumber(tran, sheet);
+  //          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
+  //          const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
+  //          sheet.editButtonStatus = "hide";
+  //          const newTransactions = [];
+  //          sheet.transactions.forEach((i) => {
+  //            if (i._id !== tran._id) {
+  //              newTransactions.push(i);
+  //            }
+  //          });
+  //          //sheet.transactions = newTransactions;
+  //          if (newTransactions.length === 0) {
+  //            sheet.promptDeletion = true;
+  //            promptSheetDeletion = true;
+  //          }
+  //        }
+  //      });
+  //    } else {
+  //      otherUpdated = true;
+  //      //session.editableSheets.forEach((sheet) => {
+  //      //  sheet.transactions.forEach((transaction) => {
+  //      //    if (transaction._id === tran._id) {
+  //      //      if (update.type === "date") transaction.transactionDateExcel = update.value;
+  //      //      if (update.type === "cerysNarrative") transaction.narrative = update.value;
+  //      //      if (update.type === "clientCodeMapping") {
+  //      //        const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
+  //      //        transaction.defaultClientMapping.clientCode = nomCode.clientCode;
+  //      //        transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
+  //      //      }
+  //      //    }
+  //      //  });
+  //      //});
+  //    }
+  //  });
+  //});
   if (otherUpdated) {
     updatedTrans.forEach((tran) => {
       tran.updates.forEach((update) => {
@@ -117,13 +117,11 @@ export const submitTransactionUpdates = async (session) => {
   deletionObjs.sort((a, b) => {
     return b.rowNumber - a.rowNumber;
   });
-  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
-  await updateEdSheetsTransValues(session, updatedTrans);
+  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs); // pertains to this sheet, ie the update
   const updatedTransactionsDb = await processUpdateBatch(session);
+  await updateEdSheetsTransValues(session, updatedTrans); // pertains to all other sheets, ie effects of the update
   await renewEdSheetsTransRefs(session);
-  console.log(updatedTransactionsDb);
-  console.log(updatedTrans);
-  if (tbUpdated) {
+  if (isTBUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);
       session.options.updatedTransactions = updatedTransactionsDb;
@@ -297,4 +295,86 @@ const postTransactionsDb = async (session, transactions, transDtls) => {
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
   return objs;
+};
+
+export const checkTransForRecoding = (updatedTrans) => {
+  let isTBUpdated = false;
+  updatedTrans.forEach((tran) => {
+    tran.updates.forEach((update) => {
+      if (update.type === "cerysCode") {
+        isTBUpdated = true;
+      }
+    });
+  });
+  return isTBUpdated;
+};
+
+export const createDeletionObject = (tran, sheet) => {
+  const rowNumber = getTransRowNumber(tran, sheet);
+  const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
+  const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
+  const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
+  return { wsName: sheet.name, range: deletionRange, rowNumber };
+};
+
+export const createDeletionObjects = (session, updatedTrans) => {
+  const deletionObjs = [];
+  const otherTrans = [];
+  updatedTrans.forEach((tran) => {
+    session.editableSheets.forEach((sheet) => {
+      if (tran[sheet.filterObj.target] !== sheet.filterObj.value) {
+        const rowNumber = getTransRowNumber(tran, sheet);
+        const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
+        const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
+        const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
+        const deletionObj = { wsName: sheet.name, range: deletionRange, rowNumber };
+        deletionObjs.push(deletionObj);
+        sheet.editButtonStatus = "hide";
+      } else otherTrans.push(tran);
+    });
+  });
+  return { deletionObjs, otherTrans };
+};
+
+export const recreateDBUpdatesInMem = (session, updatedTrans) => {
+  updatedTrans.forEach((tran) => {
+    let cerysCodeUpdated = false;
+    let cerysCodeObject;
+    tran.updates.forEach((update) => {
+      if (update.type === "date") {
+        tran.transactionDate = update.mongoDate;
+        tran.transactionDateExcel = update.value;
+      } else if (update.type === "cerysCode") {
+        tran.cerysCode = update.value;
+        cerysCodeObject = update.cerysCodeObject;
+        cerysCodeUpdated = true;
+      } else if (update.type === "cerysNarrative") {
+        tran.narrative = update.value;
+      } else if (update.type === "clientCodeMapping") {
+        tran.clientMappingOverride = true;
+        const clientNomCodeObj = session.clientChart.find((code) => code.clientCode === update.value);
+        tran.customClientMapping = {
+          clientSoftware: session.activeAssignment.clientSoftware,
+          clientCode: clientNomCodeObj.clientCode,
+          clientCodeName: clientNomCodeObj.clientCodeName,
+        };
+      }
+    });
+    if (cerysCodeUpdated) {
+      tran.cerysCategory = cerysCodeObject.cerysCategory;
+      tran.cerysSubCategory = cerysCodeObject.cerysSubCategory;
+      tran.assetSubCategory = cerysCodeObject.assetSubCategory;
+      tran.assetSubCatCode = cerysCodeObject.assetSubCatCode;
+      tran.regColNameOne = cerysCodeObject.regColNameOne;
+      tran.regColNameTwo = cerysCodeObject.regColNameTwo;
+      tran.assetCategory = cerysCodeObject.assetCategory;
+      tran.assetCategoryNo = cerysCodeObject.assetCategoryNo;
+      tran.assetCodeType = cerysCodeObject.assetCodeType;
+      tran.cerysName = cerysCodeObject.cerysName;
+      tran.cerysShortName = cerysCodeObject.cerysShortName;
+      tran.cerysExcelName = cerysCodeObject.cerysExcelName;
+      tran.defaultSign = cerysCodeObject.defaultSign;
+      tran.clientAdj = cerysCodeObject.clientAdj;
+    }
+  });
 };

@@ -360,7 +360,20 @@ export const interpretExcelAddress = (excelAddress) => {
 //  });
 //};
 
-export const createEditableWs = (session, transactions, ws, definedCols, valuesToPost, type, sheetMapping, renewTransactions, filter) => {
+export const createEditableWs = (
+  session,
+  transactions,
+  ws,
+  definedCols,
+  valuesToPost,
+  type,
+  sheetMapping,
+  customFilter,
+  filterObj
+) => {
+  function defaultFilter(transactions) {
+    return transactions.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+  }
   const editableWs = {
     name: ws.name,
     type,
@@ -378,9 +391,9 @@ export const createEditableWs = (session, transactions, ws, definedCols, valuesT
     dataCorrupted: false,
     transactions: transactions,
     usedRange: valuesToPost,
-      sheetMapping,
-      renewTransactions,
-    filter,
+    sheetMapping,
+    renewTransactions: customFilter ? customFilter : defaultFilter,
+    filterObj,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -435,6 +448,8 @@ export const getDefinedCol = (sheet, addressCol) => {
 };
 
 export const getTransRowNumber = (transaction, sheet) => {
+    console.log(sheet)
+    console.log(transaction);
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
   return map.rowNumber;
 };

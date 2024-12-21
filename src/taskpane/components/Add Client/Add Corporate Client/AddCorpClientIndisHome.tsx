@@ -67,8 +67,6 @@ const AddCorpClientIndisHome = ({
         indi.isDirector && addDirectorship(indi);
         indi.isShareholder = isShareholder;
         indi.isShareholder && addShareholding(indi);
-        console.log("HERE!!!!");
-        console.log(indi);
         session["newClientPrelim"]["existingIndividuals"].push(indi);
       }
     });
@@ -76,7 +74,6 @@ const AddCorpClientIndisHome = ({
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
     });
-    console.log(session);
   };
 
   const finishSharesAllocation = () => {
@@ -87,7 +84,6 @@ const AddCorpClientIndisHome = ({
     const directorship = {
       clientName: session["newClientPrelim"]["clientName"],
       clientCode: session["newClientPrelim"]["clientCode"],
-      //clientId: session["newClientPrelim"]["_id"],
       dateAppointed: indi.dateAppointed,
       dateCeased: indi.dateCeased,
     };
@@ -99,13 +95,10 @@ const AddCorpClientIndisHome = ({
   const addShareholding = (indi) => {
     indi.newClientShareholdings = shareAllocations;
     indi.shareholdings = indi.newClientShareholdings;
-    //indi._clientShareholdings = shareAllocations;
     session["newClientPrelim"]["shareholders"].push(indi);
-    console.log(indi);
   };
 
   const selectableIndis = session["customer"]["nonCorpClients"].length > 0 || session["customer"]["individuals"];
-  console.log(indis);
 
   return (
     <>

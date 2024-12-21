@@ -407,7 +407,17 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   ];
   const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
   const sheetName = `${registerType}RPreview`;
-  createEditableWs(session, transactions, ws, definedCols, valuesToPost, sheetName, sheetMapping, "placeholder", "placeholder");
+  createEditableWs(
+    session,
+    transactions,
+    ws,
+    definedCols,
+    valuesToPost,
+    sheetName,
+    sheetMapping,
+    "placeholder",
+    "placeholder"
+  );
   await context.sync();
   ws.activate();
 }
