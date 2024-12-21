@@ -6,7 +6,6 @@ import {
   getTransRowNumber,
   getUpdatedTransactions,
   interpretExcelAddress,
-  resetEdSheetCallBack,
   setNextViewButOne,
 } from "../helperFunctions";
 import { recalculateCharge, updateAssetNarrative } from "../transactions/asset-reg-generation";
@@ -353,16 +352,26 @@ export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => 
 export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let clientCodeMappingCol = 0;
+  let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {
     if (col.type === "clientCodeMapping") {
       clientCodeMappingCol = col.colNumber;
+    }
+    if (col.type === "clientCodeNameMapping") {
+      clientCodeNameMappingCol = col.colNumber;
     }
   });
   if (clientCodeMappingCol > 0) {
     const nomCodeObj = session.chart.find((code) => code.cerysShortName === e.details.valueAfter);
     const colLetter = colNumToLetter(clientCodeMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+    session.options.allowEffects = 1;
     setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+    if (clientCodeNameMappingCol > 0) {
+      const colLetter = colNumToLetter(clientCodeNameMappingCol);
+      const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
+      setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCodeName);
+    }
   }
 };
 
@@ -382,16 +391,16 @@ export const completeClientCodeMappingUpdate = async (session, e, sheet, address
   }
 };
 
-export const handleEdSheetCallback = (session, definedCol) => {
-  console.log(session);
-  const callback = session.options.editableSheetCallback;
-  console.log(callback);
-  if (callback.args.length > callback.count) {
-    if (definedCol.isQuasiMutable) {
-      callback.function(...callback.args[callback.count]);
-      callback.count += 1;
-    }
-  } else {
-    session.options.editableSheetCallback = resetEdSheetCallBack();
-  }
-};
+//export const handleEdSheetCallback = (session, definedCol) => {
+//  console.log(session);
+//  const callback = session.options.editableSheetCallback;
+//  console.log(callback);
+//  if (callback.args.length > callback.count) {
+//    if (definedCol.isQuasiMutable) {
+//      callback.function(...callback.args[callback.count]);
+//      callback.count += 1;
+//    }
+//  } else {
+//    session.options.editableSheetCallback = resetEdSheetCallBack();
+//  }
+//};

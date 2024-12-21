@@ -61,48 +61,6 @@ export const submitTransactionUpdates = async (session) => {
   const isTBUpdated = checkTransForRecoding(updatedTrans);
   const { deletionObjs } = createDeletionObjects(session, updatedTrans);
   const otherUpdated = !isTBUpdated;
-  let promptSheetDeletion = false;
-  //updatedTrans.forEach((tran) => {
-  //  tran.updates.forEach((update) => {
-  //    if (update.type === "cerysCode") {
-  //      tbUpdated = true;
-  //      session.editableSheets.forEach((sheet) => {
-  //        if (sheet.name === update.worksheetName) {
-  //          const rowNumber = getTransRowNumber(tran, sheet);
-  //          const deletionRange = `${colNumToLetter(sheet.protectedRange.firstCol)}${rowNumber}:${colNumToLetter(sheet.protectedRange.lastCol)}${rowNumber}`;
-  //          const deletionObj = { wsName: update.worksheetName, range: deletionRange, rowNumber };
-  //          sheet.editButtonStatus = "hide";
-  //          const newTransactions = [];
-  //          sheet.transactions.forEach((i) => {
-  //            if (i._id !== tran._id) {
-  //              newTransactions.push(i);
-  //            }
-  //          });
-  //          //sheet.transactions = newTransactions;
-  //          if (newTransactions.length === 0) {
-  //            sheet.promptDeletion = true;
-  //            promptSheetDeletion = true;
-  //          }
-  //        }
-  //      });
-  //    } else {
-  //      otherUpdated = true;
-  //      //session.editableSheets.forEach((sheet) => {
-  //      //  sheet.transactions.forEach((transaction) => {
-  //      //    if (transaction._id === tran._id) {
-  //      //      if (update.type === "date") transaction.transactionDateExcel = update.value;
-  //      //      if (update.type === "cerysNarrative") transaction.narrative = update.value;
-  //      //      if (update.type === "clientCodeMapping") {
-  //      //        const nomCode = session.clientChart.find((code) => code.clientCode === update.value);
-  //      //        transaction.defaultClientMapping.clientCode = nomCode.clientCode;
-  //      //        transaction.defaultClientMapping.clientCodeName = nomCode.clientCodeName;
-  //      //      }
-  //      //    }
-  //      //  });
-  //      //});
-  //    }
-  //  });
-  //});
   if (otherUpdated) {
     updatedTrans.forEach((tran) => {
       tran.updates.forEach((update) => {
@@ -117,10 +75,9 @@ export const submitTransactionUpdates = async (session) => {
   deletionObjs.sort((a, b) => {
     return b.rowNumber - a.rowNumber;
   });
-  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs); // pertains to this sheet, ie the update
   const updatedTransactionsDb = await processUpdateBatch(session);
-  await updateEdSheetsTransValues(session, updatedTrans); // pertains to all other sheets, ie effects of the update
-  await renewEdSheetsTransRefs(session);
+  await updateEdSheetsTransValues(session); // pertains to all other sheets, ie effects of the update
+  const promptSheetDeletion = await renewEdSheetsTransRefs(session);
   if (isTBUpdated) {
     if (promptSheetDeletion) {
       await updateAssignmentFigures(session);

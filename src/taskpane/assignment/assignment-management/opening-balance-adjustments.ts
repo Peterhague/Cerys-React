@@ -106,6 +106,7 @@ export const handleClientCodeMapping = (session, nominalCode, nominalCodeName) =
 };
 
 export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeName, cerysCode, wsName) => {
+    console.log("update cerys code mapping")
   const relTrans = session.activeAssignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   relTrans.forEach(
     (tran) =>

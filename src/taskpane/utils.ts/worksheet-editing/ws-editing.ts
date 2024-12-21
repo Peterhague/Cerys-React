@@ -8,7 +8,6 @@ import {
   completeCerysCodeUpdate,
   completeCerysNameUpdate,
   completeClientCodeMappingUpdate,
-  handleEdSheetCallback,
   handleRangeEdit,
   resetToPreviousValues,
 } from "./ws-range-editing";
@@ -64,7 +63,6 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
   } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
     await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
   }
-  handleEdSheetCallback(session, definedCol);
 };
 
 export const parseChangeEventObjectType = (e) => {
@@ -89,6 +87,7 @@ export const handleSheetDataCorruption = async (session, wsName, sheet) => {
 };
 
 export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTransactions) => {
+  console.log("client code mapping");
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const updates = [];
   sheet.sheetMapping.forEach((map) => {
@@ -111,38 +110,86 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
     });
   });
   session.options.allowEffects = updates.length;
+  console.log(session.options.allowEffects);
   setManyExcelRangeValues(sheet.name, updates);
 };
 
 // operates on only the editable sheets that didn't call the change
-export const updateEdSheetsTransValues = async (session, updatedTrans) => {
-  console.log(updatedTrans);
+//export const updateEdSheetsTransValues = async (session, updatedTrans) => {
+//  console.log(updatedTrans);
+//  const sheetUpdateObjects = [];
+//  const deletionObjs = [];
+//  session.editableSheets.forEach((edSheet) => {
+//    console.log("here");
+//    const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
+//    console.log("here");
+//    edSheet.transactions.forEach((edShtTran) => {
+//      console.log("here");
+//      updatedTrans.forEach((updatedTran) => {
+//        console.log("here");
+//        if (edShtTran._id === updatedTran._id) {
+//          console.log("here");
+//          const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
+//          if (edShtTran[edSheet.filterObj.target] !== edSheet.filterObj.value) {
+//            console.log("here");
+//            deletionObjs.push(createDeletionObject(edShtTran, edSheet));
+//            console.log("here");
+//          } else {
+//            updatedTran.updates.forEach((update) => {
+//              console.log("here");
+//              if (update.worksheetId !== edSheet.worksheetId) {
+//                const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+//                console.log("here");
+//                const col = colNumToLetter(definedCol.colNumber);
+//                console.log("here");
+//                const row = map.rowNumber;
+//                const sheetUpdate: { address: string; value?: string | number } = {
+//                  address: `${col}${row}:${col}${row}`,
+//                  value: update.value,
+//                };
+//                console.log("here");
+//                sheetUpdateObj.updates.push(sheetUpdate);
+//              }
+//            });
+//          }
+//        }
+//      });
+//    });
+//    sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
+//    console.log("here");
+//  });
+//  sheetUpdateObjects.forEach((obj) => {
+//    setManyExcelRangeValues(obj.wsName, obj.updates);
+//    console.log("here");
+//  });
+//  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(deletionObjs);
+//  console.log("here");
+//};
+
+// operates on only the editable sheets that didn't call the change
+export const updateEdSheetsTransValues = async (session) => {
   const sheetUpdateObjects = [];
   const deletionObjs = [];
   session.editableSheets.forEach((edSheet) => {
     const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
     edSheet.transactions.forEach((edShtTran) => {
-      updatedTrans.forEach((updatedTran) => {
-        if (edShtTran._id === updatedTran._id) {
-          const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
-          if (edShtTran[edSheet.filterObj.target] !== updatedTran[edSheet.filterObj.target]) {
-            deletionObjs.push(createDeletionObject(edShtTran, edSheet));
-          } else {
-            updatedTran.updates.forEach((update) => {
-              if (update.worksheetId !== edSheet.worksheetId) {
-                const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
-                const col = colNumToLetter(definedCol.colNumber);
-                const row = map.rowNumber;
-                const sheetUpdate: { address: string; value?: string | number } = {
-                  address: `${col}${row}:${col}${row}`,
-                  value: update.value,
-                };
-                sheetUpdateObj.updates.push(sheetUpdate);
-              }
-            });
+      const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
+      if (edShtTran[edSheet.filterObj.target] !== edSheet.filterObj.value) {
+        deletionObjs.push(createDeletionObject(edShtTran, edSheet));
+      } else {
+        edShtTran.updates.forEach((update) => {
+          if (update.worksheetId !== edSheet.worksheetId) {
+            const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+            const col = colNumToLetter(definedCol.colNumber);
+            const row = map.rowNumber;
+            const sheetUpdate: { address: string; value?: string | number } = {
+              address: `${col}${row}:${col}${row}`,
+              value: update.value,
+            };
+            sheetUpdateObj.updates.push(sheetUpdate);
           }
-        }
-      });
+        });
+      }
     });
     sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
   });
@@ -153,8 +200,20 @@ export const updateEdSheetsTransValues = async (session, updatedTrans) => {
 };
 
 export const renewEdSheetsTransRefs = (session) => {
+  let promptSheetDeletion = false;
+  console.log("here");
   session.editableSheets.forEach((sheet) => {
+    console.log("here");
     sheet.transactions = sheet.renewTransactions(session.activeAssignment.transactions);
+    console.log("here");
     console.log(sheet.transactions);
+    if (sheet.transactions.length === 0) {
+      console.log("here");
+      sheet.promptDeletion = true;
+      promptSheetDeletion = true;
+    }
   });
+  console.log("here");
+  console.log(promptSheetDeletion);
+  return promptSheetDeletion;
 };
