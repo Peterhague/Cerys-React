@@ -50,8 +50,6 @@ export const registerWorksheetsCollectionHandler = async (session) => {
 };
 
 export const handleSheetDeletion = (e, session) => {
-  console.log("sheet deleted");
-  console.log(e);
   const newEditableSheets = [];
   session.editableSheets.forEach((sheet) => {
     if (sheet.worksheetId !== e.worksheetId) newEditableSheets.push(sheet);
@@ -61,12 +59,14 @@ export const handleSheetDeletion = (e, session) => {
 };
 
 export const handleSheetAddition = async (context, e, session) => {
+  console.log(session.options.ignoreWsAddition);
   if (session.options.ignoreWsAddition > 0) {
     session.options.ignoreWsAddition -= 1;
     return;
   }
+  console.log(session.options.ignoreWsAddition);
   const ws = getWorksheet(context, e.worksheetId);
-  ws.load(["name"]);
+  ws.load("name");
   await context.sync();
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
@@ -307,16 +307,6 @@ export const simulateEditButtonClick = async (session) => {
 };
 
 export const updateAssignmentFigures = async (context, session) => {
-  const tbArray = tbForPosting(session.activeAssignment.tb);
-  await postTbToWbook(context, session, tbArray);
-  await wsPLAccount(context, session);
-  await wsBalanceSheet(context, session);
-  addTbClickListener(context, session);
-  addPlClickListener(context, session);
-  addBsClickListener(context, session["activeAssignment"]);
-};
-
-export const updateAssignmentFiguresDummy = async (context, session) => {
   const tbArray = tbForPosting(session.activeAssignment.tb);
   await postTbToWbook(context, session, tbArray);
   await wsPLAccount(context, session);

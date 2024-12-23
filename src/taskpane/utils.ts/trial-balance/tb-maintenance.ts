@@ -1,6 +1,6 @@
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { getExcelContext } from "../helperFunctions";
-import { addWorksheet } from "../worksheet";
+import { addWorksheet, getOrAddWorksheet, getProxyWorksheet } from "../worksheet";
 
 export function tbForPosting(tb) {
   const tbArray = [];
@@ -17,13 +17,8 @@ export function tbForPosting(tb) {
   return tbArray;
 }
 export async function postTbToWbook(context, session, tbExcel) {
-  let ws = context.workbook.worksheets.getItemOrNullObject("Trial Balance");
-  await context.sync();
-  if (ws.isNullObject) {
-    ws = context.workbook.worksheets.add("Trial Balance");
-  } else {
-    ws.getUsedRange().clear();
-  }
+    const ws = await getOrAddWorksheet(context, session, "Trial Balance");
+    console.log(ws);
   const headerValues = worksheetHeader(session, "Trial Balance");
   applyWorkhseetHeader(ws, headerValues);
   const headersRange = ws.getRange("A9:C10");

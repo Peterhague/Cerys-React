@@ -7,7 +7,6 @@ import {
   getTransRowNumber,
   getUpdatedTransactions,
   updateAssignmentFigures,
-  updateAssignmentFiguresDummy,
 } from "../helperFunctions";
 import { highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
@@ -43,7 +42,6 @@ export const processTransBatch = async (context, session) => {
   });
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   await updateAssignmentFigures(context, session);
-  await context.sync();
   return newTransactions;
 };
 

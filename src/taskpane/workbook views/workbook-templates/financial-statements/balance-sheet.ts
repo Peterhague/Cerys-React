@@ -1,15 +1,8 @@
-import { addWorksheet } from "../../../utils.ts/worksheet";
+import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsBalanceSheet(context, session) {
-  let ws = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
-  ws.load("values");
-  await context.sync();
-  if (ws.isNullObject) {
-    ws = addWorksheet(context, "Balance Sheet");
-  } else {
-    ws.getUsedRange().clear();
-  }
+  const ws = await getOrAddWorksheet(context, session, "Balance Sheet");
   const headerValues = worksheetHeader(session, "Balance Sheet");
   applyWorkhseetHeader(ws, headerValues);
   const values = [

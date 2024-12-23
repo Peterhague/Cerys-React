@@ -1,16 +1,8 @@
-import { getExcelContext } from "../../../utils.ts/helperFunctions";
-import { addWorksheet } from "../../../utils.ts/worksheet";
+import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsPLAccount(context, session) {
-  let ws = context.workbook.worksheets.getItemOrNullObject("Profit & loss account");
-  ws.load("values");
-  await context.sync();
-  if (ws.isNullObject) {
-    ws = addWorksheet(context, "Profit & loss account");
-  } else {
-    ws.getUsedRange().clear();
-  }
+  const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
   const headerValues = worksheetHeader(session, "Profit & loss account");
   applyWorkhseetHeader(ws, headerValues);
   const values = [];

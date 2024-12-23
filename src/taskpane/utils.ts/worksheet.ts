@@ -8,7 +8,7 @@ export function addWorksheet(context, sheetName) {
 
 export const addWorksheets = async (context, session, sheetNames) => {
   const worksheets = [];
-  session.options.ignoreWsAddition = sheetNames.length;
+  session.options.ignoreWsAddition += sheetNames.length;
   sheetNames.forEach((i) => {
     const wsObj = context.workbook.worksheets.add(i);
     const obj = { name: i, wsObj };
@@ -16,6 +16,15 @@ export const addWorksheets = async (context, session, sheetNames) => {
   });
   await processWorksheetAdditions(context, session, worksheets);
   return worksheets;
+};
+
+export const addOneWorksheet = async (context, session, sheetName) => {
+  session.options.ignoreWsAddition += 1;
+  console.log(session.options.ignoreWsAddition);
+  const wsObj = context.workbook.worksheets.add(sheetName);
+  const obj = { name: sheetName, wsObj };
+  await processWorksheetAdditions(context, session, [obj]);
+  return wsObj;
 };
 
 export function deleteWorksheet(context, sheetName) {
@@ -161,7 +170,19 @@ export const highlightRanges = (context, wsName, ranges, color) => {
 };
 
 export const processWorksheetAdditions = async (context, session, worksheets) => {
+  console.log(worksheets);
   worksheets.forEach((sheet) => sheet.wsObj.load("id"));
   await context.sync();
   worksheets.forEach((sheet) => session.worksheets.push(new Worksheet(sheet.name, sheet.wsObj.id)));
+};
+
+export const getProxyWorksheet = (session, wsName) => {
+  return session.worksheets.find((ws) => ws.name === wsName);
+};
+
+export const getOrAddWorksheet = async (context, session, wsName) => {
+  const proxyWs = getProxyWorksheet(session, wsName);
+  console.log(proxyWs);
+  const worksheets = context.workbook.worksheets;
+  return proxyWs ? worksheets.getItem(wsName) : addOneWorksheet(context, session, wsName);
 };
