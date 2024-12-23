@@ -1,10 +1,16 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { colNumToLetter } from "../excel-col-conversion";
-import { callNextView, getActiveEdSheet, getUpdatedDate, getUpdatedNarrative } from "../helperFunctions";
+import {
+  accessExcelContext,
+  callNextView,
+  getActiveEdSheet,
+  getUpdatedDate,
+  getUpdatedNarrative,
+} from "../helperFunctions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange } from "../worksheet";
 import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 
-export const handleOtherChange = async (session, e, wsName, sheet, addressObj) => {
+export const handleOtherChange = async (context, session, e, wsName, sheet, addressObj) => {
   if (e.changeType === "ColumnInserted") {
     await handleColumnInsertion(session, e, wsName, sheet, addressObj);
   } else if (e.changeType === "ColumnDeleted") {
@@ -18,7 +24,7 @@ export const handleOtherChange = async (session, e, wsName, sheet, addressObj) =
   } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Left") {
     await handleCellDeletionLeft(session, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Down") {
-    await handleCellInsertionDown(session, e, wsName, sheet, addressObj);
+    await handleCellInsertionDown(context, session, e, wsName, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Right") {
     await handleCellInsertionRight(session, e, wsName, sheet, addressObj);
   }
@@ -341,7 +347,7 @@ export const handleCellDeletionLeft = async (session, sheet, addressObj) => {
   }
 };
 
-export const handleCellInsertionDown = (session, e, wsName, sheet, addressObj) => {
+export const handleCellInsertionDown = (context, session, e, wsName, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name && session.activeEditableCell.addressObj.firstRow >= firstRow) {
@@ -376,7 +382,7 @@ export const handleCellInsertionDown = (session, e, wsName, sheet, addressObj) =
   } else if (firstCol < sheet.protectedRange.lastCol || lastCol > sheet.protectedRange.firstCol) {
     if (!sheet.dataCorrupted) {
       const range = `${colNumToLetter(firstCol)}${firstRow}:${colNumToLetter(lastCol)}${lastRow}`;
-      deleteWorksheetRangeDown(wsName, range);
+      deleteWorksheetRangeDown(context, wsName, range);
     }
   }
 };
@@ -422,7 +428,7 @@ export const handleColumnSort = async (session) => {
 };
 
 export const handleRowSort = async (session, wsName) => {
-  const usedRange = await getWorksheetUsedRange(wsName);
+  const usedRange = await accessExcelContext(getWorksheetUsedRange, [wsName]);
   let uniqueCol;
   session.editableSheets.forEach((sheet) => {
     if (sheet.name === wsName) {

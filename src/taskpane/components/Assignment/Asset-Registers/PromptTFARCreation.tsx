@@ -52,28 +52,41 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
   };
 
   const handleSubmit = async () => {
-    session["options"].TFARCreationSetting = "main";
-    finaliseAssetObjects(session, registerType);
-    await createTFAR(session);
-    session["TFATransactions"] = [];
-    session["activeJournal"].clientTB = false;
-    session["activeJournal"].journal = false;
-    session["activeJournal"].journalType = "auto-journal";
-    await processTransBatch(session);
-    checkNewTransForAssets(session, session["newFATransactions"]);
+    try {
+      await Excel.run(async (context) => {
+        session["options"].TFARCreationSetting = "main";
+        finaliseAssetObjects(session, registerType);
+        await createTFAR(context, session);
+        session["TFATransactions"] = [];
+        session["activeJournal"].clientTB = false;
+        session["activeJournal"].journal = false;
+        session["activeJournal"].journalType = "auto-journal";
+        await processTransBatch(context, session);
+        checkNewTransForAssets(session, session["newFATransactions"]);
+        await context.sync();
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleReanalysis = async () => {
-    if (getUpdatedTransactions(session).length > 0) {
-      const updatedTransactions = await processUpdateBatch(session);
-      await updateAssignmentFigures(session);
-      checkFATranUpdatesForAssets(session, updatedTransactions);
+    try {
+      await Excel.run(async (context) => {
+        if (getUpdatedTransactions(session).length > 0) {
+          const updatedTransactions = await processUpdateBatch(session);
+          updateAssignmentFigures(context, session);
+          checkFATranUpdatesForAssets(session, updatedTransactions);
+        }
+        if (session["activeJournal"].journals.length > 0) {
+          const newTransactions = await processTransBatch(context, session);
+          checkFATranUpdatesForAssets(session, newTransactions);
+        }
+        previewRelTrans(session, registerType, setView);
+      });
+    } catch (e) {
+      console.error(e);
     }
-    if (session["activeJournal"].journals.length > 0) {
-      const newTransactions = await processTransBatch(session);
-      checkFATranUpdatesForAssets(session, newTransactions);
-    }
-    previewRelTrans(session, registerType, setView);
   };
 
   return (

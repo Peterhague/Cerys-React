@@ -16,13 +16,11 @@ export function tbForPosting(tb) {
   });
   return tbArray;
 }
-export async function postTbToWbook(session, tbExcel) {
-  const context = await getExcelContext();
+export async function postTbToWbook(context, session, tbExcel) {
   let ws = context.workbook.worksheets.getItemOrNullObject("Trial Balance");
-  ws.load("values");
   await context.sync();
   if (ws.isNullObject) {
-    ws = addWorksheet(context, "Trial Balance");
+    ws = context.workbook.worksheets.add("Trial Balance");
   } else {
     ws.getUsedRange().clear();
   }
@@ -51,5 +49,4 @@ export async function postTbToWbook(session, tbExcel) {
   const bottomBorder = total.format.borders.getItem("EdgeBottom");
   topBorder.style = "Continuous";
   bottomBorder.style = "Double";
-  await context.sync();
 }

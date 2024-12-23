@@ -133,7 +133,7 @@ export function getCerysNomDetailPL(category, session) {
   return selectionArray;
 }
 
-export async function getCerysNomDetailBS(context, category, activeAssignment) {
+export async function getCerysNomDetailBS(category, activeAssignment) {
   let cat = category;
   if (category === "Cash at bank and in hand") {
     cat = "Cash";
@@ -158,7 +158,5 @@ export async function getCerysNomDetailBS(context, category, activeAssignment) {
     });
     selectionArray.push(arr);
   });
-
-  await context.sync();
   return selectionArray;
 }

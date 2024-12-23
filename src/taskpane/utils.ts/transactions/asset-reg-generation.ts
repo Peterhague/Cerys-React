@@ -2,6 +2,7 @@ import { TransactionMap } from "../../classes/transaction-map";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
+  accessExcelContext,
   calculateDiffInDays,
   convertExcelDate,
   createEditableWs,
@@ -12,6 +13,7 @@ import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../works
 import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
+import { processTransBatch } from "./transactions";
 
 export const identifyLikelyAdditions = (session, registerType, setView) => {
   console.log("next step working");
@@ -51,7 +53,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
 };
 
 export const previewRelTrans = (session, registerType, setView) => {
-  deleteManyWorksheets([`${registerType} Possible Additions`]);
+  accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
   setView("confirm");
   session["options"][`${registerType}RCreationSetting`] = "confirm";
@@ -139,356 +141,368 @@ export const convertNewFATrans = (session) => {
 };
 
 export async function createTransSumm(session, relevantTrans, registerType) {
-  const sheetMapping = [];
-  const context = await getExcelContext();
-  const name = `${registerType} Transactions`;
-  const ws = addWorksheet(context, name);
-  ws.load(["id", "name"]);
-  await context.sync();
-  let activeClient;
-  session.customer.clients.forEach((client) => {
-    if (client._id === session.activeAssignment.clientId) {
-      activeClient = client;
-    }
-  });
-  const amortOrDepn = registerType === "IFA" ? "AMORT" : "DEPN";
-  const valuesToPost = [
-    [
-      "TRANSACTION",
-      "CERYS",
-      "CERYS",
-      "POSTING",
-      "CERYS",
-      "CERYS",
-      "CLIENT",
-      "CLIENT",
-      "CLIENT",
-      "DEBIT/",
-      amortOrDepn,
-      amortOrDepn,
-      amortOrDepn,
-    ],
-    [
-      "NUMBER",
-      "DATE",
-      "NARRATIVE",
-      "SOURCE",
-      "CODE",
-      "NOMINAL",
-      "NC",
-      "NOMINAL",
-      "NARRATIVE",
-      "(CREDIT)",
-      "BASIS",
-      "RATE",
-      "CHARGE",
-    ],
-  ];
-  session[`${registerType}Transactions`] = [];
-  //relevantTrans.forEach((i) => {
-  //  if (i.clientTB) {
-  //    let trans;
-  //    session.activeAssignment.clientNL.forEach((tran) => {
-  //      if (tran.code === i.clientNominalCode) {
-  //        trans = i;
-  //        trans["transactionDate"] = convertExcelDate(tran.date);
-  //        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-  //        trans["subTransactions"] = [
-  //          {
-  //            assetSubCategory: i.assetSubCategory,
-  //            assetSubCatCode: i.assetSubCatCode,
-  //            regColNameOne: i.regColNameOne,
-  //            regColNameTwo: i.regColNameTwo,
-  //            value: tran.value,
-  //          },
-  //        ];
-  //        trans["transactionDateClt"] = tran.date;
-  //        trans["clientNominalCode"] = tran.code;
-  //        trans["clientNominalName"] = tran.name;
-  //        trans["assetNarrative"] = tran.detail;
-  //        trans["value"] = tran.value;
-  //        trans["rowNumber"] = session[`${registerType}Transactions`].length + 3;
-  //      }
-  //    });
-  //    session[`${registerType}Transactions`].push(trans);
-  //  } else {
-  //    i.rowNumber = session[`${registerType}Transactions`].length + 3;
-  //    i.assetNarrative = i.narrative;
-  //    i.assetSubCatCodes = [i.assetSubCatCode];
-  //    i["subTransactions"] = [
-  //      {
-  //        assetSubCategory: i.assetSubCategory,
-  //        assetSubCatCode: i.assetSubCatCode,
-  //        regColNameOne: i.regColNameOne,
-  //        regColNameTwo: i.regColNameTwo,
-  //        value: i.value,
-  //      },
-  //    ];
-  //    session[`${registerType}Transactions`].push(i);
-  //  }
-  //});
-  relevantTrans.forEach((i) => {
-    //i.rowNumber = session[`${registerType}Transactions`].length + 3;
-    //i.assetNarrative = i.narrative;
-    const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
-    sheetMapping.push(map);
-    i.assetSubCatCodes = [i.assetSubCatCode];
-    i["subTransactions"] = [
-      {
-        assetSubCategory: i.assetSubCategory,
-        assetSubCatCode: i.assetSubCatCode,
-        regColNameOne: i.regColNameOne,
-        regColNameTwo: i.regColNameTwo,
-        value: i.value,
-      },
-    ];
-    session[`${registerType}Transactions`].push(i);
-  });
-  session[`${registerType}Transactions`].forEach((tran) => {
-    const transVals = [];
-    transVals.push(tran.transactionNumber);
-    if (tran.transactionDate) {
-      const dateString = tran.transactionDate.split("T")[0];
-      const dateStringSplit = dateString.split("-");
-      const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
-      transVals.push(dateConverted);
-      tran.transactionDateUser = dateConverted;
-    } else if (tran.transactionDateClt) {
-      transVals.push(tran.transactionDateClt);
-    } else {
-      transVals.push("Not provided");
-    }
-    transVals.push(tran.narrative);
-    if (tran.journal) {
-      transVals.push("Journal");
-    } else if (tran.finalJournal) {
-      transVals.push("Final journal");
-    } else if (tran.reviewJournal) {
-      transVals.push("Review journal");
-    } else if (tran.clientTB) {
-      transVals.push("Client TB");
-    } else if (tran.clientAdjustment) {
-      transVals.push("Client adjustment");
-    } else {
-      transVals.push("Sticking plaster");
-    }
-    transVals.push(tran.cerysCode);
-    transVals.push(tran.cerysShortName);
-    if (tran.clientNominalCode >= 0) {
-      transVals.push(tran.clientNominalCode);
-    } else {
-      transVals.push("NA");
-    }
-    if (tran.clientNominalName) {
-      transVals.push(tran.clientNominalName);
-    } else {
-      transVals.push("NA");
-    }
-    if (tran.assetNarrative) {
-      transVals.push(tran.assetNarrative);
-    } else {
-      transVals.push("NA");
-    }
-    transVals.push(tran.value / 100);
-    populateDepnCols(activeClient, transVals, tran, registerType);
-    calculateCharge(session, tran, registerType);
-    tran.amortChg ? transVals.push(tran.amortChg / 100) : transVals.push(tran.depnChg / 100);
-    valuesToPost.push(transVals);
-  });
-  const headerRange = ws.getRange("A1:M2");
-  headerRange.format.font.bold = true;
-  const range = ws.getRange(`A1:M${valuesToPost.length}`);
-  console.log(valuesToPost);
-  range.values = valuesToPost;
-  const rangeB = ws.getRange("B:B");
-  rangeB.numberFormat = "dd/mm/yyyy";
-  const rangeJ = ws.getRange("J:J");
-  rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
-  const rangeM = ws.getRange("M:M");
-  rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
-  const rangeAM = ws.getRange("A:M");
-  rangeAM.format.autofitColumns();
-  const definedCols = [
-    {
-      type: "transNo",
-      colNumber: 1,
-      mutable: false,
-      format: "0",
-      deleted: false,
-    },
-    {
-      type: "date",
-      colNumber: 2,
-      mutable: true,
-      format: "dd/mm/yyyy",
-      deleted: false,
-      updateKey: "updatedDate",
-    },
-    {
-      type: "cerysNarrative",
-      colNumber: 3,
-      mutable: true,
-      format: "",
-      deleted: false,
-      updateKey: "updatedNarrative",
-    },
-    {
-      type: "transType",
-      colNumber: 4,
-      mutable: false,
-      format: "",
-      deleted: false,
-    },
-    {
-      type: "cerysCode",
-      colNumber: 5,
-      mutable: true,
-      format: "0",
-      deleted: false,
-      updateKey: "updatedCode",
-    },
-    {
-      type: "cerysName",
-      colNumber: 6,
-      mutable: false,
-      format: "",
-      deleted: false,
-    },
-    {
-      type: "clientCode",
-      colNumber: 7,
-      mutable: false,
-      format: "0",
-      deleted: false,
-    },
-    {
-      type: "clientNominal",
-      colNumber: 8,
-      mutable: false,
-      format: "",
-      deleted: false,
-    },
-    {
-      type: "clientNarrative",
-      colNumber: 9,
-      mutable: false,
-      format: "",
-      deleted: false,
-    },
-    {
-      type: "value",
-      colNumber: 10,
-      mutable: false,
-      format: "#,##0.00;(#,##0.00);-",
-      deleted: false,
-    },
-    {
-      type: "depnBasis",
-      colNumber: 11,
-      mutable: true,
-      format: "",
-      deleted: false,
-      updateKey: "updatedDepnBasis",
-    },
-    {
-      type: "depnRate",
-      colNumber: 12,
-      mutable: true,
-      format: "0",
-      deleted: false,
-      updateKey: "updatedDepnRate",
-    },
-    {
-      type: "depnCharge",
-      colNumber: 13,
-      format: "#,##0.00;(#,##0.00);-",
-      deleted: false,
-    },
-  ];
-  const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
-  const sheetName = `${registerType}RPreview`;
-  createEditableWs(
-    session,
-    transactions,
-    ws,
-    definedCols,
-    valuesToPost,
-    sheetName,
-    sheetMapping,
-    "placeholder",
-    "placeholder"
-  );
-  await context.sync();
-  ws.activate();
+  try {
+    await Excel.run(async (context) => {
+      // appropriate
+      const sheetMapping = [];
+      const name = `${registerType} Transactions`;
+      const ws = addWorksheet(context, name);
+      ws.load(["id", "name"]);
+      await context.sync();
+      let activeClient;
+      session.customer.clients.forEach((client) => {
+        if (client._id === session.activeAssignment.clientId) {
+          activeClient = client;
+        }
+      });
+      const amortOrDepn = registerType === "IFA" ? "AMORT" : "DEPN";
+      const valuesToPost = [
+        [
+          "TRANSACTION",
+          "CERYS",
+          "CERYS",
+          "POSTING",
+          "CERYS",
+          "CERYS",
+          "CLIENT",
+          "CLIENT",
+          "CLIENT",
+          "DEBIT/",
+          amortOrDepn,
+          amortOrDepn,
+          amortOrDepn,
+        ],
+        [
+          "NUMBER",
+          "DATE",
+          "NARRATIVE",
+          "SOURCE",
+          "CODE",
+          "NOMINAL",
+          "NC",
+          "NOMINAL",
+          "NARRATIVE",
+          "(CREDIT)",
+          "BASIS",
+          "RATE",
+          "CHARGE",
+        ],
+      ];
+      session[`${registerType}Transactions`] = [];
+      //relevantTrans.forEach((i) => {
+      //  if (i.clientTB) {
+      //    let trans;
+      //    session.activeAssignment.clientNL.forEach((tran) => {
+      //      if (tran.code === i.clientNominalCode) {
+      //        trans = i;
+      //        trans["transactionDate"] = convertExcelDate(tran.date);
+      //        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
+      //        trans["subTransactions"] = [
+      //          {
+      //            assetSubCategory: i.assetSubCategory,
+      //            assetSubCatCode: i.assetSubCatCode,
+      //            regColNameOne: i.regColNameOne,
+      //            regColNameTwo: i.regColNameTwo,
+      //            value: tran.value,
+      //          },
+      //        ];
+      //        trans["transactionDateClt"] = tran.date;
+      //        trans["clientNominalCode"] = tran.code;
+      //        trans["clientNominalName"] = tran.name;
+      //        trans["assetNarrative"] = tran.detail;
+      //        trans["value"] = tran.value;
+      //        trans["rowNumber"] = session[`${registerType}Transactions`].length + 3;
+      //      }
+      //    });
+      //    session[`${registerType}Transactions`].push(trans);
+      //  } else {
+      //    i.rowNumber = session[`${registerType}Transactions`].length + 3;
+      //    i.assetNarrative = i.narrative;
+      //    i.assetSubCatCodes = [i.assetSubCatCode];
+      //    i["subTransactions"] = [
+      //      {
+      //        assetSubCategory: i.assetSubCategory,
+      //        assetSubCatCode: i.assetSubCatCode,
+      //        regColNameOne: i.regColNameOne,
+      //        regColNameTwo: i.regColNameTwo,
+      //        value: i.value,
+      //      },
+      //    ];
+      //    session[`${registerType}Transactions`].push(i);
+      //  }
+      //});
+      relevantTrans.forEach((i) => {
+        //i.rowNumber = session[`${registerType}Transactions`].length + 3;
+        //i.assetNarrative = i.narrative;
+        const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
+        sheetMapping.push(map);
+        i.assetSubCatCodes = [i.assetSubCatCode];
+        i["subTransactions"] = [
+          {
+            assetSubCategory: i.assetSubCategory,
+            assetSubCatCode: i.assetSubCatCode,
+            regColNameOne: i.regColNameOne,
+            regColNameTwo: i.regColNameTwo,
+            value: i.value,
+          },
+        ];
+        session[`${registerType}Transactions`].push(i);
+      });
+      session[`${registerType}Transactions`].forEach((tran) => {
+        const transVals = [];
+        transVals.push(tran.transactionNumber);
+        if (tran.transactionDate) {
+          const dateString = tran.transactionDate.split("T")[0];
+          const dateStringSplit = dateString.split("-");
+          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+          transVals.push(dateConverted);
+          tran.transactionDateUser = dateConverted;
+        } else if (tran.transactionDateClt) {
+          transVals.push(tran.transactionDateClt);
+        } else {
+          transVals.push("Not provided");
+        }
+        transVals.push(tran.narrative);
+        if (tran.journal) {
+          transVals.push("Journal");
+        } else if (tran.finalJournal) {
+          transVals.push("Final journal");
+        } else if (tran.reviewJournal) {
+          transVals.push("Review journal");
+        } else if (tran.clientTB) {
+          transVals.push("Client TB");
+        } else if (tran.clientAdjustment) {
+          transVals.push("Client adjustment");
+        } else {
+          transVals.push("Sticking plaster");
+        }
+        transVals.push(tran.cerysCode);
+        transVals.push(tran.cerysShortName);
+        if (tran.clientNominalCode >= 0) {
+          transVals.push(tran.clientNominalCode);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.clientNominalName) {
+          transVals.push(tran.clientNominalName);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.assetNarrative) {
+          transVals.push(tran.assetNarrative);
+        } else {
+          transVals.push("NA");
+        }
+        transVals.push(tran.value / 100);
+        populateDepnCols(activeClient, transVals, tran, registerType);
+        calculateCharge(session, tran, registerType);
+        tran.amortChg ? transVals.push(tran.amortChg / 100) : transVals.push(tran.depnChg / 100);
+        valuesToPost.push(transVals);
+      });
+      const headerRange = ws.getRange("A1:M2");
+      headerRange.format.font.bold = true;
+      const range = ws.getRange(`A1:M${valuesToPost.length}`);
+      console.log(valuesToPost);
+      range.values = valuesToPost;
+      const rangeB = ws.getRange("B:B");
+      rangeB.numberFormat = "dd/mm/yyyy";
+      const rangeJ = ws.getRange("J:J");
+      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+      const rangeM = ws.getRange("M:M");
+      rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
+      const rangeAM = ws.getRange("A:M");
+      rangeAM.format.autofitColumns();
+      const definedCols = [
+        {
+          type: "transNo",
+          colNumber: 1,
+          mutable: false,
+          format: "0",
+          deleted: false,
+        },
+        {
+          type: "date",
+          colNumber: 2,
+          mutable: true,
+          format: "dd/mm/yyyy",
+          deleted: false,
+          updateKey: "updatedDate",
+        },
+        {
+          type: "cerysNarrative",
+          colNumber: 3,
+          mutable: true,
+          format: "",
+          deleted: false,
+          updateKey: "updatedNarrative",
+        },
+        {
+          type: "transType",
+          colNumber: 4,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "cerysCode",
+          colNumber: 5,
+          mutable: true,
+          format: "0",
+          deleted: false,
+          updateKey: "updatedCode",
+        },
+        {
+          type: "cerysName",
+          colNumber: 6,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "clientCode",
+          colNumber: 7,
+          mutable: false,
+          format: "0",
+          deleted: false,
+        },
+        {
+          type: "clientNominal",
+          colNumber: 8,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "clientNarrative",
+          colNumber: 9,
+          mutable: false,
+          format: "",
+          deleted: false,
+        },
+        {
+          type: "value",
+          colNumber: 10,
+          mutable: false,
+          format: "#,##0.00;(#,##0.00);-",
+          deleted: false,
+        },
+        {
+          type: "depnBasis",
+          colNumber: 11,
+          mutable: true,
+          format: "",
+          deleted: false,
+          updateKey: "updatedDepnBasis",
+        },
+        {
+          type: "depnRate",
+          colNumber: 12,
+          mutable: true,
+          format: "0",
+          deleted: false,
+          updateKey: "updatedDepnRate",
+        },
+        {
+          type: "depnCharge",
+          colNumber: 13,
+          format: "#,##0.00;(#,##0.00);-",
+          deleted: false,
+        },
+      ];
+      const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
+      const sheetName = `${registerType}RPreview`;
+      createEditableWs(
+        session,
+        transactions,
+        ws,
+        definedCols,
+        valuesToPost,
+        sheetName,
+        sheetMapping,
+        "placeholder",
+        "placeholder"
+      );
+      await context.sync();
+      ws.activate();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export async function createLikelyAdditionsSumm(relevantTrans, registerType) {
-  const context = await getExcelContext();
-  const name = `${registerType} Possible Additions`;
-  const ws = addWorksheet(context, name);
-  const valuesToPost = [
-    ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
-    ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
-  ];
-  relevantTrans.forEach((tran) => {
-    const transVals = [];
-    transVals.push(tran.transactionNumber);
-    if (tran.transactionDate) {
-      const dateString = tran.transactionDate.split("T")[0];
-      const dateStringSplit = dateString.split("-");
-      const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
-      transVals.push(dateConverted);
-      tran.transactionDateUser = dateConverted;
-    } else if (tran.transactionDateClt) {
-      transVals.push(tran.transactionDateClt);
-    } else {
-      transVals.push("Not provided");
-    }
-    transVals.push(tran.narrative);
-    if (tran.journal) {
-      transVals.push("Journal");
-    } else if (tran.finalJournal) {
-      transVals.push("Final journal");
-    } else if (tran.reviewJournal) {
-      transVals.push("Review journal");
-    } else if (tran.clientTB) {
-      transVals.push("Client TB");
-    } else if (tran.clientAdjustment) {
-      transVals.push("Client adjustment");
-    }
-    transVals.push(tran.cerysCode);
-    transVals.push(tran.cerysShortName);
-    if (tran.clientNominalCode >= 0) {
-      transVals.push(tran.clientNominalCode);
-    } else {
-      transVals.push("NA");
-    }
-    if (tran.clientNominalName) {
-      transVals.push(tran.clientNominalName);
-    } else {
-      transVals.push("NA");
-    }
-    if (tran.assetNarrative) {
-      transVals.push(tran.assetNarrative);
-    } else {
-      transVals.push("NA");
-    }
-    transVals.push(tran.value / 100);
-    valuesToPost.push(transVals);
-  });
-  const headerRange = ws.getRange("A1:J2");
-  headerRange.format.font.bold = true;
-  const range = ws.getRange(`A1:J${valuesToPost.length}`);
-  console.log(valuesToPost);
-  range.values = valuesToPost;
-  const rangeB = ws.getRange("B:B");
-  rangeB.numberFormat = "dd/mm/yyyy";
-  const rangeJ = ws.getRange("J:J");
-  rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
-  const rangeAJ = ws.getRange("A:J");
-  rangeAJ.format.autofitColumns();
-  await context.sync();
-  ws.activate();
+  try {
+    await Excel.run(async (context) => {
+      // appropriate
+      const name = `${registerType} Possible Additions`;
+      const ws = addWorksheet(context, name);
+      const valuesToPost = [
+        ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
+        ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
+      ];
+      relevantTrans.forEach((tran) => {
+        const transVals = [];
+        transVals.push(tran.transactionNumber);
+        if (tran.transactionDate) {
+          const dateString = tran.transactionDate.split("T")[0];
+          const dateStringSplit = dateString.split("-");
+          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+          transVals.push(dateConverted);
+          tran.transactionDateUser = dateConverted;
+        } else if (tran.transactionDateClt) {
+          transVals.push(tran.transactionDateClt);
+        } else {
+          transVals.push("Not provided");
+        }
+        transVals.push(tran.narrative);
+        if (tran.journal) {
+          transVals.push("Journal");
+        } else if (tran.finalJournal) {
+          transVals.push("Final journal");
+        } else if (tran.reviewJournal) {
+          transVals.push("Review journal");
+        } else if (tran.clientTB) {
+          transVals.push("Client TB");
+        } else if (tran.clientAdjustment) {
+          transVals.push("Client adjustment");
+        }
+        transVals.push(tran.cerysCode);
+        transVals.push(tran.cerysShortName);
+        if (tran.clientNominalCode >= 0) {
+          transVals.push(tran.clientNominalCode);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.clientNominalName) {
+          transVals.push(tran.clientNominalName);
+        } else {
+          transVals.push("NA");
+        }
+        if (tran.assetNarrative) {
+          transVals.push(tran.assetNarrative);
+        } else {
+          transVals.push("NA");
+        }
+        transVals.push(tran.value / 100);
+        valuesToPost.push(transVals);
+      });
+      const headerRange = ws.getRange("A1:J2");
+      headerRange.format.font.bold = true;
+      const range = ws.getRange(`A1:J${valuesToPost.length}`);
+      console.log(valuesToPost);
+      range.values = valuesToPost;
+      const rangeB = ws.getRange("B:B");
+      rangeB.numberFormat = "dd/mm/yyyy";
+      const rangeJ = ws.getRange("J:J");
+      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+      const rangeAJ = ws.getRange("A:J");
+      rangeAJ.format.autofitColumns();
+      await context.sync();
+      ws.activate();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export const populateDepnCols = (activeClient, transVals, tran, registerType) => {
@@ -610,7 +624,7 @@ export function calculateCharge(session, tran, registerType) {
   session.activeJournal.netValue += jnls["credit"]["value"];
 }
 
-export const recalculateCharge = async (session, sheet, tran, e) => {
+export const recalculateCharge = async (context, session, sheet, tran, e) => {
   let registerType;
   let amortOrDepn;
   let amortOrDepnUpper;
@@ -643,7 +657,7 @@ export const recalculateCharge = async (session, sheet, tran, e) => {
   const colLetter = colNumToLetter(depnChgColNumber);
   const rowNumber = getTransRowNumber(tran, sheet);
   const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
-  await setExcelRangeValue(sheet.name, range, charge / 100);
+  await setExcelRangeValue(context, sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {
       i[`${amortOrDepn}Chg`] = charge;
@@ -850,30 +864,29 @@ export const createCurrentPeriodRegister = (regsiter, session) => {
   return currentPeriodRegister;
 };
 
-export async function createIFARWs(context, session) {
-  const transToPost = session["IFATransactions"];
-  console.log(transToPost);
-  const activeCatsNames = [];
-  const IFAActiveCats = [];
-  transToPost.forEach((i) => {
-    if (!activeCatsNames.includes(i.assetCategory)) {
-      activeCatsNames.push(i.assetCategory);
-      IFAActiveCats.push({
-        assetCategory: i.assetCategory,
-        assetCategoryNo: i.assetCategoryNo,
-      });
-    }
-  });
-  IFAActiveCats.sort((a, b) => {
-    return a.assetCategoryNo - b.assetCategoryNo;
-  });
-  const wsName = "IFA Register";
-  const ws = addWorksheet(context, wsName);
-  const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
-  applyWorkhseetHeader(ws, wsHeaders);
-  await context.sync();
-  populateAssetRegWs(context, IFAActiveCats, transToPost, ws, "IFA");
-}
+//export async function createIFARWs(context, session) {
+//  const transToPost = session["IFATransactions"];
+//  console.log(transToPost);
+//  const activeCatsNames = [];
+//  const IFAActiveCats = [];
+//  transToPost.forEach((i) => {
+//    if (!activeCatsNames.includes(i.assetCategory)) {
+//      activeCatsNames.push(i.assetCategory);
+//      IFAActiveCats.push({
+//        assetCategory: i.assetCategory,
+//        assetCategoryNo: i.assetCategoryNo,
+//      });
+//    }
+//  });
+//  IFAActiveCats.sort((a, b) => {
+//    return a.assetCategoryNo - b.assetCategoryNo;
+//  });
+//  const wsName = "IFA Register";
+//  const ws = addWorksheet(context, wsName);
+//  const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
+//  applyWorkhseetHeader(ws, wsHeaders);
+//  populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");
+//}
 
 export const finaliseAssetObjects = (session, registerType) => {
   const reportingPeriod = session.activeAssignment.reportingPeriod;

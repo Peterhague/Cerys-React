@@ -11,38 +11,42 @@ export async function enterNL(session) {
 }
 
 export async function createClientNLObject() {
-  const context = await getExcelContext();
-  const clientNL = [];
-  const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
-  ws.load("values");
-  await context.sync();
-  if (ws.isNullObject) {
-    return "";
-  } else {
-    const range = ws.getUsedRange();
-    const values = range.load("values");
-    await context.sync();
-    const innerValues = values.values;
-    let operativeCode = 0;
-    let nominal;
-    innerValues.forEach((line) => {
-      if (line[0] && line[1] && typeof line[1] === "string") {
-        operativeCode = line[0];
-        nominal = line[1];
+  try {
+    await Excel.run(async (context) => {//appropriate
+      const clientNL = [];
+      const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
+      await context.sync();
+      if (ws.isNullObject) {
+        return "";
+      } else {
+        const range = ws.getUsedRange();
+        range.load("values");
+        await context.sync();
+        const values = range.values;
+        let operativeCode = 0;
+        let nominal;
+        values.forEach((line) => {
+          if (line[0] && line[1] && typeof line[1] === "string") {
+            operativeCode = line[0];
+            nominal = line[1];
+          }
+          if (typeof line[0] === "number" && typeof line[1] === "number") {
+            let transObj = {};
+            transObj["code"] = operativeCode;
+            transObj["name"] = nominal;
+            transObj["number"] = line[0];
+            transObj["date"] = line[1];
+            line[6] ? (transObj["detail"] = line[6]) : (transObj["detail"] = "No detail provided");
+            line[7] ? (transObj["value"] = line[7] * 100) : (transObj["value"] = line[8] * -100);
+            clientNL.push(transObj);
+          }
+        });
       }
-      if (typeof line[0] === "number" && typeof line[1] === "number") {
-        let transObj = {};
-        transObj["code"] = operativeCode;
-        transObj["name"] = nominal;
-        transObj["number"] = line[0];
-        transObj["date"] = line[1];
-        line[6] ? (transObj["detail"] = line[6]) : (transObj["detail"] = "No detail provided");
-        line[7] ? (transObj["value"] = line[7] * 100) : (transObj["value"] = line[8] * -100);
-        clientNL.push(transObj);
-      }
+      await context.sync();
+      return clientNL;
     });
-    await context.sync();
-    return clientNL;
+  } catch (e) {
+    console.error(e);
   }
 }
 

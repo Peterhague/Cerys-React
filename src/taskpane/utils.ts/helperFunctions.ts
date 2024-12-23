@@ -20,8 +20,10 @@ import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-
 import { handleWorksheetEdit } from "./worksheet-editing/ws-editing";
 
 export const getExcelContext = async () => {
+  console.log("getting context");
   try {
     const ctx = await Excel.run(async (context) => {
+      // Appropriate
       return context;
     });
     return ctx;
@@ -32,10 +34,16 @@ export const getExcelContext = async () => {
 };
 
 export const registerWorksheetDeletionHandler = async (session) => {
-  const context = await getExcelContext();
-  let sheets = context.workbook.worksheets;
-  sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
-  await context.sync();
+  try {
+    await Excel.run(async (context) => {
+      // Appropriate
+      let sheets = context.workbook.worksheets;
+      sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const handleSheetDeletion = (e, session) => {
@@ -147,125 +155,148 @@ export const calculateDiffInDays = (inputDate1, inputDate2) => {
 };
 
 export const setEditButtonValue = async (session) => {
-  const wsName = await getActiveWorksheetName();
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      session.setEditButton(sheet.editButtonStatus);
-      return;
-    }
-  });
+  try {
+    await Excel.run(async (context) => {
+      // appropriate
+      const wsName = await getActiveWorksheetName(context);
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === wsName) {
+          session.setEditButton(sheet.editButtonStatus);
+          return;
+        }
+      });
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const handleEditButtonClick = async (session) => {
-  const wsName = await getActiveWorksheetName();
-  const highlightGreenRanges = [];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      let dateCol;
-      let cerysCodeCol;
-      let cerysNarrativeCol;
-      let clientCodeMappingCol;
-      sheet.definedCols.forEach((col) => {
-        if (col.type === "date") dateCol = col.colNumber;
-        if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
-        if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
-        if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
-      });
-      const dateColLetter = colNumToLetter(dateCol);
-      const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
-      const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
-      const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
-      getUpdatedTransactions(session).forEach((tran) => {
-        tran.updates.forEach((update) => {
-          if (update.worksheetName === wsName) {
-            const rowNumber = getTransRowNumber(tran, sheet);
-            if (update.type === "cerysCode") {
-              const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "date") {
-              const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "cerysNarrative") {
-              const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "clientCodeMapping") {
-              const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
+  try {
+    await Excel.run(async (context) => {
+      // appropriate
+      const wsName = await getActiveWorksheetName(context);
+      const highlightGreenRanges = [];
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === wsName) {
+          let dateCol;
+          let cerysCodeCol;
+          let cerysNarrativeCol;
+          let clientCodeMappingCol;
+          sheet.definedCols.forEach((col) => {
+            if (col.type === "date") dateCol = col.colNumber;
+            if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
+            if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
+            if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
+          });
+          const dateColLetter = colNumToLetter(dateCol);
+          const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
+          const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
+          const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
+          getUpdatedTransactions(session).forEach((tran) => {
+            tran.updates.forEach((update) => {
+              if (update.worksheetName === wsName) {
+                const rowNumber = getTransRowNumber(tran, sheet);
+                if (update.type === "cerysCode") {
+                  const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "date") {
+                  const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "cerysNarrative") {
+                  const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "clientCodeMapping") {
+                  const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+              }
+            });
+          });
+          if (sheet.editButtonStatus === "show") {
+            highlightEditableRanges(context, sheet);
+            highlightRanges(context, wsName, highlightGreenRanges, "lightGreen");
+            sheet.editButtonStatus = "hide";
+          } else {
+            unhighlightEditableRanges(context, sheet);
+            sheet.editButtonStatus = "show";
           }
-        });
+          session.setEditButton(sheet.editButtonStatus);
+          return;
+        }
       });
-      if (sheet.editButtonStatus === "show") {
-        highlightEditableRanges(sheet);
-        highlightRanges(wsName, highlightGreenRanges, "lightGreen");
-        sheet.editButtonStatus = "hide";
-      } else {
-        unhighlightEditableRanges(sheet);
-        sheet.editButtonStatus = "show";
-      }
-      session.setEditButton(sheet.editButtonStatus);
-      return;
-    }
-  });
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const simulateEditButtonClick = async (session) => {
-  const wsName = await getActiveWorksheetName();
-  const highlightGreenRanges = [];
-  const updatedTrans = getUpdatedTransactions(session);
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      let codeColNumber;
-      let dateColNumber;
-      let narrColNumber;
-      let clientCodeMappingNumber;
-      sheet.definedCols.forEach((col) => {
-        if (col.type === "cerysCode") codeColNumber = col.colNumber;
-        if (col.type === "date") dateColNumber = col.colNumber;
-        if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
-        if (col.type === "clientCodeMapping") clientCodeMappingNumber = col.colNumber;
+  try {
+    await Excel.run(async (context) => {
+      //Appropriate
+      const wsName = await getActiveWorksheetName(context);
+      const highlightGreenRanges = [];
+      const updatedTrans = getUpdatedTransactions(session);
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === wsName) {
+          let codeColNumber;
+          let dateColNumber;
+          let narrColNumber;
+          let clientCodeMappingNumber;
+          sheet.definedCols.forEach((col) => {
+            if (col.type === "cerysCode") codeColNumber = col.colNumber;
+            if (col.type === "date") dateColNumber = col.colNumber;
+            if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
+            if (col.type === "clientCodeMapping") clientCodeMappingNumber = col.colNumber;
+          });
+          updatedTrans.forEach((tran) => {
+            const rowNumber = getTransRowNumber(tran, sheet);
+            tran.updates.forEach((update) => {
+              if (update.worksheetName === wsName) {
+                if (update.type === "cerysCode") {
+                  const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "date") {
+                  const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "cerysNarrative") {
+                  const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+                if (update.type === "clientCodeMapping") {
+                  const range = `${colNumToLetter(clientCodeMappingNumber)}${rowNumber}:${colNumToLetter(clientCodeMappingNumber)}${rowNumber}`;
+                  highlightGreenRanges.push(range);
+                }
+              }
+            });
+          });
+          highlightEditableRanges(context, sheet);
+          highlightRanges(context, wsName, highlightGreenRanges, "lightGreen");
+          return;
+        }
       });
-      updatedTrans.forEach((tran) => {
-        const rowNumber = getTransRowNumber(tran, sheet);
-        tran.updates.forEach((update) => {
-          if (update.worksheetName === wsName) {
-            if (update.type === "cerysCode") {
-              const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "date") {
-              const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "cerysNarrative") {
-              const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-            if (update.type === "clientCodeMapping") {
-              const range = `${colNumToLetter(clientCodeMappingNumber)}${rowNumber}:${colNumToLetter(clientCodeMappingNumber)}${rowNumber}`;
-              highlightGreenRanges.push(range);
-            }
-          }
-        });
-      });
-      highlightEditableRanges(sheet);
-      highlightRanges(wsName, highlightGreenRanges, "lightGreen");
-      return;
-    }
-  });
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
-export const updateAssignmentFigures = async (session) => {
+export const updateAssignmentFigures = async (context, session) => {
   const tbArray = tbForPosting(session.activeAssignment.tb);
-  await postTbToWbook(session, tbArray);
-  await wsPLAccount(session);
-  await wsBalanceSheet(session);
-  addTbClickListener(session);
-  addPlClickListener(session);
-  addBsClickListener(session["activeAssignment"]);
+  await postTbToWbook(context, session, tbArray);
+  await wsPLAccount(context, session);
+  await wsBalanceSheet(context, session);
+  addTbClickListener(context, session);
+  addPlClickListener(context, session);
+  addBsClickListener(context, session["activeAssignment"]);
 };
 
 export const interpretEventAddress = (e) => {
@@ -426,12 +457,20 @@ export const resetEdSheetCallBack = () => {
 };
 
 export const getActiveEdSheet = async (session) => {
-  const wsName = await getActiveWorksheetName();
-  let ws;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) ws = sheet;
-  });
-  return ws;
+  try {
+    const rtnVal = await Excel.run(async (context) => {
+      const wsName = await getActiveWorksheetName(context);
+      let ws;
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.name === wsName) ws = sheet;
+      });
+      return ws;
+    });
+    return rtnVal;
+  } catch (e) {
+    console.error(e);
+    return e;
+  }
 };
 
 export const checkEditMode = (sheet) => {
@@ -500,4 +539,18 @@ export const getActiveClientCodeMapping = (session, transaction) => {
   const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
   if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
   return obj;
+};
+
+export const accessExcelContext = async (func, args) => {
+  try {
+    const rtnVal = await Excel.run(async (context) => {
+      const rtnVal = func(context, ...args);
+      await context.sync();
+      return rtnVal;
+    });
+    return rtnVal;
+  } catch (e) {
+    console.error(e);
+    return e;
+  }
 };

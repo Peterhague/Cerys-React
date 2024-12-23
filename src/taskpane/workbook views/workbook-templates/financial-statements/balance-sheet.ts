@@ -1,9 +1,7 @@
-import { getExcelContext } from "../../../utils.ts/helperFunctions";
 import { addWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
-export async function wsBalanceSheet(session) {
-  const context = await getExcelContext();
+export async function wsBalanceSheet(context, session) {
   let ws = context.workbook.worksheets.getItemOrNullObject("Balance Sheet");
   ws.load("values");
   await context.sync();

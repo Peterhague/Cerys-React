@@ -1,23 +1,21 @@
 import { colNumToLetter } from "./excel-col-conversion";
-import { getExcelContext } from "./helperFunctions";
 
 export function addWorksheet(context, sheetName) {
   const ws = context.workbook.worksheets.add(sheetName);
   return ws;
 }
 
-export function addWorksheets(context, sheetNames) {
+export const addWorksheets = (context, sheetNames) => {
   sheetNames.forEach((i) => {
     context.workbook.worksheets.add(i);
   });
-}
+};
 
 export function deleteWorksheet(context, sheetName) {
   context.workbook.worksheets.getItem(sheetName).delete();
 }
 
-export const deleteManyWorksheets = async (sheetsToDelete) => {
-  const context = await getExcelContext();
+export const deleteManyWorksheets = (context, sheetsToDelete) => {
   const sheets = [];
   sheetsToDelete.forEach((sheet) => {
     const ws = context.workbook.worksheets.getItemOrNullObject(sheet);
@@ -26,7 +24,6 @@ export const deleteManyWorksheets = async (sheetsToDelete) => {
   sheets.forEach((sheet) => {
     if (sheet) sheet.delete();
   });
-  await context.sync();
 };
 
 export function getWorksheet(context, sheetName) {
@@ -39,8 +36,7 @@ export function getWorksheetAndRange(context, sheetName, range) {
   return { ws, range: sheetRange };
 }
 
-export const getWorksheetRangeValues = async (wsName, range) => {
-  const context = await getExcelContext();
+export const getWorksheetRangeValues = async (context, wsName, range) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const wsRange = sheet.getRange(range);
   wsRange.load("values");
@@ -48,28 +44,24 @@ export const getWorksheetRangeValues = async (wsName, range) => {
   return wsRange.values;
 };
 
-export async function gotToWorksheet(context, sheetName) {
-  const sheet = context.workbook.worksheets.getItem(sheetName);
-  sheet.activate();
-}
+//export async function gotToWorksheet(context, sheetName) {
+//  const sheet = context.workbook.worksheets.getItem(sheetName);
+//  sheet.activate();
+//}
 
-export const getActiveWorksheet = async () => {
-  const context = await getExcelContext();
+export const getActiveWorksheet = async (context) => {
   const sheet = context.workbook.worksheets.getActiveWorksheet();
   sheet.load("name");
   await context.sync();
   return sheet;
 };
 
-export const activateWorksheet = async (wsName) => {
-  const context = await getExcelContext();
+export const activateWorksheet = (context, wsName) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   sheet.activate();
-  await context.sync();
 };
 
-export const getActiveWorksheetName = async () => {
-  const context = await getExcelContext();
+export const getActiveWorksheetName = async (context) => {
   const sheet = context.workbook.worksheets.getActiveWorksheet();
   sheet.load("name");
   await context.sync();
@@ -77,8 +69,7 @@ export const getActiveWorksheetName = async () => {
   return name;
 };
 
-export const getWorksheetUsedRange = async (wsName) => {
-  const context = await getExcelContext();
+export const getWorksheetUsedRange = async (context, wsName) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const range = sheet.getUsedRange();
   range.load("values");
@@ -87,58 +78,46 @@ export const getWorksheetUsedRange = async (wsName) => {
   return values;
 };
 
-export const setExcelRangeValue = async (wsName, range, value) => {
-  const context = await getExcelContext();
+export const setExcelRangeValue = (context, wsName, range, value) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   const wsRange = ws.getRange(range);
   wsRange.values = value;
-  await context.sync();
 };
 
-export const setManyExcelRangeValues = async (wsName, updates) => {
-  const context = await getExcelContext();
+export const setManyExcelRangeValues = (context, wsName, updates) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   updates.forEach((update) => {
     const range = ws.getRange(update.address);
     range.values = update.value;
   });
-  await context.sync();
 };
 
-export const setManyWorksheetRangeValues = async (updates) => {
-  const context = await getExcelContext();
+export const setManyWorksheetRangeValues = (context, updates) => {
   updates.forEach((update) => {
     const ws = context.workbook.worksheets.getItem(update.wsName);
     const range = ws.getRange(update.address);
     range.values = update.value;
   });
-  await context.sync();
 };
 
-export const deleteWorksheetRangesUp = async (deletionObjs) => {
-  const context = await getExcelContext();
+export const deleteWorksheetRangesUp = async (context, deletionObjs) => {
   deletionObjs.forEach((obj) => {
     obj.sheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
   });
   await context.sync();
   deletionObjs.forEach((obj) => {
     const range = obj.sheet && obj.sheet.getRange(obj.range);
-    //range.delete(Excel.DeleteShiftDirection.up);
     range.delete("Up");
   });
-  await context.sync();
 };
 
-export const deleteWorksheetRangeDown = async (wsName, range) => {
-  const context = await getExcelContext();
+export const deleteWorksheetRangeDown = (context, wsName, range) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const wsRange = sheet.getRange(range);
   wsRange.delete(Excel.DeleteShiftDirection.up);
-  await context.sync();
 };
 
-export const highlightEditableRanges = async (sheet) => {
-  const context = await getExcelContext();
+export const highlightEditableRanges = (context, sheet) => {
   const ws = context.workbook.worksheets.getItem(sheet.name);
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
@@ -150,11 +129,9 @@ export const highlightEditableRanges = async (sheet) => {
       }
     });
   });
-  await context.sync();
 };
 
-export const unhighlightEditableRanges = async (sheet) => {
-  const context = await getExcelContext();
+export const unhighlightEditableRanges = (context, sheet) => {
   const ws = context.workbook.worksheets.getActiveWorksheet();
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
@@ -166,15 +143,12 @@ export const unhighlightEditableRanges = async (sheet) => {
       }
     });
   });
-  await context.sync();
 };
 
-export const highlightRanges = async (wsName, ranges, color) => {
-  const context = await getExcelContext();
+export const highlightRanges = (context, wsName, ranges, color) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   ranges.forEach((range) => {
     const wsRange = ws.getRange(range);
     wsRange.format.fill.color = color;
   });
-  await context.sync();
 };

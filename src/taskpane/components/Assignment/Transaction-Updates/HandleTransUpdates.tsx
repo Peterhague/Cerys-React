@@ -15,8 +15,14 @@ const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) =>
   };
 
   const handleDiscard = async () => {
-    await reverseTransactionUpdates(session);
-    callNextView(session);
+    try {
+      await Excel.run(async (context) => {
+        await reverseTransactionUpdates(context, session);
+        callNextView(session);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleSubmit = async () => {

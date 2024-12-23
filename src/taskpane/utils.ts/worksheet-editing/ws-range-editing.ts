@@ -3,7 +3,6 @@ import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
   convertExcelDate,
-  getExcelContext,
   getTransRowNumber,
   getUpdatedTransactions,
   interpretExcelAddress,
@@ -18,22 +17,23 @@ import {
 } from "../worksheet";
 import { handleWorksheetEdit } from "./ws-editing";
 
-export const handleRangeEdit = async (session, e, sheet, addressObj, definedCol) => {
+export const handleRangeEdit = async (context, session, e, sheet, addressObj, definedCol) => {
   session.activeEditableCell = createEditableCell(null, null, null);
-  console.log(session.activeEditableCell);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
   const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
-  if (!autoFillObj.isAutoFill) await testChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
+  if (!autoFillObj.isAutoFill)
+    await testChangesForRejection(context, e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
-    await simulateAutoFillChanges(session, sheet, autoFillObj);
+    await simulateAutoFillChanges(context, session, sheet, autoFillObj);
   } else {
-    handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, definedCol));
+    handledSuccessfully =
+      isEditModeEnabled && (await captureReanalysis(context, session, e, sheet, addressObj, definedCol));
   }
   return handledSuccessfully;
 };
 
-export const testChangesForRejection = async (e, sheet, addressObj, definedCol, editModeEnabled) => {
+export const testChangesForRejection = async (context, e, sheet, addressObj, definedCol, editModeEnabled) => {
   const wsName = sheet.name;
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
@@ -46,7 +46,7 @@ export const testChangesForRejection = async (e, sheet, addressObj, definedCol, 
   if (!withinProtectedRange) sheet.edited = true;
   if (withinProtectedRange && e.triggerSource !== "ThisLocalAddin") {
     const range = `${e.address}:${e.address}`;
-    await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    await setExcelRangeValue(context, wsName, range, e.details.valueBefore);
   }
 };
 
@@ -76,7 +76,7 @@ export const checkForAutoFill = (e) => {
   return autoFillObj;
 };
 
-export const captureReanalysis = async (session, e, sheet, addressObj, definedCol) => {
+export const captureReanalysis = async (context, session, e, sheet, addressObj, definedCol) => {
   const wsName = sheet.name;
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
@@ -91,15 +91,15 @@ export const captureReanalysis = async (session, e, sheet, addressObj, definedCo
   const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
   console.log(isValidTransactionUpdate);
   if (isValidTransactionUpdate)
-    processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
+    processTransactionUpdate(context, session, tran, tests, definedCol, validationObj, e, newValue, sheet);
   if (definedCol.isQuasiMutable) tests.isValid = true;
   const range = `${e.address}:${e.address}`;
   if (tests.changeRejected) {
-    await setExcelRangeValue(wsName, range, e.details.valueBefore);
+    await setExcelRangeValue(context, wsName, range, e.details.valueBefore);
     return handledSuccessfully;
   }
   if (tests.isValid) {
-    processTransUpdateEffects(session, sheet, definedCol, range, tests);
+    processTransUpdateEffects(context, session, sheet, definedCol, range, tests);
     handledSuccessfully = true;
   }
   return handledSuccessfully;
@@ -112,23 +112,33 @@ export const combineAllValidation = (definedCol, validationObj) => {
   } else return false;
 };
 
-export const processTransactionUpdate = (session, tran, tests, definedCol, validationObj, e, newValue, sheet) => {
+export const processTransactionUpdate = (
+  context,
+  session,
+  tran,
+  tests,
+  definedCol,
+  validationObj,
+  e,
+  newValue,
+  sheet
+) => {
   deleteExistingUpdate(session, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
     tests.isValid = true;
   }
   if (definedCol.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
-    recalculateCharge(session, sheet, tran, e);
+    recalculateCharge(context, session, sheet, tran, e);
   if (definedCol.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
     updateAssetNarrative(session, sheet, tran, e);
 };
 
-export const processTransUpdateEffects = (session, sheet, definedCol, range, tests) => {
+export const processTransUpdateEffects = (context, session, sheet, definedCol, range, tests) => {
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
-  !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
+  !definedCol.isQuasiMutable && highlightRanges(context, sheet.name, [range], color);
   if (
     session.currentView === "promptIFARCreation" ||
     session.currentView === "promptTFARCreation" ||
@@ -240,14 +250,20 @@ export const createNewTransactionUpdate = (session, tran, newValue, sheet, defin
 };
 
 export const cancelAutoFill = async (wsName, address) => {
-  const context = await getExcelContext();
-  const sheet = context.workbook.worksheets.getItem(wsName);
-  const range = sheet.getRange(address);
-  range.format.fill.clear();
-  await context.sync();
+  try {
+    await Excel.run(async (context) => {
+      //Appropriate
+      const sheet = context.workbook.worksheets.getItem(wsName);
+      const range = sheet.getRange(address);
+      range.format.fill.clear();
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
-export const reverseTransactionUpdates = async (session) => {
+export const reverseTransactionUpdates = async (context, session) => {
   const reversals = [];
   const updatedTrans = getUpdatedTransactions(session);
   updatedTrans.forEach((tran) => {
@@ -263,11 +279,11 @@ export const reverseTransactionUpdates = async (session) => {
       reversals.push(reversal);
     });
   });
-  await setManyWorksheetRangeValues(reversals);
+  await setManyWorksheetRangeValues(context, reversals);
   session.setEditButton("hide");
 };
 
-export const simulateAutoFillChanges = async (session, sheet, autoFillObj) => {
+export const simulateAutoFillChanges = async (context, session, sheet, autoFillObj) => {
   const wsName = sheet.name;
   const ranges = [];
   if (autoFillObj.autoFillCols) {
@@ -290,7 +306,7 @@ export const simulateAutoFillChanges = async (session, sheet, autoFillObj) => {
   });
   for (let i = 0; i < ranges.length; i++) {
     const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
-    const valueAfter = await getWorksheetRangeValues(wsName, valueAfterRange);
+    const valueAfter = await getWorksheetRangeValues(context, wsName, valueAfterRange);
     const event = {
       address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
       details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
@@ -301,42 +317,54 @@ export const simulateAutoFillChanges = async (session, sheet, autoFillObj) => {
 };
 
 export const resetToPreviousValues = async (wsName, sheet) => {
-  const context = await getExcelContext();
-  const ws = context.workbook.worksheets.getItem(wsName);
-  const usedRange = ws.getUsedRange();
-  usedRange.load("address");
-  await context.sync();
-  const fullAddress = usedRange.address;
-  const fullAddressSplit = fullAddress.split("!");
-  const addressObj = interpretExcelAddress(fullAddressSplit[1]);
-  const blankValues = [];
-  for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
-    const row = [];
-    for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
-      row.push("");
-    }
-    blankValues.push(row);
+  try {
+    await Excel.run(async (context) => {
+      //Appropriate
+      const ws = context.workbook.worksheets.getItem(wsName);
+      const usedRange = ws.getUsedRange();
+      usedRange.load("address");
+      await context.sync();
+      const fullAddress = usedRange.address;
+      const fullAddressSplit = fullAddress.split("!");
+      const addressObj = interpretExcelAddress(fullAddressSplit[1]);
+      const blankValues = [];
+      for (let rows = 0; rows < addressObj.lastRow - addressObj.firstRow + 1; rows++) {
+        const row = [];
+        for (let cols = 0; cols < addressObj.lastCol - addressObj.firstCol + 1; cols++) {
+          row.push("");
+        }
+        blankValues.push(row);
+      }
+      usedRange.values = blankValues;
+      const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
+      const wsNewRange = ws.getRange(newRange);
+      wsNewRange.values = sheet.usedRange;
+      sheet.dataCorrupted = false;
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
   }
-  usedRange.values = blankValues;
-  const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
-  const wsNewRange = ws.getRange(newRange);
-  wsNewRange.values = sheet.usedRange;
-  sheet.dataCorrupted = false;
-  await context.sync();
 };
 
 export const reinstateNumberFormats = async (sheet) => {
-  const context = await getExcelContext();
-  const ws = context.workbook.worksheets.getItem(sheet.name);
-  sheet.definedCols.forEach((col) => {
-    const colLetter = colNumToLetter(col.colNumber);
-    const range = ws.getRange(`${colLetter}:${colLetter}`);
-    range.numberFormat = col.format;
-  });
-  await context.sync();
+  try {
+    await Excel.run(async (context) => {
+      //Appropriate
+      const ws = context.workbook.worksheets.getItem(sheet.name);
+      sheet.definedCols.forEach((col) => {
+        const colLetter = colNumToLetter(col.colNumber);
+        const range = ws.getRange(`${colLetter}:${colLetter}`);
+        range.numberFormat = col.format;
+      });
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
-export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => {
+export const completeCerysCodeUpdate = async (context, session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let cerysNameCol = 0;
   sheet.definedCols.forEach((col) => {
@@ -348,11 +376,11 @@ export const completeCerysCodeUpdate = async (session, e, sheet, addressObj) => 
     const nomCodeObj = session.chart.find((code) => code.cerysCode === e.details.valueAfter);
     const colLetter = colNumToLetter(cerysNameCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-    setExcelRangeValue(sheet.name, range, nomCodeObj.cerysShortName);
+    setExcelRangeValue(context, sheet.name, range, nomCodeObj.cerysShortName);
   }
 };
 
-export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => {
+export const completeCerysNameUpdate = async (context, session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let clientCodeMappingCol = 0;
   let clientCodeNameMappingCol = 0;
@@ -369,16 +397,16 @@ export const completeCerysNameUpdate = async (session, e, sheet, addressObj) => 
     const colLetter = colNumToLetter(clientCodeMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
     session.options.allowEffects = 1;
-    setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+    setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
     if (clientCodeNameMappingCol > 0) {
       const colLetter = colNumToLetter(clientCodeNameMappingCol);
       const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-      setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCodeName);
+      setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCodeName);
     }
   }
 };
 
-export const completeClientCodeMappingUpdate = async (session, e, sheet, addressObj) => {
+export const completeClientCodeMappingUpdate = async (context, session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {
@@ -390,6 +418,6 @@ export const completeClientCodeMappingUpdate = async (session, e, sheet, address
     const nomCodeObj = session.clientChart.find((code) => code.clientCode === e.details.valueAfter);
     const colLetter = colNumToLetter(clientCodeNameMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-    setExcelRangeValue(sheet.name, range, nomCodeObj.clientCodeName);
+    setExcelRangeValue(context, sheet.name, range, nomCodeObj.clientCodeName);
   }
 };

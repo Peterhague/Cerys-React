@@ -1,15 +1,8 @@
-import { TransactionMap } from "../../classes/transaction-map";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  calculateDiffInDays,
-  convertExcelDate,
-  createEditableWs,
-  getExcelContext,
-  getTransRowNumber,
-} from "../helperFunctions";
+import { calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -332,35 +325,35 @@ export function calculateAmortChg(session, tran) {
   //console.log(excelAmortFormula);
 }
 
-export const recalculateAmortChg = async (session, sheet, tran, e) => {
-  const newValue = e.details.valueAfter;
-  const mongoDate = convertExcelDate(e.details.valueAfter);
-  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  const daysHeld = calculateDiffInDays(mongoDate, periodEnd) + 1;
-  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
-  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod));
-  let amortChgColNumber;
-  sheet.definedCols.forEach((col) => {
-    if (col.type === "amortCharge") amortChgColNumber = col.colNumber;
-  });
-    const colLetter = colNumToLetter(amortChgColNumber);
-    const rowNumber = getTransRowNumber(tran, sheet);
-  const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
-  session.options.allowAmortChgEdit = true;
-  await setExcelRangeValue(sheet.name, range, charge / 100);
-  session.IFATransactions.forEach((i) => {
-    if (i._id === tran._id) {
-      i.amortChg = charge;
-      i.transactionDateExcel = newValue;
-      i.subTransactions.forEach((subTran) => {
-        if (subTran.assetSubCatCode === 11 && subTran.assetSubCategory === "Amort chg") {
-          subTran.value = charge;
-        }
-      });
-    }
-  });
-  adjustAutoAmortJnls(session, tran, charge);
-};
+//export const recalculateAmortChg = async (session, sheet, tran, e) => {
+//  const newValue = e.details.valueAfter;
+//  const mongoDate = convertExcelDate(e.details.valueAfter);
+//  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
+//  const daysHeld = calculateDiffInDays(mongoDate, periodEnd) + 1;
+//  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
+//  const charge = Math.round(tran.value * (parseInt(tran.amortRate) / 100) * (daysHeld / daysInPeriod));
+//  let amortChgColNumber;
+//  sheet.definedCols.forEach((col) => {
+//    if (col.type === "amortCharge") amortChgColNumber = col.colNumber;
+//  });
+//  const colLetter = colNumToLetter(amortChgColNumber);
+//  const rowNumber = getTransRowNumber(tran, sheet);
+//  const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
+//  session.options.allowAmortChgEdit = true;
+//  await setExcelRangeValue(sheet.name, range, charge / 100);
+//  session.IFATransactions.forEach((i) => {
+//    if (i._id === tran._id) {
+//      i.amortChg = charge;
+//      i.transactionDateExcel = newValue;
+//      i.subTransactions.forEach((subTran) => {
+//        if (subTran.assetSubCatCode === 11 && subTran.assetSubCategory === "Amort chg") {
+//          subTran.value = charge;
+//        }
+//      });
+//    }
+//  });
+//  adjustAutoAmortJnls(session, tran, charge);
+//};
 
 export const updateIFANarrative = async (session, tran, e) => {
   session.IFATransactions.forEach((i) => {
@@ -453,8 +446,7 @@ export const adjustAutoAmortJnls = (session, tran, charge) => {
 //  return updatedTransToPost;
 //}
 
-export async function createIFAR(session) {
-  const context = await getExcelContext();
+export async function createIFAR(context, session) {
   const assignment = await postIFAtoDB(session);
   session["activeAssignment"] = assignment;
   createIFARWs(context, session);
@@ -504,8 +496,7 @@ export async function createIFARWs(context, session) {
   const ws = addWorksheet(context, wsName);
   const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
-  await context.sync();
-  populateAssetRegWs(context, IFAActiveCats, transToPost, ws, "IFA");
+  populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");
   ws.activate();
-  deleteManyWorksheets(["IFA Transactions"]);
+  deleteManyWorksheets(context, ["IFA Transactions"]);
 }

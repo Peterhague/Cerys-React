@@ -159,8 +159,7 @@ import { populateAssetRegWs } from "./asset-reg-population";
 //  }
 //}
 
-export async function createIPR(session) {
-  const context = await getExcelContext();
+export async function createIPR(context, session) {
   await postIPtoDB(session);
   createIPRWs(context, session);
 }
@@ -173,7 +172,7 @@ export async function postIPtoDB(session) {
   console.log(updatedAssignment);
 }
 
-export async function createIPRWs(context, session) {
+export function createIPRWs(context, session) {
   const transToPost = session["IPTransactions"];
   const activeCatsNames = [];
   const IPActiveCats = [];
@@ -193,8 +192,7 @@ export async function createIPRWs(context, session) {
   const ws = addWorksheet(context, wsName);
   const wsHeaders = worksheetHeader(session, "Investment property register");
   applyWorkhseetHeader(ws, wsHeaders);
-  await context.sync();
-  populateAssetRegWs(context, IPActiveCats, transToPost, ws, "IP");
+  populateAssetRegWs(IPActiveCats, transToPost, ws, "IP");
   ws.activate();
-  deleteManyWorksheets(["IP Transactions"]);
+  deleteManyWorksheets(context, ["IP Transactions"]);
 }

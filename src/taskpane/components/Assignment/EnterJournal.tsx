@@ -31,9 +31,15 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    const newTransactions = await processTransBatch(session);
-    checkNewTransForAssets(session, newTransactions);
+    try {
+      await Excel.run(async (context) => {
+        e.preventDefault();
+        const newTransactions = await processTransBatch(context, session);
+        checkNewTransForAssets(session, newTransactions);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleJournal = async (e) => {

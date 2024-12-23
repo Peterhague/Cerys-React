@@ -2,8 +2,7 @@ import { getExcelContext } from "../../../utils.ts/helperFunctions";
 import { addWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
-export async function wsPLAccount(session) {
-  const context = await getExcelContext();
+export async function wsPLAccount(context, session) {
   let ws = context.workbook.worksheets.getItemOrNullObject("Profit & loss account");
   ws.load("values");
   await context.sync();

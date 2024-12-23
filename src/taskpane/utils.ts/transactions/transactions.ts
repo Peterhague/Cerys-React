@@ -1,7 +1,5 @@
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
-import { wsBalanceSheet } from "../../workbook views/workbook-templates/financial-statements/balance-sheet";
-import { wsPLAccount } from "../../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
   calculateExcelDate,
@@ -10,12 +8,10 @@ import {
   getUpdatedTransactions,
   updateAssignmentFigures,
 } from "../helperFunctions";
-import { postTbToWbook, tbForPosting } from "../trial-balance/tb-maintenance";
 import { highlightEditableRanges } from "../worksheet";
-import { addBsClickListener, addPlClickListener, addTbClickListener } from "../worksheet-drilling/cerys-drilling";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
 
-export const processTransBatch = async (session) => {
+export const processTransBatch = async (context, session) => {
   const activeJournal = session["activeJournal"];
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
@@ -45,52 +41,51 @@ export const processTransBatch = async (session) => {
     tran.processedAsAsset = false;
   });
   session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-  const tbArray = tbForPosting(session["activeAssignment"]["tb"]);
-  await postTbToWbook(session, tbArray);
-  await wsPLAccount(session);
-  await wsBalanceSheet(session);
-  addTbClickListener(session);
-  addPlClickListener(session);
-  addBsClickListener(session["activeAssignment"]);
+  await updateAssignmentFigures(context, session);
+  await context.sync();
   return newTransactions;
 };
 
 export const submitTransactionUpdates = async (session) => {
-  let updatedTrans = getUpdatedTransactions(session);
-  recreateDBUpdatesInMem(session, updatedTrans);
-  const isTBUpdated = checkTransForRecoding(updatedTrans);
-  const { deletionObjs } = createDeletionObjects(session, updatedTrans);
-  const otherUpdated = !isTBUpdated;
-  if (otherUpdated) {
-    updatedTrans.forEach((tran) => {
-      tran.updates.forEach((update) => {
-        session.editableSheets.forEach((sheet) => {
-          if (update.worksheetName === sheet.name) {
-            highlightEditableRanges(sheet);
-          }
+  try {
+    await Excel.run(async (context) => {
+      //appropriate
+      let updatedTrans = getUpdatedTransactions(session);
+      recreateDBUpdatesInMem(session, updatedTrans);
+      const isTBUpdated = checkTransForRecoding(updatedTrans);
+      const { deletionObjs } = createDeletionObjects(session, updatedTrans);
+      updatedTrans.forEach((tran) => {
+        tran.updates.forEach((update) => {
+          session.editableSheets.forEach((sheet) => {
+            if (update.worksheetName === sheet.name) {
+              highlightEditableRanges(context, sheet);
+            }
+          });
         });
       });
+      deletionObjs.sort((a, b) => {
+        return b.rowNumber - a.rowNumber;
+      });
+      const updatedTransactionsDb = await processUpdateBatch(session);
+      await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
+      const promptSheetDeletion = renewEdSheetsTransRefs(session);
+      if (isTBUpdated) {
+        if (promptSheetDeletion) {
+          await updateAssignmentFigures(context, session);
+          session.options.updatedTransactions = updatedTransactionsDb;
+          session.handleView("deleteSheetPrompt");
+        } else {
+          await updateAssignmentFigures(context, session);
+          checkNewTransForAssets(session, updatedTransactionsDb);
+        }
+      } else {
+        callNextView(session);
+      }
+      session.setEditButton("hide");
     });
+  } catch (e) {
+    console.error(e);
   }
-  deletionObjs.sort((a, b) => {
-    return b.rowNumber - a.rowNumber;
-  });
-  const updatedTransactionsDb = await processUpdateBatch(session);
-  await updateEdSheetsTransValues(session); // pertains to all other sheets, ie effects of the update
-  const promptSheetDeletion = renewEdSheetsTransRefs(session);
-  if (isTBUpdated) {
-    if (promptSheetDeletion) {
-      await updateAssignmentFigures(session);
-      session.options.updatedTransactions = updatedTransactionsDb;
-      session.handleView("deleteSheetPrompt");
-    } else {
-      await updateAssignmentFigures(session);
-      checkNewTransForAssets(session, updatedTransactionsDb);
-    }
-  } else {
-    callNextView(session);
-  }
-  session.setEditButton("hide");
 };
 
 export const processUpdateBatch = async (session) => {

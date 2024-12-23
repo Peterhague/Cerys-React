@@ -29,16 +29,23 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e) => {
-    e.preventDefault();
-    if (!nominalCode) return;
-    const wsName = session["activeEditableCell"].wsName;
-    const range = session["activeEditableCell"].getRange();
-    if (session["activeEditableCell"].options.action === "clientCodeMapping") {
-      handleClientCodeMapping(session, nominalCode, nominalCodeName);
-    } else {
-      await setExcelRangeValue(wsName, range, nominalCode);
+    try {
+      await Excel.run(async (context) => {
+        e.preventDefault();
+        if (!nominalCode) return;
+        const wsName = session["activeEditableCell"].wsName;
+        const range = session["activeEditableCell"].getRange();
+        if (session["activeEditableCell"].options.action === "clientCodeMapping") {
+          handleClientCodeMapping(context, session, nominalCode, nominalCodeName);
+        } else {
+          await setExcelRangeValue(context, wsName, range, nominalCode);
+        }
+        session["activeEditableCell"] = createEditableCell(null, null, null);
+        await context.sync();
+      });
+    } catch (e) {
+      console.error(e);
     }
-    session["activeEditableCell"] = createEditableCell(null, null, null);
   };
 
   const handleGoBack = (e) => {

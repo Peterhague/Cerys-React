@@ -1,6 +1,6 @@
 import { colNumToLetter } from "../excel-col-conversion";
 
-export async function populateAssetRegWs(context, activeCats, transToPost, ws, regType) {
+export function populateAssetRegWs(activeCats, transToPost, ws, regType) {
   const { activeSubCats, subCatNames } = populateActiveSubCats(transToPost);
   const { regColIndex, registerColNames } = buildRegColNames(activeSubCats, regType);
   const { numberCols, numberColsAsLetter } = populateRegisterColsIndex(regColIndex, registerColNames.namesOne);
@@ -33,7 +33,6 @@ export async function populateAssetRegWs(context, activeCats, transToPost, ws, r
   const regBodyRange = ws.getRange(`A10:${numberColsAsLetter}${regBodyVals.length + 9}`);
   regBodyRange.values = regBodyVals;
   formatRegister(ws, underlineA, underlineAO, formatTotal, finalTotalRow, numberColsAsLetter, regColIndex);
-  await context.sync();
 }
 
 const columnsIndex = {

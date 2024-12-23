@@ -16,52 +16,57 @@ import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 
-export async function addTbClickListener(session) {
-  const context = await getExcelContext();
+export async function addTbClickListener(context, session) {
   const ws = context.workbook.worksheets.getItem("Trial Balance");
-  ws.onSingleClicked.add(async (e) => showNominalDetail(context, e, session));
+  ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
   session.activeAssignment.tbListenerAdded = true;
-
-  await context.sync();
 }
 
-export async function addPlClickListener(session) {
-  const context = await getExcelContext();
+export async function addPlClickListener(context, session) {
   const ws = context.workbook.worksheets.getItem("Profit & loss account");
-  ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session, context));
+  ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.activeAssignment.pLListenerAdded = true;
-
-  await context.sync();
 }
 
-export async function showNominalDetail(context, e, session) {
-  const address = e.address;
-  if (address[0] !== "A") return;
-  const ws = context.workbook.worksheets.getItem("Trial Balance");
-  const range = ws.getRange(`${address}:${address}`);
-  const values = range.load("values");
-  await context.sync();
-  const innerValues = values.values;
-  const code = innerValues[0][0];
-  const detail = getCerysNomDetail(session.activeAssignment.transactions, code);
-  cerysNomDetailView(context, detail, session);
+export async function showNominalDetail(e, session) {
+  try {
+    await Excel.run(async (context) => {//appropriate
+      const address = e.address;
+      if (address[0] !== "A") return;
+      const ws = context.workbook.worksheets.getItem("Trial Balance");
+      const range = ws.getRange(`${address}:${address}`);
+      const values = range.load("values");
+      await context.sync();
+      const innerValues = values.values;
+      const code = innerValues[0][0];
+      const detail = getCerysNomDetail(session.activeAssignment.transactions, code);
+      await cerysNomDetailView(context, detail, session);
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
-export async function showNominalDetailPL(e, session, context) {
-  console.log(e);
-  const address = e.address;
-  if (address[0] !== "A") return;
-  const ws = context.workbook.worksheets.getItem("Profit & loss account");
-  const range = ws.getRange(`${address}:${address}`);
-  const values = range.load("values");
-  await context.sync();
-  const innerValues = values.values;
-  const category = innerValues[0][0];
-  console.log(category);
-  const detail = getCerysNomDetailPL(category, session);
-  await context.sync();
-  console.log(detail);
-  cerysNomDetailViewPL(context, detail, session);
+export async function showNominalDetailPL(e, session) {
+  try {
+    await Excel.run(async (context) => {// appropriate
+      console.log(e);
+      const address = e.address;
+      if (address[0] !== "A") return;
+      const ws = context.workbook.worksheets.getItem("Profit & loss account");
+      const range = ws.getRange(`${address}:${address}`);
+      const values = range.load("values");
+      await context.sync();
+      const innerValues = values.values;
+      const category = innerValues[0][0];
+      const detail = getCerysNomDetailPL(category, session);
+      cerysNomDetailViewPL(context, detail, session);
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 async function cerysNomDetailView(context, detail, session) {
@@ -115,7 +120,6 @@ async function cerysNomDetailView(context, detail, session) {
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
-  await context.sync();
 }
 
 export const handleSingleClick = (session, e, wsName) => {
@@ -167,9 +171,7 @@ export const handleOtherCellClick = (session, e, addressObj, clientCodeCol, with
 };
 
 export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
-  addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
-  await context.sync();
-  const ws = getWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
+  const ws = addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
   const valuesToPost = [];
   detail.forEach((code) => {
     valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
@@ -188,16 +190,12 @@ export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
   range.values = valuesToPost;
   ws.activate();
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
-  await context.sync();
 }
 
-export async function addBsClickListener(activeAssignment) {
-  const context = await getExcelContext();
+export async function addBsClickListener(context, activeAssignment) {
   const ws = context.workbook.worksheets.getItem("Balance sheet");
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, e, activeAssignment));
   activeAssignment.bSListenerAdded = true;
-
-  await context.sync();
 }
 
 export async function showNominalDetailBS(context, e, activeAssignment) {
@@ -210,14 +208,12 @@ export async function showNominalDetailBS(context, e, activeAssignment) {
   const innerValues = values.values;
   const category = innerValues[0][0];
   console.log(activeAssignment);
-  const detail = await getCerysNomDetailBS(context, category, activeAssignment);
+  const detail = await getCerysNomDetailBS(category, activeAssignment);
   cerysNomDetailViewBS(context, detail, activeAssignment);
 }
 
 async function cerysNomDetailViewBS(context, detail, activeAssignment) {
-  addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
-  await context.sync();
-  const ws = getWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
+  const ws = addWorksheet(context, `${detail[0][0].cerysCategory} analysis`);
   const valuesToPost = [];
   detail.forEach((code) => {
     valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
@@ -243,5 +239,4 @@ async function cerysNomDetailViewBS(context, detail, activeAssignment) {
   range.values = valuesToPost;
   ws.activate();
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
-  await context.sync();
 }

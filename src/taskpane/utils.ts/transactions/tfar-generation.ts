@@ -1,7 +1,7 @@
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { calculateDiffInDays, convertExcelDate, getExcelContext } from "../helperFunctions";
+import { calculateDiffInDays } from "../helperFunctions";
 import { addWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -330,8 +330,7 @@ export const setAutoDepnNominals = (catNo) => {
 //  return updatedTransToPost;
 //}
 
-export async function createTFAR(session) {
-  const context = await getExcelContext();
+export async function createTFAR(context, session) {
   const assignment = await postTFAtoDB(session);
   session["activeAssignment"] = assignment;
   createTFARWs(context, session);
@@ -377,11 +376,10 @@ export async function createTFARWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "TFA Register";
-  const ws = addWorksheet(context, wsName);
+  const ws = await addWorksheet(context, wsName);
   const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
-  await context.sync();
-  populateAssetRegWs(context, TFAActiveCats, transToPost, ws, "TFA");
+  populateAssetRegWs(TFAActiveCats, transToPost, ws, "TFA");
   ws.activate();
-  deleteManyWorksheets(["TFA Transactions"]);
+  deleteManyWorksheets(context, ["TFA Transactions"]);
 }

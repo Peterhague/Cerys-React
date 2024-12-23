@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { clearNextViewButOne } from "../../../utils.ts/helperFunctions";
+import { accessExcelContext, clearNextViewButOne } from "../../../utils.ts/helperFunctions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
 import { checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
 
@@ -22,18 +22,30 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   clearNextViewButOne(session);
 
   const deleteSheets = async () => {
-    await deleteManyWorksheets(sheetsToDelete);
-    checkNewTransForAssets(session, session["options"].updatedTransactions);
-    session["options"].updatedTransactions = [];
+    try {
+      await Excel.run(async (context) => {
+        await deleteManyWorksheets(context, sheetsToDelete);
+        checkNewTransForAssets(session, session["options"].updatedTransactions);
+        session["options"].updatedTransactions = [];
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const deleteSingleWorksheet = async (sheet) => {
-    await deleteManyWorksheets([sheet]);
-    const newArr = [];
-    session["editableSheets"].forEach((ws) => {
-      if (ws.name !== sheet) newArr.push(ws);
-    });
-    setEmptySheets(newArr);
+    try {
+      await Excel.run(async (context) => {
+        await deleteManyWorksheets(context, [sheet]);
+        const newArr = [];
+        session["editableSheets"].forEach((ws) => {
+          if (ws.name !== sheet) newArr.push(ws);
+        });
+        setEmptySheets(newArr);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const skipDeleteSheets = () => {
@@ -61,7 +73,7 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
                 <tr key={index}>
                   <td>{sheet}</td>
                   <td>
-                    <button onClick={() => activateWorksheet(sheet)}>View</button>
+                    <button onClick={() => accessExcelContext(activateWorksheet, [sheet])}>View</button>
                     <button onClick={() => deleteSingleWorksheet(sheet)}>Delete</button>
                   </td>
                 </tr>

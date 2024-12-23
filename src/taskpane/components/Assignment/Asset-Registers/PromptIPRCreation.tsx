@@ -44,20 +44,33 @@ const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
   };
 
   const handleSubmit = async () => {
-    session["options"].IPRCreationSetting = "main";
-    await createIPR(session);
-    session["IPTransactions"] = [];
-    session["activeJournal"].clientTB = false;
-    session["activeJournal"].journal = false;
-    session["activeJournal"].journalType = "auto-journal";
-    await processTransBatch(session);
-    checkNewTransForAssets(session, session["newFATransactions"]);
+    try {
+      await Excel.run(async (context) => {
+        session["options"].IPRCreationSetting = "main";
+        await createIPR(context, session);
+        session["IPTransactions"] = [];
+        session["activeJournal"].clientTB = false;
+        session["activeJournal"].journal = false;
+        session["activeJournal"].journalType = "auto-journal";
+        await processTransBatch(context, session);
+        checkNewTransForAssets(session, session["newFATransactions"]);
+        await context.sync();
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   const handleReanalysis = async () => {
-    await processUpdateBatch(session);
-    await updateAssignmentFigures(session);
-    previewRelTrans(session, registerType, setView);
+    try {
+      await Excel.run(async (context) => {
+        await processUpdateBatch(session);
+        await updateAssignmentFigures(context, session);
+        previewRelTrans(session, registerType, setView);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   };
 
   return (
