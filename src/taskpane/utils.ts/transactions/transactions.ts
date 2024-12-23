@@ -50,7 +50,6 @@ export const processTransBatch = async (context, session) => {
 export const submitTransactionUpdates = async (session) => {
   try {
     await Excel.run(async (context) => {
-      console.log("updates submitted");
       let updatedTrans = getUpdatedTransactions(session);
       const isTBUpdated = checkTransForRecoding(updatedTrans);
       const { deletionObjs } = createDeletionObjects(session, updatedTrans);
@@ -71,12 +70,10 @@ export const submitTransactionUpdates = async (session) => {
       const promptSheetDeletion = renewEdSheetsTransRefs(session);
       if (isTBUpdated) {
         if (promptSheetDeletion) {
-          console.log("here");
           await updateAssignmentFigures(context, session);
           session.options.updatedTransactions = updatedTrans;
           session.handleView("deleteSheetPrompt");
         } else {
-          console.log("here");
           await updateAssignmentFigures(context, session);
           checkNewTransForAssets(session, updatedTrans);
         }

@@ -1,3 +1,4 @@
+import { Worksheet } from "../classes/worksheet";
 import { colNumToLetter } from "./excel-col-conversion";
 
 export function addWorksheet(context, sheetName) {
@@ -5,10 +6,16 @@ export function addWorksheet(context, sheetName) {
   return ws;
 }
 
-export const addWorksheets = (context, sheetNames) => {
+export const addWorksheets = async (context, session, sheetNames) => {
+  const worksheets = [];
+  session.options.ignoreWsAddition = sheetNames.length;
   sheetNames.forEach((i) => {
-    context.workbook.worksheets.add(i);
+    const wsObj = context.workbook.worksheets.add(i);
+    const obj = { name: i, wsObj };
+    worksheets.push(obj);
   });
+  await processWorksheetAdditions(context, session, worksheets);
+  return worksheets;
 };
 
 export function deleteWorksheet(context, sheetName) {
@@ -26,8 +33,8 @@ export const deleteManyWorksheets = (context, sheetsToDelete) => {
   });
 };
 
-export function getWorksheet(context, sheetName) {
-  return context.workbook.worksheets.getItem(sheetName);
+export function getWorksheet(context, sheetNameOrId) {
+  return context.workbook.worksheets.getItem(sheetNameOrId);
 }
 
 export function getWorksheetAndRange(context, sheetName, range) {
@@ -151,4 +158,10 @@ export const highlightRanges = (context, wsName, ranges, color) => {
     const wsRange = ws.getRange(range);
     wsRange.format.fill.color = color;
   });
+};
+
+export const processWorksheetAdditions = async (context, session, worksheets) => {
+  worksheets.forEach((sheet) => sheet.wsObj.load("id"));
+  await context.sync();
+  worksheets.forEach((sheet) => session.worksheets.push(new Worksheet(sheet.name, sheet.wsObj.id)));
 };

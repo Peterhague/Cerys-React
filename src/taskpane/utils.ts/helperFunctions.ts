@@ -1,3 +1,4 @@
+import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
@@ -6,6 +7,7 @@ import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import {
   getActiveWorksheetName,
+  getWorksheet,
   highlightEditableRanges,
   highlightRanges,
   unhighlightEditableRanges,
@@ -33,12 +35,13 @@ export const getExcelContext = async () => {
   }
 };
 
-export const registerWorksheetDeletionHandler = async (session) => {
+export const registerWorksheetsCollectionHandler = async (session) => {
   try {
     await Excel.run(async (context) => {
       // Appropriate
       let sheets = context.workbook.worksheets;
       sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
+      sheets.onAdded.add(async (e) => await handleSheetAddition(context, e, session));
       await context.sync();
     });
   } catch (e) {
@@ -47,11 +50,25 @@ export const registerWorksheetDeletionHandler = async (session) => {
 };
 
 export const handleSheetDeletion = (e, session) => {
+  console.log("sheet deleted");
+  console.log(e);
   const newEditableSheets = [];
   session.editableSheets.forEach((sheet) => {
     if (sheet.worksheetId !== e.worksheetId) newEditableSheets.push(sheet);
   });
   session.editableSheets = newEditableSheets;
+  session.worksheets = session.worksheets.filter((sheet) => sheet.id !== e.worksheetId).map((sheet) => sheet);
+};
+
+export const handleSheetAddition = async (context, e, session) => {
+  if (session.options.ignoreWsAddition > 0) {
+    session.options.ignoreWsAddition -= 1;
+    return;
+  }
+  const ws = getWorksheet(context, e.worksheetId);
+  ws.load(["name"]);
+  await context.sync();
+  session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 
 export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {

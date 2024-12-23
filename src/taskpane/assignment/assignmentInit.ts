@@ -6,7 +6,8 @@ export async function addPrimarySheets(session) {
   try {
     await Excel.run(async (context) => {
       //appropriate
-      addWorksheets(context, ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"]);
+      const worksheetNames = ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"];
+      await addWorksheets(context, session, worksheetNames);
       const arrForDATA = convertDataForWbook(session);
       await writeToDATA(context, arrForDATA);
       await context.sync();

@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { registerWorksheetDeletionHandler, resetEdSheetCallBack } from "../utils.ts/helperFunctions";
+import { registerWorksheetsCollectionHandler, resetEdSheetCallBack } from "../utils.ts/helperFunctions";
 import { createEditableCell } from "../classes/editable-cell";
 
 interface userLoginProps {
@@ -48,9 +48,11 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
       updatedTransactions: [],
       editableSheetCallback: resetEdSheetCallBack(),
       allowEffects: 0,
+      ignoreWsAddition: 0,
     };
     session["nextViewButOne"] = "";
-    await registerWorksheetDeletionHandler(session);
+    session["worksheets"] = [];
+    await registerWorksheetsCollectionHandler(session);
     handleView("userDashHome");
   };
   return (
