@@ -161,7 +161,7 @@ export async function wsPLAccount(context, session) {
   session.activeAssignment.profit = runningTotal * 100;
 }
 
-export async function wsPLAccountFormat(ws, values, calcSwitches) {
+export function wsPLAccountFormat(ws, values, calcSwitches) {
   const bold = [];
   const topBorder = [];
   const totalBorders = [];

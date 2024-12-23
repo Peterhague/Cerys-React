@@ -299,6 +299,16 @@ export const updateAssignmentFigures = async (context, session) => {
   addBsClickListener(context, session["activeAssignment"]);
 };
 
+export const updateAssignmentFiguresDummy = async (context, session) => {
+  const tbArray = tbForPosting(session.activeAssignment.tb);
+  await postTbToWbook(context, session, tbArray);
+  await wsPLAccount(context, session);
+  await wsBalanceSheet(context, session);
+  addTbClickListener(context, session);
+  addPlClickListener(context, session);
+  addBsClickListener(context, session["activeAssignment"]);
+};
+
 export const interpretEventAddress = (e) => {
   const address = e.address.includes(":") ? e.address : `${e.address}:${e.address}`;
   const addressSplit = address.split(":");

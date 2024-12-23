@@ -7,6 +7,7 @@ import {
   getTransRowNumber,
   getUpdatedTransactions,
   updateAssignmentFigures,
+  updateAssignmentFiguresDummy,
 } from "../helperFunctions";
 import { highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
@@ -49,9 +50,8 @@ export const processTransBatch = async (context, session) => {
 export const submitTransactionUpdates = async (session) => {
   try {
     await Excel.run(async (context) => {
-      //appropriate
+      console.log("updates submitted");
       let updatedTrans = getUpdatedTransactions(session);
-      recreateDBUpdatesInMem(session, updatedTrans);
       const isTBUpdated = checkTransForRecoding(updatedTrans);
       const { deletionObjs } = createDeletionObjects(session, updatedTrans);
       updatedTrans.forEach((tran) => {
@@ -63,25 +63,28 @@ export const submitTransactionUpdates = async (session) => {
           });
         });
       });
+      updatedTrans = await processUpdateBatch(session);
       deletionObjs.sort((a, b) => {
         return b.rowNumber - a.rowNumber;
       });
-      const updatedTransactionsDb = await processUpdateBatch(session);
       await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
       const promptSheetDeletion = renewEdSheetsTransRefs(session);
       if (isTBUpdated) {
         if (promptSheetDeletion) {
+          console.log("here");
           await updateAssignmentFigures(context, session);
-          session.options.updatedTransactions = updatedTransactionsDb;
+          session.options.updatedTransactions = updatedTrans;
           session.handleView("deleteSheetPrompt");
         } else {
+          console.log("here");
           await updateAssignmentFigures(context, session);
-          checkNewTransForAssets(session, updatedTransactionsDb);
+          checkNewTransForAssets(session, updatedTrans);
         }
       } else {
         callNextView(session);
       }
       session.setEditButton("hide");
+      await context.sync();
     });
   } catch (e) {
     console.error(e);

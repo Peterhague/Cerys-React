@@ -127,6 +127,7 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
 
 // operates on only the editable sheets that didn't call the change
 export const updateEdSheetsTransValues = async (context, session) => {
+  console.log(session);
   const sheetUpdateObjects = [];
   const deletionObjs = [];
   session.editableSheets.forEach((edSheet) => {
@@ -152,6 +153,7 @@ export const updateEdSheetsTransValues = async (context, session) => {
     });
     sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
   });
+  console.log(sheetUpdateObjects);
   sheetUpdateObjects.forEach((obj) => {
     setManyExcelRangeValues(context, obj.wsName, obj.updates);
   });

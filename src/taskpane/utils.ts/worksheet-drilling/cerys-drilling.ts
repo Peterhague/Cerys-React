@@ -16,13 +16,13 @@ import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../
 import { addWorksheet, getWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 
-export async function addTbClickListener(context, session) {
+export function addTbClickListener(context, session) {
   const ws = context.workbook.worksheets.getItem("Trial Balance");
   ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
   session.activeAssignment.tbListenerAdded = true;
 }
 
-export async function addPlClickListener(context, session) {
+export function addPlClickListener(context, session) {
   const ws = context.workbook.worksheets.getItem("Profit & loss account");
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.activeAssignment.pLListenerAdded = true;
@@ -192,7 +192,7 @@ export async function cerysNomDetailViewPL(context, detail, activeAssignment) {
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
 }
 
-export async function addBsClickListener(context, activeAssignment) {
+export function addBsClickListener(context, activeAssignment) {
   const ws = context.workbook.worksheets.getItem("Balance sheet");
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, e, activeAssignment));
   activeAssignment.bSListenerAdded = true;
