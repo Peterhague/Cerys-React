@@ -20,7 +20,6 @@ export const addWorksheets = async (context, session, sheetNames) => {
 
 export const addOneWorksheet = async (context, session, sheetName) => {
   session.options.ignoreWsAddition += 1;
-  console.log(session.options.ignoreWsAddition);
   const wsObj = context.workbook.worksheets.add(sheetName);
   const obj = { name: sheetName, wsObj };
   await processWorksheetAdditions(context, session, [obj]);

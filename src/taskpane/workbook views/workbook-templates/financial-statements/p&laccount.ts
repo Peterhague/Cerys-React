@@ -2,7 +2,8 @@ import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsPLAccount(context, session) {
-  const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
+    const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
+    ws.getUsedRange().clear();
   const headerValues = worksheetHeader(session, "Profit & loss account");
   applyWorkhseetHeader(ws, headerValues);
   const values = [];

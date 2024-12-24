@@ -17,8 +17,7 @@ export function tbForPosting(tb) {
   return tbArray;
 }
 export async function postTbToWbook(context, session, tbExcel) {
-    const ws = await getOrAddWorksheet(context, session, "Trial Balance");
-    console.log(ws);
+  const ws = await getOrAddWorksheet(context, session, "Trial Balance");
   const headerValues = worksheetHeader(session, "Trial Balance");
   applyWorkhseetHeader(ws, headerValues);
   const headersRange = ws.getRange("A9:C10");

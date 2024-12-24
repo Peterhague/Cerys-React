@@ -38,7 +38,6 @@ export const getExcelContext = async () => {
 export const registerWorksheetsCollectionHandler = async (session) => {
   try {
     await Excel.run(async (context) => {
-      // Appropriate
       let sheets = context.workbook.worksheets;
       sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
       sheets.onAdded.add(async (e) => await handleSheetAddition(context, e, session));
@@ -50,21 +49,17 @@ export const registerWorksheetsCollectionHandler = async (session) => {
 };
 
 export const handleSheetDeletion = (e, session) => {
-  const newEditableSheets = [];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.worksheetId !== e.worksheetId) newEditableSheets.push(sheet);
-  });
-  session.editableSheets = newEditableSheets;
+  session.editableSheets = session.editableSheets
+    .filter((sheet) => sheet.worksheetId !== e.worksheetId)
+    .map((sheet) => sheet);
   session.worksheets = session.worksheets.filter((sheet) => sheet.id !== e.worksheetId).map((sheet) => sheet);
 };
 
 export const handleSheetAddition = async (context, e, session) => {
-  console.log(session.options.ignoreWsAddition);
   if (session.options.ignoreWsAddition > 0) {
     session.options.ignoreWsAddition -= 1;
     return;
   }
-  console.log(session.options.ignoreWsAddition);
   const ws = getWorksheet(context, e.worksheetId);
   ws.load("name");
   await context.sync();
@@ -90,19 +85,6 @@ export async function updateAssignmentDb(
   const updatedCustAndAss = await updatedCustAndAssDb.json();
   return updatedCustAndAss;
 }
-
-//export function updateNomCode(e: { details: { valueAfter: any } }, transToPost: any[], eRowNumber: number) {
-//  const updatedTransToPost = [];
-//  transToPost.forEach((i: { rowNumber: any; cerysCode: any }) => {
-//    if (i.rowNumber === eRowNumber) {
-//      i.cerysCode = e.details.valueAfter;
-//      updatedTransToPost.push(i);
-//    } else {
-//      updatedTransToPost.push(i);
-//    }
-//  });
-//  return updatedTransToPost;
-//}
 
 export const resetActiveJournal = (session) => {
   const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
