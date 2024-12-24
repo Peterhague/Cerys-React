@@ -20,12 +20,12 @@ import {
 } from "./worksheet-drilling/cerys-drilling";
 import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-manipulation";
 import { handleWorksheetEdit } from "./worksheet-editing/ws-editing";
+/* global Excel */
 
 export const getExcelContext = async () => {
   console.log("getting context");
   try {
     const ctx = await Excel.run(async (context) => {
-      // Appropriate
       return context;
     });
     return ctx;
@@ -482,8 +482,6 @@ export const getDefinedCol = (sheet, addressCol) => {
 };
 
 export const getTransRowNumber = (transaction, sheet) => {
-  console.log(sheet);
-  console.log(transaction);
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
   return map.rowNumber;
 };

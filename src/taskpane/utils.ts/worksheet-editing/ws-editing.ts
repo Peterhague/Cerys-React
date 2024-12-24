@@ -11,6 +11,7 @@ import {
   handleRangeEdit,
   resetToPreviousValues,
 } from "./ws-range-editing";
+/* global Excel */
 
 export const handleWorksheetSelection = async (session, e, wsName) => {
   const addressObj = interpretEventAddress(e);
@@ -125,21 +126,57 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
   }
 };
 
-// operates on only the editable sheets that didn't call the change
+// export const updateEdSheetsTransValues = async (context, session) => {
+//   console.log(session);
+//   const sheetUpdateObjects = [];
+//   const deletionObjs = [];
+//   session.editableSheets.forEach((edSheet) => {
+//     const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
+//     edSheet.transactions.forEach((edShtTran) => {
+//       const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
+//       console.log(edSheet.filterObj.target);
+//       console.log(edShtTran);
+//       console.log(edShtTran[edSheet.filterObj.target]);
+//       console.log(edSheet.filterObj.value);
+//       if (edShtTran[edSheet.filterObj.target] !== edSheet.filterObj.value) {
+//         deletionObjs.push(createDeletionObject(edShtTran, edSheet));
+//       } else {
+//         edShtTran.updates.forEach((update) => {
+//           if (update.worksheetId !== edSheet.worksheetId) {
+//             const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+//             const col = colNumToLetter(definedCol.colNumber);
+//             const row = map.rowNumber;
+//             const sheetUpdate: { address: string; value?: string | number } = {
+//               address: `${col}${row}:${col}${row}`,
+//               value: update.value,
+//             };
+//             sheetUpdateObj.updates.push(sheetUpdate);
+//           }
+//         });
+//       }
+//     });
+//     sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
+//   });
+//   console.log(sheetUpdateObjects);
+//   sheetUpdateObjects.forEach((obj) => {
+//     setManyExcelRangeValues(context, obj.wsName, obj.updates);
+//   });
+//   console.log(deletionObjs);
+//   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(context, deletionObjs);
+// };
+
 export const updateEdSheetsTransValues = async (context, session) => {
   console.log(session);
   const sheetUpdateObjects = [];
   const deletionObjs = [];
-  session.editableSheets.forEach((edSheet) => {
-    const sheetUpdateObj = { wsName: edSheet.name, updates: [] };
-    edSheet.transactions.forEach((edShtTran) => {
-      const map = edSheet.sheetMapping.find((map) => map.transactionId === edShtTran._id);
-      if (edShtTran[edSheet.filterObj.target] !== edSheet.filterObj.value) {
-        deletionObjs.push(createDeletionObject(edShtTran, edSheet));
-      } else {
-        edShtTran.updates.forEach((update) => {
-          if (update.worksheetId !== edSheet.worksheetId) {
-            const definedCol = edSheet.definedCols.find((col) => col.type === update.type);
+  session.editableSheets.forEach((sheet) => {
+    sheet.sheetMapping.forEach((map) => {
+      const transaction = sheet.transactions.find((tran) => tran._id === map.transactionId);
+      if (transaction) {
+        const sheetUpdateObj = { wsName: sheet.name, updates: [] };
+        transaction.updates.forEach((update) => {
+          if (update.worksheetId !== sheet.worksheetId) {
+            const definedCol = sheet.definedCols.find((col) => col.type === update.type);
             const col = colNumToLetter(definedCol.colNumber);
             const row = map.rowNumber;
             const sheetUpdate: { address: string; value?: string | number } = {
@@ -148,15 +185,21 @@ export const updateEdSheetsTransValues = async (context, session) => {
             };
             sheetUpdateObj.updates.push(sheetUpdate);
           }
+          sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
         });
+      } else {
+        deletionObjs.push(createDeletionObject(map, sheet));
       }
     });
-    sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
+    sheet.sheetMapping = sheet.transactions.map((tran) =>
+      sheet.sheetMapping.find((mapping) => mapping.transactionId === tran._id)
+    );
   });
   console.log(sheetUpdateObjects);
   sheetUpdateObjects.forEach((obj) => {
     setManyExcelRangeValues(context, obj.wsName, obj.updates);
   });
+  console.log(deletionObjs);
   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(context, deletionObjs);
 };
 

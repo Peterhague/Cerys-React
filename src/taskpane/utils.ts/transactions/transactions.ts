@@ -1,15 +1,10 @@
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  calculateExcelDate,
-  callNextView,
-  getTransRowNumber,
-  getUpdatedTransactions,
-  updateAssignmentFigures,
-} from "../helperFunctions";
+import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
 import { highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
+/* global Excel */
 
 export const processTransBatch = async (context, session) => {
   const activeJournal = session["activeJournal"];
@@ -50,7 +45,7 @@ export const submitTransactionUpdates = async (session) => {
     await Excel.run(async (context) => {
       let updatedTrans = getUpdatedTransactions(session);
       const isTBUpdated = checkTransForRecoding(updatedTrans);
-      const { deletionObjs } = createDeletionObjects(session, updatedTrans);
+      //const { deletionObjs } = createDeletionObjects(session, updatedTrans);
       updatedTrans.forEach((tran) => {
         tran.updates.forEach((update) => {
           session.editableSheets.forEach((sheet) => {
@@ -60,12 +55,18 @@ export const submitTransactionUpdates = async (session) => {
           });
         });
       });
-      updatedTrans = await processUpdateBatch(session);
-      deletionObjs.sort((a, b) => {
-        return b.rowNumber - a.rowNumber;
+      const updatedTransDb = await processUpdateBatch(session);
+      updatedTransDb.forEach((tran) => {
+        const oldTran = updatedTrans.find((oldTran) => oldTran._id === tran._id);
+        tran.updates = oldTran.updates;
       });
-      await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
+      updatedTrans = updatedTransDb;
+      // deletionObjs.sort((a, b) => {
+      //   return b.rowNumber - a.rowNumber;
+      // });
       const promptSheetDeletion = renewEdSheetsTransRefs(session);
+      await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
+      updatedTrans.forEach((tran) => (tran.updates = []));
       if (isTBUpdated) {
         if (promptSheetDeletion) {
           await updateAssignmentFigures(context, session);
@@ -259,72 +260,29 @@ export const checkTransForRecoding = (updatedTrans) => {
   return isTBUpdated;
 };
 
-export const createDeletionObject = (tran, sheet) => {
-  const rowNumber = getTransRowNumber(tran, sheet);
+export const createDeletionObject = (map, sheet) => {
+  const rowNumber = map.rowNumber;
   const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
   const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
   const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
   return { wsName: sheet.name, range: deletionRange, rowNumber };
 };
 
-export const createDeletionObjects = (session, updatedTrans) => {
-  const deletionObjs = [];
-  const otherTrans = [];
-  updatedTrans.forEach((tran) => {
-    session.editableSheets.forEach((sheet) => {
-      if (tran[sheet.filterObj.target] !== sheet.filterObj.value) {
-        const rowNumber = getTransRowNumber(tran, sheet);
-        const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
-        const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
-        const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
-        const deletionObj = { wsName: sheet.name, range: deletionRange, rowNumber };
-        deletionObjs.push(deletionObj);
-        sheet.editButtonStatus = "hide";
-      } else otherTrans.push(tran);
-    });
-  });
-  return { deletionObjs, otherTrans };
-};
-
-export const recreateDBUpdatesInMem = (session, updatedTrans) => {
-  updatedTrans.forEach((tran) => {
-    let cerysCodeUpdated = false;
-    let cerysCodeObject;
-    tran.updates.forEach((update) => {
-      if (update.type === "date") {
-        tran.transactionDate = update.mongoDate;
-        tran.transactionDateExcel = update.value;
-      } else if (update.type === "cerysCode") {
-        tran.cerysCode = update.value;
-        cerysCodeObject = update.cerysCodeObject;
-        cerysCodeUpdated = true;
-      } else if (update.type === "cerysNarrative") {
-        tran.narrative = update.value;
-      } else if (update.type === "clientCodeMapping") {
-        tran.clientMappingOverride = true;
-        const clientNomCodeObj = session.clientChart.find((code) => code.clientCode === update.value);
-        tran.customClientMapping = {
-          clientSoftware: session.activeAssignment.clientSoftware,
-          clientCode: clientNomCodeObj.clientCode,
-          clientCodeName: clientNomCodeObj.clientCodeName,
-        };
-      }
-    });
-    if (cerysCodeUpdated) {
-      tran.cerysCategory = cerysCodeObject.cerysCategory;
-      tran.cerysSubCategory = cerysCodeObject.cerysSubCategory;
-      tran.assetSubCategory = cerysCodeObject.assetSubCategory;
-      tran.assetSubCatCode = cerysCodeObject.assetSubCatCode;
-      tran.regColNameOne = cerysCodeObject.regColNameOne;
-      tran.regColNameTwo = cerysCodeObject.regColNameTwo;
-      tran.assetCategory = cerysCodeObject.assetCategory;
-      tran.assetCategoryNo = cerysCodeObject.assetCategoryNo;
-      tran.assetCodeType = cerysCodeObject.assetCodeType;
-      tran.cerysName = cerysCodeObject.cerysName;
-      tran.cerysShortName = cerysCodeObject.cerysShortName;
-      tran.cerysExcelName = cerysCodeObject.cerysExcelName;
-      tran.defaultSign = cerysCodeObject.defaultSign;
-      tran.clientAdj = cerysCodeObject.clientAdj;
-    }
-  });
-};
+// export const createDeletionObjects = (session, updatedTrans) => {
+//   const deletionObjs = [];
+//   const otherTrans = [];
+//   updatedTrans.forEach((tran) => {
+//     session.editableSheets.forEach((sheet) => {
+//       if (tran[sheet.filterObj.target] !== sheet.filterObj.value) {
+//         const rowNumber = getTransRowNumber(tran, sheet);
+//         const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
+//         const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
+//         const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
+//         const deletionObj = { wsName: sheet.name, range: deletionRange, rowNumber };
+//         deletionObjs.push(deletionObj);
+//         sheet.editButtonStatus = "hide";
+//       } else otherTrans.push(tran);
+//     });
+//   });
+//   return { deletionObjs, otherTrans };
+// };

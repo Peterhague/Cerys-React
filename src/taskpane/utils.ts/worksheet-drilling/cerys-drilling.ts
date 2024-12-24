@@ -2,7 +2,6 @@ import { createDefinedCols } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
 import { TransactionMap } from "../../classes/transaction-map";
 import {
-  getExcelContext,
   createEditableWs,
   handleEditButtonClick,
   interpretEventAddress,
@@ -13,8 +12,9 @@ import {
   getUpdatedNarrative,
 } from "../helperFunctions";
 import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
-import { addWorksheet, getWorksheet } from "../worksheet";
+import { addWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
+/* global Excel */
 
 export function addTbClickListener(context, session) {
   const ws = context.workbook.worksheets.getItem("Trial Balance");
@@ -30,7 +30,7 @@ export function addPlClickListener(context, session) {
 
 export async function showNominalDetail(e, session) {
   try {
-    await Excel.run(async (context) => {//appropriate
+    await Excel.run(async (context) => {
       const address = e.address;
       if (address[0] !== "A") return;
       const ws = context.workbook.worksheets.getItem("Trial Balance");
@@ -50,7 +50,7 @@ export async function showNominalDetail(e, session) {
 
 export async function showNominalDetailPL(e, session) {
   try {
-    await Excel.run(async (context) => {// appropriate
+    await Excel.run(async (context) => {
       console.log(e);
       const address = e.address;
       if (address[0] !== "A") return;
