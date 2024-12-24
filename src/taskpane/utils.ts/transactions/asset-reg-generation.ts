@@ -12,7 +12,7 @@ import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editin
 import _ from "lodash";
 /*global Excel */
 
-export const identifyLikelyAdditions = (session, registerType, setView) => {
+export const identifyLikelyAdditions = async (session, registerType, setView) => {
   console.log("next step working");
   const bFTransLikelyAddns = [];
   //session.activeAssignment.transactions.forEach((tran) => {
@@ -41,7 +41,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
   });
   console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
-    createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
+    await createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
     setView("confirmBFAreAddns");
     createTransactionUpdates(session, bFTransLikelyAddns);
   } else {

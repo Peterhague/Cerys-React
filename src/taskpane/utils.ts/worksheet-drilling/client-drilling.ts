@@ -30,7 +30,7 @@ async function clientNomDetailView(context, session, detail) {
   const ws = await addOneWorksheet(context, session, `${detail[0].cerysCode} analysis`);
   const headerRange = ws.getRange("A1:D2");
   const headers = [
-    ["Transaction", "Transaction", "Detail", "�"],
+    ["Transaction", "Transaction", "Detail", "£"],
     ["Number", "Date", "", ""],
   ];
   headerRange.values = headers;

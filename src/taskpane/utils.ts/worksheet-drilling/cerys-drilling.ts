@@ -61,7 +61,7 @@ export async function showNominalDetailPL(e, session) {
       const innerValues = values.values;
       const category = innerValues[0][0];
       const detail = getCerysNomDetailPL(category, session);
-      cerysNomDetailViewPL(context, session, detail);
+      await cerysNomDetailViewPL(context, session, detail);
       await context.sync();
     });
   } catch (e) {
@@ -236,5 +236,5 @@ async function cerysNomDetailViewBS(context, session, detail) {
   const range = ws.getRange(`A1:D${valuesToPost.length}`);
   range.values = valuesToPost;
   ws.activate();
-  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, activeAssignment));
+  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
 }
