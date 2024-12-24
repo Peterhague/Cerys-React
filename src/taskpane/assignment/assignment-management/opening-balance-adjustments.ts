@@ -11,8 +11,9 @@ import {
   handleEditButtonClick,
 } from "../../utils.ts/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils.ts/messages";
-import { addWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
+import { addOneWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
+/* global Excel */
 
 export const getOBARelTrans = (transactions) => {
   return transactions.filter((tran) => tran.clientAdj);
@@ -29,9 +30,7 @@ export async function oBARelevantTransView(session) {
         if (tran.updates.length > 0) sheetInMidEdit = true;
       });
       const wsName = "OBA relevant transactions";
-      const ws = addWorksheet(context, wsName);
-      ws.load(["id", "name"]);
-      await context.sync();
+      const ws = await addOneWorksheet(context, session, wsName);
       const range = ws.getRange(`A1:I${relTrans.length + 2}`);
       const valuesToPost = [
         [

@@ -133,7 +133,8 @@ export function getCerysNomDetailPL(category, session) {
   return selectionArray;
 }
 
-export async function getCerysNomDetailBS(category, activeAssignment) {
+export async function getCerysNomDetailBS(category, session) {
+  const activeAssignment = session.activeAssignment;
   let cat = category;
   if (category === "Cash at bank and in hand") {
     cat = "Cash";

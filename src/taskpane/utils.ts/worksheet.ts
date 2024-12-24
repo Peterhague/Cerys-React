@@ -1,10 +1,12 @@
 import { Worksheet } from "../classes/worksheet";
 import { colNumToLetter } from "./excel-col-conversion";
+/* global Excel */
 
-export function addWorksheet(context, sheetName) {
-  const ws = context.workbook.worksheets.add(sheetName);
-  return ws;
-}
+// export function addWorksheet(context, sheetName) {
+//   console.trace();
+//   const ws = context.workbook.worksheets.add(sheetName);
+//   return ws;
+// }
 
 export const addWorksheets = async (context, session, sheetNames) => {
   const worksheets = [];
@@ -183,5 +185,5 @@ export const getOrAddWorksheet = async (context, session, wsName) => {
   const proxyWs = getProxyWorksheet(session, wsName);
   console.log(proxyWs);
   const worksheets = context.workbook.worksheets;
-  return proxyWs ? worksheets.getItem(wsName) : addOneWorksheet(context, session, wsName);
+  return proxyWs ? worksheets.getItem(wsName) : await addOneWorksheet(context, session, wsName);
 };

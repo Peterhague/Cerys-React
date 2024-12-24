@@ -2,12 +2,12 @@ import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsPLAccount(context, session) {
-    const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
-    ws.getUsedRange().clear();
+  const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
+  ws.getUsedRange().clear();
   const headerValues = worksheetHeader(session, "Profit & loss account");
   applyWorkhseetHeader(ws, headerValues);
   const values = [];
-  values.push(["", "", "", "", "", "£"]);
+  values.push(["", "", "", "", "", "ï¿½"]);
   values.push(["", "", "", "", "", ""]);
   const currencyRange = ws.getRange("F9:F9");
   currencyRange.format.horizontalAlignment = "Center";

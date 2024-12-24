@@ -1,12 +1,10 @@
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { colNumToLetter } from "../excel-col-conversion";
-import { calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
-import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
+import { calculateDiffInDays } from "../helperFunctions";
+import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
-import _ from "lodash";
 
 //export function createRelTransIFA(session) {
 //  const relevantTrans = [];
@@ -493,7 +491,7 @@ export async function createIFARWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "IFA Register";
-  const ws = addWorksheet(context, wsName);
+  const ws = await addOneWorksheet(context, session, wsName);
   const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");

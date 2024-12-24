@@ -1,8 +1,7 @@
 import { postIP } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { getExcelContext } from "../helperFunctions";
-import { addWorksheet, deleteManyWorksheets } from "../worksheet";
+import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 
 //export function createRelTransIP(session) {
@@ -172,7 +171,7 @@ export async function postIPtoDB(session) {
   console.log(updatedAssignment);
 }
 
-export function createIPRWs(context, session) {
+export async function createIPRWs(context, session) {
   const transToPost = session["IPTransactions"];
   const activeCatsNames = [];
   const IPActiveCats = [];
@@ -189,7 +188,7 @@ export function createIPRWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "IP Register";
-  const ws = addWorksheet(context, wsName);
+  const ws = await addOneWorksheet(context, session, wsName);
   const wsHeaders = worksheetHeader(session, "Investment property register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(IPActiveCats, transToPost, ws, "IP");

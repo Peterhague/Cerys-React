@@ -2,7 +2,7 @@ import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../..
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { calculateDiffInDays } from "../helperFunctions";
-import { addWorksheet, deleteManyWorksheets } from "../worksheet";
+import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 
@@ -376,7 +376,7 @@ export async function createTFARWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "TFA Register";
-  const ws = await addWorksheet(context, wsName);
+  const ws = await addOneWorksheet(context, session, wsName);
   const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(TFAActiveCats, transToPost, ws, "TFA");

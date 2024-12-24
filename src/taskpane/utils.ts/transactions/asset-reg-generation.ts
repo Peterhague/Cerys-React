@@ -1,19 +1,16 @@
 import { TransactionMap } from "../../classes/transaction-map";
-import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
   accessExcelContext,
   calculateDiffInDays,
   convertExcelDate,
   createEditableWs,
-  getExcelContext,
   getTransRowNumber,
 } from "../helperFunctions";
-import { addWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
+import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
-import { populateAssetRegWs } from "./asset-reg-population";
 import _ from "lodash";
-import { processTransBatch } from "./transactions";
+/*global Excel */
 
 export const identifyLikelyAdditions = (session, registerType, setView) => {
   console.log("next step working");
@@ -44,7 +41,7 @@ export const identifyLikelyAdditions = (session, registerType, setView) => {
   });
   console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
-    createLikelyAdditionsSumm(bFTransLikelyAddns, registerType);
+    createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
     setView("confirmBFAreAddns");
     createTransactionUpdates(session, bFTransLikelyAddns);
   } else {
@@ -146,9 +143,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
       // appropriate
       const sheetMapping = [];
       const name = `${registerType} Transactions`;
-      const ws = addWorksheet(context, name);
-      ws.load(["id", "name"]);
-      await context.sync();
+      const ws = await addOneWorksheet(context, session, name);
       let activeClient;
       session.customer.clients.forEach((client) => {
         if (client._id === session.activeAssignment.clientId) {
@@ -430,12 +425,12 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   }
 }
 
-export async function createLikelyAdditionsSumm(relevantTrans, registerType) {
+export async function createLikelyAdditionsSumm(session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
       // appropriate
       const name = `${registerType} Possible Additions`;
-      const ws = addWorksheet(context, name);
+      const ws = await addOneWorksheet(context, session, name);
       const valuesToPost = [
         ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
         ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
