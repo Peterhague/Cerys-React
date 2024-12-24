@@ -295,7 +295,7 @@ export const updateAssignmentFigures = async (context, session) => {
   await wsBalanceSheet(context, session);
   addTbClickListener(context, session);
   addPlClickListener(context, session);
-  addBsClickListener(context, session["activeAssignment"]);
+  addBsClickListener(context, session);
 };
 
 export const interpretEventAddress = (e) => {
