@@ -30,7 +30,7 @@ export async function oBARelevantTransView(session) {
         if (tran.updates.length > 0) sheetInMidEdit = true;
       });
       const wsName = "OBA relevant transactions";
-      const ws = await addOneWorksheet(context, session, wsName);
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
       const range = ws.getRange(`A1:I${relTrans.length + 2}`);
       const valuesToPost = [
         [

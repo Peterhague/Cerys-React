@@ -1,13 +1,14 @@
+import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
 import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsPLAccount(context, session) {
-  const ws = await getOrAddWorksheet(context, session, "Profit & loss account");
+  const { ws } = await getOrAddWorksheet(context, session, PL_ACCOUNT);
   ws.getUsedRange().clear();
-  const headerValues = worksheetHeader(session, "Profit & loss account");
+  const headerValues = worksheetHeader(session, PL_ACCOUNT.name);
   applyWorkhseetHeader(ws, headerValues);
   const values = [];
-  values.push(["", "", "", "", "", "�"]);
+  values.push(["", "", "", "", "", "£"]);
   values.push(["", "", "", "", "", ""]);
   const currencyRange = ws.getRange("F9:F9");
   currencyRange.format.horizontalAlignment = "Center";

@@ -376,7 +376,7 @@ export async function createTFARWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "TFA Register";
-  const ws = await addOneWorksheet(context, session, wsName);
+  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
   const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(TFAActiveCats, transToPost, ws, "TFA");

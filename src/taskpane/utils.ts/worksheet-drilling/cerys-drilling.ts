@@ -1,6 +1,7 @@
 import { createDefinedCols } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
 import { TransactionMap } from "../../classes/transaction-map";
+import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import {
   createEditableWs,
   handleEditButtonClick,
@@ -17,13 +18,13 @@ import { showClientNominalDetail } from "./client-drilling";
 /* global Excel */
 
 export function addTbClickListener(context, session) {
-  const ws = context.workbook.worksheets.getItem("Trial Balance");
+  const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
   ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
   session.activeAssignment.tbListenerAdded = true;
 }
 
 export function addPlClickListener(context, session) {
-  const ws = context.workbook.worksheets.getItem("Profit & loss account");
+  const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.activeAssignment.pLListenerAdded = true;
 }
@@ -33,7 +34,7 @@ export async function showNominalDetail(e, session) {
     await Excel.run(async (context) => {
       const address = e.address;
       if (address[0] !== "A") return;
-      const ws = context.workbook.worksheets.getItem("Trial Balance");
+      const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
       const range = ws.getRange(`${address}:${address}`);
       const values = range.load("values");
       await context.sync();
@@ -54,7 +55,7 @@ export async function showNominalDetailPL(e, session) {
       console.log(e);
       const address = e.address;
       if (address[0] !== "A") return;
-      const ws = context.workbook.worksheets.getItem("Profit & loss account");
+      const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
       const range = ws.getRange(`${address}:${address}`);
       const values = range.load("values");
       await context.sync();
@@ -75,7 +76,7 @@ async function cerysNomDetailView(context, detail, session) {
     if (tran.updates.length > 0) sheetInMidEdit = true;
   });
   const wsName = `${detail[0].cerysExcelName} analysis`;
-  const ws = await addOneWorksheet(context, session, wsName);
+  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
   const range = ws.getRange(`A1:G${detail.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
@@ -169,7 +170,10 @@ export const handleOtherCellClick = (session, e, addressObj, clientCodeCol, with
 };
 
 export async function cerysNomDetailViewPL(context, session, detail) {
-  const ws = await addOneWorksheet(context, session, `${detail[0][0].cerysCategory} analysis`);
+  const { ws } = await addOneWorksheet(context, session, {
+    name: `${detail[0][0].cerysCategory} analysis`,
+    addListeners: undefined,
+  });
   const valuesToPost = [];
   detail.forEach((code) => {
     valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
@@ -191,7 +195,7 @@ export async function cerysNomDetailViewPL(context, session, detail) {
 }
 
 export function addBsClickListener(context, session) {
-  const ws = context.workbook.worksheets.getItem("Balance sheet");
+  const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, session, e));
   session.activeAssignment.bSListenerAdded = true;
 }
@@ -199,7 +203,7 @@ export function addBsClickListener(context, session) {
 export async function showNominalDetailBS(context, session, e) {
   const address = e.address;
   if (address[0] !== "A") return;
-  const ws = context.workbook.worksheets.getItem("Balance sheet");
+  const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
   const range = ws.getRange(`${address}:${address}`);
   const values = range.load("values");
   await context.sync();
@@ -211,7 +215,10 @@ export async function showNominalDetailBS(context, session, e) {
 
 async function cerysNomDetailViewBS(context, session, detail) {
   const activeAssignment = session.activeAssignment;
-  const ws = await addOneWorksheet(context, session, `${detail[0][0].cerysCategory} analysis`);
+  const { ws } = await addOneWorksheet(context, session, {
+    name: `${detail[0][0].cerysCategory} analysis`,
+    addListeners: undefined,
+  });
   const valuesToPost = [];
   detail.forEach((code) => {
     valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);

@@ -1,3 +1,4 @@
+import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { getOrAddWorksheet } from "../worksheet";
 
@@ -16,9 +17,12 @@ export function tbForPosting(tb) {
   return tbArray;
 }
 export async function postTbToWbook(context, session, tbExcel) {
-  const ws = await getOrAddWorksheet(context, session, "Trial Balance");
+  console.log("here");
+  console.log(TRIAL_BALANCE);
+  const { ws } = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
+  console.log(ws);
   ws.getUsedRange().clear();
-  const headerValues = worksheetHeader(session, "Trial Balance");
+  const headerValues = worksheetHeader(session, TRIAL_BALANCE.name);
   applyWorkhseetHeader(ws, headerValues);
   const headersRange = ws.getRange("A9:C10");
   const headers = [

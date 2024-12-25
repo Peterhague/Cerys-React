@@ -4,6 +4,7 @@ import { useRef } from "react";
 import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
+/*global Excel */
 
 interface enterJournalProps {
   handleView: (view) => void;

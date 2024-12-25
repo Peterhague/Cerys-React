@@ -12,12 +12,7 @@ import {
   highlightRanges,
   unhighlightEditableRanges,
 } from "./worksheet";
-import {
-  addBsClickListener,
-  addPlClickListener,
-  addTbClickListener,
-  handleSingleClick,
-} from "./worksheet-drilling/cerys-drilling";
+import { handleSingleClick } from "./worksheet-drilling/cerys-drilling";
 import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-manipulation";
 import { handleWorksheetEdit } from "./worksheet-editing/ws-editing";
 /* global Excel */
@@ -293,9 +288,9 @@ export const updateAssignmentFigures = async (context, session) => {
   await postTbToWbook(context, session, tbArray);
   await wsPLAccount(context, session);
   await wsBalanceSheet(context, session);
-  addTbClickListener(context, session);
-  addPlClickListener(context, session);
-  addBsClickListener(context, session);
+  // addTbClickListener(context, session);
+  // addPlClickListener(context, session);
+  // addBsClickListener(context, session);
 };
 
 export const interpretEventAddress = (e) => {

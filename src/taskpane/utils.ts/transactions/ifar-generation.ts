@@ -491,7 +491,7 @@ export async function createIFARWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "IFA Register";
-  const ws = await addOneWorksheet(context, session, wsName);
+  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
   const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");

@@ -188,7 +188,7 @@ export async function createIPRWs(context, session) {
     return a.assetCategoryNo - b.assetCategoryNo;
   });
   const wsName = "IP Register";
-  const ws = await addOneWorksheet(context, session, wsName);
+  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListners: undefined });
   const wsHeaders = worksheetHeader(session, "Investment property register");
   applyWorkhseetHeader(ws, wsHeaders);
   populateAssetRegWs(IPActiveCats, transToPost, ws, "IP");

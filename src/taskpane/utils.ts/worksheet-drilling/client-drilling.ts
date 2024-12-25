@@ -27,7 +27,10 @@ export async function showClientNominalDetail(e, session) {
 // called by showClientNominalDetail to generate a worksheet-based view of the client
 // nominal activity.
 async function clientNomDetailView(context, session, detail) {
-  const ws = await addOneWorksheet(context, session, `${detail[0].cerysCode} analysis`);
+  const { ws } = await addOneWorksheet(context, session, {
+    name: `${detail[0].cerysCode} analysis`,
+    addListeners: undefined,
+  });
   const headerRange = ws.getRange("A1:D2");
   const headers = [
     ["Transaction", "Transaction", "Detail", "£"],

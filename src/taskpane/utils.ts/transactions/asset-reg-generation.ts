@@ -140,10 +140,9 @@ export const convertNewFATrans = (session) => {
 export async function createTransSumm(session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
-      // appropriate
       const sheetMapping = [];
       const name = `${registerType} Transactions`;
-      const ws = await addOneWorksheet(context, session, name);
+      const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
       let activeClient;
       session.customer.clients.forEach((client) => {
         if (client._id === session.activeAssignment.clientId) {
@@ -428,9 +427,8 @@ export async function createTransSumm(session, relevantTrans, registerType) {
 export async function createLikelyAdditionsSumm(session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
-      // appropriate
       const name = `${registerType} Possible Additions`;
-      const ws = await addOneWorksheet(context, session, name);
+      const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
       const valuesToPost = [
         ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
         ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
