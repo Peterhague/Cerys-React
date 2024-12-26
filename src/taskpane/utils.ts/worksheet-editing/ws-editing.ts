@@ -170,8 +170,10 @@ export const updateEdSheetsTransValues = async (context, session) => {
   const sheetUpdateObjects = [];
   const deletionObjs = [];
   session.editableSheets.forEach((sheet) => {
+    console.log(sheet.name);
     sheet.sheetMapping.forEach((map) => {
       const transaction = sheet.transactions.find((tran) => tran._id === map.transactionId);
+      console.log(transaction);
       if (transaction) {
         const sheetUpdateObj = { wsName: sheet.name, updates: [] };
         transaction.updates.forEach((update) => {

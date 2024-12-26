@@ -16,6 +16,7 @@ import {
   setManyWorksheetRangeValues,
 } from "../worksheet";
 import { handleWorksheetEdit } from "./ws-editing";
+/* global Excel */
 
 export const handleRangeEdit = async (context, session, e, sheet, addressObj, definedCol) => {
   session.activeEditableCell = createEditableCell(null, null, null);
@@ -123,7 +124,7 @@ export const processTransactionUpdate = (
   newValue,
   sheet
 ) => {
-  deleteExistingUpdate(session, tests, definedCol);
+  deleteExistingUpdate(tran, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
     tests.isValid = true;
@@ -203,14 +204,20 @@ export const validateClientCode = (session, tran, e, obj) => {
   obj.isInvalid = inValidCode;
 };
 
-export const deleteExistingUpdate = (session, tests, definedCol) => {
-  getUpdatedTransactions(session).forEach((updatedTran) => {
-    const existingUpdate = updatedTran.updates.find((update) => update.type === definedCol.type);
-    if (existingUpdate) {
-      tests.isValid = true;
-      updatedTran.updates = updatedTran.updates.filter((update) => update.type !== existingUpdate.type);
-    }
-  });
+export const deleteExistingUpdate = (tran, tests, definedCol) => {
+  console.log(tran);
+  // getUpdatedTransactions(session).forEach((updatedTran) => {
+  //   const existingUpdate = updatedTran.updates.find((update) => update.type === definedCol.type);
+  //   if (existingUpdate) {
+  //     tests.isValid = true;
+  //     updatedTran.updates = updatedTran.updates.filter((update) => update.type !== existingUpdate.type);
+  //   }
+  // });
+  const existingUpdate = tran.updates.find((update) => update.type === definedCol.type);
+  if (existingUpdate) {
+    tests.isValid = true;
+    tran.updates = tran.updates.filter((update) => update.type !== existingUpdate.type);
+  }
 };
 
 export const createNewTransactionUpdate = (session, tran, newValue, sheet, definedCol) => {

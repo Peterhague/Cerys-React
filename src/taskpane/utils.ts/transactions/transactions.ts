@@ -55,12 +55,13 @@ export const submitTransactionUpdates = async (session) => {
           });
         });
       });
-      const updatedTransDb = await processUpdateBatch(session);
-      updatedTransDb.forEach((tran) => {
-        const oldTran = updatedTrans.find((oldTran) => oldTran._id === tran._id);
-        tran.updates = oldTran.updates;
+      await processUpdateBatch(session);
+      const recreatedUpdatedTrans = updatedTrans.map((tran) => {
+        const transaction = session.activeAssignment.transactions.find((newTran) => newTran._id === tran._id);
+        transaction.updates = tran.updates;
+        return transaction;
       });
-      updatedTrans = updatedTransDb;
+      updatedTrans = recreatedUpdatedTrans;
       // deletionObjs.sort((a, b) => {
       //   return b.rowNumber - a.rowNumber;
       // });
