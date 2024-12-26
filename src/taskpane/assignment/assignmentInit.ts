@@ -10,6 +10,7 @@ export async function addPrimarySheets(session) {
       const arrForDATA = convertDataForWbook(session);
       await writeToDATA(context, arrForDATA);
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -65,6 +66,7 @@ export const postOpBalJnls = async (session) => {
       });
       await processTransBatch(context, session);
       await context.sync();
+      console.log("context synced");
       session.handleView("assignmentDashHome");
     });
   } catch (e) {

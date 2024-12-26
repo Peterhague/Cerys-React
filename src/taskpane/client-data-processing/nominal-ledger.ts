@@ -1,6 +1,6 @@
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
-import { getExcelContext } from "../utils.ts/helperFunctions";
+/* global Excel */
 
 export async function enterNL(session) {
   const clientNL = await createClientNLObject();
@@ -12,16 +12,18 @@ export async function enterNL(session) {
 
 export async function createClientNLObject() {
   try {
-    await Excel.run(async (context) => {//appropriate
+    await Excel.run(async (context) => {
       const clientNL = [];
       const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
       await context.sync();
+      console.log("context synced");
       if (ws.isNullObject) {
         return "";
       } else {
         const range = ws.getUsedRange();
         range.load("values");
         await context.sync();
+        console.log("context synced");
         const values = range.values;
         let operativeCode = 0;
         let nominal;
@@ -43,6 +45,7 @@ export async function createClientNLObject() {
         });
       }
       await context.sync();
+      console.log("context synced");
       return clientNL;
     });
   } catch (e) {

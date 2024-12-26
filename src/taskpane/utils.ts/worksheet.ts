@@ -59,6 +59,7 @@ export const getWorksheetRangeValues = async (context, wsName, range) => {
   const wsRange = sheet.getRange(range);
   wsRange.load("values");
   await context.sync();
+  console.log("context synced");
   return wsRange.values;
 };
 
@@ -71,6 +72,7 @@ export const getActiveWorksheet = async (context) => {
   const sheet = context.workbook.worksheets.getActiveWorksheet();
   sheet.load("name");
   await context.sync();
+  console.log("context synced");
   return sheet;
 };
 
@@ -83,6 +85,7 @@ export const getActiveWorksheetName = async (context) => {
   const sheet = context.workbook.worksheets.getActiveWorksheet();
   sheet.load("name");
   await context.sync();
+  console.log("context synced");
   const name = sheet.name;
   return name;
 };
@@ -92,6 +95,7 @@ export const getWorksheetUsedRange = async (context, wsName) => {
   const range = sheet.getUsedRange();
   range.load("values");
   await context.sync();
+  console.log("context synced");
   const values = range.values;
   return values;
 };
@@ -123,6 +127,7 @@ export const deleteWorksheetRangesUp = async (context, deletionObjs) => {
     obj.sheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
   });
   await context.sync();
+  console.log("context synced");
   deletionObjs.forEach((obj) => {
     const range = obj.sheet && obj.sheet.getRange(obj.range);
     range.delete("Up");
@@ -175,6 +180,7 @@ export const processWorksheetAdditions = async (context, session, worksheets) =>
   console.log(worksheets);
   worksheets.forEach((sheet) => sheet.ws.load(["id", "name"]));
   await context.sync();
+  console.log("context synced");
   worksheets.forEach((sheet) => session.worksheets.push(new Worksheet(sheet.name, sheet.ws.id)));
 };
 

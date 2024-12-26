@@ -2,7 +2,7 @@ import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndp
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
-import { highlightEditableRanges } from "../worksheet";
+import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
 /* global Excel */
 
@@ -45,7 +45,6 @@ export const submitTransactionUpdates = async (session) => {
     await Excel.run(async (context) => {
       let updatedTrans = getUpdatedTransactions(session);
       const isTBUpdated = checkTransForRecoding(updatedTrans);
-      //const { deletionObjs } = createDeletionObjects(session, updatedTrans);
       updatedTrans.forEach((tran) => {
         tran.updates.forEach((update) => {
           session.editableSheets.forEach((sheet) => {
@@ -62,9 +61,6 @@ export const submitTransactionUpdates = async (session) => {
         return transaction;
       });
       updatedTrans = recreatedUpdatedTrans;
-      // deletionObjs.sort((a, b) => {
-      //   return b.rowNumber - a.rowNumber;
-      // });
       const promptSheetDeletion = renewEdSheetsTransRefs(session);
       await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
       updatedTrans.forEach((tran) => (tran.updates = []));
@@ -80,8 +76,14 @@ export const submitTransactionUpdates = async (session) => {
       } else {
         callNextView(session);
       }
-      session.setEditButton("hide");
+      session.editableSheets.forEach((sheet) => {
+        if (sheet.editButtonStatus === "inProgress") sheet.editButtonStatus = "hide";
+      });
+      const activeWs = await getActiveWorksheet(context);
+      const acitveEditableWS = session.editableSheets.find((sheet) => sheet.name === activeWs.name);
+      if (acitveEditableWS) session.setEditButton(acitveEditableWS.editButtonStatus);
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

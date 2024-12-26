@@ -16,6 +16,7 @@ import {
   identifyLikelyAdditions,
   previewRelTrans,
 } from "../../../utils.ts/transactions/asset-reg-generation";
+/* global Excel */
 
 interface promptIFARCreationProps {
   handleView: (view) => void;
@@ -64,6 +65,7 @@ const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) =>
         await processTransBatch(context, session);
         checkNewTransForAssets(session, session["newFATransactions"]);
         await context.sync();
+        console.log("context synced");
       });
     } catch (e) {
       console.error(e);

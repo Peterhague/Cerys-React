@@ -417,6 +417,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
         "placeholder"
       );
       await context.sync();
+      console.log("context synced");
       ws.activate();
     });
   } catch (e) {
@@ -491,6 +492,7 @@ export async function createLikelyAdditionsSumm(session, relevantTrans, register
       const rangeAJ = ws.getRange("A:J");
       rangeAJ.format.autofitColumns();
       await context.sync();
+      console.log("context synced");
       ws.activate();
     });
   } catch (e) {

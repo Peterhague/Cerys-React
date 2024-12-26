@@ -37,6 +37,7 @@ export const registerWorksheetsCollectionHandler = async (session) => {
       sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
       sheets.onAdded.add(async (e) => await handleSheetAddition(context, e, session));
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -58,6 +59,7 @@ export const handleSheetAddition = async (context, e, session) => {
   const ws = getWorksheet(context, e.worksheetId);
   ws.load("name");
   await context.sync();
+  console.log("context synced");
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 
@@ -160,6 +162,7 @@ export const setEditButtonValue = async (session) => {
         }
       });
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -277,6 +280,7 @@ export const simulateEditButtonClick = async (session) => {
         }
       });
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -288,9 +292,6 @@ export const updateAssignmentFigures = async (context, session) => {
   await postTbToWbook(context, session, tbArray);
   await wsPLAccount(context, session);
   await wsBalanceSheet(context, session);
-  // addTbClickListener(context, session);
-  // addPlClickListener(context, session);
-  // addBsClickListener(context, session);
 };
 
 export const interpretEventAddress = (e) => {
@@ -538,6 +539,7 @@ export const accessExcelContext = async (func, args) => {
     const rtnVal = await Excel.run(async (context) => {
       const rtnVal = func(context, ...args);
       await context.sync();
+      console.log("context synced");
       return rtnVal;
     });
     return rtnVal;

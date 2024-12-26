@@ -67,6 +67,7 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
         await completeClientCodeMappingUpdate(context, session, e, sheet, addressObj);
       }
       await context.sync();
+      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

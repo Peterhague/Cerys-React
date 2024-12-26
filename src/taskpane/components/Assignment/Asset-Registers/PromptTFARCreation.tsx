@@ -16,6 +16,7 @@ import {
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import CerysButton from "../../CerysButton";
+/* global Excel */
 
 interface promptTFARCreationProps {
   handleView: (view) => void;
@@ -64,6 +65,7 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
         await processTransBatch(context, session);
         checkNewTransForAssets(session, session["newFATransactions"]);
         await context.sync();
+        console.log("context synced");
       });
     } catch (e) {
       console.error(e);

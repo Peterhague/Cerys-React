@@ -16,11 +16,9 @@ export function tbForPosting(tb) {
   });
   return tbArray;
 }
+
 export async function postTbToWbook(context, session, tbExcel) {
-  console.log("here");
-  console.log(TRIAL_BALANCE);
   const { ws } = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
-  console.log(ws);
   ws.getUsedRange().clear();
   const headerValues = worksheetHeader(session, TRIAL_BALANCE.name);
   applyWorkhseetHeader(ws, headerValues);

@@ -10,6 +10,7 @@ import {
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+/* global Excel */
 
 interface promptIPRCreationProps {
   handleView: (view) => void;
@@ -55,6 +56,7 @@ const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
         await processTransBatch(context, session);
         checkNewTransForAssets(session, session["newFATransactions"]);
         await context.sync();
+        console.log("context synced");
       });
     } catch (e) {
       console.error(e);
