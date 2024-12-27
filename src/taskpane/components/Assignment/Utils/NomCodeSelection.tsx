@@ -27,6 +27,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDisplay, setSearchDisplay] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  /* global Excel */
 
   const handleSubmit = async (e) => {
     try {

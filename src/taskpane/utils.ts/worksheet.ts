@@ -1,5 +1,6 @@
 import { Worksheet } from "../classes/worksheet";
 import { colNumToLetter } from "./excel-col-conversion";
+import { interpretExcelAddress } from "./helperFunctions";
 /* global Excel */
 
 export function addWorksheet(context, session, wsDefaults) {
@@ -191,8 +192,26 @@ export const getProxyWorksheet = (session, wsName) => {
 export const getOrAddWorksheet = async (context, session, wsDefaults) => {
   const wsName = wsDefaults.name;
   const proxyWs = getProxyWorksheet(session, wsName);
-  console.log(proxyWs);
   const worksheets = context.workbook.worksheets;
-  console.log("here");
   return proxyWs ? { ws: worksheets.getItem(wsName) } : await addOneWorksheet(context, session, wsDefaults);
+};
+
+export const clearUsedRange = async (context, worksheet) => {
+  const usedRange = worksheet.getUsedRange();
+  usedRange.load("address");
+  await context.sync();
+  const address = usedRange.address.split("!")[1];
+  const addressObj = interpretExcelAddress(address);
+  const cols = addressObj.lastCol + 1 - addressObj.firstCol;
+  const rows = addressObj.lastRow + 1 - addressObj.firstRow;
+  const valuesToPost = [];
+  for (let i = 0; i < rows; i++) {
+    const row = [];
+    for (let j = 0; j < cols; j++) {
+      row.push("");
+    }
+    valuesToPost.push(row);
+  }
+  const range = `${colNumToLetter(addressObj.firstCol)}${addressObj.firstRow}:${colNumToLetter(addressObj.lastCol)}${addressObj.lastRow}`;
+  worksheet.getRange(range).values = valuesToPost;
 };

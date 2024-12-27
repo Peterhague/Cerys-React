@@ -1,10 +1,10 @@
 import { BALANCE_SHEET } from "../../../static-values/worksheet-defaults";
-import { getOrAddWorksheet } from "../../../utils.ts/worksheet";
+import { clearUsedRange, getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
 export async function wsBalanceSheet(context, session) {
   const { ws } = await getOrAddWorksheet(context, session, BALANCE_SHEET);
-  ws.getUsedRange().clear();
+  await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, BALANCE_SHEET.name);
   applyWorkhseetHeader(ws, headerValues);
   const values = [
