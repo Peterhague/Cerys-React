@@ -203,7 +203,11 @@ export const updateEdSheetsTransValues = async (context, session) => {
     setManyExcelRangeValues(context, obj.wsName, obj.updates);
   });
   console.log(deletionObjs);
-  if (deletionObjs.length > 0) await deleteWorksheetRangesUp(context, deletionObjs);
+  if (deletionObjs.length > 0) {
+    deletionObjs.sort((a, b) => b.rowNumber - a.rowNumber);
+    console.log(deletionObjs);
+    await deleteWorksheetRangesUp(context, deletionObjs);
+  }
 };
 
 export const renewEdSheetsTransRefs = (session) => {

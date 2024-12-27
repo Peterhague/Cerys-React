@@ -198,20 +198,6 @@ export const getOrAddWorksheet = async (context, session, wsDefaults) => {
 
 export const clearUsedRange = async (context, worksheet) => {
   const usedRange = worksheet.getUsedRange();
-  usedRange.load("address");
+  usedRange.clear();
   await context.sync();
-  const address = usedRange.address.split("!")[1];
-  const addressObj = interpretExcelAddress(address);
-  const cols = addressObj.lastCol + 1 - addressObj.firstCol;
-  const rows = addressObj.lastRow + 1 - addressObj.firstRow;
-  const valuesToPost = [];
-  for (let i = 0; i < rows; i++) {
-    const row = [];
-    for (let j = 0; j < cols; j++) {
-      row.push("");
-    }
-    valuesToPost.push(row);
-  }
-  const range = `${colNumToLetter(addressObj.firstCol)}${addressObj.firstRow}:${colNumToLetter(addressObj.lastCol)}${addressObj.lastRow}`;
-  worksheet.getRange(range).values = valuesToPost;
 };
