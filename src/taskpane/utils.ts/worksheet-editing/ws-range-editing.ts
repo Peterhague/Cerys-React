@@ -87,16 +87,24 @@ export const captureReanalysis = async (context, session, e, sheet, addressObj, 
   const map = sheet.sheetMapping.find((m) => m.rowNumber === eRowNumber);
   const tran = map.getTran(sheet.transactions);
   const validationObj = validateChange(session, tran, definedCol, e);
+  console.log(validationObj);
   const { isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
   const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
   console.log(isValidTransactionUpdate);
-  if (isValidTransactionUpdate)
-    processTransactionUpdate(context, session, tran, tests, definedCol, validationObj, e, newValue, sheet);
-  if (definedCol.isQuasiMutable) tests.isValid = true;
   const range = `${e.address}:${e.address}`;
+  if (isValidTransactionUpdate) {
+    processTransactionUpdate(context, session, tran, tests, definedCol, validationObj, e, newValue, sheet);
+  } else {
+    if (definedCol.isQuasiMutable) {
+      tests.isValid = true;
+    } else {
+      setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+      return handledSuccessfully;
+    }
+  }
   if (tests.changeRejected) {
-    await setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+    setExcelRangeValue(context, wsName, range, e.details.valueBefore);
     return handledSuccessfully;
   }
   if (tests.isValid) {
@@ -169,6 +177,7 @@ export const validateChange = (session, tran, change, e) => {
   } else if (change.type === "cerysName") {
     obj.isError = false;
   } else obj.isError = true;
+  console.log(obj);
   return obj;
 };
 
@@ -178,6 +187,7 @@ export const validateCerysCode = (session, tran, e, obj) => {
   session.chart.forEach((code) => {
     if (code.cerysCode === e.details.valueAfter) inValidCode = false;
   });
+  console.log(inValidCode);
   obj.isInvalid = inValidCode;
 };
 
