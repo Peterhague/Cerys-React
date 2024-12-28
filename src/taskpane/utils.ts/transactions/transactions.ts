@@ -3,7 +3,7 @@ import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetc
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
 import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
-import { renewEdSheetsTransRefs, updateEdSheetsTransValues } from "../worksheet-editing/ws-editing";
+import { renewEdSheetsTransRefs } from "../worksheet-editing/ws-editing";
 /* global Excel */
 
 export const processTransBatch = async (context, session) => {

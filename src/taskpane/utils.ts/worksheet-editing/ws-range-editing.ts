@@ -239,11 +239,7 @@ export const createNewTransactionUpdate = (session, tran, newValue, sheet, defin
   } else if (definedCol.type === "cerysNarrative") {
     reversion = tran.narrative;
   } else if (definedCol.type === "clientCodeMapping") {
-    if (tran.clientMappingOverride) {
-      reversion = tran.customClientMapping.clientCode;
-    } else {
-      reversion = tran.defaultClientMapping.clientCode;
-    }
+    reversion = tran.activeClientMapping;
   }
   const update: {
     worksheetName: string;

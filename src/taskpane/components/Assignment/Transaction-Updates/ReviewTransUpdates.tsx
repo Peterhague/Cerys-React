@@ -85,19 +85,12 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             <td>Client mapping</td>
             {getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
               <td>
-                {updatedTransactions[activeIndex].clientMappingOverride
-                  ? updatedTransactions[activeIndex].customClientMapping.clientCode
-                  : updatedTransactions[activeIndex].defaultClientMapping.clientCode}{" "}
-                {"=> "}
+                {updatedTransactions[activeIndex].activeClientMapping.clientCode} {"=> "}
                 {getUpdatedClientCodeMapping(updatedTransactions[activeIndex])}
               </td>
             )}
             {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
-              <td>
-                {updatedTransactions[activeIndex].clientMappingOverride
-                  ? updatedTransactions[activeIndex].customClientMapping.clientCode
-                  : updatedTransactions[activeIndex].defaultClientMapping.clientCode}
-              </td>
+              <td>{updatedTransactions[activeIndex].activeClientMapping.clientCode}</td>
             )}
           </tr>
         </tbody>
@@ -149,19 +142,12 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
               <td>Client mapping</td>
               {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
                 <td>
-                  {updatedTransactions[activeIndex + 1].clientMappingOverride
-                    ? updatedTransactions[activeIndex + 1].customClientMapping.clientCode
-                    : updatedTransactions[activeIndex + 1].defaultClientMapping.clientCode}{" "}
-                  {"=> "}
+                  {updatedTransactions[activeIndex + 1].activeClientMapping.clientCode} {"=> "}
                   {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1])}
                 </td>
               )}
               {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
-                <td>
-                  {updatedTransactions[activeIndex + 1].clientMappingOverride
-                    ? updatedTransactions[activeIndex + 1].customClientMapping.clientCode
-                    : updatedTransactions[activeIndex + 1].defaultClientMapping.clientCode}
-                </td>
+                <td>{updatedTransactions[activeIndex + 1].activeClientMapping.clientCode}</td>
               )}
             </tr>
           </tbody>

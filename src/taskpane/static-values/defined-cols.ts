@@ -5,6 +5,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "0",
     isUnique: true,
+    key: ["transactionNumber"],
   },
   date: {
     type: "date",
@@ -12,6 +13,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "dd/mm/yyyy",
     isUnique: false,
+    key: ["transactionDateExcel"],
   },
   transType: {
     type: "transType",
@@ -19,6 +21,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "",
     isUnique: false,
+    key: ["transactionType"],
   },
   cerysCode: {
     type: "cerysCode",
@@ -26,6 +29,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "0",
     isUnique: false,
+    key: ["cerysCode"],
   },
   cerysName: {
     type: "cerysName",
@@ -33,6 +37,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: true,
     format: "",
     isUnique: false,
+    key: ["cerysName"],
   },
   clientCode: {
     type: "clientCode",
@@ -40,6 +45,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "0",
     isUnique: false,
+    key: ["clientNominalCode"],
   },
   clientCodeName: {
     type: "clientCodeName",
@@ -47,6 +53,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "",
     isUnique: false,
+    key: ["clientNominalName"],
   },
   cerysNarrative: {
     type: "cerysNarrative",
@@ -54,6 +61,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "",
     isUnique: false,
+    key: ["narrative"],
   },
   value: {
     type: "value",
@@ -61,6 +69,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "#,##0.00;(#,##0.00);-",
     isUnique: false,
+    key: ["value"],
   },
   clientCodeMapping: {
     type: "clientCodeMapping",
@@ -68,6 +77,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "0",
     isUnique: false,
+    key: ["activeClientMapping", "clientCode"],
   },
   clientCodeNameMapping: {
     type: "clientCodeNameMapping",
@@ -75,6 +85,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: true,
     format: "",
     isUnique: false,
+    key: ["activeClientMapping", "clientCodeName"],
   },
   clientNarrative: {
     type: "clientNarrative",
@@ -82,6 +93,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "",
     isUnique: false,
+    key: undefined,
   },
   depnBasis: {
     type: "depnBasis",
@@ -89,6 +101,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "",
     isUnique: false,
+    key: undefined,
   },
   depnRate: {
     type: "depnRate",
@@ -96,6 +109,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: "0",
     isUnique: false,
+    key: undefined,
   },
   depnCharge: {
     type: "depnCharge",
@@ -103,5 +117,6 @@ export const DEFINED_COLS = {
     isQuasiMutable: true,
     format: "#,##0.00;(#,##0.00);-",
     isUnique: false,
+    key: undefined,
   },
 };

@@ -2,7 +2,6 @@ import { createEditableCell } from "../../classes/editable-cell";
 import { getDefinedCol, interpretEventAddress, simulateEditButtonClick } from ".././helperFunctions";
 import { deleteWorksheetRangesUp, getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
-import { createDeletionObject } from "../transactions/transactions";
 import { handleOtherChange } from "./ws-col-row-manipulation";
 import {
   completeCerysCodeUpdate,

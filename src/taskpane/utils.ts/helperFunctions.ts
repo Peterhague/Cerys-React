@@ -1,3 +1,4 @@
+import { createDefinedCols } from "../classes/defined-col";
 import { TransactionMap } from "../classes/transaction-map";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
@@ -401,15 +402,16 @@ export const createEditableWs = (
     });
     this.transactions = newTrans;
     await this.createChangeObjects(context);
-    this.updateMapping();
+    this.updateMapping(context);
     this.transactions.forEach((tran) => (tran.updates = []));
     return newTrans;
   }
 
-  function updateMapping() {
+  function updateMapping(context) {
     const rowNumbers = [];
     const newMapping = [];
     const newTransToMap = [];
+    const additionalTrans = [];
     this.transactions.forEach((tran) => {
       const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
       if (existingMap) {
@@ -422,10 +424,45 @@ export const createEditableWs = (
     newTransToMap.forEach((tran) => {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
-      newMapping.push(new TransactionMap(tran._id, nextRow));
+      const newMap = new TransactionMap(tran._id, nextRow);
+      newMapping.push(newMap);
+      additionalTrans.push({ tran, map: newMap });
       rowNumbers.push(nextRow);
     });
     this.sheetMapping = newMapping;
+    const updates = [];
+    additionalTrans.forEach((tran) => {
+      const row = tran.map.rowNumber;
+      this.definedCols.forEach((definedCol) => {
+        const update: { address?: string; value?: string | number } = {};
+        update.value = definedCol.getTargetProperty(tran.tran);
+        if (
+          definedCol.type === "value" &&
+          typeof update.value === "number" &&
+          this.definedCols.find((col) => col.type === "cerysCode")
+        ) {
+          update.value = update.value / 100;
+          if (this.isValueInverted) update.value = update.value * -1;
+        } else if (definedCol.type === "clientCode" && typeof update.value === "number") {
+          update.value = update.value >= 0 ? update.value : "NA";
+        }
+        const col = colNumToLetter(definedCol.colNumber);
+        update.address = `${col}${row}:${col}${row}`;
+        updates.push(update);
+      });
+      if (this.protectedRange.firstRow > row) this.protectedRange.firstRow = row;
+      if (this.protectedRange.lastRow < row) this.protectedRange.lastRow = row;
+      this.editableRowRanges.forEach((range) => {
+        if (range.firstRow - 1 === row) {
+          range.firstRow = row;
+        } else if (range.lastRow + 1 === row) {
+          range.lastRow = row;
+        } else {
+          this.editableRowRanges.push({ firstRow: row, lastRow: row });
+        }
+      });
+    });
+    updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
   }
 
   async function createChangeObjects(context) {
@@ -435,7 +472,6 @@ export const createEditableWs = (
       const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
       console.log(transaction);
       if (transaction) {
-        //const sheetUpdateObj = { wsName: this.name, updates: [] };
         transaction.updates.forEach((update) => {
           if (update.worksheetId !== this.worksheetId) {
             const definedCol = this.definedCols.find((col) => col.type === update.type);
@@ -449,7 +485,6 @@ export const createEditableWs = (
           }
         });
       } else {
-        console.log(this);
         deletionObjects.push(createDeletionObject(map, this));
       }
     });
@@ -460,6 +495,12 @@ export const createEditableWs = (
       deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
       await deleteWorksheetRangesUp(context, deletionObjects);
     }
+  }
+
+  function testValueInversion() {
+    const cerysCodeObj =
+      type === "cerysCodeAnalysis" ? session.chart.find((code) => code.cerysCode === filterObj.value) : undefined;
+    return cerysCodeObj && cerysCodeObj.defaultSign === "credit" ? true : false;
   }
 
   const editableWs = {
@@ -484,6 +525,7 @@ export const createEditableWs = (
     updateMapping,
     filterObj,
     createChangeObjects,
+    isValueInverted: testValueInversion(),
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -596,7 +638,7 @@ export const getUpdatedTransactions = (session) => {
 };
 
 export const getActiveClientCodeMapping = (session, transaction) => {
-  let obj = transaction.clientMappingOverride ? transaction.customClientMapping : transaction.defaultClientMapping;
+  let obj = transaction.activeClientMapping;
   const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
   if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
   return obj;

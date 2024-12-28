@@ -1,4 +1,5 @@
 import { DEFINED_COLS as cols } from "../static-values/defined-cols";
+import _ from "lodash";
 
 export class DefinedCol {
   type: string;
@@ -9,6 +10,13 @@ export class DefinedCol {
   isDeleted: Boolean;
   updateKey: string;
   isUnique: Boolean;
+  key: [string];
+
+  getTargetProperty(transaction) {
+    let property = _.cloneDeep(transaction);
+    this.key.forEach((key) => (property = property[key]));
+    return property;
+  }
 
   constructor(
     type: string,
@@ -16,7 +24,8 @@ export class DefinedCol {
     isQuasiMutable: Boolean,
     format: string,
     isUnique: Boolean,
-    colNumber: number
+    colNumber: number,
+    key: [string]
   ) {
     this.type = type;
     this.colNumber = colNumber;
@@ -26,12 +35,13 @@ export class DefinedCol {
     this.isDeleted = false;
     this.updateKey = isMutable ? `updated${type[0].toUpperCase()}${type.slice(1)}` : null;
     this.isUnique = isUnique;
+    this.key = key;
   }
 }
 
 export const createDefinedCol = (template, index) => {
-  const { type, isMutable, isQuasiMutable, format, isUnique } = template;
-  const definedCol = new DefinedCol(type, isMutable, isQuasiMutable, format, isUnique, index);
+  const { type, isMutable, isQuasiMutable, format, isUnique, key } = template;
+  const definedCol = new DefinedCol(type, isMutable, isQuasiMutable, format, isUnique, index, key);
   return definedCol;
 };
 
