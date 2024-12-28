@@ -67,7 +67,6 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
         await completeClientCodeMappingUpdate(context, session, e, sheet, addressObj);
       }
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -166,54 +165,72 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
 //   if (deletionObjs.length > 0) await deleteWorksheetRangesUp(context, deletionObjs);
 // };
 
+// export const updateEdSheetsTransValues = async (context, session) => {
+//   const sheetUpdateObjects = [];
+//   const deletionObjs = [];
+//   session.editableSheets.forEach((sheet) => {
+//     sheet.sheetMapping.forEach((map) => {
+//       const transaction = sheet.transactions.find((tran) => tran._id === map.transactionId);
+//       console.log(transaction);
+//       if (transaction) {
+//         const sheetUpdateObj = { wsName: sheet.name, updates: [] };
+//         transaction.updates.forEach((update) => {
+//           if (update.worksheetId !== sheet.worksheetId) {
+//             const definedCol = sheet.definedCols.find((col) => col.type === update.type);
+//             const col = colNumToLetter(definedCol.colNumber);
+//             const row = map.rowNumber;
+//             const sheetUpdate: { address: string; value?: string | number } = {
+//               address: `${col}${row}:${col}${row}`,
+//               value: update.value,
+//             };
+//             sheetUpdateObj.updates.push(sheetUpdate);
+//           }
+//           sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
+//         });
+//       } else {
+//         deletionObjs.push(createDeletionObject(map, sheet));
+//       }
+//     });
+//     sheet.updateMapping();
+//   });
+//   console.log(sheetUpdateObjects);
+//   sheetUpdateObjects.forEach((obj) => {
+//     setManyExcelRangeValues(context, obj.wsName, obj.updates);
+//   });
+//   if (deletionObjs.length > 0) {
+//     // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
+//     // therefore needs to be done from bottom of page up
+//     deletionObjs.sort((a, b) => b.rowNumber - a.rowNumber);
+//     console.log(deletionObjs);
+//     await deleteWorksheetRangesUp(context, deletionObjs);
+//   }
+// };
+
 export const updateEdSheetsTransValues = async (context, session) => {
-  console.log(session);
   const sheetUpdateObjects = [];
   const deletionObjs = [];
   session.editableSheets.forEach((sheet) => {
-    console.log(sheet.name);
-    sheet.sheetMapping.forEach((map) => {
-      const transaction = sheet.transactions.find((tran) => tran._id === map.transactionId);
-      console.log(transaction);
-      if (transaction) {
-        const sheetUpdateObj = { wsName: sheet.name, updates: [] };
-        transaction.updates.forEach((update) => {
-          if (update.worksheetId !== sheet.worksheetId) {
-            const definedCol = sheet.definedCols.find((col) => col.type === update.type);
-            const col = colNumToLetter(definedCol.colNumber);
-            const row = map.rowNumber;
-            const sheetUpdate: { address: string; value?: string | number } = {
-              address: `${col}${row}:${col}${row}`,
-              value: update.value,
-            };
-            sheetUpdateObj.updates.push(sheetUpdate);
-          }
-          sheetUpdateObj.updates.length > 0 && sheetUpdateObjects.push(sheetUpdateObj);
-        });
-      } else {
-        deletionObjs.push(createDeletionObject(map, sheet));
-      }
-    });
-    sheet.sheetMapping = sheet.transactions.map((tran) =>
-      sheet.sheetMapping.find((mapping) => mapping.transactionId === tran._id)
-    );
+    sheetUpdateObjects.push(...sheet.updateObjects);
+    deletionObjs.push(...sheet.deletionObjects);
   });
   console.log(sheetUpdateObjects);
+  console.log(deletionObjs);
   sheetUpdateObjects.forEach((obj) => {
     setManyExcelRangeValues(context, obj.wsName, obj.updates);
   });
-  console.log(deletionObjs);
   if (deletionObjs.length > 0) {
+    // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
+    // therefore needs to be done from bottom of page up
     deletionObjs.sort((a, b) => b.rowNumber - a.rowNumber);
     console.log(deletionObjs);
     await deleteWorksheetRangesUp(context, deletionObjs);
   }
 };
 
-export const renewEdSheetsTransRefs = (session) => {
+export const renewEdSheetsTransRefs = (context, session) => {
   let promptSheetDeletion = false;
   session.editableSheets.forEach((sheet) => {
-    sheet.transactions = sheet.renewTransactions(session.activeAssignment.transactions);
+    sheet.renewTransactions(context, session.activeAssignment.transactions);
     if (sheet.transactions.length === 0) {
       sheet.promptDeletion = true;
       promptSheetDeletion = true;

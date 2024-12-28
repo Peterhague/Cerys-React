@@ -43,7 +43,6 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
         }
         session["activeEditableCell"] = createEditableCell(null, null, null);
         await context.sync();
-        console.log("context synced");
       });
     } catch (e) {
       console.error(e);

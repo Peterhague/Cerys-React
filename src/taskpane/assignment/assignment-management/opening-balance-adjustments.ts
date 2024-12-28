@@ -99,7 +99,6 @@ export async function oBARelevantTransView(session) {
       ws.activate();
       if (sheetInMidEdit) handleEditButtonClick(session);
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

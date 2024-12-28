@@ -46,6 +46,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   const handleJournal = async (e) => {
     e.preventDefault();
     const cerysObj = session["chart"].find((code) => code.cerysCode === parseInt(nominalCode));
+    console.log(cerysObj);
     const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
     session["activeJournal"].journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.value;

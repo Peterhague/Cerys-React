@@ -274,7 +274,6 @@ export const cancelAutoFill = async (wsName, address) => {
       const range = sheet.getRange(address);
       range.format.fill.clear();
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -342,7 +341,6 @@ export const resetToPreviousValues = async (wsName, sheet) => {
       const usedRange = ws.getUsedRange();
       usedRange.load("address");
       await context.sync();
-      console.log("context synced");
       const fullAddress = usedRange.address;
       const fullAddressSplit = fullAddress.split("!");
       const addressObj = interpretExcelAddress(fullAddressSplit[1]);
@@ -360,7 +358,6 @@ export const resetToPreviousValues = async (wsName, sheet) => {
       wsNewRange.values = sheet.usedRange;
       sheet.dataCorrupted = false;
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -378,7 +375,6 @@ export const reinstateNumberFormats = async (sheet) => {
         range.numberFormat = col.format;
       });
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

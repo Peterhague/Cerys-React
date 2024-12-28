@@ -1,15 +1,19 @@
+import { TransactionMap } from "../classes/transaction-map";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
+import { createDeletionObject } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import {
+  deleteWorksheetRangesUp,
   getActiveWorksheetName,
   getWorksheet,
   highlightEditableRanges,
   highlightRanges,
+  setManyExcelRangeValues,
   unhighlightEditableRanges,
 } from "./worksheet";
 import { handleSingleClick } from "./worksheet-drilling/cerys-drilling";
@@ -37,7 +41,6 @@ export const registerWorksheetsCollectionHandler = async (session) => {
       sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
       sheets.onAdded.add(async (e) => await handleSheetAddition(context, e, session));
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -59,7 +62,6 @@ export const handleSheetAddition = async (context, e, session) => {
   const ws = getWorksheet(context, e.worksheetId);
   ws.load("name");
   await context.sync();
-  console.log("context synced");
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 
@@ -162,7 +164,6 @@ export const setEditButtonValue = async (session) => {
         }
       });
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -280,7 +281,6 @@ export const simulateEditButtonClick = async (session) => {
         }
       });
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -393,9 +393,75 @@ export const createEditableWs = (
   customFilter,
   filterObj
 ) => {
-  function defaultFilter(transactions) {
-    return transactions.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+  async function defaultFilter(context, transactions) {
+    const newTrans = transactions.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+    newTrans.forEach((newTran) => {
+      const transaction = this.transactions.find((tran) => tran._id === newTran._id);
+      if (transaction) newTran.updates = transaction.updates;
+    });
+    this.transactions = newTrans;
+    await this.createChangeObjects(context);
+    this.updateMapping();
+    this.transactions.forEach((tran) => (tran.updates = []));
+    return newTrans;
   }
+
+  function updateMapping() {
+    const rowNumbers = [];
+    const newMapping = [];
+    const newTransToMap = [];
+    this.transactions.forEach((tran) => {
+      const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
+      if (existingMap) {
+        rowNumbers.push(existingMap.rowNumber);
+        newMapping.push(existingMap);
+      } else {
+        newTransToMap.push(tran);
+      }
+    });
+    newTransToMap.forEach((tran) => {
+      rowNumbers.sort((a, b) => b - a);
+      const nextRow = rowNumbers[0] + 1;
+      newMapping.push(new TransactionMap(tran._id, nextRow));
+      rowNumbers.push(nextRow);
+    });
+    this.sheetMapping = newMapping;
+  }
+
+  async function createChangeObjects(context) {
+    const updates = [];
+    const deletionObjects = [];
+    this.sheetMapping.forEach((map) => {
+      const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
+      console.log(transaction);
+      if (transaction) {
+        //const sheetUpdateObj = { wsName: this.name, updates: [] };
+        transaction.updates.forEach((update) => {
+          if (update.worksheetId !== this.worksheetId) {
+            const definedCol = this.definedCols.find((col) => col.type === update.type);
+            const col = colNumToLetter(definedCol.colNumber);
+            const row = map.rowNumber;
+            const sheetUpdate: { address: string; value?: string | number } = {
+              address: `${col}${row}:${col}${row}`,
+              value: update.value,
+            };
+            updates.push(sheetUpdate);
+          }
+        });
+      } else {
+        console.log(this);
+        deletionObjects.push(createDeletionObject(map, this));
+      }
+    });
+    updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
+    if (deletionObjects.length > 0) {
+      // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
+      // therefore needs to be done from bottom of page up
+      deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
+      await deleteWorksheetRangesUp(context, deletionObjects);
+    }
+  }
+
   const editableWs = {
     name: ws.name,
     type,
@@ -415,7 +481,9 @@ export const createEditableWs = (
     usedRange: valuesToPost,
     sheetMapping,
     renewTransactions: customFilter ? customFilter : defaultFilter,
+    updateMapping,
     filterObj,
+    createChangeObjects,
   };
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
@@ -539,7 +607,6 @@ export const accessExcelContext = async (func, args) => {
     const rtnVal = await Excel.run(async (context) => {
       const rtnVal = func(context, ...args);
       await context.sync();
-      console.log("context synced");
       return rtnVal;
     });
     return rtnVal;

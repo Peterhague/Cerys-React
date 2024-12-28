@@ -55,15 +55,8 @@ export const submitTransactionUpdates = async (session) => {
         });
       });
       await processUpdateBatch(session);
-      const recreatedUpdatedTrans = updatedTrans.map((tran) => {
-        const transaction = session.activeAssignment.transactions.find((newTran) => newTran._id === tran._id);
-        transaction.updates = tran.updates;
-        return transaction;
-      });
-      updatedTrans = recreatedUpdatedTrans;
-      const promptSheetDeletion = renewEdSheetsTransRefs(session);
-      await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
-      updatedTrans.forEach((tran) => (tran.updates = []));
+      const promptSheetDeletion = renewEdSheetsTransRefs(context, session);
+      //await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
       if (isTBUpdated) {
         if (promptSheetDeletion) {
           await updateAssignmentFigures(context, session);
@@ -83,7 +76,6 @@ export const submitTransactionUpdates = async (session) => {
       const acitveEditableWS = session.editableSheets.find((sheet) => sheet.name === activeWs.name);
       if (acitveEditableWS) session.setEditButton(acitveEditableWS.editButtonStatus);
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

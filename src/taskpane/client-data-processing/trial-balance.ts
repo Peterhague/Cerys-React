@@ -39,7 +39,6 @@ export async function checkTBMapping(session) {
       const range = ws.getUsedRange();
       range.load("values");
       await context.sync();
-      console.log("context synced");
       const values = range.values;
       const arrays = values.slice(3, values.length - 1);
       const nomCodeObjs = [];
@@ -61,7 +60,6 @@ export async function checkTBMapping(session) {
         if (!matched) unmappedCodeObjects.push(code);
       });
       await context.sync();
-      console.log("context synced");
       return unmappedCodeObjects;
     });
     return rtnVal;
@@ -78,7 +76,6 @@ export async function handleTBData(session) {
       const range = ws.getUsedRange();
       const values = range.load("values");
       await context.sync();
-      console.log("context synced");
       const innerValues = values.values;
       const arrays = innerValues.slice(3, innerValues.length - 1);
       const arrObjs = [];
@@ -94,7 +91,6 @@ export async function handleTBData(session) {
         arrObjs.push(obj);
       }
       await context.sync();
-      console.log("context synced");
       return arrObjs;
     });
     return rtnVal;

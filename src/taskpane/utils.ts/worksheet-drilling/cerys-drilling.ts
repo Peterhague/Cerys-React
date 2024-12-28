@@ -38,13 +38,11 @@ export async function showNominalDetail(e, session) {
       const range = ws.getRange(`${address}:${address}`);
       const values = range.load("values");
       await context.sync();
-      console.log("context synced");
       const innerValues = values.values;
       const code = innerValues[0][0];
       const detail = getCerysNomDetail(session.activeAssignment.transactions, code);
       await cerysNomDetailView(context, detail, session);
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -61,13 +59,11 @@ export async function showNominalDetailPL(e, session) {
       const range = ws.getRange(`${address}:${address}`);
       const values = range.load("values");
       await context.sync();
-      console.log("context synced");
       const innerValues = values.values;
       const category = innerValues[0][0];
       const detail = getCerysNomDetailPL(category, session);
       await cerysNomDetailViewPL(context, session, detail);
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);
@@ -211,7 +207,6 @@ export async function showNominalDetailBS(context, session, e) {
   const range = ws.getRange(`${address}:${address}`);
   const values = range.load("values");
   await context.sync();
-  console.log("context synced");
   const innerValues = values.values;
   const category = innerValues[0][0];
   const detail = await getCerysNomDetailBS(category, session);

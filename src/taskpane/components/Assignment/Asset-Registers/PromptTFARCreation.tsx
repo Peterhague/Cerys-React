@@ -65,7 +65,6 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
         await processTransBatch(context, session);
         checkNewTransForAssets(session, session["newFATransactions"]);
         await context.sync();
-        console.log("context synced");
       });
     } catch (e) {
       console.error(e);

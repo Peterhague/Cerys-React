@@ -13,13 +13,11 @@ export async function showClientNominalDetail(e, session) {
       const range = ws.getRange(`${address}:${address}`);
       const values = range.load("values");
       await context.sync();
-      console.log("context synced");
       const innerValues = values.values;
       const clientCode = innerValues[0][0];
       const detail = getClientNomDetail(clientCode, session);
       clientNomDetailView(context, session, detail);
       await context.sync();
-      console.log("context synced");
     });
   } catch (e) {
     console.error(e);

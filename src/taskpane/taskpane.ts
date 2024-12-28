@@ -9,7 +9,6 @@ export async function insertText(text: string) {
       range.values = [[text]];
       range.format.autofitColumns();
       await context.sync();
-      console.log("context synced");
     });
   } catch (error) {
     console.log("Error: " + error);

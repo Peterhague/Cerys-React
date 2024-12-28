@@ -16,14 +16,12 @@ export async function createClientNLObject() {
       const clientNL = [];
       const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
       await context.sync();
-      console.log("context synced");
       if (ws.isNullObject) {
         return "";
       } else {
         const range = ws.getUsedRange();
         range.load("values");
         await context.sync();
-        console.log("context synced");
         const values = range.values;
         let operativeCode = 0;
         let nominal;
@@ -45,7 +43,6 @@ export async function createClientNLObject() {
         });
       }
       await context.sync();
-      console.log("context synced");
       return clientNL;
     });
   } catch (e) {
