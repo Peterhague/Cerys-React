@@ -1,5 +1,10 @@
 import { createEditableCell } from "../../classes/editable-cell";
-import { getDefinedCol, interpretEventAddress, postEditableSheetEffects, simulateEditButtonClick } from ".././helperFunctions";
+import {
+  getDefinedCol,
+  interpretEventAddress,
+  postEditableSheetEffects,
+  simulateEditButtonClick,
+} from ".././helperFunctions";
 import { deleteWorksheetRangesUp, getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
 import { handleOtherChange } from "./ws-col-row-manipulation";

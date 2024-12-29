@@ -1,4 +1,3 @@
-import { createDefinedCols } from "../classes/defined-col";
 import { TransactionMap } from "../classes/transaction-map";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";

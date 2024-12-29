@@ -1,9 +1,8 @@
-import { createDefinedCols } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
+import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { TransactionMap } from "../../classes/transaction-map";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import {
-  createEditableWs,
   handleEditButtonClick,
   interpretEventAddress,
   checkEditMode,
@@ -111,12 +110,14 @@ async function cerysNomDetailView(context, detail, session) {
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = "#,##0.00;(#,##0.00);-";
-  const definedCols = createDefinedCols("cerysCodeAnalysis");
-  const filter = detail[0].cerysCode;
-  createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping, null, {
-    target: "cerysCode",
-    value: filter,
-  });
+  // const definedCols = createDefinedCols("cerysCodeAnalysis");
+  // const filter = detail[0].cerysCode;
+  // createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping, null, {
+  //   target: "cerysCode",
+  //   value: filter,
+  // });
+  const editableWs = createEditableWorksheet(session, detail, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
+  console.log(editableWs);
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);

@@ -1,10 +1,9 @@
-import { createDefinedCols } from "../../classes/defined-col";
+import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { TransactionMap } from "../../classes/transaction-map";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import {
   callNextView,
-  createEditableWs,
   getActiveClientCodeMapping,
   getUpdatedDate,
   getUpdatedNarrative,
@@ -90,11 +89,7 @@ export async function oBARelevantTransView(session) {
       const columnsRange = ws.getRange("A:I");
       const columnG = ws.getRange("G:G");
       columnG.numberFormat = "#,##0.00;(#,##0.00);-";
-      const definedCols = createDefinedCols("OBARelevantAdjustments");
-      createEditableWs(session, relTrans, ws, definedCols, valuesToPost, "OBARelevantAdjustments", sheetMapping, null, {
-        target: "clientAdj",
-        value: true,
-      });
+      createEditableWorksheet(session, relTrans, ws, valuesToPost, "OBARelevantAdjustments", sheetMapping);
       columnsRange.format.autofitColumns();
       ws.activate();
       if (sheetInMidEdit) handleEditButtonClick(session);

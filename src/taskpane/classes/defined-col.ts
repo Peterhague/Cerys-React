@@ -53,8 +53,8 @@ export const createDefinedCols = (type) => {
   return definedCols;
 };
 
-export const getDefinedColsSchema = (schema) => {
-  switch (schema) {
+export const getDefinedColsSchema = (type) => {
+  switch (type) {
     case "OBARelevantAdjustments":
       return [
         cols.transNo,
