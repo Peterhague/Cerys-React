@@ -1,5 +1,5 @@
 import { createEditableCell } from "../../classes/editable-cell";
-import { getDefinedCol, interpretEventAddress, simulateEditButtonClick } from ".././helperFunctions";
+import { getDefinedCol, interpretEventAddress, postEditableSheetEffects, simulateEditButtonClick } from ".././helperFunctions";
 import { deleteWorksheetRangesUp, getWorksheetUsedRange, setManyExcelRangeValues } from ".././worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
 import { handleOtherChange } from "./ws-col-row-manipulation";
@@ -55,8 +55,7 @@ export const handleWorksheetEdit = async (session, e, wsName) => {
       const handledSuccessfully =
         isRangeEdited && (await handleRangeEdit(context, session, e, sheet, addressObj, definedCol));
       await handleSheetDataCorruption(session, wsName, sheet);
-      const usedRange = await getWorksheetUsedRange(context, wsName);
-      sheet.usedRange = usedRange;
+      sheet.usedRange = await getWorksheetUsedRange(context, wsName);
       session.options.autoFillOverride = false;
       if (handledSuccessfully && definedCol.type === "cerysCode") {
         await completeCerysCodeUpdate(context, session, e, sheet, addressObj);
@@ -117,8 +116,7 @@ export const updateEdSheetClientCodeMapping = async (session, wsName, affectedTr
           }
         });
       });
-      session.options.allowEffects = updates.length;
-      setManyExcelRangeValues(context, sheet.name, updates);
+      postEditableSheetEffects(context, session, sheet.name, updates);
     });
   } catch (e) {
     console.error(e);

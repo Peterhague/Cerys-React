@@ -106,6 +106,7 @@ export const setManyExcelRangeValues = (context, wsName, updates) => {
   console.log(wsName);
   console.log(updates);
   const ws = context.workbook.worksheets.getItem(wsName);
+  // Issue: should this be a for loop because an await call is made during it?
   updates.forEach((update) => {
     const range = ws.getRange(update.address);
     range.values = update.value;

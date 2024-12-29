@@ -72,6 +72,7 @@ export async function showNominalDetailPL(e, session) {
 
 async function cerysNomDetailView(context, detail, session) {
   let sheetInMidEdit = false;
+  const isValueInverted = detail[0].defaultSign === "credit" ? true : false;
   detail.forEach((tran) => {
     if (tran.updates.length > 0) sheetInMidEdit = true;
   });
@@ -82,7 +83,7 @@ async function cerysNomDetailView(context, detail, session) {
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
   ];
-  detail[0].defaultSign === "credit" ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
+  isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
   const sheetMapping = [];
   detail.forEach((line) => {
@@ -96,7 +97,7 @@ async function cerysNomDetailView(context, detail, session) {
     arr.push(cerysCode);
     line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
     arr.push(narrative);
-    line.defaultSign === "credit" ? arr.push(-line.value / 100) : arr.push(line.value / 100);
+    isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
     valuesToPost.push(arr);
     const map = new TransactionMap(line._id, rowNumber);
     sheetMapping.push(map);

@@ -12,6 +12,7 @@ import {
   deleteWorksheetRangesUp,
   getActiveWorksheetName,
   getWorksheet,
+  getWorksheetUsedRange,
   highlightEditableRanges,
   highlightRanges,
   setManyExcelRangeValues,
@@ -402,12 +403,12 @@ export const createEditableWs = (
     });
     this.transactions = newTrans;
     await this.createChangeObjects(context);
-    this.updateMapping(context);
+    await this.updateMapping(context);
     this.transactions.forEach((tran) => (tran.updates = []));
     return newTrans;
   }
 
-  function updateMapping(context) {
+  async function updateMapping(context) {
     const rowNumbers = [];
     const newMapping = [];
     const newTransToMap = [];
@@ -462,7 +463,9 @@ export const createEditableWs = (
         }
       });
     });
-    updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
+    if (updates.length > 0) {
+      await postEditableSheetEffects(context, session, this.name, updates);
+    }
   }
 
   async function createChangeObjects(context) {
@@ -470,7 +473,6 @@ export const createEditableWs = (
     const deletionObjects = [];
     this.sheetMapping.forEach((map) => {
       const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
-      console.log(transaction);
       if (transaction) {
         transaction.updates.forEach((update) => {
           if (update.worksheetId !== this.worksheetId) {
@@ -656,4 +658,11 @@ export const accessExcelContext = async (func, args) => {
     console.error(e);
     return e;
   }
+};
+
+export const postEditableSheetEffects = async (context, session, wsName, updates) => {
+  session.options.allowEffects = updates.length;
+  setManyExcelRangeValues(context, wsName, updates);
+  const sheet = session.editableSheets.find((ws) => ws.name === wsName);
+  sheet.usedRange = await getWorksheetUsedRange(context, wsName);
 };

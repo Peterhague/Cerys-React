@@ -11,6 +11,7 @@ import {
 import { recalculateCharge, updateAssetNarrative } from "../transactions/asset-reg-generation";
 import {
   getWorksheetRangeValues,
+  getWorksheetUsedRange,
   highlightRanges,
   setExcelRangeValue,
   setManyWorksheetRangeValues,
@@ -411,6 +412,7 @@ export const completeCerysNameUpdate = async (context, session, e, sheet, addres
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
     session.options.allowEffects = 1;
     setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+    sheet.usedRange = getWorksheetUsedRange(context, sheet.name);
     if (clientCodeNameMappingCol > 0) {
       const colLetter = colNumToLetter(clientCodeNameMappingCol);
       const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
