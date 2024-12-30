@@ -4,6 +4,7 @@ import {
   ClientCodeObject,
   Customer,
   NewPreliminaryClient,
+  Transaction,
 } from "../interfaces/interfaces";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
@@ -19,7 +20,13 @@ export class Session {
   user: {};
   newUserAccount: {};
   customer: Customer;
-  activeJournal: { journals: []; netValue: number; journalType: string; journal: Boolean; clientTB: Boolean } = {
+  activeJournal: {
+    journals: Transaction[];
+    netValue: number;
+    journalType: string;
+    journal: Boolean;
+    clientTB: Boolean;
+  } = {
     journals: [],
     netValue: 0,
     journalType: "journal",

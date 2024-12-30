@@ -45,14 +45,14 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
           interest: parseInt(value),
         };
         let allocationUpdated = false;
-        session["newIndiPrelim"]._clientShareholdings.forEach((interest) => {
+        session.newIndiPrelim._clientShareholdings.forEach((interest) => {
           if (interest.shareClassId === shareClassId) {
             interest.interest = parseInt(value);
             allocationUpdated = true;
           }
         });
-        !allocationUpdated && session["newIndiPrelim"]._clientShareholdings.push(allocation);
-        console.log(session["newIndiPrelim"]);
+        !allocationUpdated && session.newIndiPrelim._clientShareholdings.push(allocation);
+        console.log(session.newIndiPrelim);
       } else {
         console.log("There aren't enough shares available for this allocation");
       }
@@ -71,7 +71,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
           <div>
             <select name="client" id="client" className="form-control" onChange={(e) => handleClientSelection(e)}>
               <option>Please select</option>
-              {session["customer"]["clients"].map((client) => (
+              {session.customer.clients.map((client) => (
                 <option key={client._id} value={client._id}>
                   {client.clientName}
                 </option>
@@ -97,7 +97,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
                     </tr>
                     <tr>
                       <td>
-                        Allocate to {session["newIndiPrelim"].firstName} {session["newIndiPrelim"].lastName}
+                        Allocate to {session.newIndiPrelim.firstName} {session.newIndiPrelim.lastName}
                       </td>
                       <td>
                         <input type="number" onChange={(e) => handleShareAllocation(e.target.value, sC._id)}></input>

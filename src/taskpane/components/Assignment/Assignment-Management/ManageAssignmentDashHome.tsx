@@ -4,10 +4,11 @@ import { finaliseAssignment } from "../../../assignment/assignment-management/as
 import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
 import { oBARelevantTransView } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { trialBalanceUrl } from "../../../fetching/apiEndpoints";
+import { Session } from "../../../classes/session";
 
 interface manageAssignmentDashHomeProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashHomeProps) => {
@@ -17,7 +18,7 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
       handleNo: () => console.log("no"),
       message: bFPrevPeriodMessage,
     };
-    session["handleDynamicView"]("userConfirmPrompt", options);
+    session.handleDynamicView("userConfirmPrompt", options);
   };
 
   const tbreq = async () => {

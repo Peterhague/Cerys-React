@@ -127,7 +127,7 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "manageAssignmentDashHome":
         body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
-        session["nextView"] = view;
+        session.nextView = view;
         break;
       case "nomCodeSelection":
         body = <NomCodeSelection handleView={handleView} session={session} chart={session.chart} />;
@@ -213,7 +213,7 @@ const AppBody = ({ session }: AppBodyProps) => {
         session.nextView = view;
         break;
       case "enterJournal":
-        body = <EnterJournal handleView={handleView} session={session} chart={session["chart"]} />;
+        body = <EnterJournal handleView={handleView} session={session} chart={session.chart} />;
         break;
       case "promptIFARCreation":
         body = <PromptIFARCreation handleView={handleView} session={session} />;

@@ -1,5 +1,7 @@
-export function worksheetHeader(session, wsName) {
-  const activeAssignment = session["activeAssignment"];
+import { Session } from "../../classes/session";
+
+export function worksheetHeader(session: Session, wsName) {
+  const activeAssignment = session.activeAssignment;
   const headerValues = [];
   headerValues.push(["Client name", activeAssignment.clientName]);
   headerValues.push(["Client code", activeAssignment.clientCode]);

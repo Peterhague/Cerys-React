@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 interface addCorpClientSHNewProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientSHNew = ({ handleView, session }: addCorpClientSHNewProps) => {
@@ -18,7 +19,7 @@ const AddCorpClientSHNew = ({ handleView, session }: addCorpClientSHNewProps) =>
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newClientShareholder = { firstName, lastName, email, phone, address, uTR, isDirector };
-    session["newCorpClientShareholders"].push(newClientShareholder);
+    session.newCorpClientShareholders.push(newClientShareholder);
     handleView("addCorpClientDirsHome");
   };
 

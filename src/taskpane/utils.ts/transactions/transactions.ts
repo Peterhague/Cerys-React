@@ -1,3 +1,4 @@
+import { Session } from "../../classes/session";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { colNumToLetter } from "../excel-col-conversion";
@@ -6,8 +7,8 @@ import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs } from "../worksheet-editing/ws-editing";
 /* global Excel */
 
-export const processTransBatch = async (context, session) => {
-  const activeJournal = session["activeJournal"];
+export const processTransBatch = async (context, session: Session) => {
+  const activeJournal = session.activeJournal;
   const transactions = [];
   activeJournal.journals.forEach((jnl) => {
     const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
@@ -29,13 +30,13 @@ export const processTransBatch = async (context, session) => {
     jnl.journal = activeJournal.journal;
     transactions.push(jnl);
   });
-  const transDtls = { customerId: session["customer"]["_id"], assignmentId: session["activeAssignment"]["_id"] };
+  const transDtls = { customerId: session.customer._id, assignmentId: session.activeAssignment._id };
   const { assignment, newTransactions } = await postTransactionsDb(session, transactions, transDtls);
-  session["activeAssignment"] = assignment;
+  session.activeAssignment = assignment;
   newTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });
-  session["activeJournal"] = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
+  session.activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   await updateAssignmentFigures(context, session);
   return newTransactions;
 };
@@ -82,7 +83,7 @@ export const submitTransactionUpdates = async (session) => {
   }
 };
 
-export const processUpdateBatch = async (session) => {
+export const processUpdateBatch = async (session: Session) => {
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
   const updatedAssignmentAndTrans = await updatedAssignmentAndTransDB.json();
@@ -90,97 +91,39 @@ export const processUpdateBatch = async (session) => {
   updatedTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });
-  session["activeAssignment"] = updatedAssignmentAndTrans.assignment;
+  session.activeAssignment = updatedAssignmentAndTrans.assignment;
   return updatedTransactions;
 };
 
-export const checkAssetRegStatus = (session, handleView) => {
+export const checkAssetRegStatus = (session: Session, handleView) => {
   if (
-    !session["activeAssignment"]["IFARegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Intangible assets") &&
-    (session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostAddns") ||
-      session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostBF"))
+    !session.activeAssignment.IFARegisterCreated &&
+    session.activeAssignment.activeCategories.includes("Intangible assets") &&
+    (session.activeAssignment.activeAssetCodeTypes.includes("iFACostAddns") ||
+      session.activeAssignment.activeAssetCodeTypes.includes("iFACostBF"))
   ) {
     handleView("promptIFARCreation");
   } else if (
-    !session["activeAssignment"]["TFARegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Tangible assets") &&
-    (session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostAddns") ||
-      session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostBF"))
+    !session.activeAssignment.TFARegisterCreated &&
+    session.activeAssignment.activeCategories.includes("Tangible assets") &&
+    (session.activeAssignment.activeAssetCodeTypes.includes("tFACostAddns") ||
+      session.activeAssignment.activeAssetCodeTypes.includes("tFACostBF"))
   ) {
     handleView("promptTFARCreation");
   } else if (
-    !session["activeAssignment"]["IPRegisterCreated"] &&
-    session["activeAssignment"]["activeCategories"].includes("Investment property") &&
-    (session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostAddns") ||
-      session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostBF"))
+    !session.activeAssignment.IPRegisterCreated &&
+    session.activeAssignment.activeCategories.includes("Investment property") &&
+    (session.activeAssignment.activeAssetCodeTypes.includes("iPCostAddns") ||
+      session.activeAssignment.activeAssetCodeTypes.includes("iPCostBF"))
   ) {
     handleView("promptIPRCreation");
   } else {
     console.log("next view called");
     callNextView(session);
   }
-  //if (
-  //  session["activeAssignment"]["activeCategories"].includes("Intangible assets") &&
-  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostAddns") ||
-  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("iFACostBF"))
-  //) {
-  //  handleView("promptIFARCreation");
-  //} else if (
-  //  !session["activeAssignment"]["TFARegisterCreated"] &&
-  //  session["activeAssignment"]["activeCategories"].includes("Tangible assets") &&
-  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostAddns") ||
-  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("tFACostBF"))
-  //) {
-  //  handleView("promptTFARCreation");
-  //} else if (
-  //  !session["activeAssignment"]["IPRegisterCreated"] &&
-  //  session["activeAssignment"]["activeCategories"].includes("Investment property") &&
-  //  (session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostAddns") ||
-  //    session["activeAssignment"]["activeAssetCodeTypes"].includes("iPCostBF"))
-  //) {
-  //  handleView("promptIPRCreation");
-  //} else {
-  //  callNextView(session);
-  //}
 };
 
-//export const checkNewTransForAssets = (session, newTransactions) => {
-//  //const newTransactions = session.latestTransactions;
-//  console.log(newTransactions);
-//  session.newFATransactions = newTransactions;
-//  let nextView = true;
-//  for (let i = 0; i < newTransactions.length; i++) {
-//    if (
-//      newTransactions[i].processedAsAsset === false &&
-//      (newTransactions[i].assetCodeType === "iFACostAddns" || newTransactions[i].assetCodeType === "iFACostBF")
-//    ) {
-//      session.handleView("promptIFARCreation");
-//      nextView = false;
-//      break;
-//    } else if (
-//      newTransactions[i].processedAsAsset === false &&
-//      (newTransactions[i].assetCodeType === "tFACostAddns" || newTransactions[i].assetCodeType === "tFACostBF")
-//    ) {
-//      session.handleView("promptTFARCreation");
-//      nextView = false;
-//      break;
-//    } else if (
-//      newTransactions[i].processedAsAsset === false &&
-//      (newTransactions[i].assetCodeType === "iPCostAddns" || newTransactions[i].assetCodeType === "iPCostBF")
-//    ) {
-//      session.handleView("promptIPRCreation");
-//      nextView = false;
-//      break;
-//    }
-//  }
-//  if (nextView) {
-//    callNextView(session);
-//    session.newFATranasctions = [];
-//  }
-//};
-
-export const checkNewTransForAssets = (session, newTransactions) => {
+export const checkNewTransForAssets = (session: Session, newTransactions) => {
   console.log(newTransactions);
   const newFATransactions = [];
   let iFAPresent = false;
@@ -223,7 +166,7 @@ export const checkNewTransForAssets = (session, newTransactions) => {
   }
 };
 
-export const checkFATranUpdatesForAssets = (session, newTransactions) => {
+export const checkFATranUpdatesForAssets = (session: Session, newTransactions) => {
   console.log(newTransactions);
   newTransactions.forEach((tran) => {
     if (tran.processedAsAsset === false && tran.assetCodeType === "iFACostAddns") {
@@ -236,7 +179,7 @@ export const checkFATranUpdatesForAssets = (session, newTransactions) => {
   });
 };
 
-const postTransactionsDb = async (session, transactions, transDtls) => {
+const postTransactionsDb = async (session: Session, transactions, transDtls) => {
   const options = fetchOptionsTransBatch(session, transactions, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();

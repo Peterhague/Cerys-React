@@ -1,3 +1,4 @@
+import { Session } from "../classes/session";
 import { TransactionMap } from "../classes/transaction-map";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
@@ -66,12 +67,8 @@ export const handleSheetAddition = async (context, e, session) => {
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 
-export function populateUser(session: { [x: string]: { [x: string]: any[] } }, userId: any) {
-  let userObj: any;
-  session["customer"]["users"].forEach((user: { _id: any }) => {
-    if (user._id === userId) userObj = user;
-  });
-  return userObj;
+export function populateUser(session: Session, userId: string) {
+  return session.customer.users.find((user) => user._id === userId);
 }
 
 export async function updateAssignmentDb(

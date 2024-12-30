@@ -46,7 +46,7 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
       amortBasisCompSware,
       amortRateCompSware,
     };
-    const updatedObj = { ...session["newClientPrelim"], ...amortPols };
+    const updatedObj = { ...session.newClientPrelim, ...amortPols };
     session.newClientPrelim = updatedObj;
     handleView("addCorpClientOptions");
   };

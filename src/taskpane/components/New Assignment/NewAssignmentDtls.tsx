@@ -127,12 +127,12 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     session.IFARegister = IFARegister;
     session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
     session.TFARegister = TFARegister;
-    session["TFARegister"] = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
+    session.TFARegister = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
     addPrimarySheets(session);
-    if (session["activeAssignment"].reportingPeriod.bFTB.length > 0) {
+    if (session.activeAssignment.reportingPeriod.bFTB.length > 0) {
       const options = {
         handleYes: () => postOpBalJnls(session),
-        handleNo: () => session["handleView"]("assignmentDashHome"),
+        handleNo: () => session.handleView("assignmentDashHome"),
         message: bFPrevPeriodMessage,
       };
       session.handleDynamicView("userConfirmPrompt", options);
@@ -142,12 +142,12 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   };
 
   const processNewAssignment = async (prelimAssignment) => {
-    const customerId = session["customer"]["_id"];
+    const customerId = session.customer._id;
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
     console.log(updatedCustAndNewAss);
-    session["chart"] = updatedCustAndNewAss.client.cerysChart;
+    session.chart = updatedCustAndNewAss.client.cerysChart;
     return updatedCustAndNewAss;
   };
 
@@ -176,7 +176,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                 onChange={(e) => handleClientSelection(e.target.value)}
               >
                 {!clientId && <option>Please select</option>}
-                {session["customer"]["clients"].map((client) => (
+                {session.customer.clients.map((client) => (
                   <option key={client._id} value={client._id}>
                     {client.clientCode + " " + client.clientName}
                   </option>
@@ -197,7 +197,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                 <option value="Management accounts">Management accounts</option>
               </select>
             </div>
-            {session["customer"]["users"].length > 0 && (
+            {session.customer.users.length > 0 && (
               <div>
                 <label htmlFor="senior">Senior</label>
                 <select
@@ -208,7 +208,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                   onChange={(e) => set_Senior(e.target.value)}
                 >
                   {!_senior && <option>Please select</option>}
-                  {session["customer"]["users"].map((user) => (
+                  {session.customer.users.map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
                     </option>
@@ -216,7 +216,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                 </select>
               </div>
             )}
-            {session["customer"]["users"].length > 0 && (
+            {session.customer.users.length > 0 && (
               <div>
                 <label htmlFor="manager">Manager</label>
                 <select
@@ -227,7 +227,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                   onChange={(e) => set_Manager(e.target.value)}
                 >
                   {!_manager && <option>Please select</option>}
-                  {session["customer"]["users"].map((user) => (
+                  {session.customer.users.map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
                     </option>
@@ -235,7 +235,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                 </select>
               </div>
             )}
-            {session["customer"]["users"].length > 0 && (
+            {session.customer.users.length > 0 && (
               <div>
                 <label htmlFor="RI">Partner</label>
                 <select
@@ -246,7 +246,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
                   onChange={(e) => set_ResponsibleIndividual(e.target.value)}
                 >
                   {!_responsibleIndividual && <option>Please select</option>}
-                  {session["customer"]["users"].map((user) => (
+                  {session.customer.users.map((user) => (
                     <option key={user._id} value={user._id}>
                       {user.firstName + " " + user.lastName}
                     </option>

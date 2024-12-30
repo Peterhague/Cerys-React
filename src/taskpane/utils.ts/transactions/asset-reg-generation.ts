@@ -53,7 +53,7 @@ export const previewRelTrans = (session, registerType, setView) => {
   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
   setView("confirm");
-  session["options"][`${registerType}RCreationSetting`] = "confirm";
+  session.options[`${registerType}RCreationSetting`] = "confirm";
 };
 
 export async function createRelTrans(session, registerType) {
@@ -824,7 +824,7 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
 //  try {
 //    await Excel.run(async (context) => {
 //      const assignment = await postIFAtoDB(session);
-//      session["activeAssignment"] = assignment;
+//      session.activeAssignment = assignment;
 //      createIFARWs(context, session);
 //    });
 //  } catch (e) {
@@ -858,7 +858,7 @@ export const createCurrentPeriodRegister = (regsiter, session) => {
 };
 
 //export async function createIFARWs(context, session) {
-//  const transToPost = session["IFATransactions"];
+//  const transToPost = session.IFATransactions;
 //  console.log(transToPost);
 //  const activeCatsNames = [];
 //  const IFAActiveCats = [];

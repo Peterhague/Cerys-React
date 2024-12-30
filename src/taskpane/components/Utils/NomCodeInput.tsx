@@ -1,7 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
+import { Session } from "../../classes/session";
+
 interface nomCodeInputProps {
-  session: {};
+  session: Session;
   chart: [
     {
       cerysCode: number;
@@ -45,14 +47,14 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
         if (value.length > searchDisplay.length) {
           return;
         } else if (value.length < searchDisplay.length) {
-          session["arrowIndex"] = -1;
+          session.arrowIndex = -1;
           setSearchTerm(nominalCode);
           setSearchDisplay(nominalCode);
           setNominalCode("");
           setNominalCodeName("");
         }
       } else {
-        session["arrowIndex"] = -1;
+        session.arrowIndex = -1;
         setSearchTerm(value);
         setSearchDisplay(value);
       }
@@ -72,7 +74,7 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
           : `${codeObj.cerysCode} ${codeObj.cerysExcelName}`
       );
       setShowSuggestions(false);
-      session["arrowIndex"] = -1;
+      session.arrowIndex = -1;
     };
 
     const handleBlur = (e) => {
@@ -80,7 +82,7 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
         return;
       } else {
         setShowSuggestions(false);
-        session["arrowIndex"] = -1;
+        session.arrowIndex = -1;
         if (searchDisplay !== searchTerm) {
           setSearchTerm(searchDisplay);
         } else {
@@ -116,27 +118,27 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
             return searchTerm && check;
           });
           if (e.key === "ArrowDown") {
-            if (session["arrowIndex"] < filteredChart.length - 1) {
-              session["arrowIndex"] += 1;
-              const codeStr = filteredChart[session["arrowIndex"]].clientCode
-                ? filteredChart[session["arrowIndex"]].clientCode.toString()
-                : filteredChart[session["arrowIndex"]].cerysCode.toString();
-              const shortName = filteredChart[session["arrowIndex"]].cerysExcelName
-                ? filteredChart[session["arrowIndex"]].cerysExcelName
-                : filteredChart[session["arrowIndex"]].clientCodeName;
+            if (session.arrowIndex < filteredChart.length - 1) {
+              session.arrowIndex += 1;
+              const codeStr = filteredChart[session.arrowIndex].clientCode
+                ? filteredChart[session.arrowIndex].clientCode.toString()
+                : filteredChart[session.arrowIndex].cerysCode.toString();
+              const shortName = filteredChart[session.arrowIndex].cerysExcelName
+                ? filteredChart[session.arrowIndex].cerysExcelName
+                : filteredChart[session.arrowIndex].clientCodeName;
               setNominalCode(codeStr);
               setNominalCodeName(shortName);
               setSearchDisplay(`${codeStr} ${shortName}`);
             }
           } else {
-            if (session["arrowIndex"] > 0) {
-              session["arrowIndex"] -= 1;
-              const codeStr = filteredChart[session["arrowIndex"]].clientCode
-                ? filteredChart[session["arrowIndex"]].clientCode.toString()
-                : filteredChart[session["arrowIndex"]].cerysCode.toString();
-              const shortName = filteredChart[session["arrowIndex"]].cerysExcelName
-                ? filteredChart[session["arrowIndex"]].cerysExcelName
-                : filteredChart[session["arrowIndex"]].clientCodeName;
+            if (session.arrowIndex > 0) {
+              session.arrowIndex -= 1;
+              const codeStr = filteredChart[session.arrowIndex].clientCode
+                ? filteredChart[session.arrowIndex].clientCode.toString()
+                : filteredChart[session.arrowIndex].cerysCode.toString();
+              const shortName = filteredChart[session.arrowIndex].cerysExcelName
+                ? filteredChart[session.arrowIndex].cerysExcelName
+                : filteredChart[session.arrowIndex].clientCodeName;
               setNominalCode(codeStr);
               setNominalCodeName(shortName);
               setSearchDisplay(`${codeStr} ${shortName}`);

@@ -56,7 +56,7 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
   const handleSubmit = async () => {
     try {
       await Excel.run(async (context) => {
-        session["options"].TFARCreationSetting = "main";
+        session.options.TFARCreationSetting = "main";
         finaliseAssetObjects(session, registerType);
         await createTFAR(context, session);
         session.TFATransactions = [];
@@ -64,7 +64,7 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
         session.activeJournal.journal = false;
         session.activeJournal.journalType = "auto-journal";
         await processTransBatch(context, session);
-        checkNewTransForAssets(session, session["newFATransactions"]);
+        checkNewTransForAssets(session, session.newFATransactions);
         await context.sync();
       });
     } catch (e) {

@@ -4,15 +4,17 @@ import CerysButton from "../../CerysButton";
 import { accessExcelContext, clearNextViewButOne } from "../../../utils.ts/helperFunctions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
 import { checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
+import { Session } from "../../../classes/session";
+/* global Excel */
 
 interface deleteSheetPromptProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   const sheetsToDelete = [];
-  session["editableSheets"].forEach((sheet) => {
+  session.editableSheets.forEach((sheet) => {
     if (sheet.promptDeletion) {
       sheetsToDelete.push(sheet.name);
     }
@@ -25,8 +27,8 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
     try {
       await Excel.run(async (context) => {
         await deleteManyWorksheets(context, sheetsToDelete);
-        checkNewTransForAssets(session, session["options"].updatedTransactions);
-        session["options"].updatedTransactions = [];
+        checkNewTransForAssets(session, session.options.updatedTransactions);
+        session.options.updatedTransactions = [];
       });
     } catch (e) {
       console.error(e);
@@ -38,7 +40,7 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
       await Excel.run(async (context) => {
         await deleteManyWorksheets(context, [sheet]);
         const newArr = [];
-        session["editableSheets"].forEach((ws) => {
+        session.editableSheets.forEach((ws) => {
           if (ws.name !== sheet) newArr.push(ws);
         });
         setEmptySheets(newArr);
@@ -49,8 +51,8 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   };
 
   const skipDeleteSheets = () => {
-    checkNewTransForAssets(session, session["options"].updatedTransactions);
-    session["options"].updatedTransactions = [];
+    checkNewTransForAssets(session, session.options.updatedTransactions);
+    session.options.updatedTransactions = [];
   };
 
   return (

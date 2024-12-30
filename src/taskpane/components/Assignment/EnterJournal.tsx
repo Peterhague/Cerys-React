@@ -50,7 +50,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     console.log(cerysObj);
     const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
     session.activeJournal.journals.push(journalDtls);
-    session["activeJournal"].netValue += journalDtls.value;
+    session.activeJournal.netValue += journalDtls.value;
     setNominalCode("");
     setNominalCodeName("");
     setSearchTerm("");
