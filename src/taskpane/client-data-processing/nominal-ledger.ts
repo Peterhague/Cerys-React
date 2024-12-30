@@ -1,8 +1,9 @@
+import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 /* global Excel */
 
-export async function enterNL(session) {
+export async function enterNL(session: Session) {
   const clientNL = await createClientNLObject();
   session.activeAssignment.clientNL = clientNL;
   const { customer, assignment } = await postCltNLToDb(session);
@@ -12,7 +13,7 @@ export async function enterNL(session) {
 
 export async function createClientNLObject() {
   try {
-    await Excel.run(async (context) => {
+    const rtnVal = await Excel.run(async (context) => {
       const clientNL = [];
       const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
       await context.sync();
@@ -45,12 +46,14 @@ export async function createClientNLObject() {
       await context.sync();
       return clientNL;
     });
+    return rtnVal;
   } catch (e) {
     console.error(e);
+    return e;
   }
 }
 
-export const postCltNLToDb = async (session) => {
+export const postCltNLToDb = async (session: Session) => {
   let assignmentId = session.activeAssignment._id;
   let customerId = session.customer._id;
   let clientNL = session.activeAssignment.clientNL;

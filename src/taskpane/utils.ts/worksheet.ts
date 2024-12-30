@@ -1,14 +1,15 @@
+import { Session } from "../classes/session";
 import { Worksheet } from "../classes/worksheet";
 import { colNumToLetter } from "./excel-col-conversion";
 /* global Excel */
 
-export function addWorksheet(context, session, wsDefaults) {
+export function addWorksheet(context, session: Session, wsDefaults) {
   const ws = context.workbook.worksheets.add(wsDefaults.name);
   wsDefaults.addListeners && wsDefaults.addListeners.forEach((fn) => fn(context, session));
   return ws;
 }
 
-export const addWorksheets = async (context, session, sheetNames) => {
+export const addWorksheets = async (context, session: Session, sheetNames) => {
   const worksheets = [];
   session.options.ignoreWsAddition += sheetNames.length;
   sheetNames.forEach((i) => {
@@ -21,7 +22,7 @@ export const addWorksheets = async (context, session, sheetNames) => {
 };
 
 // returns new Excel worksheet object with id and name preloaded
-export const addOneWorksheet = async (context, session, wsDefaults) => {
+export const addOneWorksheet = async (context, session: Session, wsDefaults) => {
   session.options.ignoreWsAddition += 1;
   const ws = addWorksheet(context, session, wsDefaults);
   const proxyObj = { name: wsDefaults.name, ws };
@@ -174,18 +175,18 @@ export const highlightRanges = (context, wsName, ranges, color) => {
   });
 };
 
-export const processWorksheetAdditions = async (context, session, worksheets) => {
+export const processWorksheetAdditions = async (context, session: Session, worksheets) => {
   console.log(worksheets);
   worksheets.forEach((sheet) => sheet.ws.load(["id", "name"]));
   await context.sync();
   worksheets.forEach((sheet) => session.worksheets.push(new Worksheet(sheet.name, sheet.ws.id)));
 };
 
-export const getProxyWorksheet = (session, wsName) => {
+export const getProxyWorksheet = (session: Session, wsName) => {
   return session.worksheets.find((ws) => ws.name === wsName);
 };
 
-export const getOrAddWorksheet = async (context, session, wsDefaults) => {
+export const getOrAddWorksheet = async (context, session: Session, wsDefaults) => {
   const wsName = wsDefaults.name;
   const proxyWs = getProxyWorksheet(session, wsName);
   const worksheets = context.workbook.worksheets;

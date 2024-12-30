@@ -1,5 +1,7 @@
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
+import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
+import { TransactionUpdate } from "../../classes/transaction-update";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import {
@@ -17,7 +19,8 @@ import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing
 export const getOBARelTrans = (transactions) => {
   return transactions.filter((tran) => tran.clientAdj);
 };
-export async function oBARelevantTransView(session) {
+
+export async function oBARelevantTransView(session: Session) {
   try {
     await Excel.run(async (context) => {
       //const relTrans = session.activeAssignment.transactions.filter((tran) => {
@@ -100,7 +103,7 @@ export async function oBARelevantTransView(session) {
   }
 }
 
-export const handleClientCodeMapping = (context, session, nominalCode, nominalCodeName) => {
+export const handleClientCodeMapping = (context, session: Session, nominalCode, nominalCodeName) => {
   const tran = session.activeEditableCell.getActiveTransaction(session);
   const cerysCode = tran.cerysCode;
   const wsName = session.activeEditableCell.wsName;
@@ -115,13 +118,14 @@ export const handleClientCodeMapping = (context, session, nominalCode, nominalCo
   session.handleDynamicView("userConfirmPrompt", options);
 };
 
-export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeName, cerysCode, wsName) => {
+export const updateCerysCodeMapping = async (session: Session, nominalCode, nominalCodeName, cerysCode, wsName) => {
   const relTrans = session.activeAssignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   relTrans.forEach(
     (tran) =>
       (tran.updates = [
-        { updateType: "clientCodeMapping", value: nominalCode },
-        { updateType: "clientCodeNameMapping", value: nominalCodeName },
+        new TransactionUpdate(wsName, ws.worksheetId, "clientCodeMapping", nominalCode, null),
+        new TransactionUpdate(wsName, ws.worksheetId, "clientCodeNameMapping", nominalCodeName, null),
       ])
   );
   updateEdSheetClientCodeMapping(session, wsName, relTrans);

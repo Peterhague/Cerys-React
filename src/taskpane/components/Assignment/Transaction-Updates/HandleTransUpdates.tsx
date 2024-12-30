@@ -3,10 +3,12 @@ import CerysButton from "../../CerysButton";
 import { callNextView } from "../../../utils.ts/helperFunctions";
 import { reverseTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
 import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
+import { Session } from "../../../classes/session";
+/* global Excel */
 
 interface handleTransUpdatesProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) => {

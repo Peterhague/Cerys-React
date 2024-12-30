@@ -1,8 +1,9 @@
+import { Session } from "../classes/session";
 import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 /*global Excel */
 
-export async function addPrimarySheets(session) {
+export async function addPrimarySheets(session: Session) {
   try {
     await Excel.run(async (context) => {
       const worksheetNames = ["DATA", "Client TB", "Client NL", "Client ADR", "Client ACR"];
@@ -16,7 +17,7 @@ export async function addPrimarySheets(session) {
   }
 }
 
-function convertDataForWbook(session) {
+function convertDataForWbook(session: Session) {
   const activeAssignment = session.activeAssignment;
   let newArray = [];
   newArray.push(["Client code", activeAssignment.clientCode]);
@@ -40,7 +41,7 @@ async function writeToDATA(context, dataSpread) {
   range.format.autofitColumns();
 }
 
-export const postOpBalJnls = async (session) => {
+export const postOpBalJnls = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const transactionDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];

@@ -1,4 +1,5 @@
 import { createEditableCell } from "../../classes/editable-cell";
+import { Session } from "../../classes/session";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
   accessExcelContext,
@@ -10,7 +11,7 @@ import {
 import { deleteWorksheetRangeDown, getWorksheetUsedRange } from "../worksheet";
 import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 
-export const handleOtherChange = async (context, session, e, wsName, sheet, addressObj) => {
+export const handleOtherChange = async (context, session: Session, e, wsName, sheet, addressObj) => {
   if (e.changeType === "ColumnInserted") {
     await handleColumnInsertion(session, e, wsName, sheet, addressObj);
   } else if (e.changeType === "ColumnDeleted") {
@@ -30,7 +31,7 @@ export const handleOtherChange = async (context, session, e, wsName, sheet, addr
   }
 };
 
-export const handleColumnInsertion = async (session, e, wsName, sheet, addressObj) => {
+export const handleColumnInsertion = async (session: Session, e, wsName, sheet, addressObj) => {
   const { firstCol, lastCol } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name && firstCol <= session.activeEditableCell.addressObj.firstCol) {
@@ -50,7 +51,7 @@ export const handleColumnInsertion = async (session, e, wsName, sheet, addressOb
   return;
 };
 
-export const handleColumnDeletion = async (session, sheet, addressObj) => {
+export const handleColumnDeletion = async (session: Session, sheet, addressObj) => {
   const { firstCol, lastCol } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
@@ -101,7 +102,7 @@ export const handleColumnDeletion = async (session, sheet, addressObj) => {
   return;
 };
 
-export const handleRowInsertion = async (session, e, wsName, sheet, addressObj) => {
+export const handleRowInsertion = async (session: Session, e, wsName, sheet, addressObj) => {
   const { firstRow, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name && firstRow <= session.activeEditableCell.addressObj.firstRow) {
@@ -133,7 +134,7 @@ export const handleRowInsertion = async (session, e, wsName, sheet, addressObj) 
   });
 };
 
-export const handleRowDeletion = async (session, sheet, addressObj) => {
+export const handleRowDeletion = async (session: Session, sheet, addressObj) => {
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
@@ -198,7 +199,7 @@ export const handleRowDeletion = async (session, sheet, addressObj) => {
   });
 };
 
-export const handleCellDeletionUp = async (session, sheet, addressObj) => {
+export const handleCellDeletionUp = async (session: Session, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   console.log(session.activeEditableCell);
@@ -281,7 +282,7 @@ export const handleCellDeletionUp = async (session, sheet, addressObj) => {
   }
 };
 
-export const handleCellDeletionLeft = async (session, sheet, addressObj) => {
+export const handleCellDeletionLeft = async (session: Session, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
@@ -347,7 +348,7 @@ export const handleCellDeletionLeft = async (session, sheet, addressObj) => {
   }
 };
 
-export const handleCellInsertionDown = (context, session, e, wsName, sheet, addressObj) => {
+export const handleCellInsertionDown = (context, session: Session, e, wsName, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name && session.activeEditableCell.addressObj.firstRow >= firstRow) {
@@ -387,7 +388,7 @@ export const handleCellInsertionDown = (context, session, e, wsName, sheet, addr
   }
 };
 
-export const handleCellInsertionRight = (session, e, wsName, sheet, addressObj) => {
+export const handleCellInsertionRight = (session: Session, e, wsName, sheet, addressObj) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name && session.activeEditableCell.addressObj.firstCol >= firstCol) {
@@ -422,12 +423,12 @@ export const handleCellInsertionRight = (session, e, wsName, sheet, addressObj) 
   }
 };
 
-export const handleColumnSort = async (session) => {
+export const handleColumnSort = async (session: Session) => {
   const sheet = await getActiveEdSheet(session);
   sheet.columnsSorted = true;
 };
 
-export const handleRowSort = async (session, wsName) => {
+export const handleRowSort = async (session: Session, wsName) => {
   const usedRange = await accessExcelContext(getWorksheetUsedRange, [wsName]);
   let uniqueCol;
   session.editableSheets.forEach((sheet) => {

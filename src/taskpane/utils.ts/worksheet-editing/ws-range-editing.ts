@@ -1,4 +1,5 @@
 import { createEditableCell } from "../../classes/editable-cell";
+import { Session } from "../../classes/session";
 import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
@@ -19,7 +20,7 @@ import {
 import { handleWorksheetEdit } from "./ws-editing";
 /* global Excel */
 
-export const handleRangeEdit = async (context, session, e, sheet, addressObj, definedCol) => {
+export const handleRangeEdit = async (context, session: Session, e, sheet, addressObj, definedCol) => {
   session.activeEditableCell = createEditableCell(null, null, null);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
@@ -78,7 +79,7 @@ export const checkForAutoFill = (e) => {
   return autoFillObj;
 };
 
-export const captureReanalysis = async (context, session, e, sheet, addressObj, definedCol) => {
+export const captureReanalysis = async (context, session: Session, e, sheet, addressObj, definedCol) => {
   const wsName = sheet.name;
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
@@ -124,7 +125,7 @@ export const combineAllValidation = (definedCol, validationObj) => {
 
 export const processTransactionUpdate = (
   context,
-  session,
+  session: Session,
   tran,
   tests,
   definedCol,
@@ -144,7 +145,7 @@ export const processTransactionUpdate = (
     updateAssetNarrative(session, sheet, tran, e);
 };
 
-export const processTransUpdateEffects = (context, session, sheet, definedCol, range, tests) => {
+export const processTransUpdateEffects = (context, session: Session, sheet, definedCol, range, tests) => {
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
@@ -165,7 +166,7 @@ export const processTransUpdateEffects = (context, session, sheet, definedCol, r
   }
 };
 
-export const validateChange = (session, tran, change, e) => {
+export const validateChange = (session: Session, tran, change, e) => {
   const obj = { isNegation: false, isInvalid: false, isError: false };
   if (change.type === "cerysCode") {
     validateCerysCode(session, tran, e, obj);
@@ -182,7 +183,7 @@ export const validateChange = (session, tran, change, e) => {
   return obj;
 };
 
-export const validateCerysCode = (session, tran, e, obj) => {
+export const validateCerysCode = (session: Session, tran, e, obj) => {
   if (e.details.valueAfter === tran.cerysCode) obj.isNegation = true;
   let inValidCode = true;
   session.chart.forEach((code) => {
@@ -192,7 +193,7 @@ export const validateCerysCode = (session, tran, e, obj) => {
   obj.isInvalid = inValidCode;
 };
 
-export const validateTransactionDate = (session, tran, e, obj) => {
+export const validateTransactionDate = (session: Session, tran, e, obj) => {
   if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
   if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
   if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
@@ -205,7 +206,7 @@ export const validateTransactionDate = (session, tran, e, obj) => {
   }
 };
 
-export const validateClientCode = (session, tran, e, obj) => {
+export const validateClientCode = (session: Session, tran, e, obj) => {
   const valueAfter = e.details.valueAfter;
   if (valueAfter === tran.defaultClientMapping.clientCode) obj.isNegation = true;
   let inValidCode = true;
@@ -231,7 +232,7 @@ export const deleteExistingUpdate = (tran, tests, definedCol) => {
   }
 };
 
-export const createNewTransactionUpdate = (session, tran, newValue, sheet, definedCol) => {
+export const createNewTransactionUpdate = (session: Session, tran, newValue, sheet, definedCol) => {
   let reversion;
   if (definedCol.type === "date") {
     reversion = tran.transactionDateExcel;
@@ -277,7 +278,7 @@ export const cancelAutoFill = async (wsName, address) => {
   }
 };
 
-export const reverseTransactionUpdates = async (context, session) => {
+export const reverseTransactionUpdates = async (context, session: Session) => {
   const reversals = [];
   const updatedTrans = getUpdatedTransactions(session);
   updatedTrans.forEach((tran) => {
@@ -297,7 +298,7 @@ export const reverseTransactionUpdates = async (context, session) => {
   session.setEditButton("hide");
 };
 
-export const simulateAutoFillChanges = async (context, session, sheet, autoFillObj) => {
+export const simulateAutoFillChanges = async (context, session: Session, sheet, autoFillObj) => {
   const wsName = sheet.name;
   const ranges = [];
   if (autoFillObj.autoFillCols) {
@@ -378,7 +379,7 @@ export const reinstateNumberFormats = async (sheet) => {
   }
 };
 
-export const completeCerysCodeUpdate = async (context, session, e, sheet, addressObj) => {
+export const completeCerysCodeUpdate = async (context, session: Session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let cerysNameCol = 0;
   sheet.definedCols.forEach((col) => {
@@ -394,7 +395,7 @@ export const completeCerysCodeUpdate = async (context, session, e, sheet, addres
   }
 };
 
-export const completeCerysNameUpdate = async (context, session, e, sheet, addressObj) => {
+export const completeCerysNameUpdate = async (context, session: Session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let clientCodeMappingCol = 0;
   let clientCodeNameMappingCol = 0;
@@ -421,7 +422,7 @@ export const completeCerysNameUpdate = async (context, session, e, sheet, addres
   }
 };
 
-export const completeClientCodeMappingUpdate = async (context, session, e, sheet, addressObj) => {
+export const completeClientCodeMappingUpdate = async (context, session: Session, e, sheet, addressObj) => {
   const { firstRow } = addressObj;
   let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {

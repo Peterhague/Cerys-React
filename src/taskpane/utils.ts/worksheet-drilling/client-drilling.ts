@@ -1,3 +1,4 @@
+import { Session } from "../../classes/session";
 import { getClientNomDetail } from "../taskpane/client-system-access";
 import { addOneWorksheet } from "../worksheet";
 /* global Excel */
@@ -5,7 +6,7 @@ import { addOneWorksheet } from "../worksheet";
 // Called by a click on the client code in the Cerys code analysis sheets.
 // Generates an array of client's relevant transactions and calls
 // clientNomDetailView to generate a worksheet-based view to display the data.
-export async function showClientNominalDetail(e, session) {
+export async function showClientNominalDetail(e, session: Session) {
   try {
     await Excel.run(async (context) => {
       const address = e.address;
@@ -26,7 +27,7 @@ export async function showClientNominalDetail(e, session) {
 
 // called by showClientNominalDetail to generate a worksheet-based view of the client
 // nominal activity.
-async function clientNomDetailView(context, session, detail) {
+async function clientNomDetailView(context, session: Session, detail) {
   const { ws } = await addOneWorksheet(context, session, {
     name: `${detail[0].cerysCode} analysis`,
     addListeners: undefined,

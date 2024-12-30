@@ -1,15 +1,12 @@
 import { Session } from "../classes/session";
-import { TransactionMap } from "../classes/transaction-map";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
-import { createDeletionObject } from "./transactions/transactions";
 import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
 import {
-  deleteWorksheetRangesUp,
   getActiveWorksheetName,
   getWorksheet,
   getWorksheetUsedRange,
@@ -36,7 +33,7 @@ export const getExcelContext = async () => {
   }
 };
 
-export const registerWorksheetsCollectionHandler = async (session) => {
+export const registerWorksheetsCollectionHandler = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       let sheets = context.workbook.worksheets;
@@ -49,14 +46,14 @@ export const registerWorksheetsCollectionHandler = async (session) => {
   }
 };
 
-export const handleSheetDeletion = (e, session) => {
+export const handleSheetDeletion = (e, session: Session) => {
   session.editableSheets = session.editableSheets
     .filter((sheet) => sheet.worksheetId !== e.worksheetId)
     .map((sheet) => sheet);
   session.worksheets = session.worksheets.filter((sheet) => sheet.id !== e.worksheetId).map((sheet) => sheet);
 };
 
-export const handleSheetAddition = async (context, e, session) => {
+export const handleSheetAddition = async (context, e, session: Session) => {
   if (session.options.ignoreWsAddition > 0) {
     session.options.ignoreWsAddition -= 1;
     return;
@@ -71,10 +68,7 @@ export function populateUser(session: Session, userId: string) {
   return session.customer.users.find((user) => user._id === userId);
 }
 
-export async function updateAssignmentDb(
-  session: { activeAssignment: { _id: any }; customer: { _id: any } },
-  target: any
-) {
+export async function updateAssignmentDb(session: Session, target: any) {
   const workbookId = session.activeAssignment._id;
   const customerId = session.customer._id;
   const options = fetchOptionsUpdateAssignment(customerId, workbookId, target);
@@ -83,23 +77,23 @@ export async function updateAssignmentDb(
   return updatedCustAndAss;
 }
 
-export const resetActiveJournal = (session) => {
+export const resetActiveJournal = (session: Session) => {
   const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
   session.activeJournal = activeJournal;
 };
 
-export const callNextView = (session) => {
+export const callNextView = (session: Session) => {
   session.handleView(session.nextView);
   session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
 };
 
-export const setNextViewButOne = (session) => {
+export const setNextViewButOne = (session: Session) => {
   session.nextViewButOne = session.nextView;
   session.nextView = session.currentView;
 };
 
-export const clearNextViewButOne = (session) => {
+export const clearNextViewButOne = (session: Session) => {
   if (session.nextViewButOne) session.nextView = session.nextViewButOne;
   session.nextViewButOne = "";
 };
@@ -150,7 +144,7 @@ export const calculateDiffInDays = (inputDate1, inputDate2) => {
   return daysDiff;
 };
 
-export const setEditButtonValue = async (session) => {
+export const setEditButtonValue = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       // appropriate
@@ -168,7 +162,7 @@ export const setEditButtonValue = async (session) => {
   }
 };
 
-export const handleEditButtonClick = async (session) => {
+export const handleEditButtonClick = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       // appropriate
@@ -231,7 +225,7 @@ export const handleEditButtonClick = async (session) => {
   }
 };
 
-export const simulateEditButtonClick = async (session) => {
+export const simulateEditButtonClick = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       //Appropriate
@@ -285,7 +279,7 @@ export const simulateEditButtonClick = async (session) => {
   }
 };
 
-export const updateAssignmentFigures = async (context, session) => {
+export const updateAssignmentFigures = async (context, session: Session) => {
   const tbArray = tbForPosting(session.activeAssignment.tb);
   await postTbToWbook(context, session, tbArray);
   await wsPLAccount(context, session);
@@ -380,161 +374,161 @@ export const interpretExcelAddress = (excelAddress) => {
 //  });
 //};
 
-export const createEditableWs = (
-  session,
-  transactions,
-  ws,
-  definedCols,
-  valuesToPost,
-  type,
-  sheetMapping,
-  customFilter,
-  filterObj
-) => {
-  async function defaultFilter(context, transactions) {
-    const newTrans = transactions.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
-    newTrans.forEach((newTran) => {
-      const transaction = this.transactions.find((tran) => tran._id === newTran._id);
-      if (transaction) newTran.updates = transaction.updates;
-    });
-    this.transactions = newTrans;
-    await this.createChangeObjects(context);
-    await this.updateMapping(context);
-    this.transactions.forEach((tran) => (tran.updates = []));
-    return newTrans;
-  }
+// export const createEditableWs = (
+//   session: Session,
+//   transactions,
+//   ws,
+//   definedCols,
+//   valuesToPost,
+//   type,
+//   sheetMapping,
+//   customFilter,
+//   filterObj
+// ) => {
+//   async function defaultFilter(context, transactions) {
+//     const newTrans = transactions.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+//     newTrans.forEach((newTran) => {
+//       const transaction = this.transactions.find((tran) => tran._id === newTran._id);
+//       if (transaction) newTran.updates = transaction.updates;
+//     });
+//     this.transactions = newTrans;
+//     await this.createChangeObjects(context);
+//     await this.updateMapping(context);
+//     this.transactions.forEach((tran) => (tran.updates = []));
+//     return newTrans;
+//   }
 
-  async function updateMapping(context) {
-    const rowNumbers = [];
-    const newMapping = [];
-    const newTransToMap = [];
-    const additionalTrans = [];
-    this.transactions.forEach((tran) => {
-      const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
-      if (existingMap) {
-        rowNumbers.push(existingMap.rowNumber);
-        newMapping.push(existingMap);
-      } else {
-        newTransToMap.push(tran);
-      }
-    });
-    newTransToMap.forEach((tran) => {
-      rowNumbers.sort((a, b) => b - a);
-      const nextRow = rowNumbers[0] + 1;
-      const newMap = new TransactionMap(tran._id, nextRow);
-      newMapping.push(newMap);
-      additionalTrans.push({ tran, map: newMap });
-      rowNumbers.push(nextRow);
-    });
-    this.sheetMapping = newMapping;
-    const updates = [];
-    additionalTrans.forEach((tran) => {
-      const row = tran.map.rowNumber;
-      this.definedCols.forEach((definedCol) => {
-        const update: { address?: string; value?: string | number } = {};
-        update.value = definedCol.getTargetProperty(tran.tran);
-        if (
-          definedCol.type === "value" &&
-          typeof update.value === "number" &&
-          this.definedCols.find((col) => col.type === "cerysCode")
-        ) {
-          update.value = update.value / 100;
-          if (this.isValueInverted) update.value = update.value * -1;
-        } else if (definedCol.type === "clientCode" && typeof update.value === "number") {
-          update.value = update.value >= 0 ? update.value : "NA";
-        }
-        const col = colNumToLetter(definedCol.colNumber);
-        update.address = `${col}${row}:${col}${row}`;
-        updates.push(update);
-      });
-      if (this.protectedRange.firstRow > row) this.protectedRange.firstRow = row;
-      if (this.protectedRange.lastRow < row) this.protectedRange.lastRow = row;
-      this.editableRowRanges.forEach((range) => {
-        if (range.firstRow - 1 === row) {
-          range.firstRow = row;
-        } else if (range.lastRow + 1 === row) {
-          range.lastRow = row;
-        } else {
-          this.editableRowRanges.push({ firstRow: row, lastRow: row });
-        }
-      });
-    });
-    if (updates.length > 0) {
-      await postEditableSheetEffects(context, session, this.name, updates);
-    }
-  }
+//   async function updateMapping(context) {
+//     const rowNumbers = [];
+//     const newMapping = [];
+//     const newTransToMap = [];
+//     const additionalTrans = [];
+//     this.transactions.forEach((tran) => {
+//       const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
+//       if (existingMap) {
+//         rowNumbers.push(existingMap.rowNumber);
+//         newMapping.push(existingMap);
+//       } else {
+//         newTransToMap.push(tran);
+//       }
+//     });
+//     newTransToMap.forEach((tran) => {
+//       rowNumbers.sort((a, b) => b - a);
+//       const nextRow = rowNumbers[0] + 1;
+//       const newMap = new TransactionMap(tran._id, nextRow);
+//       newMapping.push(newMap);
+//       additionalTrans.push({ tran, map: newMap });
+//       rowNumbers.push(nextRow);
+//     });
+//     this.sheetMapping = newMapping;
+//     const updates = [];
+//     additionalTrans.forEach((tran) => {
+//       const row = tran.map.rowNumber;
+//       this.definedCols.forEach((definedCol) => {
+//         const update: { address?: string; value?: string | number } = {};
+//         update.value = definedCol.getTargetProperty(tran.tran);
+//         if (
+//           definedCol.type === "value" &&
+//           typeof update.value === "number" &&
+//           this.definedCols.find((col) => col.type === "cerysCode")
+//         ) {
+//           update.value = update.value / 100;
+//           if (this.isValueInverted) update.value = update.value * -1;
+//         } else if (definedCol.type === "clientCode" && typeof update.value === "number") {
+//           update.value = update.value >= 0 ? update.value : "NA";
+//         }
+//         const col = colNumToLetter(definedCol.colNumber);
+//         update.address = `${col}${row}:${col}${row}`;
+//         updates.push(update);
+//       });
+//       if (this.protectedRange.firstRow > row) this.protectedRange.firstRow = row;
+//       if (this.protectedRange.lastRow < row) this.protectedRange.lastRow = row;
+//       this.editableRowRanges.forEach((range) => {
+//         if (range.firstRow - 1 === row) {
+//           range.firstRow = row;
+//         } else if (range.lastRow + 1 === row) {
+//           range.lastRow = row;
+//         } else {
+//           this.editableRowRanges.push({ firstRow: row, lastRow: row });
+//         }
+//       });
+//     });
+//     if (updates.length > 0) {
+//       await postEditableSheetEffects(context, session, this.name, updates);
+//     }
+//   }
 
-  async function createChangeObjects(context) {
-    const updates = [];
-    const deletionObjects = [];
-    this.sheetMapping.forEach((map) => {
-      const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
-      if (transaction) {
-        transaction.updates.forEach((update) => {
-          if (update.worksheetId !== this.worksheetId) {
-            const definedCol = this.definedCols.find((col) => col.type === update.type);
-            const col = colNumToLetter(definedCol.colNumber);
-            const row = map.rowNumber;
-            const sheetUpdate: { address: string; value?: string | number } = {
-              address: `${col}${row}:${col}${row}`,
-              value: update.value,
-            };
-            updates.push(sheetUpdate);
-          }
-        });
-      } else {
-        deletionObjects.push(createDeletionObject(map, this));
-      }
-    });
-    updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
-    if (deletionObjects.length > 0) {
-      // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
-      // therefore needs to be done from bottom of page up
-      deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
-      await deleteWorksheetRangesUp(context, deletionObjects);
-    }
-  }
+//   async function createChangeObjects(context) {
+//     const updates = [];
+//     const deletionObjects = [];
+//     this.sheetMapping.forEach((map) => {
+//       const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
+//       if (transaction) {
+//         transaction.updates.forEach((update) => {
+//           if (update.worksheetId !== this.worksheetId) {
+//             const definedCol = this.definedCols.find((col) => col.type === update.type);
+//             const col = colNumToLetter(definedCol.colNumber);
+//             const row = map.rowNumber;
+//             const sheetUpdate: { address: string; value?: string | number } = {
+//               address: `${col}${row}:${col}${row}`,
+//               value: update.value,
+//             };
+//             updates.push(sheetUpdate);
+//           }
+//         });
+//       } else {
+//         deletionObjects.push(createDeletionObject(map, this));
+//       }
+//     });
+//     updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
+//     if (deletionObjects.length > 0) {
+//       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
+//       // therefore needs to be done from bottom of page up
+//       deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
+//       await deleteWorksheetRangesUp(context, deletionObjects);
+//     }
+//   }
 
-  function testValueInversion() {
-    const cerysCodeObj =
-      type === "cerysCodeAnalysis" ? session.chart.find((code) => code.cerysCode === filterObj.value) : undefined;
-    return cerysCodeObj && cerysCodeObj.defaultSign === "credit" ? true : false;
-  }
+//   function testValueInversion() {
+//     const cerysCodeObj =
+//       type === "cerysCodeAnalysis" ? session.chart.find((code) => code.cerysCode === filterObj.value) : undefined;
+//     return cerysCodeObj && cerysCodeObj.defaultSign === "credit" ? true : false;
+//   }
 
-  const editableWs = {
-    name: ws.name,
-    type,
-    edited: false,
-    promptDeletion: false,
-    worksheetId: ws.id,
-    editableRowRanges: [{ firstRow: 3, lastRow: transactions.length + 2 }],
-    protectedRange: { firstRow: 3, lastRow: transactions.length + 2, firstCol: 1, lastCol: definedCols.length },
-    protectedRangeDeleted: false,
-    definedCols,
-    editButtonStatus: "show",
-    columnsSorted: false,
-    rowsSorted: false,
-    dataCompromised: false,
-    dataCorrupted: false,
-    transactions: transactions,
-    usedRange: valuesToPost,
-    sheetMapping,
-    renewTransactions: customFilter ? customFilter : defaultFilter,
-    updateMapping,
-    filterObj,
-    createChangeObjects,
-    isValueInverted: testValueInversion(),
-  };
-  const arr = [editableWs];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name !== editableWs.name) arr.push(sheet);
-  });
-  session.editableSheets = arr;
-  addEditableSheetEventHandlers(session, ws);
-  return editableWs;
-};
+//   const editableWs = {
+//     name: ws.name,
+//     type,
+//     edited: false,
+//     promptDeletion: false,
+//     worksheetId: ws.id,
+//     editableRowRanges: [{ firstRow: 3, lastRow: transactions.length + 2 }],
+//     protectedRange: { firstRow: 3, lastRow: transactions.length + 2, firstCol: 1, lastCol: definedCols.length },
+//     protectedRangeDeleted: false,
+//     definedCols,
+//     editButtonStatus: "show",
+//     columnsSorted: false,
+//     rowsSorted: false,
+//     dataCompromised: false,
+//     dataCorrupted: false,
+//     transactions: transactions,
+//     usedRange: valuesToPost,
+//     sheetMapping,
+//     renewTransactions: customFilter ? customFilter : defaultFilter,
+//     updateMapping,
+//     filterObj,
+//     createChangeObjects,
+//     isValueInverted: testValueInversion(),
+//   };
+//   const arr = [editableWs];
+//   session.editableSheets.forEach((sheet) => {
+//     if (sheet.name !== editableWs.name) arr.push(sheet);
+//   });
+//   session.editableSheets = arr;
+//   addEditableSheetEventHandlers(session, ws);
+//   return editableWs;
+// };
 
-export const addEditableSheetEventHandlers = (session, ws) => {
+export const addEditableSheetEventHandlers = (session: Session, ws) => {
   ws.onActivated.add(() => setEditButtonValue(session));
   ws.onDeactivated.add(() => session.setEditButton("off"));
   ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, ws.name));
@@ -559,7 +553,7 @@ export const resetEdSheetCallBack = () => {
   };
 };
 
-export const getActiveEdSheet = async (session) => {
+export const getActiveEdSheet = async (session: Session) => {
   try {
     const rtnVal = await Excel.run(async (context) => {
       const wsName = await getActiveWorksheetName(context);
@@ -630,12 +624,12 @@ export const getUpdatedClientCodeMapping = (tran) => {
   return mapping;
 };
 
-export const getUpdatedTransactions = (session) => {
+export const getUpdatedTransactions = (session: Session) => {
   const updatedTrans = session.activeAssignment.transactions.filter((tran) => tran.updates.length > 0);
   return updatedTrans;
 };
 
-export const getActiveClientCodeMapping = (session, transaction) => {
+export const getActiveClientCodeMapping = (session: Session, transaction) => {
   let obj = transaction.activeClientMapping;
   const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
   if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
@@ -656,7 +650,7 @@ export const accessExcelContext = async (func, args) => {
   }
 };
 
-export const postEditableSheetEffects = async (context, session, wsName, updates) => {
+export const postEditableSheetEffects = async (context, session: Session, wsName, updates) => {
   session.options.allowEffects = updates.length;
   setManyExcelRangeValues(context, wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);

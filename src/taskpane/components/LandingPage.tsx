@@ -1,10 +1,10 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
-import { getExcelContext } from "../utils.ts/helperFunctions";
+import { Session } from "../classes/session";
 
 interface LandingPageProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const LandingPage = ({ handleView }: LandingPageProps) => {

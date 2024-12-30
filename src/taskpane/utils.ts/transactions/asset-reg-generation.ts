@@ -1,3 +1,4 @@
+import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
@@ -12,7 +13,7 @@ import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editin
 import _ from "lodash";
 /*global Excel */
 
-export const identifyLikelyAdditions = async (session, registerType, setView) => {
+export const identifyLikelyAdditions = async (session: Session, registerType, setView) => {
   console.log("next step working");
   const bFTransLikelyAddns = [];
   //session.activeAssignment.transactions.forEach((tran) => {
@@ -49,14 +50,14 @@ export const identifyLikelyAdditions = async (session, registerType, setView) =>
   }
 };
 
-export const previewRelTrans = (session, registerType, setView) => {
+export const previewRelTrans = (session: Session, registerType, setView) => {
   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
   setView("confirm");
   session.options[`${registerType}RCreationSetting`] = "confirm";
 };
 
-export async function createRelTrans(session, registerType) {
+export async function createRelTrans(session: Session, registerType) {
   console.log(session.newFATransactions);
   const relevantTrans = [];
   //session.activeAssignment.transactions.forEach((tran) => {
@@ -82,7 +83,7 @@ export async function createRelTrans(session, registerType) {
   console.log(relevantTrans);
 }
 
-export const convertNewFATrans = (session) => {
+export const convertNewFATrans = (session: Session) => {
   const updatedTrans = [];
   session.newFATransactions.forEach((origTran) => {
     //session.activeAssignment.clientNL.forEach((tran) => {
@@ -137,7 +138,7 @@ export const convertNewFATrans = (session) => {
   session.newFATransactions = updatedTrans;
 };
 
-export async function createTransSumm(session, relevantTrans, registerType) {
+export async function createTransSumm(session: Session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
       const sheetMapping = [];
@@ -424,7 +425,7 @@ export async function createTransSumm(session, relevantTrans, registerType) {
   }
 }
 
-export async function createLikelyAdditionsSumm(session, relevantTrans, registerType) {
+export async function createLikelyAdditionsSumm(session: Session, relevantTrans, registerType) {
   try {
     await Excel.run(async (context) => {
       const name = `${registerType} Possible Additions`;
@@ -583,7 +584,7 @@ export const populateDepnCols = (activeClient, transVals, tran, registerType) =>
   }
 };
 
-export function calculateCharge(session, tran, registerType) {
+export function calculateCharge(session: Session, tran, registerType) {
   const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
   console.log(tran);
@@ -617,7 +618,7 @@ export function calculateCharge(session, tran, registerType) {
   session.activeJournal.netValue += jnls["credit"]["value"];
 }
 
-export const recalculateCharge = async (context, session, sheet, tran, e) => {
+export const recalculateCharge = async (context, session: Session, sheet, tran, e) => {
   let registerType;
   let amortOrDepn;
   let amortOrDepnUpper;
@@ -665,7 +666,7 @@ export const recalculateCharge = async (context, session, sheet, tran, e) => {
   adjustAutoDepnJnls(session, tran, charge);
 };
 
-export const updateAssetNarrative = async (session, sheet, tran, e) => {
+export const updateAssetNarrative = async (session: Session, sheet, tran, e) => {
   let registerType;
   if (sheet.type === "IFARPreview") {
     registerType = "IFA";
@@ -681,7 +682,7 @@ export const updateAssetNarrative = async (session, sheet, tran, e) => {
   });
 };
 
-export const buildAutoDepnJnls = (session, tran, registerType) => {
+export const buildAutoDepnJnls = (session: Session, tran, registerType) => {
   const catNo = tran.assetCategoryNo;
   let amortOrDepn;
   let jnls;
@@ -760,7 +761,7 @@ export const setAutoDepnIPNominals = (catNo) => {
   }
 };
 
-export const adjustAutoDepnJnls = (session, tran, charge) => {
+export const adjustAutoDepnJnls = (session: Session, tran, charge) => {
   session.activeJournal.journals.forEach((jnl) => {
     if (jnl.transactionId === tran._id) {
       if (jnl.value > 0) jnl.value = charge;
@@ -769,7 +770,7 @@ export const adjustAutoDepnJnls = (session, tran, charge) => {
   });
 };
 
-export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
+export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) => {
   bFTransLikelyAddns.forEach((tran) => {
     if (tran._id) {
       const newValue = tran.cerysCode + 1;
@@ -839,7 +840,7 @@ export const createTransactionUpdates = (session, bFTransLikelyAddns) => {
 //  return updatedAssignment;
 //}
 
-export const createCurrentPeriodRegister = (regsiter, session) => {
+export const createCurrentPeriodRegister = (regsiter, session: Session) => {
   const periodId = session.activeAssignment.reportingPeriod._id;
   const currentPeriodRegister = [];
   regsiter.assets.forEach((asset) => {
@@ -857,31 +858,7 @@ export const createCurrentPeriodRegister = (regsiter, session) => {
   return currentPeriodRegister;
 };
 
-//export async function createIFARWs(context, session) {
-//  const transToPost = session.IFATransactions;
-//  console.log(transToPost);
-//  const activeCatsNames = [];
-//  const IFAActiveCats = [];
-//  transToPost.forEach((i) => {
-//    if (!activeCatsNames.includes(i.assetCategory)) {
-//      activeCatsNames.push(i.assetCategory);
-//      IFAActiveCats.push({
-//        assetCategory: i.assetCategory,
-//        assetCategoryNo: i.assetCategoryNo,
-//      });
-//    }
-//  });
-//  IFAActiveCats.sort((a, b) => {
-//    return a.assetCategoryNo - b.assetCategoryNo;
-//  });
-//  const wsName = "IFA Register";
-//  const ws = addWorksheet(context, wsName);
-//  const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
-//  applyWorkhseetHeader(ws, wsHeaders);
-//  populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");
-//}
-
-export const finaliseAssetObjects = (session, registerType) => {
+export const finaliseAssetObjects = (session: Session, registerType) => {
   const reportingPeriod = session.activeAssignment.reportingPeriod;
   const assets = session[`${registerType}Transactions`];
   assets.forEach((asset) => {

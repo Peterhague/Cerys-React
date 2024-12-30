@@ -1,4 +1,6 @@
-export function getClientNomDetail(clientCode, session) {
+import { Session } from "../../classes/session";
+
+export function getClientNomDetail(clientCode, session: Session) {
   const selection = [];
   session.activeAssignment.clientNL.forEach((transaction) => {
     if (transaction.cerysCode === clientCode) {

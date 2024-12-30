@@ -1,44 +1,35 @@
+import { Transaction } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils.ts/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils.ts/helperFunctions";
 import { createDeletionObject } from "../utils.ts/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils.ts/worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
+import { Session } from "./session";
 import { TransactionMap } from "./transaction-map";
 
 export class EditableWorksheet {
   name: string;
   type: string;
-  edited: Boolean;
-  promptDeletion: Boolean;
+  edited: boolean;
+  promptDeletion: boolean;
   worksheetId: string;
   editableRowRanges: [{ firstRow: number; lastRow: number }];
   protectedRange: { firstRow: number; lastRow: number; firstCol: number; lastCol: number };
-  protectedRangeDeleted: Boolean;
+  protectedRangeDeleted: boolean;
   definedCols: DefinedCol[];
   editButtonStatus: string;
-  changeRejected: Boolean;
-  columnsSorted: Boolean;
-  rowsSorted: Boolean;
-  dataCompromised: Boolean;
-  dataCorrupted: Boolean;
-  transactions: [
-    { _id: string; cerysCode: number; updates: [{ worksheetId: string; type: string; value: string | number }] | [] },
-  ];
+  changeRejected: boolean;
+  columnsSorted: boolean;
+  rowsSorted: boolean;
+  dataCompromised: boolean;
+  dataCorrupted: boolean;
+  transactions: Transaction[];
   usedRange: [string];
   sheetMapping: TransactionMap[];
-  filterObj: { target: string; value: string | number | Boolean };
-  isValueInverted: Boolean;
+  filterObj: { target: string; value: string | number | boolean };
+  isValueInverted: boolean;
 
-  constructor(
-    session,
-    transactions: [
-      { _id: string; cerysCode: number; updates: [{ worksheetId: string; type: string; value: string | number }] | [] },
-    ],
-    ws,
-    wsValues,
-    type,
-    sheetMapping
-  ) {
+  constructor(session: Session, transactions: Transaction[], ws, wsValues, type, sheetMapping) {
     this.name = ws.name;
     this.type = type;
     this.edited = false;
@@ -65,7 +56,7 @@ export class EditableWorksheet {
     this.filterObj = this.createEditableSheetFilterObj();
     this.isValueInverted = this.testValueInversion(session);
   }
-  async renewTransactions(context, session, assignmentTrans) {
+  async renewTransactions(context, session: Session, assignmentTrans) {
     const newTrans = assignmentTrans.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran._id === newTran._id);
@@ -78,7 +69,7 @@ export class EditableWorksheet {
     return newTrans;
   }
 
-  async updateMapping(context, session) {
+  async updateMapping(context, session: Session) {
     const rowNumbers = [];
     const newMapping: TransactionMap[] = [];
     const newTransToMap = [];
@@ -195,7 +186,7 @@ export class EditableWorksheet {
     }
   };
 
-  testValueInversion(session) {
+  testValueInversion(session: Session) {
     const cerysCodeObj =
       this.type === "cerysCodeAnalysis"
         ? session.chart.find((code) => code.cerysCode === this.filterObj.value)
@@ -204,7 +195,7 @@ export class EditableWorksheet {
   }
 }
 
-export const createEditableWorksheet = (session, transactions, ws, wsValues, type, sheetMapping) => {
+export const createEditableWorksheet = (session: Session, transactions, ws, wsValues, type, sheetMapping) => {
   const editableWs = new EditableWorksheet(session, transactions, ws, wsValues, type, sheetMapping);
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {

@@ -12,10 +12,11 @@ import {
   getUpdatedTransactions,
 } from "../../../utils.ts/helperFunctions";
 import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
+import { Session } from "../../../classes/session";
 
 interface reviewTransUpdatesProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) => {

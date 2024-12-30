@@ -80,7 +80,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
       clientCode,
       _clientDirectorships: [],
       _clientShareholdings: [],
-      otherDirectorShips: [],
+      otherDirectorships: [],
       otherShareholdings: [],
     };
     processNewIndi(newIndi);

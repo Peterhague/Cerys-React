@@ -1,3 +1,5 @@
+import { TransactionUpdate } from "../classes/transaction-update";
+
 export interface BaseCerysCodeObject {
   cerysCode: number;
   cerysName: string;
@@ -14,7 +16,7 @@ export interface BaseCerysCodeObject {
   regColNameTwo: string | null;
   altCategory: string | null;
   defaultSign: string | null;
-  clientAdj: Boolean;
+  clientAdj: boolean;
   closeOffCode: number;
   _id: string;
 }
@@ -45,6 +47,7 @@ export interface Assignment {
   assignmentType: string;
   _junior: string;
   senior: ShortUser;
+  manager: ShortUser;
   responsibleIndividual: ShortUser;
   clientSoftware: string;
   workbookId: string;
@@ -53,14 +56,14 @@ export interface Assignment {
   assignmentStatus: string;
   dateStarted: string;
   dateFinished: string;
-  TBInitiated: Boolean;
-  TBEntered: Boolean;
-  transactionsPosted: Boolean;
-  NLEntered: Boolean;
-  templatesAmended: Boolean;
-  IFARegisterCreated: Boolean;
-  TFARegisterCreated: Boolean;
-  IPRegisterCreated: Boolean;
+  TBInitiated: boolean;
+  TBEntered: boolean;
+  transactionsPosted: boolean;
+  NLEntered: boolean;
+  templatesAmended: boolean;
+  IFARegisterCreated: boolean;
+  TFARegisterCreated: boolean;
+  IPRegisterCreated: boolean;
   tb: TrialBalanceLine[];
   activeCategories: string[];
   activeCategoriesDetails: {
@@ -70,7 +73,28 @@ export interface Assignment {
   }[];
   activeAssetCodeTypes: string[];
   transactionBatches: number;
-  finalised: Boolean;
+  finalised: boolean;
+  _id: string;
+  profit?: number;
+  tbListenerAdded: boolean;
+  pLListenerAdded: boolean;
+  bSListenerAdded?: boolean;
+  tCA: number;
+  tCL: number;
+  nonCA: number;
+  nonCL: number;
+  provisions: number;
+  shareCapital: number;
+  sharePremium: number;
+  profLossRes: number;
+  capRedRes: number;
+  otherRes: number;
+  fVRes: number;
+  otherRes2: number;
+  otherRes3: number;
+  otherRes4: number;
+  otherRes5: number;
+  minorityInt: number;
 }
 
 export interface ReportingPeriod {
@@ -85,6 +109,7 @@ export interface ReportingPeriod {
   reportingDateExcel: number;
   finalTB: TrialBalanceLine[];
   bFTB: TrialBalanceLine[];
+  _id: string;
 }
 
 export interface TrialBalanceLine {
@@ -102,29 +127,13 @@ export interface ShortUser {
   email: string;
   password: string;
   _customer: string;
+  _id: string;
 }
 
-export interface Transaction {
-  cerysCode: number;
-  closeOffCode: number;
-  cerysCategory: string;
-  cerysSubCategory: string;
-  assetSubCatCode: number;
-  assetSubCategory: string;
-  assetCategory: string;
-  assetCategoryNo: number;
-  assetCodeType: string;
-  assetNarrative: string;
-  cerysName: string;
-  cerysShortName: string;
-  cerysExcelName: string;
-  clientAdj: Boolean;
+export interface Transaction extends BaseCerysCodeObject {
   value: number;
   transactionType: string;
-  defaultSign: string;
-  regColNameOne: string;
-  regColNameTwo: string;
-  transactionDate: string;
+  transactionDate: Date | string;
   transactionDateExcel: number;
   transactionNumber: number;
   transactionBatchNumber: number;
@@ -137,25 +146,28 @@ export interface Transaction {
   }[];
   narrative: string;
   user: string;
-  clientTB: Boolean;
+  clientTB: boolean;
   clientNominalCode: number;
   clientNominalName: string;
-  clientAdjustment: Boolean;
-  journal: Boolean;
-  reviewJournal: Boolean;
-  finalJournal: Boolean;
+  clientAdjustment: boolean;
+  journal: boolean;
+  reviewJournal: boolean;
+  finalJournal: boolean;
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
   defaultClientMapping: ClientMapping;
   activeClientMapping: ClientMapping;
-  updates: {
-    worksheetName: string;
-    worksheetId: string;
-    type: string;
-    value: string | number;
-    mongoDate: string | null;
-  }[];
+  updates: TransactionUpdate[];
+  _id: string;
+}
+
+export interface NewFATransaction extends Transaction {
+  processedAsAsset: boolean;
+}
+
+export interface Journal extends Transaction {
+  transactionId: string;
 }
 
 export interface ClientTransaction {
@@ -165,6 +177,7 @@ export interface ClientTransaction {
   detail: string;
   date: number;
   value: number;
+  cerysCode?: number;
 }
 
 export interface ClientMapping {
@@ -185,8 +198,9 @@ export interface Customer {
   users: ShortUser[];
   assignments: string[];
   clients: Client[];
-  nonCorpClients: NonCorpClient[];
-  individuals: BaseIndividual[];
+  nonCorpClients: ExtendedIndividual[];
+  individuals: ExtendedIndividual[];
+  _id: string;
 }
 
 export interface Client {
@@ -243,7 +257,7 @@ export interface Client {
     firstName: string;
     lastName: string;
     email: string;
-    isClient: Boolean;
+    isClient: boolean;
     dateAppointed: string;
     dateCeased: string;
     personId: string;
@@ -263,10 +277,10 @@ export interface Client {
     },
   ];
   IFARegisterCreated: {
-    type: Boolean;
+    type: boolean;
   };
   TFARegisterCreated: {
-    type: Boolean;
+    type: boolean;
   };
   clientChart: {
     clientCode: number;
@@ -283,16 +297,21 @@ export interface BaseIndividual {
   email: string;
   phone: string;
   address: string;
-  isClient: Boolean;
-  clientCode: string;
-  _clientDirectorships: Directorship[];
-  _clientShareholdings: Shareholding[];
-  otherDirectorships: string[];
-  otherShareholdings: string[];
+  isClient?: boolean;
+  clientCode?: string;
+  _clientDirectorships?: Directorship[];
+  _clientShareholdings?: Shareholding[];
+  otherDirectorships?: string[];
+  otherShareholdings?: string[];
+  _id?: string;
 }
 
-export interface NonCorpClient extends BaseIndividual {
+export interface ExtendedIndividual extends BaseIndividual {
   uTR: string;
+  isDirector: boolean;
+  dateAppointed?: string;
+  dateCeased?: string;
+  isShareholder: boolean;
 }
 
 export interface Directorship {

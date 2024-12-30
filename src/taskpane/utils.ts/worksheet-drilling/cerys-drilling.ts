@@ -1,5 +1,6 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
+import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import {
@@ -16,19 +17,19 @@ import { addOneWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 /* global Excel */
 
-export function addTbClickListener(context, session) {
+export function addTbClickListener(context, session: Session) {
   const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
   ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
   session.activeAssignment.tbListenerAdded = true;
 }
 
-export function addPlClickListener(context, session) {
+export function addPlClickListener(context, session: Session) {
   const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.activeAssignment.pLListenerAdded = true;
 }
 
-export async function showNominalDetail(e, session) {
+export async function showNominalDetail(e, session: Session) {
   try {
     await Excel.run(async (context) => {
       const address = e.address;
@@ -48,7 +49,7 @@ export async function showNominalDetail(e, session) {
   }
 }
 
-export async function showNominalDetailPL(e, session) {
+export async function showNominalDetailPL(e, session: Session) {
   try {
     await Excel.run(async (context) => {
       console.log(e);
@@ -69,7 +70,7 @@ export async function showNominalDetailPL(e, session) {
   }
 }
 
-async function cerysNomDetailView(context, detail, session) {
+async function cerysNomDetailView(context, detail, session: Session) {
   let sheetInMidEdit = false;
   const isValueInverted = detail[0].defaultSign === "credit" ? true : false;
   detail.forEach((tran) => {
@@ -123,7 +124,7 @@ async function cerysNomDetailView(context, detail, session) {
   if (sheetInMidEdit) handleEditButtonClick(session);
 }
 
-export const handleSingleClick = (session, e, wsName) => {
+export const handleSingleClick = (session: Session, e, wsName) => {
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const editModeEnabled = checkEditMode(sheet);
   const addressObj = interpretEventAddress(e);
@@ -156,12 +157,12 @@ export const handleSingleClick = (session, e, wsName) => {
   }
 };
 
-export const handleClientMappingCellClick = (session, addressObj, wsName) => {
+export const handleClientMappingCellClick = (session: Session, addressObj, wsName) => {
   session.handleView("clientNomCodeSelection");
   session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
 };
 
-export const handleOtherCellClick = (session, e, addressObj, clientCodeCol, withinEditableRange) => {
+export const handleOtherCellClick = (session: Session, e, addressObj, clientCodeCol, withinEditableRange) => {
   if (session.currentView === "nomCodeSelection" || session.currentView === "clientNomCodeSelection") {
     callNextView(session);
     session.activeEditableCell = createEditableCell(null, null, null);
@@ -171,7 +172,7 @@ export const handleOtherCellClick = (session, e, addressObj, clientCodeCol, with
   }
 };
 
-export async function cerysNomDetailViewPL(context, session, detail) {
+export async function cerysNomDetailViewPL(context, session: Session, detail) {
   const { ws } = await addOneWorksheet(context, session, {
     name: `${detail[0][0].cerysCategory} analysis`,
     addListeners: undefined,
@@ -196,13 +197,13 @@ export async function cerysNomDetailViewPL(context, session, detail) {
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
 }
 
-export function addBsClickListener(context, session) {
+export function addBsClickListener(context, session: Session) {
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, session, e));
   session.activeAssignment.bSListenerAdded = true;
 }
 
-export async function showNominalDetailBS(context, session, e) {
+export async function showNominalDetailBS(context, session: Session, e) {
   const address = e.address;
   if (address[0] !== "A") return;
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
@@ -215,7 +216,7 @@ export async function showNominalDetailBS(context, session, e) {
   cerysNomDetailViewBS(context, session, detail);
 }
 
-async function cerysNomDetailViewBS(context, session, detail) {
+async function cerysNomDetailViewBS(context, session: Session, detail) {
   const activeAssignment = session.activeAssignment;
   const { ws } = await addOneWorksheet(context, session, {
     name: `${detail[0][0].cerysCategory} analysis`,

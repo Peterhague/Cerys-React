@@ -1,5 +1,6 @@
 // takes a variable and returns it embedded in a valid fetch options
 
+import { Session } from "../classes/session";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
@@ -15,7 +16,7 @@ export function fetchOptionsNC(nominalCode) {
   };
 }
 
-export function fetchOptionsTransBatch(session, journals, transDtls) {
+export function fetchOptionsTransBatch(session: Session, journals, transDtls) {
   return {
     method: "POST",
     headers: {
@@ -32,7 +33,7 @@ export function fetchOptionsTransBatch(session, journals, transDtls) {
   };
 }
 
-export function fetchOptionsTransBatchUpdate(session) {
+export function fetchOptionsTransBatchUpdate(session: Session) {
   return {
     method: "POST",
     headers: {
@@ -126,7 +127,7 @@ export function fetchOptionsAddClient(client, customer) {
   };
 }
 
-export function fetchOptionsUpdateClientChart(newCodes, session) {
+export function fetchOptionsUpdateClientChart(newCodes, session: Session) {
   return {
     method: "POST",
     headers: {
@@ -423,7 +424,7 @@ export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
   };
 }
 
-export function fetchOptionsIFA(session) {
+export function fetchOptionsIFA(session: Session) {
   return {
     method: "POST",
     headers: {
@@ -438,7 +439,7 @@ export function fetchOptionsIFA(session) {
   };
 }
 
-export function fetchOptionsTFA(session) {
+export function fetchOptionsTFA(session: Session) {
   return {
     method: "POST",
     headers: {
@@ -453,7 +454,7 @@ export function fetchOptionsTFA(session) {
   };
 }
 
-export function fetchOptionsIP(session) {
+export function fetchOptionsIP(session: Session) {
   return {
     method: "POST",
     headers: {
@@ -503,7 +504,7 @@ export function fetchOptionsIPRStatusUpdate(workbookId) {
   };
 }
 
-export function fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode) {
+export function fetchOptionsUpdateCerysCodeMapping(session: Session, nominalCode, nominalCodeName, cerysCode) {
   return {
     method: "POST",
     headers: {

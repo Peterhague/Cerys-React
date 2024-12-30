@@ -1,4 +1,5 @@
 import { colNumToLetter } from "../utils.ts/excel-col-conversion";
+import { Session } from "./session";
 
 export class EditableCell {
   addressObj: {
@@ -31,7 +32,7 @@ export class EditableCell {
     return `${col}${row}:${col}${row}`;
   }
 
-  getActiveTransaction(session) {
+  getActiveTransaction(session: Session) {
     const sheet = session.editableSheets.find((sheet) => sheet.name === this.wsName);
     const map = sheet.sheetMapping.find((map) => map.rowNumber === this.addressObj.firstRow);
     const tran = sheet.transactions.find((t) => t._id === map.transactionId);

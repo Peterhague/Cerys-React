@@ -1,5 +1,6 @@
 import { fetchOptionsNC } from "../../fetching/generateOptions";
 import { cerysCodeUrl, cerysObjectUrl } from "../../fetching/apiEndpoints";
+import { Session } from "../../classes/session";
 
 // takes a Sage code and returns the corresponding Cerys nominal code object
 export async function sageCodeToCerysObject(sageCode) {
@@ -12,7 +13,7 @@ export async function sageCodeToCerysObject(sageCode) {
   return cerysObject;
 }
 
-export const clientCodeToCerysObject = (session, clientCode) => {
+export const clientCodeToCerysObject = (session: Session, clientCode) => {
   let cerysCode;
   session.clientChart.forEach((nom) => {
     if (nom.clientCode === clientCode) {
@@ -103,7 +104,7 @@ export function getCerysNomDetail(transactions, cerysCode) {
   return transactions.filter((tran) => tran.cerysCode === cerysCode);
 }
 
-export function getCerysNomDetailPL(category, session) {
+export function getCerysNomDetailPL(category, session: Session) {
   let cat = category;
   if (category === "Turnover") {
     cat = "Sales";
@@ -133,7 +134,7 @@ export function getCerysNomDetailPL(category, session) {
   return selectionArray;
 }
 
-export async function getCerysNomDetailBS(category, session) {
+export async function getCerysNomDetailBS(category, session: Session) {
   const activeAssignment = session.activeAssignment;
   let cat = category;
   if (category === "Cash at bank and in hand") {

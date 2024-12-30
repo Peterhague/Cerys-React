@@ -1,8 +1,9 @@
+import { Session } from "../classes/session";
 import { clientCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
 /* global Excel */
 
-export async function enterTB(session) {
+export async function enterTB(session: Session) {
   try {
     await Excel.run(async (context) => {
       const journals = await handleTBData(session);
@@ -31,7 +32,7 @@ export async function enterTB(session) {
   }
 }
 
-export async function checkTBMapping(session) {
+export async function checkTBMapping(session: Session) {
   try {
     const rtnVal = await Excel.run(async (context) => {
       // appropriate
@@ -69,7 +70,7 @@ export async function checkTBMapping(session) {
   }
 }
 
-export async function handleTBData(session) {
+export async function handleTBData(session: Session) {
   try {
     const rtnVal = await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem("Client TB");
@@ -100,7 +101,7 @@ export async function handleTBData(session) {
   }
 }
 
-export function convertToCerysObject(session, formattedTB) {
+export function convertToCerysObject(session: Session, formattedTB) {
   const objForPosting = clientCodeToCerysObject(session, formattedTB[0]);
   const copy = { ...objForPosting };
   return copy;

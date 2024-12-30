@@ -1,8 +1,10 @@
+import { Session } from "../../../classes/session";
+import { Assignment } from "../../../interfaces/interfaces";
 import { BALANCE_SHEET } from "../../../static-values/worksheet-defaults";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
-export async function wsBalanceSheet(context, session) {
+export async function wsBalanceSheet(context, session: Session) {
   const { ws } = await getOrAddWorksheet(context, session, BALANCE_SHEET);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, BALANCE_SHEET.name);
@@ -43,9 +45,9 @@ export async function wsBalanceSheet(context, session) {
   const netCA = calculateNCA(session.activeAssignment);
   if (netCA) {
     if (netCA > 0) {
-      values.push(["Net current assets", "", "", "", "", netCA]);
+      values.push(["Net current assets", "", "", "", "", netCA.toString()]);
     } else {
-      values.push(["Net current liabilities", "", "", "", "", netCA]);
+      values.push(["Net current liabilities", "", "", "", "", netCA.toString()]);
     }
   }
   values.push(["", "", "", "", "", ""]);
@@ -240,7 +242,7 @@ export function cleanseValues(values) {
   return cleansedValues;
 }
 
-function calculateNCA(activeAssignment) {
+function calculateNCA(activeAssignment: Assignment) {
   if (activeAssignment.tCA && activeAssignment.tCL) {
     return activeAssignment.tCA + activeAssignment.tCL;
   } else if (activeAssignment.tCA && !activeAssignment.tCL) {
@@ -252,7 +254,7 @@ function calculateNCA(activeAssignment) {
   }
 }
 
-function totalAssetsLessCL(activeAssignment) {
+function totalAssetsLessCL(activeAssignment: Assignment) {
   let fig = 0;
   if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
   if (activeAssignment.tCA) fig += activeAssignment.tCA;
@@ -260,7 +262,7 @@ function totalAssetsLessCL(activeAssignment) {
   return fig;
 }
 
-function calculateNetAssets(activeAssignment) {
+function calculateNetAssets(activeAssignment: Assignment) {
   let fig = 0;
   if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
   if (activeAssignment.tCA) fig += activeAssignment.tCA;
@@ -270,7 +272,7 @@ function calculateNetAssets(activeAssignment) {
   return fig;
 }
 
-function displayFixedAssets(activeAssignment) {
+function displayFixedAssets(activeAssignment: Assignment) {
   const arrays = [
     ["Fixed assets", "", "", "", "", ""],
     ["", "", "", "", "", ""],
@@ -326,7 +328,7 @@ function displayFixedAssets(activeAssignment) {
   return arrays;
 }
 
-function displayCurrentAssets(activeAssignment) {
+function displayCurrentAssets(activeAssignment: Assignment) {
   const arrays = [
     ["Current assets", "", "", "", "", ""],
     ["", "", "", "", "", ""],
@@ -381,7 +383,7 @@ function displayCurrentAssets(activeAssignment) {
   return arrays;
 }
 
-function displayCurrentLiabilities(activeAssignment) {
+function displayCurrentLiabilities(activeAssignment: Assignment) {
   const arrays = [
     ["Current liabilities", "", "", "", "", ""],
     ["", "", "", "", "", ""],
@@ -401,7 +403,7 @@ function displayCurrentLiabilities(activeAssignment) {
   return arrays;
 }
 
-function displayNonCurrentLiabilities(activeAssignment) {
+function displayNonCurrentLiabilities(activeAssignment: Assignment) {
   const arrays = [["", "", "", "", "", ""]];
   let subtotal = 0;
   let value = 0;
@@ -417,7 +419,7 @@ function displayNonCurrentLiabilities(activeAssignment) {
   return arrays;
 }
 
-function displayProvisions(activeAssignment) {
+function displayProvisions(activeAssignment: Assignment) {
   const arrays = [["", "", "", "", "", ""]];
   let subtotal = 0;
   let value = 0;
@@ -433,7 +435,7 @@ function displayProvisions(activeAssignment) {
   return arrays;
 }
 
-function displayShareCapital(activeAssignment) {
+function displayShareCapital(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -447,7 +449,7 @@ function displayShareCapital(activeAssignment) {
   return shareCapRow;
 }
 
-function displaySharePremium(activeAssignment) {
+function displaySharePremium(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -461,7 +463,7 @@ function displaySharePremium(activeAssignment) {
   return sharePremRow;
 }
 
-function displayPLRes(activeAssignment) {
+function displayPLRes(activeAssignment: Assignment) {
   const profit = activeAssignment.profit;
   let subtotal = 0;
   let value = 0;
@@ -476,7 +478,7 @@ function displayPLRes(activeAssignment) {
   return pLReserveRow;
 }
 
-function displayCRR(activeAssignment) {
+function displayCRR(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -490,7 +492,7 @@ function displayCRR(activeAssignment) {
   return crrRow;
 }
 
-function displayOtherRes(activeAssignment) {
+function displayOtherRes(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -504,7 +506,7 @@ function displayOtherRes(activeAssignment) {
   return otherResRow;
 }
 
-function displayFVRes(activeAssignment) {
+function displayFVRes(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -518,7 +520,7 @@ function displayFVRes(activeAssignment) {
   return fVRow;
 }
 
-function displayOtherRes2(activeAssignment) {
+function displayOtherRes2(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -532,7 +534,7 @@ function displayOtherRes2(activeAssignment) {
   return otherRes2Row;
 }
 
-function displayOtherRes3(activeAssignment) {
+function displayOtherRes3(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -546,7 +548,7 @@ function displayOtherRes3(activeAssignment) {
   return otherRes3Row;
 }
 
-function displayOtherRes4(activeAssignment) {
+function displayOtherRes4(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -560,7 +562,7 @@ function displayOtherRes4(activeAssignment) {
   return otherRes4Row;
 }
 
-function displayOtherRes5(activeAssignment) {
+function displayOtherRes5(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {
@@ -574,7 +576,7 @@ function displayOtherRes5(activeAssignment) {
   return otherRes5Row;
 }
 
-function displayMinorityInt(activeAssignment) {
+function displayMinorityInt(activeAssignment: Assignment) {
   let subtotal = 0;
   let value = 0;
   activeAssignment.activeCategoriesDetails.forEach((cat) => {

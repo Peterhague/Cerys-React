@@ -1,10 +1,13 @@
 import {
   Assignment,
+  BaseIndividual,
   CerysCodeObject,
+  ClientCerysCodeObject,
   ClientCodeObject,
   Customer,
+  Journal,
+  NewFATransaction,
   NewPreliminaryClient,
-  Transaction,
 } from "../interfaces/interfaces";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
@@ -12,7 +15,7 @@ import { Worksheet } from "./worksheet";
 
 export class Session {
   activeAssignment: Assignment;
-  chart: CerysCodeObject[];
+  chart: ClientCerysCodeObject[];
   clientChart: ClientCodeObject[];
   currentView: string = "";
   nextView: string = "";
@@ -21,11 +24,11 @@ export class Session {
   newUserAccount: {};
   customer: Customer;
   activeJournal: {
-    journals: Transaction[];
+    journals: Journal[];
     netValue: number;
     journalType: string;
-    journal: Boolean;
-    clientTB: Boolean;
+    journal: boolean;
+    clientTB: boolean;
   } = {
     journals: [],
     netValue: 0,
@@ -33,14 +36,19 @@ export class Session {
     journal: true,
     clientTB: false,
   };
-  newFATransactions: [] = [];
+  newFATransactions: NewFATransaction[] = [];
   editableSheets: EditableWorksheet[] = [];
-  IFARegister: [] = [];
-  TFARegister: [] = [];
+  IFARegister: { assetCategory: string; assetCategoryNo: number }[];
+  TFARegister: { assetCategory: string; assetCategoryNo: number }[];
   handleView: (view: string) => void;
-  handleDynamicView: () => void;
+  handleDynamicView: (view: string, options: { handleYes: () => void; handleNo: () => void }) => void;
   setEditButton: (editButtonStatus: string) => void;
-  unmappedCodeObjects: [] = [];
+  unmappedCodeObjects: {
+    clientCode: number;
+    clientCodeName: string;
+    cerysCode: number;
+    cerysShortName: string;
+  }[] = [];
   arrowIndex: number = -1;
   activeEditableCell: EditableCell;
   options: {
@@ -62,7 +70,14 @@ export class Session {
   };
   worksheets: Worksheet[] = [];
   newClientPrelim: NewPreliminaryClient;
-  newIndiPrelim: { isClient: Boolean; _clientDirectorships: {}[] };
+  newCorpClientShareholders: BaseIndividual[] = [];
+  newIndiPrelim: {
+    firstName: string;
+    lastName: string;
+    isClient: Boolean;
+    _clientDirectorships: {}[];
+    _clientShareholdings: { shareClassId: string; interest: number }[];
+  };
   newCustDtlsOne: { email: string; password: string; confirmPassword: string };
   newCustDtlsTwo: {};
   newCorpClientDirectors: {
@@ -74,6 +89,6 @@ export class Session {
     uTR: string;
   }[];
   IFATransactions: [];
-  IPTransactions: [];
+  IPTransactions: { assetCategory: string; assetCategoryNo: number }[];
   TFATransactions: [];
 }

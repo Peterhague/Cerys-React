@@ -1,8 +1,9 @@
+import { Session } from "../../../classes/session";
 import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 
-export async function wsPLAccount(context, session) {
+export async function wsPLAccount(context, session: Session) {
   const { ws } = await getOrAddWorksheet(context, session, PL_ACCOUNT);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, PL_ACCOUNT.name);

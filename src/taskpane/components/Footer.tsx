@@ -1,12 +1,13 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
 import { handleEditButtonClick } from "../utils.ts/helperFunctions";
+import { Session } from "../classes/session";
 
 interface footerProps {
   handleView: (view) => void;
   setEditButton: (state) => void;
   editButton: string;
-  session: {};
+  session: Session;
 }
 
 const Footer = ({ editButton, session }: footerProps) => {
