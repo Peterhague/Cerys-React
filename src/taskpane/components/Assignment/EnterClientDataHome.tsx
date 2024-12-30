@@ -2,17 +2,18 @@ import * as React from "react";
 import CerysButton from "../CerysButton";
 import { checkTBMapping, enterTB } from "../../client-data-processing/trial-balance";
 import { enterNL } from "../../client-data-processing/nominal-ledger";
+import { Session } from "../../classes/session";
 
 interface enterClientDataHomeProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const EnterClientDataHome = ({ handleView, session }: enterClientDataHomeProps) => {
   const handleTBEntry = async () => {
     const unmappedCodeObjects = await checkTBMapping(session);
     if (unmappedCodeObjects.length > 0) {
-      session["unmappedCodeObjects"] = unmappedCodeObjects;
+      session.unmappedCodeObjects = unmappedCodeObjects;
       handleView("mapUnmappedCodes");
     } else {
       enterTB(session);

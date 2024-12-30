@@ -112,7 +112,7 @@ export const handleClientCodeMapping = (context, session, nominalCode, nominalCo
     yesButtonText: "All transactions",
     noButtonText: "This transaction only",
   };
-  session["handleDynamicView"]("userConfirmPrompt", options);
+  session.handleDynamicView("userConfirmPrompt", options);
 };
 
 export const updateCerysCodeMapping = async (session, nominalCode, nominalCodeName, cerysCode, wsName) => {

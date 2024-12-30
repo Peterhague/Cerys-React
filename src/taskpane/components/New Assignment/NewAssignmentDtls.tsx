@@ -7,15 +7,17 @@ import { addPrimarySheets, postOpBalJnls } from "../../assignment/assignmentInit
 import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunctions";
 import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-reg-generation";
 import { bFPrevPeriodMessage } from "../../utils.ts/messages";
+import { Session } from "../../classes/session";
+
 interface newAssignmentDtlsProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
-  const [clientObject, setClientObject] = useState({});
+  const [clientObject, setClientObject] = useState({ _id: undefined, clientCode: undefined, clientName: undefined });
   const [assignmentType, setAssignmentType] = useState("");
   const [_senior, set_Senior] = useState("");
   const [_manager, set_Manager] = useState("");
@@ -31,20 +33,20 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const handleClientSelection = (clientId) => {
     setClientId(clientId);
     let clientObj;
-    session["customer"]["clients"].forEach((client) => {
+    session.customer.clients.forEach((client) => {
       if (client._id === clientId) {
         clientObj = client;
       }
     });
     setClientObject(clientObj);
-    clientObj["_senior"] ? set_Senior(clientObj["_senior"]) : set_Senior("");
-    clientObj["_manager"] ? set_Manager(clientObj["_manager"]) : set_Manager("");
-    clientObj["_responsibleIndividual"]
-      ? set_ResponsibleIndividual(clientObj["_responsibleIndividual"])
+    clientObj._senior ? set_Senior(clientObj._senior) : set_Senior("");
+    clientObj._manager ? set_Manager(clientObj._manager) : set_Manager("");
+    clientObj._responsibleIndividual
+      ? set_ResponsibleIndividual(clientObj._responsibleIndividual)
       : set_ResponsibleIndividual("");
-    clientObj["clientSoftware"] ? setClientSoftware(clientObj["clientSoftware"]) : setClientSoftware("");
+    clientObj.clientSoftware ? setClientSoftware(clientObj.clientSoftware) : setClientSoftware("");
     const dateEst = calculateDateEst(clientObj);
-    clientObj["accRefDate"] ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
+    clientObj.accRefDate ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
   };
 
   const calculateDateEst = (clientObj) => {
@@ -55,11 +57,11 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
       const iteratedPeriod = `${nextYear}-${periodEnd[1]}-${periodEnd[2]}`;
       return iteratedPeriod;
     } else {
-      let dateEst = `${fullyear}${clientObj["accRefDate"]}`;
+      let dateEst = `${fullyear}${clientObj.accRefDate}`;
       const test = calculateDiffInDays(date, dateEst);
-      if (test > 0) dateEst = `${fullyear - 1}${clientObj["accRefDate"]}`;
-      const test2 = calculateDiffInDays(clientObj["incorpDate"], dateEst);
-      if (test2 < 0) dateEst = `${fullyear}${clientObj["accRefDate"]}`;
+      if (test > 0) dateEst = `${fullyear - 1}${clientObj.accRefDate}`;
+      const test2 = calculateDiffInDays(clientObj.incorpDate, dateEst);
+      if (test2 < 0) dateEst = `${fullyear}${clientObj.accRefDate}`;
       return dateEst;
     }
   };
@@ -84,8 +86,8 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     }
     const splitPeriodStart = prelimPeriodStart.split("/");
     const convertedPeriodStart = `${splitPeriodStart[2]}-${splitPeriodStart[1]}-${splitPeriodStart[0]}`;
-    const test = calculateDiffInDays(clientObj["incorpDate"], convertedPeriodStart);
-    const incorpDateSplit = clientObj["incorpDate"].split("T");
+    const test = calculateDiffInDays(clientObj.incorpDate, convertedPeriodStart);
+    const incorpDateSplit = clientObj.incorpDate.split("T");
     const furtherSplit = incorpDateSplit[0].split("-");
     const incDateConverted = `${furtherSplit[2]}/${furtherSplit[1]}/${furtherSplit[0]}`;
     return test < 0 ? incDateConverted : prelimPeriodStart;
@@ -105,9 +107,9 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     const prelimAssignment = {
-      clientId: clientObject["_id"],
-      clientCode: clientObject["clientCode"],
-      clientName: clientObject["clientName"],
+      clientId: clientObject._id,
+      clientCode: clientObject.clientCode,
+      clientName: clientObject.clientName,
       assignmentType,
       _senior,
       _manager,
@@ -119,12 +121,12 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     };
     populateStaffObjs(prelimAssignment);
     const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
-    session["customer"] = customer;
-    session["activeAssignment"] = assignment;
-    session["clientChart"] = client.clientChart;
-    session["IFARegister"] = IFARegister;
-    session["IFARegister"] = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
-    session["TFARegister"] = TFARegister;
+    session.customer = customer;
+    session.activeAssignment = assignment;
+    session.clientChart = client.clientChart;
+    session.IFARegister = IFARegister;
+    session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
+    session.TFARegister = TFARegister;
     session["TFARegister"] = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
     addPrimarySheets(session);
     if (session["activeAssignment"].reportingPeriod.bFTB.length > 0) {
@@ -133,7 +135,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
         handleNo: () => session["handleView"]("assignmentDashHome"),
         message: bFPrevPeriodMessage,
       };
-      session["handleDynamicView"]("userConfirmPrompt", options);
+      session.handleDynamicView("userConfirmPrompt", options);
     } else {
       handleView("assignmentDashHome");
     }

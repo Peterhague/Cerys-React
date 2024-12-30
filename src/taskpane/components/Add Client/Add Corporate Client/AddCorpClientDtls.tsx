@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 interface addCorpClientDtlsProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
@@ -27,19 +28,19 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
       companyNumber,
       incorpDate,
       accRefMonth,
+      accRefDate: generateAccRefDate(accRefMonth, nominatedDay),
       nominatedDay,
       _senior,
       _manager,
       _responsibleIndividual,
       clientSoftware,
+      shareClasses: [],
+      directors: [],
+      shareholders: [],
+      newIndividuals: [],
+      existingIndividuals: [],
     };
-    newClientDtls["accRefDate"] = generateAccRefDate(accRefMonth, nominatedDay);
-    session["newClientPrelim"] = newClientDtls;
-    session["newClientPrelim"]["shareClasses"] = [];
-    session["newClientPrelim"]["directors"] = [];
-    session["newClientPrelim"]["shareholders"] = [];
-    session["newClientPrelim"]["newIndividuals"] = [];
-    session["newClientPrelim"]["existingIndividuals"] = [];
+    session.newClientPrelim = newClientDtls;
     handleView("addCorpClientShares");
   };
 
@@ -287,7 +288,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             )}
           </select>
         )}
-        {session["customer"]["users"].length > 0 && (
+        {session.customer.users.length > 0 && (
           <div>
             <select
               name="senior"
@@ -297,7 +298,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
               onChange={(e) => set_Senior(e.target.value)}
             >
               {!_senior && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
+              {session.customer.users.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.firstName + " " + user.lastName}
                 </option>
@@ -305,7 +306,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             </select>
           </div>
         )}
-        {session["customer"]["users"].length > 0 && (
+        {session.customer.users.length > 0 && (
           <div>
             <select
               name="manager"
@@ -315,7 +316,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
               onChange={(e) => set_Manager(e.target.value)}
             >
               {!_manager && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
+              {session.customer.users.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.firstName + " " + user.lastName}
                 </option>
@@ -323,7 +324,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             </select>
           </div>
         )}
-        {session["customer"]["users"].length > 0 && (
+        {session.customer.users.length > 0 && (
           <div>
             <select
               name="RI"
@@ -333,7 +334,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
               onChange={(e) => set_ResponsibleIndividual(e.target.value)}
             >
               {!_responsibleIndividual && <option>Please select</option>}
-              {session["customer"]["users"].map((user) => (
+              {session.customer.users.map((user) => (
                 <option key={user._id} value={user._id}>
                   {user.firstName + " " + user.lastName}
                 </option>

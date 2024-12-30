@@ -18,10 +18,10 @@ export async function enterTB(session) {
         transactions.push(obj);
       });
       if (check !== 0) return;
-      session["activeJournal"]["journals"] = transactions;
-      session["activeJournal"]["journalType"] = "clientTB";
-      session["activeJournal"]["journal"] = false;
-      session["activeJournal"]["clientTB"] = true;
+      session.activeJournal.journals = transactions;
+      session.activeJournal.journalType = "clientTB";
+      session.activeJournal.journal = false;
+      session.activeJournal.clientTB = true;
       console.log(session.activeJournal);
       const newTransactions = await processTransBatch(context, session);
       checkNewTransForAssets(session, newTransactions);

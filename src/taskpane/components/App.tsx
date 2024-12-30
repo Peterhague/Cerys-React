@@ -1,10 +1,11 @@
 import * as React from "react";
 import { makeStyles } from "@fluentui/react-components";
 import AppBody from "./AppBody";
+import { Session } from "../classes/session";
 
 interface AppProps {
   title: string;
-  session: {};
+  session: Session;
 }
 
 const useStyles = makeStyles({

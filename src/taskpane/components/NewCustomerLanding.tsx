@@ -1,13 +1,14 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
+import { Session } from "../classes/session";
 
 interface newCustomerLandingProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const NewCustomerLanding = ({ handleView, session }: newCustomerLandingProps) => {
-  const unusedLicences = session["customer"]["unusedLicences"];
+  const unusedLicences = session.customer.unusedLicences;
   return (
     <>
       <h4>Thank you for registering with Cerys</h4>

@@ -3,10 +3,11 @@ import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsAddUser } from "../fetching/generateOptions";
 import { userUrl } from "../fetching/apiEndpoints";
+import { Session } from "../classes/session";
 
 interface addUserProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddUser = ({ handleView, session }: addUserProps) => {
@@ -18,11 +19,10 @@ const AddUser = ({ handleView, session }: addUserProps) => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newUserDtls = { firstName, lastName, email, password, isAdmin };
-    newUserDtls["customerId"] = session["customer"]["_id"];
+    const newUserDtls = { firstName, lastName, email, password, isAdmin, customerId: session.customer._id };
     const updatedDbObjs = await processNewUser(newUserDtls);
-    session["newUserAccount"] = updatedDbObjs.user;
-    session["customer"] = updatedDbObjs.customer;
+    session.newUserAccount = updatedDbObjs.user;
+    session.customer = updatedDbObjs.customer;
     handleView("newCustomerLanding");
   };
 

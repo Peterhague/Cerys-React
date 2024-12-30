@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 interface addIndiClientAssocSHProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps) => {
@@ -19,7 +20,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
   const handleClientSelection = (e) => {
     const activeClient = e.target.value;
     let sClasses;
-    session["customer"]["clients"].forEach((clt) => {
+    session.customer.clients.forEach((clt) => {
       if (clt._id === activeClient) {
         sClasses = clt.shareClasses;
         setClientId(clt);

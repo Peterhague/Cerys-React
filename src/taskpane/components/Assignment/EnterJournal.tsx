@@ -4,11 +4,12 @@ import { useRef } from "react";
 import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
+import { Session } from "../../classes/session";
 /*global Excel */
 
 interface enterJournalProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
   chart: [
     {
       cerysCode: number;
@@ -45,10 +46,10 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
 
   const handleJournal = async (e) => {
     e.preventDefault();
-    const cerysObj = session["chart"].find((code) => code.cerysCode === parseInt(nominalCode));
+    const cerysObj = session.chart.find((code) => code.cerysCode === parseInt(nominalCode));
     console.log(cerysObj);
     const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
-    session["activeJournal"].journals.push(journalDtls);
+    session.activeJournal.journals.push(journalDtls);
     session["activeJournal"].netValue += journalDtls.value;
     setNominalCode("");
     setNominalCodeName("");
@@ -109,13 +110,13 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
             onChange={(e) => setTransactionDate(e.target.value)}
           ></input>
         </div>
-        {session["activeJournal"].netValue !== 0 && (
-          <p>Your journals are out of balance by {session["activeJournal"].netValue / 100}</p>
+        {session.activeJournal.netValue !== 0 && (
+          <p>Your journals are out of balance by {session.activeJournal.netValue / 100}</p>
         )}
         <div>
           <button onClick={handleJournal}>Next</button>
         </div>
-        {session["activeJournal"].netValue === 0 && session["activeJournal"].journals.length > 0 && (
+        {session.activeJournal.netValue === 0 && session.activeJournal.journals.length > 0 && (
           <div>
             <button type="submit">Post</button>
           </div>

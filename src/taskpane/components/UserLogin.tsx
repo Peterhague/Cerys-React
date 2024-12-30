@@ -2,17 +2,17 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { registerWorksheetsCollectionHandler, resetEdSheetCallBack } from "../utils.ts/helperFunctions";
-import { createEditableCell } from "../classes/editable-cell";
+import { registerWorksheetsCollectionHandler } from "../utils.ts/helperFunctions";
+import { Session } from "../classes/session";
 
 interface userLoginProps {
   handleView: (view) => void;
   handleDynamicView: (view, props) => void;
-  session: {};
+  session: Session;
   setEditButton: (state) => void;
 }
 
-const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: userLoginProps) => {
+const UserLogin = ({ handleView, session }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -26,32 +26,9 @@ const UserLogin = ({ handleView, handleDynamicView, session, setEditButton }: us
 
   const processUser = async (userAndCustomerFromDb) => {
     const userAndCustomerObject = await userAndCustomerFromDb.json();
-    session["user"] = userAndCustomerObject.user;
-    session["customer"] = userAndCustomerObject.customer;
+    session.user = userAndCustomerObject.user;
+    session.customer = userAndCustomerObject.customer;
     console.log(session);
-    const activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
-    session["activeJournal"] = activeJournal;
-    session["newFATransactions"] = [];
-    session["editableSheets"] = [];
-    session["IFARegister"] = [];
-    session["handleView"] = handleView;
-    session["handleDynamicView"] = handleDynamicView;
-    session["setEditButton"] = setEditButton;
-    session["unmappedCodeObjects"] = [];
-    session["arrowIndex"] = -1;
-    session["activeEditableCell"] = createEditableCell(null, null, null);
-    session["options"] = {
-      IFARCreationSetting: "main",
-      TFARCreationSetting: "main",
-      IPRCreationSetting: "main",
-      autoFillOverride: false,
-      updatedTransactions: [],
-      editableSheetCallback: resetEdSheetCallBack(),
-      allowEffects: 0,
-      ignoreWsAddition: 0,
-    };
-    session["nextViewButOne"] = "";
-    session["worksheets"] = [];
     await registerWorksheetsCollectionHandler(session);
     handleView("userDashHome");
   };

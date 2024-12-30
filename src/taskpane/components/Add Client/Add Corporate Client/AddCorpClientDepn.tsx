@@ -1,9 +1,10 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 interface addCorpClientDepnProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
@@ -84,8 +85,8 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
       depnBasisOfficeEquip,
       depnRateOfficeEquip,
     };
-    const updatedObj = { ...session["newClientPrelim"], ...depnPols };
-    session["newClientPrelim"] = updatedObj;
+    const updatedObj = { ...session.newClientPrelim, ...depnPols };
+    session.newClientPrelim = updatedObj;
     handleView("addCorpClientOptions");
   };
 

@@ -6,14 +6,16 @@ import { setExcelRangeValue } from "../../../utils.ts/worksheet";
 import { callNextView, getUpdatedTransactions } from "../../../utils.ts/helperFunctions";
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { createEditableCell } from "../../../classes/editable-cell";
+import { Session } from "../../../classes/session";
+
 interface nomCodeSelectionProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
   chart: [
     {
       cerysCode: number;
-      cerysName: string;
-      cerysExcelName: string;
+      cerysName?: string;
+      cerysExcelName?: string;
       clientCode: number;
       clientCodeName: string;
       _id: string;
@@ -34,14 +36,14 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
       await Excel.run(async (context) => {
         e.preventDefault();
         if (!nominalCode) return;
-        const wsName = session["activeEditableCell"].wsName;
-        const range = session["activeEditableCell"].getRange();
-        if (session["activeEditableCell"].options.action === "clientCodeMapping") {
+        const wsName = session.activeEditableCell.wsName;
+        const range = session.activeEditableCell.getRange();
+        if (session.activeEditableCell.options.action === "clientCodeMapping") {
           handleClientCodeMapping(context, session, nominalCode, nominalCodeName);
         } else {
           await setExcelRangeValue(context, wsName, range, nominalCode);
         }
-        session["activeEditableCell"] = createEditableCell(null, null, null);
+        session.activeEditableCell = createEditableCell(null, null, null);
         await context.sync();
       });
     } catch (e) {
@@ -51,7 +53,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
 
   const handleGoBack = (e) => {
     e.preventDefault();
-    session["activeEditableCell"] = createEditableCell(null, null, null);
+    session.activeEditableCell = createEditableCell(null, null, null);
     if (getUpdatedTransactions(session).length > 0) {
       handleView("handleTransUpdates");
     } else {

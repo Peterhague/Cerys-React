@@ -2,11 +2,12 @@ import * as React from "react";
 import { createRoot } from "react-dom/client";
 import App from "./components/App";
 import { FluentProvider, webLightTheme } from "@fluentui/react-components";
+import { Session } from "./classes/session";
 
-/* global document, Office, module, require, HTMLElement */
+/* global Office */
 
 const title = "Contoso Task Pane Add-in";
-const session = {};
+const session = new Session();
 
 const rootElement: HTMLElement | null = document.getElementById("container");
 const root = rootElement ? createRoot(rootElement) : undefined;

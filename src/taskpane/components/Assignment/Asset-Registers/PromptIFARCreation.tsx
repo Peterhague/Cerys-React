@@ -16,20 +16,21 @@ import {
   identifyLikelyAdditions,
   previewRelTrans,
 } from "../../../utils.ts/transactions/asset-reg-generation";
+import { Session } from "../../../classes/session";
 /* global Excel */
 
 interface promptIFARCreationProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) => {
-  let nLEntered = session["activeAssignment"]["NLEntered"];
-  const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState(session["options"].IFARCreationSetting);
-  const journal = session["activeJournal"]["journal"];
+  let nLEntered = session.activeAssignment.NLEntered;
+  const tBEntered = session.activeAssignment.TBEntered;
+  const [view, setView] = useState(session.options.IFARCreationSetting);
+  const journal = session.activeJournal.journal;
   const registerType = "IFA";
-  const registerCreated = session["activeAssignment"].IFARegisterCreated;
+  const registerCreated = session.activeAssignment.IFARegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -42,28 +43,28 @@ const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) =>
   const handleNLImport = async () => {
     await enterNL(session);
     convertNewFATrans(session);
-    nLEntered = session["activeAssignment"]["NLEntered"];
+    nLEntered = session.activeAssignment.NLEntered;
     handleCreateRequest();
   };
 
   const handleAbort = (view) => {
-    session["options"].IFARCreationSetting = "main";
-    session["activeJournal"].journals = [];
+    session.options.IFARCreationSetting = "main";
+    session.activeJournal.journals = [];
     handleView(view);
   };
 
   const handleSubmit = async () => {
     try {
       await Excel.run(async (context) => {
-        session["options"].IFARCreationSetting = "main";
+        session.options.IFARCreationSetting = "main";
         finaliseAssetObjects(session, registerType);
         await createIFAR(context, session);
-        session["IFATransactions"] = [];
-        session["activeJournal"].clientTB = false;
-        session["activeJournal"].journal = false;
-        session["activeJournal"].journalType = "auto-journal";
+        session.IFATransactions = [];
+        session.activeJournal.clientTB = false;
+        session.activeJournal.journal = false;
+        session.activeJournal.journalType = "auto-journal";
         await processTransBatch(context, session);
-        checkNewTransForAssets(session, session["newFATransactions"]);
+        checkNewTransForAssets(session, session.newFATransactions);
         await context.sync();
       });
     } catch (e) {
@@ -79,7 +80,7 @@ const PromptIFARCreation = ({ handleView, session }: promptIFARCreationProps) =>
           await updateAssignmentFigures(context, session);
           checkFATranUpdatesForAssets(session, updatedTransactions);
         }
-        if (session["activeJournal"].journals.length > 0) {
+        if (session.activeJournal.journals.length > 0) {
           const newTransactions = await processTransBatch(context, session);
           checkFATranUpdatesForAssets(session, newTransactions);
         }

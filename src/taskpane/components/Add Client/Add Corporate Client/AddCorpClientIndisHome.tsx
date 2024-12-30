@@ -1,16 +1,14 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 
 interface addCorpClientIndisHomeProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
-const AddCorpClientIndisHome = ({
-  session,
-  handleView,
-}: addCorpClientIndisHomeProps) => {
+const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeProps) => {
   const [selectedIndi, setSelectedIndi] = useState("");
   const [isDirector, setIsDirector] = useState(false);
   const [dateAppointed, setDateAppointed] = useState("");
@@ -28,14 +26,14 @@ const AddCorpClientIndisHome = ({
   };
 
   const handleShareAllocation = (value, shareClassNumber) => {
-    session["newClientPrelim"]["shareClasses"].forEach((sClass) => {
+    session.newClientPrelim.shareClasses.forEach((sClass) => {
       if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= value) {
-        sClass["prelimAllocation"] = parseInt(value);
+        sClass.prelimAllocation = parseInt(value);
         const allocation = {
           key: shareClassNumber,
-          clientName: session["newClientPrelim"]["clientName"],
-          clientCode: session["newClientPrelim"]["clientCode"],
-          clientId: session["newClientPrelim"]["_id"],
+          clientName: session.newClientPrelim.clientName,
+          clientCode: session.newClientPrelim.clientCode,
+          clientId: session.newClientPrelim._id,
           shareClassName: sClass.shareClassName,
           shareClassNumber,
           interest: parseInt(value),
@@ -54,7 +52,7 @@ const AddCorpClientIndisHome = ({
     });
   };
 
-  const indis = [...session["customer"]["nonCorpClients"], ...session["customer"]["individuals"]];
+  const indis = [...session.customer.nonCorpClients, ...session.customer.individuals];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -67,10 +65,10 @@ const AddCorpClientIndisHome = ({
         indi.isDirector && addDirectorship(indi);
         indi.isShareholder = isShareholder;
         indi.isShareholder && addShareholding(indi);
-        session["newClientPrelim"]["existingIndividuals"].push(indi);
+        session.newClientPrelim.existingIndividuals.push(indi);
       }
     });
-    session["newClientPrelim"]["shareClasses"].forEach((item) => {
+    session.newClientPrelim.shareClasses.forEach((item) => {
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
     });
@@ -82,23 +80,23 @@ const AddCorpClientIndisHome = ({
 
   const addDirectorship = (indi) => {
     const directorship = {
-      clientName: session["newClientPrelim"]["clientName"],
-      clientCode: session["newClientPrelim"]["clientCode"],
+      clientName: session.newClientPrelim.clientName,
+      clientCode: session.newClientPrelim.clientCode,
       dateAppointed: indi.dateAppointed,
       dateCeased: indi.dateCeased,
     };
     indi.newClientDirectorships = [];
     indi.newClientDirectorships.push(directorship);
-    session["newClientPrelim"]["directors"].push(indi);
+    session.newClientPrelim.directors.push(indi);
   };
 
   const addShareholding = (indi) => {
     indi.newClientShareholdings = shareAllocations;
     indi.shareholdings = indi.newClientShareholdings;
-    session["newClientPrelim"]["shareholders"].push(indi);
+    session.newClientPrelim.shareholders.push(indi);
   };
 
-  const selectableIndis = session["customer"]["nonCorpClients"].length > 0 || session["customer"]["individuals"];
+  const selectableIndis = session.customer.nonCorpClients.length > 0 || session.customer.individuals;
 
   return (
     <>
@@ -178,7 +176,7 @@ const AddCorpClientIndisHome = ({
               ></input>
             </div>
             {showShareClasses &&
-              session["newClientPrelim"]["shareClasses"].map((sC) => (
+              session.newClientPrelim.shareClasses.map((sC) => (
                 <>
                   <table key={sC.shareClassNumber}>
                     <tbody>

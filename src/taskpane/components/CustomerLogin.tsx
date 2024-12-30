@@ -3,11 +3,12 @@ import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { getCustomerUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
+import { Session } from "../classes/session";
 
 interface customerLoginProps {
   handleView: (view) => void;
   setEditButton: (state) => void;
-  session: {};
+  session: Session;
 }
 
 const CustomerLogin = ({ handleView, session, setEditButton }: customerLoginProps) => {
@@ -20,9 +21,9 @@ const CustomerLogin = ({ handleView, session, setEditButton }: customerLoginProp
     const options = fetchOptionsGetCustomer(customerDtls);
     const customerDb = await fetch(getCustomerUrl, options);
     const customer = await customerDb.json();
-    session["customer"] = customer;
-    session["handleView"] = handleView;
-    session["setEditButton"] = setEditButton;
+    session.customer = customer;
+    session.handleView = handleView;
+    session.setEditButton = setEditButton;
     handleView("customerDashHome");
   };
 

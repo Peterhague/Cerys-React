@@ -1,9 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
+
 interface addCorpClientDirNewProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) => {
@@ -16,8 +18,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newClientDirector = { firstName, lastName, email, phone, address, uTR };
-    session["newCorpClientDirectors"].push(newClientDirector);
+    session.newCorpClientDirectors.push({ firstName, lastName, email, phone, address, uTR });
     handleView("addCorpClientDirsHome");
   };
 

@@ -46,9 +46,10 @@ import ManageAssignmentDashHome from "./Assignment/Assignment-Management/ManageA
 import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
 import MapUnmappedCodes from "./Assignment/MapUnmappedCodes";
 import NomCodeSelection from "./Assignment/Utils/NomCodeSelection";
+import { Session } from "../classes/session";
 
 interface AppBodyProps {
-  session: {};
+  session: Session;
 }
 
 const AppBody = ({ session }: AppBodyProps) => {
@@ -65,13 +66,13 @@ const AppBody = ({ session }: AppBodyProps) => {
   console.log(session);
 
   const handleView = (view) => {
-    session["currentView"] = view;
+    session.currentView = view;
     setView(view);
   };
 
   const handleDynamicView = (view, options) => {
     setOptions(options);
-    session["currentView"] = view;
+    session.currentView = view;
     setView(view);
   };
 
@@ -98,7 +99,7 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "userDashHome":
         body = <UserDashHome handleView={handleView} />;
-        session["nextView"] = view;
+        session.nextView = view;
         break;
       case "customerLogin":
         body = <CustomerLogin handleView={handleView} session={session} setEditButton={setEditButton} />;
@@ -122,17 +123,17 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "customerDashHome":
         body = <CustomerDashHome handleView={handleView} session={session} />;
-        session["nextView"] = view;
+        session.nextView = view;
         break;
       case "manageAssignmentDashHome":
         body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
         session["nextView"] = view;
         break;
       case "nomCodeSelection":
-        body = <NomCodeSelection handleView={handleView} session={session} chart={session["chart"]} />;
+        body = <NomCodeSelection handleView={handleView} session={session} chart={session.chart} />;
         break;
       case "clientNomCodeSelection":
-        body = <NomCodeSelection handleView={handleView} session={session} chart={session["clientChart"]} />;
+        body = <NomCodeSelection handleView={handleView} session={session} chart={session.clientChart} />;
         break;
       case "userConfirmPrompt":
         body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
@@ -205,11 +206,11 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "assignmentDashHome":
         body = <AssignmentDashHome handleView={handleView} session={session} />;
-        session["nextView"] = view;
+        session.nextView = view;
         break;
       case "enterClientDataHome":
         body = <EnterClientDataHome handleView={handleView} session={session} />;
-        session["nextView"] = view;
+        session.nextView = view;
         break;
       case "enterJournal":
         body = <EnterJournal handleView={handleView} session={session} chart={session["chart"]} />;

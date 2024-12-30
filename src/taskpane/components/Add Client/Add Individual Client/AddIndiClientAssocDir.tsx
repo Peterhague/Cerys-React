@@ -1,15 +1,14 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
+
 interface addIndiClientAssocDirProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
-const AddIndiClientAssocDir = ({
-  handleView,
-  session,
-}: addIndiClientAssocDirProps) => {
+const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirProps) => {
   const [clientId, setClientId] = useState("");
   const [dateAppointed, setDateAppointed] = useState("");
   const [isCeased, setIsCeased] = useState(false);
@@ -23,12 +22,12 @@ const AddIndiClientAssocDir = ({
       dateCeased,
     };
     populateNewDirectorship(directorship);
-    session["newIndiPrelim"]["_clientDirectorships"].push(directorship);
+    session.newIndiPrelim._clientDirectorships.push(directorship);
     handleView("addIndiClientAssocOptions");
   };
 
   const populateNewDirectorship = (directorship) => {
-    session["customer"]["clients"].forEach((client) => {
+    session.customer.clients.forEach((client) => {
       if (client._id === directorship.clientId) {
         directorship.clientName = client.clientName;
         directorship.clientCode = client.clientCode;
@@ -50,7 +49,7 @@ const AddIndiClientAssocDir = ({
               onChange={(e) => setClientId(e.target.value)}
             >
               {!clientId && <option>Please select</option>}
-              {session["customer"]["clients"].map((client) => (
+              {session.customer.clients.map((client) => (
                 <option key={client._id} value={client._id}>
                   {client.clientName}
                 </option>

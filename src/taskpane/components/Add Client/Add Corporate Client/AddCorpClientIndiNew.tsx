@@ -1,15 +1,13 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 interface addCorpClientIndiNewProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
-const AddCorpClientIndiNew = ({
-  handleView,
-  session,
-}: addCorpClientIndiNewProps) => {
+const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -34,14 +32,14 @@ const AddCorpClientIndiNew = ({
   };
 
   const handleShareAllocation = (value, shareClassNumber) => {
-    session["newClientPrelim"]["shareClasses"].forEach((sClass) => {
+    session.newClientPrelim.shareClasses.forEach((sClass) => {
       if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= value) {
-        sClass["prelimAllocation"] = parseInt(value);
+        sClass.prelimAllocation = parseInt(value);
         const allocation = {
           key: shareClassNumber,
-          clientName: session["newClientPrelim"]["clientName"],
-          clientCode: session["newClientPrelim"]["clientCode"],
-          clientId: session["newClientPrelim"]["_id"],
+          clientName: session.newClientPrelim.clientName,
+          clientCode: session.newClientPrelim.clientCode,
+          clientId: session.newClientPrelim._id,
           shareClassName: sClass.shareClassName,
           shareClassNumber,
           interest: parseInt(value),
@@ -86,8 +84,8 @@ const AddCorpClientIndiNew = ({
       otherShareholdings: [],
     };
     processNewIndi(newIndi);
-    session["newClientPrelim"]["newIndividuals"].push(newIndi);
-    session["newClientPrelim"]["shareClasses"].forEach((item) => {
+    session.newClientPrelim.newIndividuals.push(newIndi);
+    session.newClientPrelim.shareClasses.forEach((item) => {
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
     });
@@ -101,19 +99,19 @@ const AddCorpClientIndiNew = ({
 
   const addDirectorship = (newIndi) => {
     const directorship = {
-      clientName: session["newClientPrelim"]["clientName"],
-      clientCode: session["newClientPrelim"]["clientCode"],
+      clientName: session.newClientPrelim.clientName,
+      clientCode: session.newClientPrelim.clientCode,
       dateAppointed: newIndi.dateAppointed,
       dateCeased: newIndi.dateCeased,
     };
     newIndi._clientDirectorships.push(directorship);
-    session["newClientPrelim"]["directors"].push(newIndi);
+    session.newClientPrelim.directors.push(newIndi);
   };
 
   const addShareholding = (newIndi) => {
     newIndi._clientShareholdings = shareAllocations;
     newIndi.shareholdings = newIndi._clientShareholdings;
-    session["newClientPrelim"]["shareholders"].push(newIndi);
+    session.newClientPrelim.shareholders.push(newIndi);
   };
 
   return (
@@ -273,7 +271,7 @@ const AddCorpClientIndiNew = ({
           </>
         )}
         {showShareClasses &&
-          session["newClientPrelim"]["shareClasses"].map((sC) => (
+          session.newClientPrelim.shareClasses.map((sC) => (
             <>
               <table key={sC.shareClassNumber}>
                 <tbody>

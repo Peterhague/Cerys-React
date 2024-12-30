@@ -1,9 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
+
 interface addCorpClientAmortProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) => {
@@ -45,7 +47,7 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
       amortRateCompSware,
     };
     const updatedObj = { ...session["newClientPrelim"], ...amortPols };
-    session["newClientPrelim"] = updatedObj;
+    session.newClientPrelim = updatedObj;
     handleView("addCorpClientOptions");
   };
 

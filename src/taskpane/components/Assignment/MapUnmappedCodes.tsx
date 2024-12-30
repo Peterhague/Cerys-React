@@ -4,15 +4,16 @@ import CerysButton from "../CerysButton";
 import { fetchOptionsUpdateClientChart } from "../../fetching/generateOptions";
 import { updateClientChartUrl } from "../../fetching/apiEndpoints";
 import { enterTB } from "../../client-data-processing/trial-balance";
+import { Session } from "../../classes/session";
 
 interface mapUnmappedCodes {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
   const [activeIndex, setActiveIndex] = useState(0);
-  const [codeObjects, setCodeObjects] = useState(session["unmappedCodeObjects"]);
+  const [codeObjects, setCodeObjects] = useState(session.unmappedCodeObjects);
 
   const handleCodeMapping = (value, codeObject) => {
     codeObject.cerysCode = parseInt(value);
@@ -21,7 +22,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
     codeObjects.forEach((obj) => {
       if (obj.clientCode === codeObject.clientCode) {
         let matched = false;
-        session["chart"].forEach((code) => {
+        session.chart.forEach((code) => {
           if (code.cerysCode === parseInt(value)) {
             obj.cerysShortName = code.cerysShortName;
             matched = true;
@@ -46,8 +47,8 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
     const options = fetchOptionsUpdateClientChart(codeObjects, session);
     const updatedCustAndClientDb = await fetch(updateClientChartUrl, options);
     const { customer, client } = await updatedCustAndClientDb.json();
-    session["customer"] = customer;
-    session["clientChart"] = client.clientChart;
+    session.customer = customer;
+    session.clientChart = client.clientChart;
     console.log(session);
     enterTB(session);
   };
@@ -150,7 +151,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
       )}
 
       <datalist id="chart">
-        {session["chart"].map((code) => (
+        {session.chart.map((code) => (
           <option key={code._id} value={code.cerysCode}>{`${code.cerysCode} ${code.cerysName}`}</option>
         ))}
       </datalist>

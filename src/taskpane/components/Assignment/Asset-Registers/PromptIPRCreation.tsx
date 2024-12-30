@@ -10,20 +10,21 @@ import {
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { Session } from "../../../classes/session";
 /* global Excel */
 
 interface promptIPRCreationProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
-  const nLEntered = session["activeAssignment"]["NLEntered"];
-  const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState(session["options"].IPRCreationSetting);
-  const journal = session["activeJournal"]["journal"];
+  const nLEntered = session.activeAssignment.NLEntered;
+  const tBEntered = session.activeAssignment.TBEntered;
+  const [view, setView] = useState(session.options.IPRCreationSetting);
+  const journal = session.activeJournal.journal;
   const registerType = "IP";
-  const registerCreated = session["activeAssignment"].IPRegisterCreated;
+  const registerCreated = session.activeAssignment.IPRegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -39,22 +40,22 @@ const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
   };
 
   const handleAbort = (view) => {
-    session["options"].IPRCreationSetting = "main";
-    session["activeJournal"].journals = [];
+    session.options.IPRCreationSetting = "main";
+    session.activeJournal.journals = [];
     handleView(view);
   };
 
   const handleSubmit = async () => {
     try {
       await Excel.run(async (context) => {
-        session["options"].IPRCreationSetting = "main";
+        session.options.IPRCreationSetting = "main";
         await createIPR(context, session);
-        session["IPTransactions"] = [];
-        session["activeJournal"].clientTB = false;
-        session["activeJournal"].journal = false;
-        session["activeJournal"].journalType = "auto-journal";
+        session.IPTransactions = [];
+        session.activeJournal.clientTB = false;
+        session.activeJournal.journal = false;
+        session.activeJournal.journalType = "auto-journal";
         await processTransBatch(context, session);
-        checkNewTransForAssets(session, session["newFATransactions"]);
+        checkNewTransForAssets(session, session.newFATransactions);
         await context.sync();
       });
     } catch (e) {

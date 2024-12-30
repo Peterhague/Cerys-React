@@ -16,20 +16,21 @@ import {
   processUpdateBatch,
 } from "../../../utils.ts/transactions/transactions";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 /* global Excel */
 
 interface promptTFARCreationProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) => {
-  let nLEntered = session["activeAssignment"]["NLEntered"];
-  const tBEntered = session["activeAssignment"]["TBEntered"];
-  const [view, setView] = useState(session["options"].TFARCreationSetting);
-  const journal = session["activeJournal"]["journal"];
+  let nLEntered = session.activeAssignment.NLEntered;
+  const tBEntered = session.activeAssignment.TBEntered;
+  const [view, setView] = useState(session.options.TFARCreationSetting);
+  const journal = session.activeJournal.journal;
   const registerType = "TFA";
-  const registerCreated = session["activeAssignment"].TFARegisterCreated;
+  const registerCreated = session.activeAssignment.TFARegisterCreated;
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -42,13 +43,13 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
   const handleNLImport = async () => {
     await enterNL(session);
     convertNewFATrans(session);
-    nLEntered = session["activeAssignment"]["NLEntered"];
+    nLEntered = session.activeAssignment.NLEntered;
     handleCreateRequest();
   };
 
   const handleAbort = (view) => {
-    session["options"].TFARCreationSetting = "main";
-    session["activeJournal"].journals = [];
+    session.options.TFARCreationSetting = "main";
+    session.activeJournal.journals = [];
     handleView(view);
   };
 
@@ -58,10 +59,10 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
         session["options"].TFARCreationSetting = "main";
         finaliseAssetObjects(session, registerType);
         await createTFAR(context, session);
-        session["TFATransactions"] = [];
-        session["activeJournal"].clientTB = false;
-        session["activeJournal"].journal = false;
-        session["activeJournal"].journalType = "auto-journal";
+        session.TFATransactions = [];
+        session.activeJournal.clientTB = false;
+        session.activeJournal.journal = false;
+        session.activeJournal.journalType = "auto-journal";
         await processTransBatch(context, session);
         checkNewTransForAssets(session, session["newFATransactions"]);
         await context.sync();
@@ -79,7 +80,7 @@ const PromptTFARCreation = ({ handleView, session }: promptTFARCreationProps) =>
           updateAssignmentFigures(context, session);
           checkFATranUpdatesForAssets(session, updatedTransactions);
         }
-        if (session["activeJournal"].journals.length > 0) {
+        if (session.activeJournal.journals.length > 0) {
           const newTransactions = await processTransBatch(context, session);
           checkFATranUpdatesForAssets(session, newTransactions);
         }

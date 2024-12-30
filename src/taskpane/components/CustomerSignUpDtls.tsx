@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
+import { Session } from "../classes/session";
 
 interface customerSignUpDtlsProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const CustomerSignUpDtls = ({ handleView, session }: customerSignUpDtlsProps) => {
@@ -15,7 +16,7 @@ const CustomerSignUpDtls = ({ handleView, session }: customerSignUpDtlsProps) =>
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newCustDtlsTwo = { orgName, orgAddress, orgPhone };
-    session["newCustDtlsTwo"] = newCustDtlsTwo;
+    session.newCustDtlsTwo = newCustDtlsTwo;
     handleView("customerSignUpPlan");
   };
 

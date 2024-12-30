@@ -2,25 +2,23 @@ import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
 import { postIndiUrl, postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
+import { Session } from "../../../classes/session";
 
 interface addIndiClientAssocOptionsProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
-const AddIndiClientAssocOptions = ({
-  handleView,
-  session,
-}: addIndiClientAssocOptionsProps) => {
+const AddIndiClientAssocOptions = ({ handleView, session }: addIndiClientAssocOptionsProps) => {
   const processNewIndiClient = async () => {
-    const newIndi = session["newIndiPrelim"];
-    delete session["newIndiPrelim"];
-    const customerId = session["customer"]["_id"];
+    const newIndi = session.newIndiPrelim;
+    delete session.newIndiPrelim;
+    const customerId = session.customer._id;
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
     const newIndiAndCustomerDb = await fetch(url, options);
     const newIndiAndCustomerObj = await newIndiAndCustomerDb.json();
-    session["customer"] = newIndiAndCustomerObj.customer;
+    session.customer = newIndiAndCustomerObj.customer;
     handleView("customerDashHome");
   };
   return (

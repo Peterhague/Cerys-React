@@ -17,7 +17,7 @@ export async function addPrimarySheets(session) {
 }
 
 function convertDataForWbook(session) {
-  const activeAssignment = session["activeAssignment"];
+  const activeAssignment = session.activeAssignment;
   let newArray = [];
   newArray.push(["Client code", activeAssignment.clientCode]);
   newArray.push(["Client name", activeAssignment.clientName]);

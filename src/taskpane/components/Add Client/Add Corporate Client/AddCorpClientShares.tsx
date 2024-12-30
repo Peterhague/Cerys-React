@@ -1,10 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
+import { Session } from "../../../classes/session";
 
 interface addCorpClientSharesProps {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) => {
@@ -14,11 +15,15 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    const newClientShares = { shareClassName, numberIssued, nomValue };
-    newClientShares["shareClassNumber"] = session["newClientPrelim"]["shareClasses"].length + 1;
-    newClientShares["issuedNotAllocated"] = newClientShares["numberIssued"];
-    newClientShares["prelimAllocation"] = 0;
-    session["newClientPrelim"]["shareClasses"].push(newClientShares);
+    const newClientShares = {
+      shareClassName,
+      numberIssued,
+      nomValue,
+      shareClassNumber: session.newClientPrelim.shareClasses.length + 1,
+      issuedNotAllocated: numberIssued,
+      prelimAllocation: 0,
+    };
+    session.newClientPrelim.shareClasses.push(newClientShares);
     handleView("addCorpClientOptions");
   };
 

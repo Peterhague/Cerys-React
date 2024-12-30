@@ -3,9 +3,11 @@ import { useState } from "react";
 import CerysButton from "../CerysButton";
 import { fetchOptionsNewIndi } from "../../fetching/generateOptions";
 import { postIndiUrl } from "../../fetching/apiEndpoints";
+import { Session } from "../../classes/session";
+
 interface addIndiDtlsprops {
   handleView: (view) => void;
-  session: {};
+  session: Session;
 }
 
 const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
@@ -29,18 +31,18 @@ const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
       otherDirectorships: [],
       otherShareholdings: [],
     };
-    session["newIndiPrelim"] = newIndi;
-    const route = session["customer"]["clients"].length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
-    session["customer"]["clients"].length === 0 && processNewIndi(newIndi);
+    session.newIndiPrelim = newIndi;
+    const route = session.customer.clients.length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
+    session.customer.clients.length === 0 && processNewIndi(newIndi);
     handleView(route);
   };
 
   const processNewIndi = async (newIndi) => {
-    const customerId = session["customer"]["_id"];
+    const customerId = session.customer._id;
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const newIndiAndUpdatedCustomerDb = await fetch(postIndiUrl, options);
     const newIndiAndUpdatedCustomerObj = await newIndiAndUpdatedCustomerDb.json();
-    session["customer"] = newIndiAndUpdatedCustomerObj.customer;
+    session.customer = newIndiAndUpdatedCustomerObj.customer;
   };
 
   return (
