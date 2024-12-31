@@ -1,3 +1,4 @@
+import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
 /*global Excel */
 
@@ -420,4 +421,9 @@ export interface AutoFillObject {
 export interface ProxyWorksheet {
   name: string;
   ws: Excel.Worksheet;
+}
+
+export interface WorksheetDefaults {
+  name: string;
+  addListeners: [(context: Excel.RequestContext, session: Session) => void];
 }

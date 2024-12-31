@@ -2,11 +2,11 @@ import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelDeletionObject, ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Worksheet } from "../classes/worksheet";
-import { ProxyWorksheet } from "../interfaces/interfaces";
+import { ProxyWorksheet, WorksheetDefaults } from "../interfaces/interfaces";
 import { colNumToLetter } from "./excel-col-conversion";
 /* global Excel */
 
-export function addWorksheet(context, session: Session, wsDefaults) {
+export function addWorksheet(context, session: Session, wsDefaults: WorksheetDefaults) {
   const ws = context.workbook.worksheets.add(wsDefaults.name);
   wsDefaults.addListeners && wsDefaults.addListeners.forEach((fn) => fn(context, session));
   return ws;
@@ -25,7 +25,7 @@ export const addWorksheets = async (context, session: Session, sheetNames) => {
 };
 
 // returns new Excel worksheet object with id and name preloaded
-export const addOneWorksheet = async (context, session: Session, wsDefaults) => {
+export const addOneWorksheet = async (context, session: Session, wsDefaults: WorksheetDefaults) => {
   session.options.ignoreWsAddition += 1;
   const ws = addWorksheet(context, session, wsDefaults);
   const proxyObj: ProxyWorksheet = { name: wsDefaults.name, ws };
@@ -196,7 +196,11 @@ export const getProxyWorksheet = (session: Session, wsName) => {
   return session.worksheets.find((ws) => ws.name === wsName);
 };
 
-export const getOrAddWorksheet = async (context: Excel.RequestContext, session: Session, wsDefaults) => {
+export const getOrAddWorksheet = async (
+  context: Excel.RequestContext,
+  session: Session,
+  wsDefaults: WorksheetDefaults
+) => {
   const wsName = wsDefaults.name;
   const proxyWs = getProxyWorksheet(session, wsName);
   const worksheets = context.workbook.worksheets;

@@ -17,13 +17,13 @@ import { addOneWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 /* global Excel */
 
-export function addTbClickListener(context, session: Session) {
+export function addTbClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
   ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
   session.activeAssignment.tbListenerAdded = true;
 }
 
-export function addPlClickListener(context, session: Session) {
+export function addPlClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.activeAssignment.pLListenerAdded = true;
@@ -197,7 +197,7 @@ export async function cerysNomDetailViewPL(context, session: Session, detail) {
   ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
 }
 
-export function addBsClickListener(context, session: Session) {
+export function addBsClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, session, e));
   session.activeAssignment.bSListenerAdded = true;
