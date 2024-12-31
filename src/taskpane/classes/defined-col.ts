@@ -78,6 +78,22 @@ export const getDefinedColsSchema = (type) => {
         cols.cerysNarrative,
         cols.value,
       ];
+    case "FATransactions":
+      return [
+        cols.transNo,
+        cols.date,
+        cols.cerysNarrative,
+        cols.transType,
+        cols.cerysCode,
+        cols.cerysName,
+        cols.clientCode,
+        cols.clientCodeName,
+        cols.clientNarrative,
+        cols.value,
+        cols.depnBasis,
+        cols.depnRate,
+        cols.depnCharge,
+      ];
     default:
       return null;
   }

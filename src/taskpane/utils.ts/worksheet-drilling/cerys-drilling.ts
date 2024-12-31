@@ -117,8 +117,7 @@ async function cerysNomDetailView(context, detail, session: Session) {
   //   target: "cerysCode",
   //   value: filter,
   // });
-  const editableWs = createEditableWorksheet(session, detail, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
-  console.log(editableWs);
+  createEditableWorksheet(session, detail, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);

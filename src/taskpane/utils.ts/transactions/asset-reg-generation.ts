@@ -400,7 +400,7 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
       //   },
       // ];
       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
-      createEditableWorksheet(session, transactions, ws, valuesToPost, "placeholder", sheetMapping);
+      createEditableWorksheet(session, transactions, ws, valuesToPost, "FATransactions", sheetMapping);
       await context.sync();
       ws.activate();
     });

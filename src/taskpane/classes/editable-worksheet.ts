@@ -1,4 +1,4 @@
-import { Transaction } from "../interfaces/interfaces";
+import { FATransaction, Transaction } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils.ts/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils.ts/helperFunctions";
 import { createDeletionObject } from "../utils.ts/transactions/transactions";
@@ -7,6 +7,7 @@ import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-co
 import { ExcelRangeUpdate } from "./excel-range-editing";
 import { Session } from "./session";
 import { TransactionMap } from "./transaction-map";
+/* global Excel */
 
 export class EditableWorksheet {
   name: string;
@@ -30,7 +31,14 @@ export class EditableWorksheet {
   filterObj: { target: string; value: string | number | boolean };
   isValueInverted: boolean;
 
-  constructor(session: Session, transactions: Transaction[], ws, wsValues, type, sheetMapping) {
+  constructor(
+    session: Session,
+    transactions: Transaction[],
+    ws: Excel.Worksheet,
+    wsValues: string[][],
+    type: string,
+    sheetMapping: TransactionMap[]
+  ) {
     this.name = ws.name;
     this.type = type;
     this.edited = false;
@@ -195,7 +203,14 @@ export class EditableWorksheet {
   }
 }
 
-export const createEditableWorksheet = (session: Session, transactions, ws, wsValues, type, sheetMapping) => {
+export const createEditableWorksheet = (
+  session: Session,
+  transactions: (Transaction | FATransaction)[],
+  ws: Excel.Worksheet,
+  wsValues: string[][],
+  type: string,
+  sheetMapping: TransactionMap[]
+) => {
   const editableWs = new EditableWorksheet(session, transactions, ws, wsValues, type, sheetMapping);
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
