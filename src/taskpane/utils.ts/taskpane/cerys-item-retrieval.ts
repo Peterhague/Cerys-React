@@ -25,6 +25,7 @@ export const clientCodeToCerysObject = (session: Session, clientCode) => {
       return session.chart[i];
     }
   }
+  return null;
 };
 
 // takes a Sage code and returns the corresponding Cerys nominal code

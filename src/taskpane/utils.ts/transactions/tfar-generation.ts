@@ -2,50 +2,9 @@ import { Session } from "../../classes/session";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
-import { calculateDiffInDays } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
-
-export function calculateDepnChg(session: Session, tran) {
-  console.log(tran);
-  const periodEnd = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  const daysHeld = calculateDiffInDays(tran.transactionDate, periodEnd) + 1;
-  const daysInPeriod = session.activeAssignment.reportingPeriod.noOfDays;
-  const charge = Math.round(tran.value * (parseInt(tran.depnRate) / 100) * (daysHeld / daysInPeriod));
-  console.log(charge);
-  tran.depnChg = charge;
-  tran.assetSubCatCodes.push(11);
-  const subTran = {
-    assetSubCatCode: 11,
-    assetSubCategory: "Depn chg",
-    regColNameOne: "Depn",
-    regColNameTwo: "Charge",
-    value: charge,
-  };
-  tran.subTransactions.push(subTran);
-  const jnls = buildAutoDepnJnls(session, tran);
-  session.activeJournal.journals.push(jnls.debit);
-  session.activeJournal.netValue += jnls["debit"]["value"];
-  session.activeJournal.journals.push(jnls.credit);
-  session.activeJournal.netValue += jnls["credit"]["value"];
-}
-
-export const buildAutoDepnJnls = (session: Session, tran) => {
-  const catNo = tran.assetCategoryNo;
-  const jnls = setAutoDepnNominals(catNo);
-  session.chart.forEach((nom) => {
-    if (nom.cerysCode === jnls.debit) jnls.debit = nom;
-    if (nom.cerysCode === jnls.credit) jnls.credit = nom;
-  });
-  jnls.debit["value"] = tran.depnChg;
-  jnls.credit["value"] = tran.depnChg * -1;
-  jnls.debit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  jnls.credit["transactionDate"] = session.activeAssignment.reportingPeriod.reportingDateOrig;
-  jnls.debit["narrative"] = "Depreciation charged automatically";
-  jnls.credit["narrative"] = "Depreciation charged automatically";
-  return jnls;
-};
 
 export const setAutoDepnNominals = (catNo) => {
   switch (catNo) {

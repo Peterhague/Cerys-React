@@ -15,9 +15,9 @@ export const processTransBatch = async (context, session: Session) => {
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.transactionDate === "") {
       if (
-        jnl.assetSubCategory === "Cost bfwd" ||
-        jnl.assetSubCategory === "Amort bfwd" ||
-        jnl.assetSubCategory === "Depn bfwd"
+        jnl.cerysCodeObj.assetSubCategory === "Cost bfwd" ||
+        jnl.cerysCodeObj.assetSubCategory === "Amort bfwd" ||
+        jnl.cerysCodeObj.assetSubCategory === "Depn bfwd"
       ) {
         jnl.transactionDate = periodStartDate;
       } else {

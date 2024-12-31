@@ -13,7 +13,7 @@ export class EditableWorksheet {
   edited: boolean;
   promptDeletion: boolean;
   worksheetId: string;
-  editableRowRanges: [{ firstRow: number; lastRow: number }];
+  editableRowRanges: { firstRow: number; lastRow: number }[];
   protectedRange: { firstRow: number; lastRow: number; firstCol: number; lastCol: number };
   protectedRangeDeleted: boolean;
   definedCols: DefinedCol[];

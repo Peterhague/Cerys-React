@@ -5,21 +5,14 @@ import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
+import { ClientCerysCodeObject } from "../../interfaces/interfaces";
+import { calculateExcelDate } from "../../utils.ts/helperFunctions";
 /*global Excel */
 
 interface enterJournalProps {
   handleView: (view) => void;
   session: Session;
-  chart: [
-    {
-      cerysCode: number;
-      cerysName: string;
-      cerysExcelName: string;
-      clientCode: number;
-      clientCodeName: string;
-      _id: string;
-    },
-  ];
+  chart: ClientCerysCodeObject[];
 }
 
 const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
@@ -48,7 +41,16 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     e.preventDefault();
     const cerysObj = session.chart.find((code) => code.cerysCode === parseInt(nominalCode));
     console.log(cerysObj);
-    const journalDtls = { ...cerysObj, value: parseInt(value) * 100, narrative, transactionDate };
+    const journalDtls = {
+      cerysCodeObj: cerysObj,
+      value: parseInt(value) * 100,
+      narrative,
+      transactionDate,
+      transactionType: "journal",
+      clientTB: false,
+      journal: true,
+      transactionDateExcel: calculateExcelDate(transactionDate),
+    };
     session.activeJournal.journals.push(journalDtls);
     session.activeJournal.netValue += journalDtls.value;
     setNominalCode("");

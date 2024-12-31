@@ -250,7 +250,7 @@ function calculateNCA(activeAssignment: Assignment) {
   } else if (activeAssignment.tCL && !activeAssignment.tCA) {
     return activeAssignment.tCL;
   } else {
-    return;
+    return null;
   }
 }
 

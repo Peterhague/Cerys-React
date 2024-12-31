@@ -22,9 +22,9 @@ interface reviewTransUpdatesProps {
 const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const updatedTransactions = getUpdatedTransactions(session);
-  updatedTransactions.sort((a, b) => {
-    return a.rowNumber - b.rowNumber;
-  });
+  // updatedTransactions.sort((a, b) => {
+  //   return a.rowNumber - b.rowNumber;
+  // });
 
   const handlePrevious = () => {
     setActiveIndex(activeIndex - 2);

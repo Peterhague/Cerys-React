@@ -7,20 +7,12 @@ import { callNextView, getUpdatedTransactions } from "../../../utils.ts/helperFu
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { createEditableCell } from "../../../classes/editable-cell";
 import { Session } from "../../../classes/session";
+import { ClientCerysCodeObject, ClientCodeObject } from "../../../interfaces/interfaces";
 
 interface nomCodeSelectionProps {
   handleView: (view) => void;
   session: Session;
-  chart: [
-    {
-      cerysCode: number;
-      cerysName?: string;
-      cerysExcelName?: string;
-      clientCode: number;
-      clientCodeName: string;
-      _id: string;
-    },
-  ];
+  chart: ClientCerysCodeObject[] | ClientCodeObject[];
 }
 
 const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps) => {

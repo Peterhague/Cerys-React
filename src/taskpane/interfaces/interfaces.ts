@@ -166,8 +166,16 @@ export interface NewFATransaction extends Transaction {
   processedAsAsset: boolean;
 }
 
-export interface Journal extends Transaction {
-  transactionId: string;
+export interface Journal {
+  cerysCodeObj: BaseCerysCodeObject;
+  transactionId?: string;
+  value: number;
+  transactionType: string;
+  clientTB: boolean;
+  journal: boolean;
+  transactionDate: string | Date;
+  transactionDateExcel: number;
+  narrative: string;
 }
 
 export interface ClientTransaction {

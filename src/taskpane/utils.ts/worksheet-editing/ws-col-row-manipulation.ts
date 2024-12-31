@@ -436,7 +436,7 @@ export const handleRowSort = async (session: Session, wsName) => {
       sheet.definedCols.forEach((col) => {
         if (col.isUnique) uniqueCol = col.colNumber;
       });
-      const protectedRowNumbers = [];
+      const protectedRowNumbers: number[] = [];
       sheet.sheetMapping.forEach((map) => {
         const transaction = map.getTran(sheet.transactions);
         const currentRowNumber = map.rowNumber;

@@ -1,13 +1,8 @@
+import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
 import { colNumToLetter } from "../excel-col-conversion";
-import {
-  accessExcelContext,
-  calculateDiffInDays,
-  convertExcelDate,
-  createEditableWs,
-  getTransRowNumber,
-} from "../helperFunctions";
+import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import _ from "lodash";
@@ -307,116 +302,105 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
       rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
-      const definedCols = [
-        {
-          type: "transNo",
-          colNumber: 1,
-          mutable: false,
-          format: "0",
-          deleted: false,
-        },
-        {
-          type: "date",
-          colNumber: 2,
-          mutable: true,
-          format: "dd/mm/yyyy",
-          deleted: false,
-          updateKey: "updatedDate",
-        },
-        {
-          type: "cerysNarrative",
-          colNumber: 3,
-          mutable: true,
-          format: "",
-          deleted: false,
-          updateKey: "updatedNarrative",
-        },
-        {
-          type: "transType",
-          colNumber: 4,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "cerysCode",
-          colNumber: 5,
-          mutable: true,
-          format: "0",
-          deleted: false,
-          updateKey: "updatedCode",
-        },
-        {
-          type: "cerysName",
-          colNumber: 6,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "clientCode",
-          colNumber: 7,
-          mutable: false,
-          format: "0",
-          deleted: false,
-        },
-        {
-          type: "clientNominal",
-          colNumber: 8,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "clientNarrative",
-          colNumber: 9,
-          mutable: false,
-          format: "",
-          deleted: false,
-        },
-        {
-          type: "value",
-          colNumber: 10,
-          mutable: false,
-          format: "#,##0.00;(#,##0.00);-",
-          deleted: false,
-        },
-        {
-          type: "depnBasis",
-          colNumber: 11,
-          mutable: true,
-          format: "",
-          deleted: false,
-          updateKey: "updatedDepnBasis",
-        },
-        {
-          type: "depnRate",
-          colNumber: 12,
-          mutable: true,
-          format: "0",
-          deleted: false,
-          updateKey: "updatedDepnRate",
-        },
-        {
-          type: "depnCharge",
-          colNumber: 13,
-          format: "#,##0.00;(#,##0.00);-",
-          deleted: false,
-        },
-      ];
+      // const definedCols = [
+      //   {
+      //     type: "transNo",
+      //     colNumber: 1,
+      //     mutable: false,
+      //     format: "0",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "date",
+      //     colNumber: 2,
+      //     mutable: true,
+      //     format: "dd/mm/yyyy",
+      //     deleted: false,
+      //     updateKey: "updatedDate",
+      //   },
+      //   {
+      //     type: "cerysNarrative",
+      //     colNumber: 3,
+      //     mutable: true,
+      //     format: "",
+      //     deleted: false,
+      //     updateKey: "updatedNarrative",
+      //   },
+      //   {
+      //     type: "transType",
+      //     colNumber: 4,
+      //     mutable: false,
+      //     format: "",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "cerysCode",
+      //     colNumber: 5,
+      //     mutable: true,
+      //     format: "0",
+      //     deleted: false,
+      //     updateKey: "updatedCode",
+      //   },
+      //   {
+      //     type: "cerysName",
+      //     colNumber: 6,
+      //     mutable: false,
+      //     format: "",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "clientCode",
+      //     colNumber: 7,
+      //     mutable: false,
+      //     format: "0",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "clientNominal",
+      //     colNumber: 8,
+      //     mutable: false,
+      //     format: "",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "clientNarrative",
+      //     colNumber: 9,
+      //     mutable: false,
+      //     format: "",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "value",
+      //     colNumber: 10,
+      //     mutable: false,
+      //     format: "#,##0.00;(#,##0.00);-",
+      //     deleted: false,
+      //   },
+      //   {
+      //     type: "depnBasis",
+      //     colNumber: 11,
+      //     mutable: true,
+      //     format: "",
+      //     deleted: false,
+      //     updateKey: "updatedDepnBasis",
+      //   },
+      //   {
+      //     type: "depnRate",
+      //     colNumber: 12,
+      //     mutable: true,
+      //     format: "0",
+      //     deleted: false,
+      //     updateKey: "updatedDepnRate",
+      //   },
+      //   {
+      //     type: "depnCharge",
+      //     colNumber: 13,
+      //     format: "#,##0.00;(#,##0.00);-",
+      //     deleted: false,
+      //   },
+      // ];
       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
-      const sheetName = `${registerType}RPreview`;
-      createEditableWs(
-        session,
-        transactions,
-        ws,
-        definedCols,
-        valuesToPost,
-        sheetName,
-        sheetMapping,
-        "placeholder",
-        "placeholder"
-      );
+      createEditableWorksheet(session, transactions, ws, valuesToPost, "placeholder", sheetMapping);
       await context.sync();
       ws.activate();
     });
@@ -789,7 +773,7 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
       let crJnl;
       for (let i = 0; i < chart.length; i++) {
         if (chart[i].cerysCode === tran.cerysCode + 1) {
-          drJnl = { ...chart[i] };
+          drJnl = { cerysCodeObj: chart[i] };
           drJnl.value = tran.value;
           drJnl.transactionDate = tran.transactionDate;
           drJnl.journal = false;
@@ -802,7 +786,7 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
           session.activeJournal.journals.push(drJnl);
         }
         if (chart[i].cerysCode === tran.cerysCode) {
-          crJnl = { ...chart[i] };
+          crJnl = { cerysCodeObj: chart[i] };
           crJnl.value = tran.value * -1;
           crJnl.transactionDate = tran.transactionDate;
           crJnl.journal = false;

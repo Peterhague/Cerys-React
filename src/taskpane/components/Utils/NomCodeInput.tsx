@@ -1,19 +1,11 @@
 import * as React from "react";
 import { useState } from "react";
 import { Session } from "../../classes/session";
+import { ClientCerysCodeObject, ClientCodeObject } from "../../interfaces/interfaces";
 
 interface nomCodeInputProps {
   session: Session;
-  chart: [
-    {
-      cerysCode: number;
-      cerysName: string;
-      cerysExcelName: string;
-      clientCode: number;
-      clientCodeName: string;
-      _id: string;
-    },
-  ];
+  chart: ClientCerysCodeObject[] | ClientCodeObject[];
   nominalCode: string;
   setNominalCode: (code) => void;
   nominalCodeName: string;
@@ -108,8 +100,8 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const filteredChart = chart.filter((code) => {
-            const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
-            const name = code.cerysName ? code.cerysName : code.clientCodeName;
+            const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
+            const name = "cerysName" in code ? code.cerysName : code.clientCodeName;
             let check = true;
             for (let i = 0; i < searchTerm.length; i++) {
               if (codeStr[i] !== searchTerm[i]) check = false;
@@ -120,12 +112,9 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
           if (e.key === "ArrowDown") {
             if (session.arrowIndex < filteredChart.length - 1) {
               session.arrowIndex += 1;
-              const codeStr = filteredChart[session.arrowIndex].clientCode
-                ? filteredChart[session.arrowIndex].clientCode.toString()
-                : filteredChart[session.arrowIndex].cerysCode.toString();
-              const shortName = filteredChart[session.arrowIndex].cerysExcelName
-                ? filteredChart[session.arrowIndex].cerysExcelName
-                : filteredChart[session.arrowIndex].clientCodeName;
+              const code = filteredChart[session.arrowIndex];
+              const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
+              const shortName = "cerysExcelName" in code ? code.cerysExcelName : code.clientCodeName;
               setNominalCode(codeStr);
               setNominalCodeName(shortName);
               setSearchDisplay(`${codeStr} ${shortName}`);
@@ -133,12 +122,9 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
           } else {
             if (session.arrowIndex > 0) {
               session.arrowIndex -= 1;
-              const codeStr = filteredChart[session.arrowIndex].clientCode
-                ? filteredChart[session.arrowIndex].clientCode.toString()
-                : filteredChart[session.arrowIndex].cerysCode.toString();
-              const shortName = filteredChart[session.arrowIndex].cerysExcelName
-                ? filteredChart[session.arrowIndex].cerysExcelName
-                : filteredChart[session.arrowIndex].clientCodeName;
+              const code = filteredChart[session.arrowIndex];
+              const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
+              const shortName = "cerysExcelName" in code ? code.cerysExcelName : code.clientCodeName;
               setNominalCode(codeStr);
               setNominalCodeName(shortName);
               setSearchDisplay(`${codeStr} ${shortName}`);
@@ -170,8 +156,8 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
             {showSuggestions &&
               chart
                 .filter((code) => {
-                  const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
-                  const name = code.cerysName ? code.cerysName : code.clientCodeName;
+                  const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
+                  const name = "cerysName" in code ? code.cerysName : code.clientCodeName;
                   let check = true;
                   for (let i = 0; i < searchTerm.length; i++) {
                     if (codeStr[i] !== searchTerm[i]) check = false;

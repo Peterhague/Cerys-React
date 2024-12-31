@@ -124,8 +124,22 @@ export const updateCerysCodeMapping = async (session: Session, nominalCode, nomi
   relTrans.forEach(
     (tran) =>
       (tran.updates = [
-        new TransactionUpdate(wsName, ws.worksheetId, "clientCodeMapping", nominalCode, null),
-        new TransactionUpdate(wsName, ws.worksheetId, "clientCodeNameMapping", nominalCodeName, null),
+        new TransactionUpdate(
+          wsName,
+          ws.worksheetId,
+          "clientCodeMapping",
+          nominalCode,
+          tran.activeClientMapping.clientCode,
+          null
+        ),
+        new TransactionUpdate(
+          wsName,
+          ws.worksheetId,
+          "clientCodeNameMapping",
+          nominalCodeName,
+          tran.activeClientMapping.clientCodeName,
+          null
+        ),
       ])
   );
   updateEdSheetClientCodeMapping(session, wsName, relTrans);

@@ -1,4 +1,5 @@
 import { Session } from "../classes/session";
+import { calculateExcelDate } from "../utils.ts/helperFunctions";
 import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 /*global Excel */
@@ -52,12 +53,14 @@ export const postOpBalJnls = async (session: Session) => {
         for (let i = 0; i < chart.length; i++) {
           if (line.cerysCode === chart[i].cerysCode) {
             const jnl = {
-              ...chart[i],
+              cerysCodeObj: chart[i],
               journal: false,
+              clientTB: false,
               narrative: "automatic opening balance",
               transactionType: "opening balance",
               value: line.value,
               transactionDate,
+              transactionDateExcel: calculateExcelDate(transactionDate),
             };
             session.activeJournal.journals.push(jnl);
             break;

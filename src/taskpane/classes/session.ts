@@ -1,7 +1,6 @@
 import {
   Assignment,
   BaseIndividual,
-  CerysCodeObject,
   ClientCerysCodeObject,
   ClientCodeObject,
   Customer,

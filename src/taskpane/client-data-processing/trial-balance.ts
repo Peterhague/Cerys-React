@@ -1,4 +1,5 @@
 import { Session } from "../classes/session";
+import { ClientCerysCodeObject } from "../interfaces/interfaces";
 import { clientCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
 /* global Excel */
@@ -12,7 +13,7 @@ export async function enterTB(session: Session) {
       journals.forEach((jnl) => {
         const obj = {
           ...jnl,
-          value: jnl.value,
+          ...jnl.cerysCodeObj,
           transactionDate: "",
         };
         check += jnl.value;
@@ -79,16 +80,27 @@ export async function handleTBData(session: Session) {
       await context.sync();
       const innerValues = values.values;
       const arrays = innerValues.slice(3, innerValues.length - 1);
-      const arrObjs = [];
+      const arrObjs: {
+        cerysCodeObj: ClientCerysCodeObject;
+        clientNominalCode: number;
+        value: number;
+        narrative: string;
+      }[] = [];
       for (let i = 0; i < arrays.length; i++) {
-        const obj = convertToCerysObject(session, arrays[i]);
-        obj.clientNominalCode = arrays[i][0];
-        if (arrays[i][2]) {
-          obj.value = arrays[i][2] * 100;
-        } else {
-          obj.value = arrays[i][3] * -1 * 100;
-        }
-        obj.narrative = "Client TB auto-entry";
+        const cerysCodeObj = convertToCerysObject(session, arrays[i]);
+        const obj = {
+          cerysCodeObj,
+          clientNominalCode: arrays[i][0],
+          value: arrays[i][2] ? arrays[i][2] * 100 : arrays[i][3] * -1 * 100,
+          narrative: "Client TB auto-entry",
+        };
+        // obj.clientNominalCode = arrays[i][0];
+        // if (arrays[i][2]) {
+        //   obj.value = arrays[i][2] * 100;
+        // } else {
+        //   obj.value = arrays[i][3] * -1 * 100;
+        // }
+        // obj.narrative = "Client TB auto-entry";
         arrObjs.push(obj);
       }
       await context.sync();
