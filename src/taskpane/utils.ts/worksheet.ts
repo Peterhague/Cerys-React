@@ -1,5 +1,8 @@
+import { EditableWorksheet } from "../classes/editable-worksheet";
+import { ExcelDeletionObject, ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Worksheet } from "../classes/worksheet";
+import { ProxyWorksheet } from "../interfaces/interfaces";
 import { colNumToLetter } from "./excel-col-conversion";
 /* global Excel */
 
@@ -25,7 +28,7 @@ export const addWorksheets = async (context, session: Session, sheetNames) => {
 export const addOneWorksheet = async (context, session: Session, wsDefaults) => {
   session.options.ignoreWsAddition += 1;
   const ws = addWorksheet(context, session, wsDefaults);
-  const proxyObj = { name: wsDefaults.name, ws };
+  const proxyObj: ProxyWorksheet = { name: wsDefaults.name, ws };
   await processWorksheetAdditions(context, session, [proxyObj]);
   return proxyObj;
 };
@@ -88,7 +91,7 @@ export const getActiveWorksheetName = async (context) => {
   return name;
 };
 
-export const getWorksheetUsedRange = async (context, wsName) => {
+export const getWorksheetUsedRange = async (context: Excel.RequestContext, wsName: string) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const range = sheet.getUsedRange();
   range.load("values");
@@ -97,15 +100,18 @@ export const getWorksheetUsedRange = async (context, wsName) => {
   return values;
 };
 
-export const setExcelRangeValue = (context, wsName, range, value) => {
+export const setExcelRangeValue = (
+  context: Excel.RequestContext,
+  wsName: string,
+  range: string,
+  value: string | number
+) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   const wsRange = ws.getRange(range);
-  wsRange.values = value;
+  wsRange.values = [[value]];
 };
 
-export const setManyExcelRangeValues = (context, wsName, updates) => {
-  console.log(wsName);
-  console.log(updates);
+export const setManyExcelRangeValues = (context: Excel.RequestContext, wsName: string, updates: ExcelRangeUpdate[]) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   // Issue: should this be a for loop because an await call is made during it?
   updates.forEach((update) => {
@@ -114,7 +120,7 @@ export const setManyExcelRangeValues = (context, wsName, updates) => {
   });
 };
 
-export const setManyWorksheetRangeValues = (context, updates) => {
+export const setManyWorksheetRangeValues = (context: Excel.RequestContext, updates: ExcelRangeUpdate[]) => {
   updates.forEach((update) => {
     const ws = context.workbook.worksheets.getItem(update.wsName);
     const range = ws.getRange(update.address);
@@ -122,24 +128,24 @@ export const setManyWorksheetRangeValues = (context, updates) => {
   });
 };
 
-export const deleteWorksheetRangesUp = async (context, deletionObjs) => {
+export const deleteWorksheetRangesUp = async (context: Excel.RequestContext, deletionObjs: ExcelDeletionObject[]) => {
   deletionObjs.forEach((obj) => {
-    obj.sheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
+    obj.worksheet = context.workbook.worksheets.getItemOrNullObject(obj.wsName);
   });
   await context.sync();
   deletionObjs.forEach((obj) => {
-    const range = obj.sheet && obj.sheet.getRange(obj.range);
+    const range = obj.worksheet && obj.worksheet.getRange(obj.range);
     range.delete("Up");
   });
 };
 
-export const deleteWorksheetRangeDown = (context, wsName, range) => {
+export const deleteWorksheetRangeDown = (context: Excel.RequestContext, wsName: string, range: string) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const wsRange = sheet.getRange(range);
   wsRange.delete(Excel.DeleteShiftDirection.up);
 };
 
-export const highlightEditableRanges = (context, sheet) => {
+export const highlightEditableRanges = (context: Excel.RequestContext, sheet: EditableWorksheet) => {
   const ws = context.workbook.worksheets.getItem(sheet.name);
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
@@ -153,7 +159,7 @@ export const highlightEditableRanges = (context, sheet) => {
   });
 };
 
-export const unhighlightEditableRanges = (context, sheet) => {
+export const unhighlightEditableRanges = (context: Excel.RequestContext, sheet: EditableWorksheet) => {
   const ws = context.workbook.worksheets.getActiveWorksheet();
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
@@ -167,7 +173,7 @@ export const unhighlightEditableRanges = (context, sheet) => {
   });
 };
 
-export const highlightRanges = (context, wsName, ranges, color) => {
+export const highlightRanges = (context: Excel.RequestContext, wsName: string, ranges: string[], color: string) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   ranges.forEach((range) => {
     const wsRange = ws.getRange(range);
@@ -175,7 +181,11 @@ export const highlightRanges = (context, wsName, ranges, color) => {
   });
 };
 
-export const processWorksheetAdditions = async (context, session: Session, worksheets) => {
+export const processWorksheetAdditions = async (
+  context: Excel.RequestContext,
+  session: Session,
+  worksheets: ProxyWorksheet[]
+) => {
   console.log(worksheets);
   worksheets.forEach((sheet) => sheet.ws.load(["id", "name"]));
   await context.sync();
@@ -186,14 +196,14 @@ export const getProxyWorksheet = (session: Session, wsName) => {
   return session.worksheets.find((ws) => ws.name === wsName);
 };
 
-export const getOrAddWorksheet = async (context, session: Session, wsDefaults) => {
+export const getOrAddWorksheet = async (context: Excel.RequestContext, session: Session, wsDefaults) => {
   const wsName = wsDefaults.name;
   const proxyWs = getProxyWorksheet(session, wsName);
   const worksheets = context.workbook.worksheets;
   return proxyWs ? { ws: worksheets.getItem(wsName) } : await addOneWorksheet(context, session, wsDefaults);
 };
 
-export const clearUsedRange = async (context, worksheet) => {
+export const clearUsedRange = async (context: Excel.RequestContext, worksheet: Excel.Worksheet) => {
   const usedRange = worksheet.getUsedRange();
   usedRange.clear();
   await context.sync();

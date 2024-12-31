@@ -102,7 +102,14 @@ const AppBody = ({ session }: AppBodyProps) => {
         session.nextView = view;
         break;
       case "customerLogin":
-        body = <CustomerLogin handleView={handleView} session={session} setEditButton={setEditButton} />;
+        body = (
+          <CustomerLogin
+            handleView={handleView}
+            handleDynamicView={handleDynamicView}
+            session={session}
+            setEditButton={setEditButton}
+          />
+        );
         footer = null;
         break;
       case "customerSignUp":

@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 
 interface addCorpClientAmortProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

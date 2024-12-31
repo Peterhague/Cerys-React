@@ -1,10 +1,10 @@
-import { createEditableWorksheet } from "../../classes/editable-worksheet";
+import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
+import { FATransaction, QuasiEventObject } from "../../interfaces/interfaces";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
-import { createNewTransactionUpdate } from "../worksheet-editing/ws-range-editing";
 import _ from "lodash";
 /*global Excel */
 
@@ -295,11 +295,11 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
       console.log(valuesToPost);
       range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
-      rangeB.numberFormat = "dd/mm/yyyy";
+      rangeB.numberFormat = [["dd/mm/yyyy"]];
       const rangeJ = ws.getRange("J:J");
-      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+      rangeJ.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       const rangeM = ws.getRange("M:M");
-      rangeM.numberFormat = "#,##0.00;(#,##0.00);-";
+      rangeM.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
       // const definedCols = [
@@ -470,9 +470,9 @@ export async function createLikelyAdditionsSumm(session: Session, relevantTrans,
       console.log(valuesToPost);
       range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
-      rangeB.numberFormat = "dd/mm/yyyy";
+      rangeB.numberFormat = [["dd/mm/yyyy"]];
       const rangeJ = ws.getRange("J:J");
-      rangeJ.numberFormat = "#,##0.00;(#,##0.00);-";
+      rangeJ.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       const rangeAJ = ws.getRange("A:J");
       rangeAJ.format.autofitColumns();
       await context.sync();
@@ -602,7 +602,13 @@ export function calculateCharge(session: Session, tran, registerType) {
   session.activeJournal.netValue += jnls["credit"]["value"];
 }
 
-export const recalculateCharge = async (context, session: Session, sheet, tran, e) => {
+export const recalculateCharge = async (
+  context: Excel.RequestContext,
+  session: Session,
+  sheet: EditableWorksheet,
+  tran: FATransaction,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject
+) => {
   let registerType;
   let amortOrDepn;
   let amortOrDepnUpper;
@@ -635,7 +641,7 @@ export const recalculateCharge = async (context, session: Session, sheet, tran, 
   const colLetter = colNumToLetter(depnChgColNumber);
   const rowNumber = getTransRowNumber(tran, sheet);
   const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
-  await setExcelRangeValue(context, sheet.name, range, charge / 100);
+  setExcelRangeValue(context, sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {
       i[`${amortOrDepn}Chg`] = charge;
@@ -757,8 +763,8 @@ export const adjustAutoDepnJnls = (session: Session, tran, charge) => {
 export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) => {
   bFTransLikelyAddns.forEach((tran) => {
     if (tran._id) {
-      const newValue = tran.cerysCode + 1;
-      const update = createNewTransactionUpdate(session, tran, newValue, "sheet", "updatedCode"); // Issue: this code is fudged, needs to be looked at... see code commented out below
+      //const newValue = tran.cerysCode + 1;
+      //const update = createNewTransactionUpdate(session, tran, newValue, "sheet", "updatedCode"); // Issue: this code is fudged, needs to be looked at... see code commented out below
       //session.chart.forEach((code) => {
       //  if (code.cerysCode === newValue) {
       //      update.cerysCodeObject = code;
@@ -766,7 +772,7 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
       //});
       //if (!tran.cerysCodeObject) tran.cerysCodeObject = session.chart.find(code => code.cerysCode = update.value)
       //newArray.push(newUpdate);
-      console.log(update);
+      //console.log(update);
     } else {
       const chart = session.chart;
       let drJnl;

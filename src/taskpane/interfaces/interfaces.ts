@@ -1,4 +1,5 @@
 import { TransactionUpdate } from "../classes/transaction-update";
+/*global Excel */
 
 export interface BaseCerysCodeObject {
   cerysCode: number;
@@ -164,6 +165,11 @@ export interface Transaction extends BaseCerysCodeObject {
 
 export interface NewFATransaction extends Transaction {
   processedAsAsset: boolean;
+}
+
+export interface FATransaction extends Transaction {
+  depnRate: string;
+  amortRate: string;
 }
 
 export interface Journal {
@@ -366,4 +372,52 @@ export interface ShareClass {
   numberIssued: number;
   issuedNotAllocated: number;
   prelimAllocation: number;
+}
+
+export interface AddressObject {
+  firstCol: number;
+  lastCol: number;
+  firstRow: number;
+  lastRow: number;
+}
+
+export interface QuasiEventObject {
+  address: string;
+  details: {
+    valueBefore: string | number;
+    valueAfter: string | number;
+  };
+  changeType: string;
+  triggerSource: string;
+}
+
+export interface TranUpdatePrimaryValidation {
+  changeRejected: boolean;
+  isValid: boolean;
+  isNotNegation: boolean;
+  updated: boolean;
+}
+
+export interface TranUpdateFinalValidation {
+  isNegation: boolean;
+  isInvalid: boolean;
+  isError: boolean;
+}
+
+export interface AutoFillObject {
+  isAutoFill: boolean;
+  firstColLetter: string;
+  firstColNumber: number;
+  lastColLetter: string;
+  lastColNumber: number;
+  firstRow: number;
+  lastRow: number;
+  autoFillCols: boolean;
+  autoFillRows: boolean;
+  repRange: string;
+}
+
+export interface ProxyWorksheet {
+  name: string;
+  ws: Excel.Worksheet;
 }

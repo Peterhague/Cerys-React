@@ -1,3 +1,6 @@
+import { BaseCerysCodeObject } from "../interfaces/interfaces";
+import { Session } from "./session";
+
 export class TransactionUpdate {
   worksheetName: string;
   worksheetId: string;
@@ -5,8 +8,10 @@ export class TransactionUpdate {
   value: string | number;
   mongoDate: string | null;
   reversion: string | number;
+  cerysCodeObject: BaseCerysCodeObject | null;
 
   constructor(
+    session: Session,
     wsName: string,
     wsId: string,
     type: string,
@@ -20,5 +25,6 @@ export class TransactionUpdate {
     this.value = value;
     this.reversion = reversion;
     this.mongoDate = mongoDate;
+    this.cerysCodeObject = type === "cerysCode" ? session.chart.find((code) => code.cerysCode === this.value) : null;
   }
 }

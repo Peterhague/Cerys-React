@@ -1,3 +1,4 @@
+import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
@@ -46,14 +47,18 @@ export const registerWorksheetsCollectionHandler = async (session: Session) => {
   }
 };
 
-export const handleSheetDeletion = (e, session: Session) => {
+export const handleSheetDeletion = (e: Excel.WorksheetDeletedEventArgs, session: Session) => {
   session.editableSheets = session.editableSheets
     .filter((sheet) => sheet.worksheetId !== e.worksheetId)
     .map((sheet) => sheet);
   session.worksheets = session.worksheets.filter((sheet) => sheet.id !== e.worksheetId).map((sheet) => sheet);
 };
 
-export const handleSheetAddition = async (context, e, session: Session) => {
+export const handleSheetAddition = async (
+  context: Excel.RequestContext,
+  e: Excel.WorksheetAddedEventArgs,
+  session: Session
+) => {
   if (session.options.ignoreWsAddition > 0) {
     session.options.ignoreWsAddition -= 1;
     return;
@@ -98,7 +103,7 @@ export const clearNextViewButOne = (session: Session) => {
   session.nextViewButOne = "";
 };
 
-export const convertMongoDate = (date) => {
+export const convertMongoDate = (date: string) => {
   const dateString = date.split("T");
   const dateSplit = dateString[0].split("-");
   const convertedDate = `${dateSplit[2]}/${dateSplit[1]}/${dateSplit[0]}`;
@@ -113,7 +118,7 @@ export const convertValueToString = (value) => {
   return newString;
 };
 
-export const calculateExcelDate = (inputDate) => {
+export const calculateExcelDate = (inputDate: Date | string) => {
   const date = new Date(inputDate);
   const baseDate = new Date("1899-12-30");
   const utc1 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
@@ -123,7 +128,7 @@ export const calculateExcelDate = (inputDate) => {
   return excelDate;
 };
 
-export const convertExcelDate = (excelDate) => {
+export const convertExcelDate = (excelDate: any) => {
   const baseDate = new Date("1899-12-30");
   const convertedDate = new Date(baseDate.getTime() + excelDate * 24 * 60 * 60 * 1000);
   const rawMonth = convertedDate.getMonth() + 1;
@@ -650,7 +655,12 @@ export const accessExcelContext = async (func, args) => {
   }
 };
 
-export const postEditableSheetEffects = async (context, session: Session, wsName, updates) => {
+export const postEditableSheetEffects = async (
+  context: Excel.RequestContext,
+  session: Session,
+  wsName: string,
+  updates: ExcelRangeUpdate[]
+) => {
   session.options.allowEffects = updates.length;
   setManyExcelRangeValues(context, wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);

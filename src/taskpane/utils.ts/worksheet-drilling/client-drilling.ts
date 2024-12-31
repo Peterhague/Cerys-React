@@ -51,9 +51,9 @@ async function clientNomDetailView(context, session: Session, detail) {
   });
   range.values = valuesToPost;
   const rangeB = ws.getRange("B:B");
-  rangeB.numberFormat = "dd/mm/yyyy";
+  rangeB.numberFormat = [["dd/mm/yyyy"]];
   const rangeD = ws.getRange("D:D");
-  rangeD.numberFormat = "#,##0.00;(#,##0.00);-";
+  rangeD.numberFormat = [["#,##0.00;(#,##0.00);-"]];
   rangeD.format.horizontalAlignment = "Right";
   const currencyRange = ws.getRange("D1:D1");
   currencyRange.format.horizontalAlignment = "Center";

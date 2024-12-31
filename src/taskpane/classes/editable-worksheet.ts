@@ -4,6 +4,7 @@ import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../util
 import { createDeletionObject } from "../utils.ts/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils.ts/worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
+import { ExcelRangeUpdate } from "./excel-range-editing";
 import { Session } from "./session";
 import { TransactionMap } from "./transaction-map";
 
@@ -24,7 +25,7 @@ export class EditableWorksheet {
   dataCompromised: boolean;
   dataCorrupted: boolean;
   transactions: Transaction[];
-  usedRange: [string];
+  usedRange: any[][];
   sheetMapping: TransactionMap[];
   filterObj: { target: string; value: string | number | boolean };
   isValueInverted: boolean;
@@ -92,25 +93,24 @@ export class EditableWorksheet {
       rowNumbers.push(nextRow);
     });
     this.sheetMapping = newMapping;
-    const updates = [];
+    const updates: ExcelRangeUpdate[] = [];
     additionalTrans.forEach((tran) => {
       const row = tran.map.rowNumber;
       this.definedCols.forEach((definedCol) => {
-        const update: { address?: string; value?: string | number } = {};
-        update.value = definedCol.getTargetProperty(tran.tran);
+        let value = definedCol.getTargetProperty(tran.tran);
         if (
           definedCol.type === "value" &&
-          typeof update.value === "number" &&
+          typeof value === "number" &&
           this.definedCols.find((col) => col.type === "cerysCode")
         ) {
-          update.value = update.value / 100;
-          if (this.isValueInverted) update.value = update.value * -1;
-        } else if (definedCol.type === "clientCode" && typeof update.value === "number") {
-          update.value = update.value >= 0 ? update.value : "NA";
+          value = value / 100;
+          if (this.isValueInverted) value = value * -1;
+        } else if (definedCol.type === "clientCode" && typeof value === "number") {
+          value = value >= 0 ? value : "NA";
         }
         const col = colNumToLetter(definedCol.colNumber);
-        update.address = `${col}${row}:${col}${row}`;
-        updates.push(update);
+        const address = `${col}${row}:${col}${row}`;
+        updates.push(new ExcelRangeUpdate(address, value, null));
       });
       if (this.protectedRange.firstRow > row) this.protectedRange.firstRow = row;
       if (this.protectedRange.lastRow < row) this.protectedRange.lastRow = row;

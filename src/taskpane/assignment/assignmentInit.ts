@@ -35,7 +35,7 @@ function convertDataForWbook(session: Session) {
   return newArray;
 }
 
-async function writeToDATA(context, dataSpread) {
+async function writeToDATA(context, dataSpread: string[][]) {
   const ws = context.workbook.worksheets.getItem("DATA");
   const range = ws.getRange("A1:B8");
   range.values = dataSpread;

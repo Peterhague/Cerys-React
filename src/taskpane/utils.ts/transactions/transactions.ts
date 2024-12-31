@@ -1,3 +1,4 @@
+import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
@@ -9,8 +10,10 @@ import { renewEdSheetsTransRefs } from "../worksheet-editing/ws-editing";
 
 export const processTransBatch = async (context, session: Session) => {
   const activeJournal = session.activeJournal;
-  const transactions = [];
-  activeJournal.journals.forEach((jnl) => {
+  const transactions = activeJournal.journals.map((jnl) => {
+    return { ...jnl, ...jnl.cerysCodeObj };
+  });
+  transactions.forEach((jnl) => {
     const periodStartDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.transactionDate === "") {
@@ -28,7 +31,6 @@ export const processTransBatch = async (context, session: Session) => {
     jnl.transactionType = activeJournal.journalType;
     jnl.clientTB = activeJournal.clientTB;
     jnl.journal = activeJournal.journal;
-    transactions.push(jnl);
   });
   const transDtls = { customerId: session.customer._id, assignmentId: session.activeAssignment._id };
   const { assignment, newTransactions } = await postTransactionsDb(session, transactions, transDtls);
@@ -203,7 +205,7 @@ export const createDeletionObject = (map, sheet) => {
   const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
   const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
   const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
-  return { wsName: sheet.name, range: deletionRange, rowNumber };
+  return new ExcelDeletionObject(sheet.name, deletionRange, rowNumber);
 };
 
 // export const createDeletionObjects = (session, updatedTrans) => {

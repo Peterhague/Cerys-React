@@ -1,6 +1,7 @@
 import { createEditableCell } from "../../classes/editable-cell";
+import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
-import { Transaction } from "../../interfaces/interfaces";
+import { QuasiEventObject, Transaction } from "../../interfaces/interfaces";
 import {
   getDefinedCol,
   interpretEventAddress,
@@ -19,7 +20,7 @@ import {
 } from "./ws-range-editing";
 /* global Excel */
 
-export const handleWorksheetSelection = async (session: Session, e, wsName) => {
+export const handleWorksheetSelection = async (session: Session, e, wsName: string) => {
   const addressObj = interpretEventAddress(e);
   let ws;
   session.editableSheets.forEach((sheet) => {
@@ -45,7 +46,11 @@ export const handleWorksheetSelection = async (session: Session, e, wsName) => {
   }
 };
 
-export const handleWorksheetEdit = async (session: Session, e, wsName) => {
+export const handleWorksheetEdit = async (
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  wsName: string
+) => {
   try {
     await Excel.run(async (context) => {
       console.log(e);
@@ -78,18 +83,22 @@ export const handleWorksheetEdit = async (session: Session, e, wsName) => {
   }
 };
 
-export const parseChangeEventObjectType = (e) => {
+export const parseChangeEventObjectType = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
   return e.changeType === "RangeEdited" ? true : false;
 };
 
-export const parseChangeEventDetails = (session: Session, e, wsName) => {
+export const parseChangeEventDetails = (
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  wsName: string
+) => {
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const addressObj = interpretEventAddress(e);
   const definedCol = getDefinedCol(sheet, addressObj.firstCol);
   return { sheet, addressObj, definedCol };
 };
 
-export const handleSheetDataCorruption = async (session: Session, wsName, sheet) => {
+export const handleSheetDataCorruption = async (session: Session, wsName: string, sheet: EditableWorksheet) => {
   if (sheet.dataCorrupted) {
     if (sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress") {
       simulateEditButtonClick(session);
@@ -99,7 +108,11 @@ export const handleSheetDataCorruption = async (session: Session, wsName, sheet)
   }
 };
 
-export const updateEdSheetClientCodeMapping = async (session: Session, wsName, affectedTransactions: Transaction[]) => {
+export const updateEdSheetClientCodeMapping = async (
+  session: Session,
+  wsName: string,
+  affectedTransactions: Transaction[]
+) => {
   try {
     await Excel.run(async (context) => {
       const sheet = session.editableSheets.find((ws) => ws.name === wsName);
@@ -151,7 +164,7 @@ export const updateEdSheetClientCodeMapping = async (session: Session, wsName, a
 //   }
 // };
 
-export const renewEdSheetsTransRefs = (context, session: Session) => {
+export const renewEdSheetsTransRefs = (context: Excel.RequestContext, session: Session) => {
   let promptSheetDeletion = false;
   session.editableSheets.forEach((sheet) => {
     sheet.renewTransactions(context, session, session.activeAssignment.transactions);

@@ -1,3 +1,4 @@
+import { Transaction } from "../interfaces/interfaces";
 import { DEFINED_COLS as cols } from "../static-values/defined-cols";
 import _ from "lodash";
 
@@ -6,13 +7,13 @@ export class DefinedCol {
   colNumber: number;
   isMutable: Boolean;
   isQuasiMutable: Boolean;
-  format: string;
+  format: any[][];
   isDeleted: Boolean;
   updateKey: string;
   isUnique: Boolean;
   key: [string];
 
-  getTargetProperty(transaction) {
+  getTargetProperty(transaction: Transaction) {
     let property = _.cloneDeep(transaction);
     this.key.forEach((key) => (property = property[key]));
     return property;
@@ -20,10 +21,10 @@ export class DefinedCol {
 
   constructor(
     type: string,
-    isMutable: Boolean,
-    isQuasiMutable: Boolean,
-    format: string,
-    isUnique: Boolean,
+    isMutable: boolean,
+    isQuasiMutable: boolean,
+    format: any[][],
+    isUnique: boolean,
     colNumber: number,
     key: [string]
   ) {

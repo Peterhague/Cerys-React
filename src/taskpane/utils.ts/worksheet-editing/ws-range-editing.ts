@@ -1,5 +1,17 @@
+import { DefinedCol } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
+import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
+import { TransactionUpdate } from "../../classes/transaction-update";
+import {
+  AddressObject,
+  AutoFillObject,
+  FATransaction,
+  QuasiEventObject,
+  Transaction,
+  TranUpdateFinalValidation,
+  TranUpdatePrimaryValidation,
+} from "../../interfaces/interfaces";
 import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
@@ -20,7 +32,14 @@ import {
 import { handleWorksheetEdit } from "./ws-editing";
 /* global Excel */
 
-export const handleRangeEdit = async (context, session: Session, e, sheet, addressObj, definedCol) => {
+export const handleRangeEdit = async (
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject,
+  definedCol: DefinedCol
+) => {
   session.activeEditableCell = createEditableCell(null, null, null);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
@@ -36,7 +55,14 @@ export const handleRangeEdit = async (context, session: Session, e, sheet, addre
   return handledSuccessfully;
 };
 
-export const testChangesForRejection = async (context, e, sheet, addressObj, definedCol, editModeEnabled) => {
+export const testChangesForRejection = async (
+  context: Excel.RequestContext,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject,
+  definedCol: DefinedCol,
+  editModeEnabled: boolean
+) => {
   const wsName = sheet.name;
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
@@ -49,51 +75,70 @@ export const testChangesForRejection = async (context, e, sheet, addressObj, def
   if (!withinProtectedRange) sheet.edited = true;
   if (withinProtectedRange && e.triggerSource !== "ThisLocalAddin") {
     const range = `${e.address}:${e.address}`;
-    await setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+    setExcelRangeValue(context, wsName, range, e.details.valueBefore);
   }
 };
 
-export const checkForAutoFill = (e) => {
-  const autoFillObj = { isAutoFill: false };
+export const checkForAutoFill = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
   const addressSplit = e.address.split(":");
-  if (!addressSplit[1]) return autoFillObj;
-  autoFillObj.isAutoFill = true;
-  autoFillObj["firstColLetter"] = parseInt(addressSplit[0][1])
-    ? addressSplit[0].substr(0, 1)
-    : addressSplit[0].substr(0, 2);
-  autoFillObj["firstColNumber"] = colLetterToNum(autoFillObj["firstColLetter"]);
-  autoFillObj["lastColLetter"] = parseInt(addressSplit[1][1])
-    ? addressSplit[1].substr(0, 1)
-    : addressSplit[1].substr(0, 2);
-  autoFillObj["lastColNumber"] = colLetterToNum(autoFillObj["lastColLetter"]);
-  autoFillObj["autoFillCols"] = autoFillObj["firstColLetter"] === autoFillObj["lastColLetter"] ? false : true;
-  autoFillObj["firstRow"] = parseInt(addressSplit[0][1])
-    ? parseInt(addressSplit[0].substr(1))
-    : parseInt(addressSplit[0].substr(2));
-  autoFillObj["lastRow"] = parseInt(addressSplit[1][1])
-    ? parseInt(addressSplit[1].substr(1))
-    : parseInt(addressSplit[1].substr(2));
-  autoFillObj["autoFillRows"] = autoFillObj["firstRow"] === autoFillObj["lastRow"] ? false : true;
-  let repRange = `${autoFillObj["firstColLetter"]}${autoFillObj["firstRow"]}`;
-  autoFillObj["repRange"] = repRange;
+  const isAutoFill = !addressSplit[1] ? false : true;
+  const firstColLetter = parseInt(addressSplit[0][1])
+    ? addressSplit[0].substring(0, 2)
+    : addressSplit[0].substring(0, 3);
+  const firstColNumber = colLetterToNum(firstColLetter);
+  const lastColLetter = parseInt(addressSplit[1][1])
+    ? addressSplit[1].substring(0, 2)
+    : addressSplit[1].substring(0, 3);
+  const lastColNumber = colLetterToNum(lastColLetter);
+  const autoFillCols = firstColLetter === lastColLetter ? false : true;
+  const firstRow = parseInt(addressSplit[0][1])
+    ? parseInt(addressSplit[0].substring(1))
+    : parseInt(addressSplit[0].substring(2));
+  const lastRow = parseInt(addressSplit[1][1])
+    ? parseInt(addressSplit[1].substring(1))
+    : parseInt(addressSplit[1].substring(2));
+  const autoFillRows = firstRow === lastRow ? false : true;
+  const repRange = `${firstColLetter}${firstRow}`;
+  const autoFillObj: AutoFillObject = {
+    isAutoFill,
+    firstColLetter,
+    firstColNumber,
+    lastColLetter,
+    lastColNumber,
+    autoFillCols,
+    firstRow,
+    lastRow,
+    autoFillRows,
+    repRange,
+  };
   return autoFillObj;
 };
 
-export const captureReanalysis = async (context, session: Session, e, sheet, addressObj, definedCol) => {
+export const captureReanalysis = async (
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject,
+  definedCol: DefinedCol
+) => {
   const wsName = sheet.name;
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
   const { firstRow } = addressObj;
   const eRowNumber = firstRow;
-  const tests = { changeRejected: false, isValid: false, isNotNegation: true, updated: false };
+  const tests: TranUpdatePrimaryValidation = {
+    changeRejected: false,
+    isValid: false,
+    isNotNegation: true,
+    updated: false,
+  };
   const map = sheet.sheetMapping.find((m) => m.rowNumber === eRowNumber);
   const tran = map.getTran(sheet.transactions);
-  const validationObj = validateChange(session, tran, definedCol, e);
-  console.log(validationObj);
+  const validationObj: TranUpdateFinalValidation = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
-  const isValidTransactionUpdate = combineAllValidation(definedCol, validationObj);
-  console.log(isValidTransactionUpdate);
+  const isValidTransactionUpdate: boolean = combineAllValidation(definedCol, validationObj);
   const range = `${e.address}:${e.address}`;
   if (isValidTransactionUpdate) {
     processTransactionUpdate(context, session, tran, tests, definedCol, validationObj, e, newValue, sheet);
@@ -116,7 +161,7 @@ export const captureReanalysis = async (context, session: Session, e, sheet, add
   return handledSuccessfully;
 };
 
-export const combineAllValidation = (definedCol, validationObj) => {
+export const combineAllValidation = (definedCol: DefinedCol, validationObj: TranUpdateFinalValidation) => {
   const { isError, isInvalid } = validationObj;
   if (!isError && !isInvalid && !definedCol.isQuasiMutable) {
     return true;
@@ -124,28 +169,39 @@ export const combineAllValidation = (definedCol, validationObj) => {
 };
 
 export const processTransactionUpdate = (
-  context,
+  context: Excel.RequestContext,
   session: Session,
-  tran,
-  tests,
-  definedCol,
-  validationObj,
-  e,
-  newValue,
-  sheet
+  tran: Transaction | FATransaction,
+  tests: TranUpdatePrimaryValidation,
+  definedCol: DefinedCol,
+  validationObj: TranUpdateFinalValidation,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  newValue: string | number,
+  sheet: EditableWorksheet
 ) => {
   deleteExistingUpdate(tran, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
     tests.isValid = true;
   }
-  if (definedCol.type === "date" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
+  if (
+    definedCol.type === "date" &&
+    (sheet.type === "IFARPreview" || sheet.type === "TFARPreview") &&
+    "depnRate" in tran
+  )
     recalculateCharge(context, session, sheet, tran, e);
   if (definedCol.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
     updateAssetNarrative(session, sheet, tran, e);
 };
 
-export const processTransUpdateEffects = (context, session: Session, sheet, definedCol, range, tests) => {
+export const processTransUpdateEffects = (
+  context: Excel.RequestContext,
+  session: Session,
+  sheet: EditableWorksheet,
+  definedCol: DefinedCol,
+  range: string,
+  tests: TranUpdatePrimaryValidation
+) => {
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
@@ -166,57 +222,80 @@ export const processTransUpdateEffects = (context, session: Session, sheet, defi
   }
 };
 
-export const validateChange = (session: Session, tran, change, e) => {
-  const obj = { isNegation: false, isInvalid: false, isError: false };
-  if (change.type === "cerysCode") {
-    validateCerysCode(session, tran, e, obj);
-  } else if (change.type === "date") {
-    validateTransactionDate(session, tran, e, obj);
-  } else if (change.type === "cerysNarrative") {
-    if (e.details.valueAfter === tran.narrative) obj.isNegation = true;
-  } else if (change.type === "clientCodeMapping") {
-    validateClientCode(session, tran, e, obj);
-  } else if (change.type === "cerysName") {
-    obj.isError = false;
-  } else obj.isError = true;
-  console.log(obj);
-  return obj;
+export const validateChange = (
+  session: Session,
+  tran: Transaction,
+  definedCol: DefinedCol,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject
+) => {
+  const finalValidationObj: TranUpdateFinalValidation = { isNegation: false, isInvalid: false, isError: false };
+  if (definedCol.type === "cerysCode") {
+    validateCerysCode(session, tran, e, finalValidationObj);
+  } else if (definedCol.type === "date") {
+    validateTransactionDate(session, tran, e, finalValidationObj);
+  } else if (definedCol.type === "cerysNarrative") {
+    if (e.details.valueAfter === tran.narrative) finalValidationObj.isNegation = true;
+  } else if (definedCol.type === "clientCodeMapping") {
+    validateClientCode(session, tran, e, finalValidationObj);
+  } else if (definedCol.type === "cerysName") {
+    finalValidationObj.isError = false;
+  } else finalValidationObj.isError = true;
+  console.log(finalValidationObj);
+  return finalValidationObj;
 };
 
-export const validateCerysCode = (session: Session, tran, e, obj) => {
-  if (e.details.valueAfter === tran.cerysCode) obj.isNegation = true;
+export const validateCerysCode = (
+  session: Session,
+  tran: Transaction,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  finalValidationObj: TranUpdateFinalValidation
+) => {
+  if (e.details.valueAfter === tran.cerysCode) finalValidationObj.isNegation = true;
   let inValidCode = true;
   session.chart.forEach((code) => {
     if (code.cerysCode === e.details.valueAfter) inValidCode = false;
   });
-  console.log(inValidCode);
-  obj.isInvalid = inValidCode;
+  finalValidationObj.isInvalid = inValidCode;
 };
 
-export const validateTransactionDate = (session: Session, tran, e, obj) => {
-  if (typeof e.details.valueAfter !== "number") obj.isInvalid = true;
-  if (e.details.valueAfter === tran.transactionDateExcel) obj.isNegation = true;
+export const validateTransactionDate = (
+  session: Session,
+  tran: Transaction,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  finalValidationObj: TranUpdateFinalValidation
+) => {
+  if (typeof e.details.valueAfter !== "number") finalValidationObj.isInvalid = true;
+  if (e.details.valueAfter === tran.transactionDateExcel) finalValidationObj.isNegation = true;
   if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
-    obj.isInvalid = true;
+    finalValidationObj.isInvalid = true;
   } else if (
     e.details.valueAfter <=
     session.activeAssignment.reportingPeriod.reportingDateExcel - session.activeAssignment.reportingPeriod.noOfDays
   ) {
-    obj.isInvalid = true;
+    finalValidationObj.isInvalid = true;
   }
 };
 
-export const validateClientCode = (session: Session, tran, e, obj) => {
+export const validateClientCode = (
+  session: Session,
+  tran: Transaction,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  finalValidationObj: TranUpdateFinalValidation
+) => {
   const valueAfter = e.details.valueAfter;
-  if (valueAfter === tran.defaultClientMapping.clientCode) obj.isNegation = true;
+  if (valueAfter === tran.defaultClientMapping.clientCode) finalValidationObj.isNegation = true;
   let inValidCode = true;
   session.clientChart.forEach((code) => {
     if (code.clientCode === e.details.valueAfter) inValidCode = false;
   });
-  obj.isInvalid = inValidCode;
+  finalValidationObj.isInvalid = inValidCode;
 };
 
-export const deleteExistingUpdate = (tran, tests, definedCol) => {
+export const deleteExistingUpdate = (
+  tran: Transaction,
+  primaryValidationObj: TranUpdatePrimaryValidation,
+  definedCol: DefinedCol
+) => {
   console.log(tran);
   // getUpdatedTransactions(session).forEach((updatedTran) => {
   //   const existingUpdate = updatedTran.updates.find((update) => update.type === definedCol.type);
@@ -227,12 +306,18 @@ export const deleteExistingUpdate = (tran, tests, definedCol) => {
   // });
   const existingUpdate = tran.updates.find((update) => update.type === definedCol.type);
   if (existingUpdate) {
-    tests.isValid = true;
+    primaryValidationObj.isValid = true;
     tran.updates = tran.updates.filter((update) => update.type !== existingUpdate.type);
   }
 };
 
-export const createNewTransactionUpdate = (session: Session, tran, newValue, sheet, definedCol) => {
+export const createNewTransactionUpdate = (
+  session: Session,
+  tran: Transaction,
+  newValue: string | number,
+  sheet: EditableWorksheet,
+  definedCol: DefinedCol
+) => {
   let reversion;
   if (definedCol.type === "date") {
     reversion = tran.transactionDateExcel;
@@ -243,31 +328,23 @@ export const createNewTransactionUpdate = (session: Session, tran, newValue, she
   } else if (definedCol.type === "clientCodeMapping") {
     reversion = tran.activeClientMapping;
   }
-  const update: {
-    worksheetName: string;
-    worksheetId: string;
-    type: string;
-    value: string | number;
-    reversion: string | number;
-    mongoDate: string | null;
-    cerysCodeObject?: {} | null;
-  } = {
-    worksheetName: sheet.name,
-    worksheetId: sheet.worksheetId,
-    type: definedCol.type,
-    value: newValue,
+  const mongoDate = definedCol.type === "date" ? convertExcelDate(newValue) : null;
+  const update = new TransactionUpdate(
+    session,
+    sheet.name,
+    sheet.worksheetId,
+    definedCol.type,
+    newValue,
     reversion,
-    mongoDate: definedCol.type === "date" ? convertExcelDate(newValue) : null,
-    cerysCodeObject: definedCol.type === "cerysCode" ? session.chart.find((code) => code.cerysCode === newValue) : null,
-  };
+    mongoDate
+  );
   tran.updates.push(update);
   return update;
 };
 
-export const cancelAutoFill = async (wsName, address) => {
+export const cancelAutoFill = async (wsName: string, address: string) => {
   try {
     await Excel.run(async (context) => {
-      //Appropriate
       const sheet = context.workbook.worksheets.getItem(wsName);
       const range = sheet.getRange(address);
       range.format.fill.clear();
@@ -278,7 +355,7 @@ export const cancelAutoFill = async (wsName, address) => {
   }
 };
 
-export const reverseTransactionUpdates = async (context, session: Session) => {
+export const reverseTransactionUpdates = async (context: Excel.RequestContext, session: Session) => {
   const reversals = [];
   const updatedTrans = getUpdatedTransactions(session);
   updatedTrans.forEach((tran) => {
@@ -298,7 +375,12 @@ export const reverseTransactionUpdates = async (context, session: Session) => {
   session.setEditButton("hide");
 };
 
-export const simulateAutoFillChanges = async (context, session: Session, sheet, autoFillObj) => {
+export const simulateAutoFillChanges = async (
+  context: Excel.RequestContext,
+  session: Session,
+  sheet: EditableWorksheet,
+  autoFillObj: AutoFillObject
+) => {
   const wsName = sheet.name;
   const ranges = [];
   if (autoFillObj.autoFillCols) {
@@ -326,15 +408,15 @@ export const simulateAutoFillChanges = async (context, session: Session, sheet, 
       address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
       details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
       changeType: "RangeEdited",
+      triggerSource: "",
     };
     await handleWorksheetEdit(session, event, wsName);
   }
 };
 
-export const resetToPreviousValues = async (wsName, sheet) => {
+export const resetToPreviousValues = async (wsName: string, sheet: EditableWorksheet) => {
   try {
     await Excel.run(async (context) => {
-      //Appropriate
       const ws = context.workbook.worksheets.getItem(wsName);
       const usedRange = ws.getUsedRange();
       usedRange.load("address");
@@ -352,7 +434,7 @@ export const resetToPreviousValues = async (wsName, sheet) => {
       }
       usedRange.values = blankValues;
       const newRange = `A1:${colNumToLetter(sheet.usedRange[0].length)}${sheet.usedRange.length}`;
-      const wsNewRange = ws.getRange(newRange);
+      const wsNewRange: Excel.Range = ws.getRange(newRange);
       wsNewRange.values = sheet.usedRange;
       sheet.dataCorrupted = false;
       await context.sync();
@@ -362,10 +444,9 @@ export const resetToPreviousValues = async (wsName, sheet) => {
   }
 };
 
-export const reinstateNumberFormats = async (sheet) => {
+export const reinstateNumberFormats = async (sheet: EditableWorksheet) => {
   try {
     await Excel.run(async (context) => {
-      //Appropriate
       const ws = context.workbook.worksheets.getItem(sheet.name);
       sheet.definedCols.forEach((col) => {
         const colLetter = colNumToLetter(col.colNumber);
@@ -379,7 +460,13 @@ export const reinstateNumberFormats = async (sheet) => {
   }
 };
 
-export const completeCerysCodeUpdate = async (context, session: Session, e, sheet, addressObj) => {
+export const completeCerysCodeUpdate = async (
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject
+) => {
   const { firstRow } = addressObj;
   let cerysNameCol = 0;
   sheet.definedCols.forEach((col) => {
@@ -395,7 +482,13 @@ export const completeCerysCodeUpdate = async (context, session: Session, e, shee
   }
 };
 
-export const completeCerysNameUpdate = async (context, session: Session, e, sheet, addressObj) => {
+export const completeCerysNameUpdate = async (
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject
+) => {
   const { firstRow } = addressObj;
   let clientCodeMappingCol = 0;
   let clientCodeNameMappingCol = 0;
@@ -413,7 +506,7 @@ export const completeCerysNameUpdate = async (context, session: Session, e, shee
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
     session.options.allowEffects = 1;
     setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
-    sheet.usedRange = getWorksheetUsedRange(context, sheet.name);
+    sheet.usedRange = await getWorksheetUsedRange(context, sheet.name);
     if (clientCodeNameMappingCol > 0) {
       const colLetter = colNumToLetter(clientCodeNameMappingCol);
       const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
@@ -422,7 +515,13 @@ export const completeCerysNameUpdate = async (context, session: Session, e, shee
   }
 };
 
-export const completeClientCodeMappingUpdate = async (context, session: Session, e, sheet, addressObj) => {
+export const completeClientCodeMappingUpdate = async (
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
+  sheet: EditableWorksheet,
+  addressObj: AddressObject
+) => {
   const { firstRow } = addressObj;
   let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {

@@ -12,7 +12,7 @@ interface userLoginProps {
   setEditButton: (state) => void;
 }
 
-const UserLogin = ({ handleView, session }: userLoginProps) => {
+const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,6 +28,9 @@ const UserLogin = ({ handleView, session }: userLoginProps) => {
     const userAndCustomerObject = await userAndCustomerFromDb.json();
     session.user = userAndCustomerObject.user;
     session.customer = userAndCustomerObject.customer;
+    session.handleView = handleView;
+    session.handleDynamicView = handleDynamicView;
+    session.setEditButton = setEditButton;
     console.log(session);
     await registerWorksheetsCollectionHandler(session);
     handleView("userDashHome");

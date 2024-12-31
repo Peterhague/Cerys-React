@@ -4,6 +4,7 @@ import { TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
+import { Transaction } from "../../interfaces/interfaces";
 import {
   callNextView,
   getActiveClientCodeMapping,
@@ -16,7 +17,7 @@ import { addOneWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
 /* global Excel */
 
-export const getOBARelTrans = (transactions) => {
+export const getOBARelTrans = (transactions: Transaction[]) => {
   return transactions.filter((tran) => tran.clientAdj);
 };
 
@@ -88,10 +89,10 @@ export async function oBARelevantTransView(session: Session) {
       const headerRange = ws.getRange("A1:I2");
       headerRange.format.font.bold = true;
       const columnA = ws.getRange("B:B");
-      columnA.numberFormat = "dd/mm/yyyy";
+      columnA.numberFormat = [["dd/mm/yyyy"]];
       const columnsRange = ws.getRange("A:I");
       const columnG = ws.getRange("G:G");
-      columnG.numberFormat = "#,##0.00;(#,##0.00);-";
+      columnG.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       createEditableWorksheet(session, relTrans, ws, valuesToPost, "OBARelevantAdjustments", sheetMapping);
       columnsRange.format.autofitColumns();
       ws.activate();
@@ -103,7 +104,12 @@ export async function oBARelevantTransView(session: Session) {
   }
 }
 
-export const handleClientCodeMapping = (context, session: Session, nominalCode, nominalCodeName) => {
+export const handleClientCodeMapping = (
+  context,
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string
+) => {
   const tran = session.activeEditableCell.getActiveTransaction(session);
   const cerysCode = tran.cerysCode;
   const wsName = session.activeEditableCell.wsName;
@@ -118,13 +124,20 @@ export const handleClientCodeMapping = (context, session: Session, nominalCode, 
   session.handleDynamicView("userConfirmPrompt", options);
 };
 
-export const updateCerysCodeMapping = async (session: Session, nominalCode, nominalCodeName, cerysCode, wsName) => {
+export const updateCerysCodeMapping = async (
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string,
+  cerysCode: number,
+  wsName: string
+) => {
   const relTrans = session.activeAssignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   relTrans.forEach(
     (tran) =>
       (tran.updates = [
         new TransactionUpdate(
+          session,
           wsName,
           ws.worksheetId,
           "clientCodeMapping",
@@ -133,6 +146,7 @@ export const updateCerysCodeMapping = async (session: Session, nominalCode, nomi
           null
         ),
         new TransactionUpdate(
+          session,
           wsName,
           ws.worksheetId,
           "clientCodeNameMapping",

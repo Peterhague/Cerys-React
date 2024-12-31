@@ -107,10 +107,10 @@ async function cerysNomDetailView(context, detail, session: Session) {
   const headerRange = ws.getRange("A1:G2");
   headerRange.format.font.bold = true;
   const columnA = ws.getRange("B:B");
-  columnA.numberFormat = "dd/mm/yyyy";
+  columnA.numberFormat = [["dd/mm/yyyy"]];
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
-  columnG.numberFormat = "#,##0.00;(#,##0.00);-";
+  columnG.numberFormat = [["#,##0.00;(#,##0.00);-"]];
   // const definedCols = createDefinedCols("cerysCodeAnalysis");
   // const filter = detail[0].cerysCode;
   // createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping, null, {

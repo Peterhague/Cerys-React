@@ -7,11 +7,12 @@ import { Session } from "../classes/session";
 
 interface customerLoginProps {
   handleView: (view) => void;
+  handleDynamicView: (view, options) => void;
   setEditButton: (state) => void;
   session: Session;
 }
 
-const CustomerLogin = ({ handleView, session, setEditButton }: customerLoginProps) => {
+const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }: customerLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -23,6 +24,7 @@ const CustomerLogin = ({ handleView, session, setEditButton }: customerLoginProp
     const customer = await customerDb.json();
     session.customer = customer;
     session.handleView = handleView;
+    session.handleDynamicView = handleDynamicView;
     session.setEditButton = setEditButton;
     handleView("customerDashHome");
   };
