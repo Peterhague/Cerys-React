@@ -464,6 +464,7 @@ export function fetchOptionsIP(session: Session) {
       assets: session.IPTransactions,
       customerId: session.customer._id,
       workbookId: session.activeAssignment._id,
+      clientId: session.activeAssignment.clientId,
     }),
   };
 }

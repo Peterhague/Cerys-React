@@ -2,6 +2,8 @@ import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
+import { IFARegister, IPRegister, TFARegister } from "../../static-values/register-types";
+import { getViewOptions } from "../../static-values/view-options";
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
 import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
@@ -157,15 +159,21 @@ export const checkNewTransForAssets = (session: Session, newTransactions) => {
     }
   });
   session.newFATransactions = newFATransactions;
+  let register;
   if (nextView) {
     callNextView(session);
   } else if (iFAPresent) {
-    session.handleView("promptIFARCreation");
+    //session.handleView("promptIFARCreation");
+    register = IFARegister;
   } else if (tFAPresent) {
-    session.handleView("promptTFARCreation");
+    //session.handleView("promptTFARCreation");
+    register = TFARegister;
   } else if (iPPresent) {
-    session.handleView("promptIPRCreation");
+    //session.handleView("promptIPRCreation");
+    register = IPRegister;
   }
+  const options = getViewOptions([{ key: "registerType", value: register }]);
+  session.handleDynamicView("promptAssetRegisterCreation", options);
 };
 
 export const checkFATranUpdatesForAssets = (session: Session, newTransactions) => {

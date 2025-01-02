@@ -1,5 +1,6 @@
 import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
+import React from "react";
 /*global Excel */
 
 export interface BaseCerysCodeObject {
@@ -426,4 +427,20 @@ export interface ProxyWorksheet {
 export interface WorksheetDefaults {
   name: string;
   addListeners: [(context: Excel.RequestContext, session: Session) => void];
+}
+
+export interface ViewOptions {
+  handleYes: () => void;
+  handleNo: () => void;
+  message: React.ReactNode;
+  yesButtonText: string;
+  noButtonText: string;
+  registerType: RegisterType;
+}
+
+export interface RegisterType {
+  initials: string;
+  longLower: string;
+  longCap: string;
+  createRegister: (context: Excel.RequestContext, session: Session) => Promise<void>;
 }

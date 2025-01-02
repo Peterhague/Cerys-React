@@ -1,17 +1,12 @@
 import * as React from "react";
 import CerysButton from "../CerysButton";
 import Message from "../Message";
+import { ViewOptions } from "../../interfaces/interfaces";
 
 interface userConfirmPromptProps {
   handleView: (view) => void;
   session: {};
-  options: {
-    handleYes: () => void;
-    handleNo: () => void;
-    message: React.ReactNode;
-    yesButtonText: string;
-    noButtonText: string;
-  };
+  options: ViewOptions;
 }
 
 const UserConfirmPrompt = ({ options }: userConfirmPromptProps) => {

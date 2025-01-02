@@ -47,6 +47,8 @@ import UserConfirmPrompt from "./Utils/UserConfirmPrompt";
 import MapUnmappedCodes from "./Assignment/MapUnmappedCodes";
 import NomCodeSelection from "./Assignment/Utils/NomCodeSelection";
 import { Session } from "../classes/session";
+import PromptAssetRegisterCreation from "./Assignment/Asset-Registers/PromptAssetRegisterCreation";
+import { BLANK_VIEW_OPTIONS } from "../static-values/view-options";
 
 interface AppBodyProps {
   session: Session;
@@ -55,13 +57,7 @@ interface AppBodyProps {
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState({
-    handleYes: () => console.log("yes"),
-    handleNo: () => console.log("no"),
-    message: <p>Message</p>,
-    yesButtonText: "Yes",
-    noButtonText: "No",
-  });
+  const [options, setOptions] = useState(BLANK_VIEW_OPTIONS);
 
   console.log(session);
 
@@ -221,6 +217,9 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "enterJournal":
         body = <EnterJournal handleView={handleView} session={session} chart={session.chart} />;
+        break;
+      case "promptAssetRegisterCreation":
+        body = <PromptAssetRegisterCreation handleView={handleView} session={session} options={options} />;
         break;
       case "promptIFARCreation":
         body = <PromptIFARCreation handleView={handleView} session={session} />;

@@ -38,6 +38,7 @@ export class Session {
   newFATransactions: NewFATransaction[] = [];
   editableSheets: EditableWorksheet[] = [];
   IFARegister: { assetCategory: string; assetCategoryNo: number }[];
+  IPRegister: { assetCategory: string; assetCategoryNo: number }[];
   TFARegister: { assetCategory: string; assetCategoryNo: number }[];
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: { handleYes: () => void; handleNo: () => void }) => void;

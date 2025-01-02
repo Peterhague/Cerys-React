@@ -21,6 +21,10 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
     session.handleDynamicView("userConfirmPrompt", options);
   };
 
+  const updateChart = async () => {
+    await fetch("http://localhost:4000/api/main-nominal/update-chart");
+  };
+
   const tbreq = async () => {
     await fetch(trialBalanceUrl);
   };
@@ -29,6 +33,7 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
       <CerysButton buttonText={"Opening Balance Adjustments"} handleClick={() => oBARelevantTransView(session)} />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
+      <CerysButton buttonText={"Update chart"} handleClick={() => updateChart()} />
       <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />
       <CerysButton buttonText={"test"} handleClick={() => tbreq()} />
     </>

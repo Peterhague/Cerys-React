@@ -5,6 +5,7 @@ import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/comp
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
+/* global Excel */
 
 export const setAutoAmortNominals = (catNo) => {
   switch (catNo) {
@@ -30,7 +31,7 @@ export const adjustAutoAmortJnls = (session: Session, tran, charge) => {
   });
 };
 
-export async function createIFAR(context, session: Session) {
+export async function createIFAR(context: Excel.RequestContext, session: Session) {
   const assignment = await postIFAtoDB(session);
   session.activeAssignment = assignment;
   createIFARWs(context, session);
@@ -38,6 +39,7 @@ export async function createIFAR(context, session: Session) {
 
 export async function postIFAtoDB(session: Session) {
   let assignment = session.activeAssignment;
+  console.log(session.IFATransactions["subTransactions"]);
   const options = fetchOptionsIFA(session);
   const endpoint = session.activeAssignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
   const iFARDb = await fetch(endpoint, options);
@@ -52,13 +54,11 @@ export async function postIFAtoDB(session: Session) {
     const assignmentDb = await fetch(updateAssignmentUrl, options);
     assignment = await assignmentDb.json();
   }
-  //const updatedAssignmentDb = await fetch(postIFA, options);
-  //const updatedAssignment = await updatedAssignmentDb.json();
   console.log(assignment);
   return assignment;
 }
 
-export async function createIFARWs(context, session: Session) {
+export async function createIFARWs(context: Excel.RequestContext, session: Session) {
   //const transToPost = session.activeAssignment.IFAR;
   const transToPost = session.IFARegister;
   console.log(transToPost);

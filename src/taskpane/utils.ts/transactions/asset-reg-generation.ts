@@ -833,6 +833,7 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
 export const createCurrentPeriodRegister = (regsiter, session: Session) => {
   const periodId = session.activeAssignment.reportingPeriod._id;
   const currentPeriodRegister = [];
+  console.log(regsiter);
   regsiter.assets.forEach((asset) => {
     if (asset.activePeriods.includes(periodId)) {
       const { periods, activePeriods, ...obj } = asset;
