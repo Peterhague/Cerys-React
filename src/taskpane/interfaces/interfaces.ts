@@ -166,7 +166,20 @@ export interface Transaction extends BaseCerysCodeObject {
 }
 
 export interface NewFATransaction extends Transaction {
-  processedAsAsset: boolean;
+  processedAsAsset?: boolean;
+  transactionDateUser?: string;
+  transactionDateClt?: number;
+  assetNarrative?: string;
+  assetSubCatCodes?: (number | null)[];
+  subTransactions?: FASubTransaction[];
+}
+
+export interface FASubTransaction {
+  assetSubCategory: string;
+  assetSubCatCode: number;
+  regColNameOne: string;
+  regColNameTwo: string;
+  value: number;
 }
 
 export interface FATransaction extends Transaction {

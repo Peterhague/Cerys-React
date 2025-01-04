@@ -5,6 +5,7 @@ import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/comp
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
+/* global Excel */
 
 export const setAutoDepnNominals = (catNo) => {
   switch (catNo) {
@@ -31,9 +32,11 @@ export const setAutoDepnNominals = (catNo) => {
   }
 };
 
-export async function createTFAR(context, session: Session) {
+export async function createTFAR(context: Excel.RequestContext, session: Session) {
+  console.log(session);
   const assignment = await postTFAtoDB(session);
   session.activeAssignment = assignment;
+  console.log(session);
   createTFARWs(context, session);
 }
 

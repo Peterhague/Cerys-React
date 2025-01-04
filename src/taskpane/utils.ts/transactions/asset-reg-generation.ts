@@ -1,26 +1,16 @@
 import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
-import { FATransaction, QuasiEventObject } from "../../interfaces/interfaces";
+import { FATransaction, NewFATransaction, QuasiEventObject } from "../../interfaces/interfaces";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import _ from "lodash";
 /*global Excel */
 
-export const identifyLikelyAdditions = async (session: Session, registerType, setView) => {
+export const identifyLikelyAdditions = async (session: Session, registerType: string, setView) => {
   console.log("next step working");
-  const bFTransLikelyAddns = [];
-  //session.activeAssignment.transactions.forEach((tran) => {
-  //  if (
-  //    (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostBF") ||
-  //    (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostBF") ||
-  //    (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostBF")
-  //  ) {
-  //    const test = calculateDiffInDays(session.activeAssignment.reportingPeriod.periodStart, tran.transactionDate);
-  //    test > 0 && bFTransLikelyAddns.push(tran);
-  //  }
-  //});
+  const bFTransLikelyAddns: NewFATransaction[] = [];
   console.log(session.newFATransactions);
   session.newFATransactions.forEach((tran) => {
     if (
@@ -45,25 +35,16 @@ export const identifyLikelyAdditions = async (session: Session, registerType, se
   }
 };
 
-export const previewRelTrans = (session: Session, registerType, setView) => {
+export const previewRelTrans = (session: Session, registerType: string, setView) => {
   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
   setView("confirm");
   session.options[`${registerType}RCreationSetting`] = "confirm";
 };
 
-export async function createRelTrans(session: Session, registerType) {
+export async function createRelTrans(session: Session, registerType: string) {
   console.log(session.newFATransactions);
   const relevantTrans = [];
-  //session.activeAssignment.transactions.forEach((tran) => {
-  //  if (
-  //    (tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
-  //    (tran.cerysCategory === "Tangible assets" && tran.assetCodeType === "tFACostAddns") ||
-  //    (tran.cerysCategory === "Investment property" && tran.assetCodeType === "iPCostAddns")
-  //  ) {
-  //    relevantTrans.push(tran);
-  //  }
-  //});
   session.newFATransactions.forEach((tran) => {
     if (
       (registerType === "IFA" && tran.cerysCategory === "Intangible assets" && tran.assetCodeType === "iFACostAddns") ||
@@ -81,29 +62,6 @@ export async function createRelTrans(session: Session, registerType) {
 export const convertNewFATrans = (session: Session) => {
   const updatedTrans = [];
   session.newFATransactions.forEach((origTran) => {
-    //session.activeAssignment.clientNL.forEach((tran) => {
-    //  if (tran.code === origTran.clientNominalCode) {
-    //    const trans = { ...origTran };
-    //    delete trans._id;
-    //    trans["transactionDate"] = convertExcelDate(tran.date);
-    //    trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-    //    trans["subTransactions"] = [
-    //      {
-    //        assetSubCategory: origTran.assetSubCategory,
-    //        assetSubCatCode: origTran.assetSubCatCode,
-    //        regColNameOne: origTran.regColNameOne,
-    //        regColNameTwo: origTran.regColNameTwo,
-    //        value: tran.value,
-    //      },
-    //    ];
-    //    trans["transactionDateClt"] = tran.date;
-    //    trans["clientNominalCode"] = tran.code;
-    //    trans["clientNominalName"] = tran.name;
-    //    trans["assetNarrative"] = tran.detail;
-    //    trans["value"] = tran.value;
-    //    updatedTrans.push(trans);
-    //  }
-    //});
     const clientNL = session.activeAssignment.clientNL;
     for (let i = 0; i < clientNL.length; i++) {
       if (clientNL[i].code === origTran.clientNominalCode) {
@@ -133,7 +91,7 @@ export const convertNewFATrans = (session: Session) => {
   session.newFATransactions = updatedTrans;
 };
 
-export async function createTransSumm(session: Session, relevantTrans, registerType) {
+export async function createTransSumm(session: Session, relevantTrans: NewFATransaction[], registerType: string) {
   try {
     await Excel.run(async (context) => {
       const sheetMapping = [];
@@ -179,55 +137,13 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
         ],
       ];
       session[`${registerType}Transactions`] = [];
-      //relevantTrans.forEach((i) => {
-      //  if (i.clientTB) {
-      //    let trans;
-      //    session.activeAssignment.clientNL.forEach((tran) => {
-      //      if (tran.code === i.clientNominalCode) {
-      //        trans = i;
-      //        trans["transactionDate"] = convertExcelDate(tran.date);
-      //        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-      //        trans["subTransactions"] = [
-      //          {
-      //            assetSubCategory: i.assetSubCategory,
-      //            assetSubCatCode: i.assetSubCatCode,
-      //            regColNameOne: i.regColNameOne,
-      //            regColNameTwo: i.regColNameTwo,
-      //            value: tran.value,
-      //          },
-      //        ];
-      //        trans["transactionDateClt"] = tran.date;
-      //        trans["clientNominalCode"] = tran.code;
-      //        trans["clientNominalName"] = tran.name;
-      //        trans["assetNarrative"] = tran.detail;
-      //        trans["value"] = tran.value;
-      //        trans["rowNumber"] = session[`${registerType}Transactions`].length + 3;
-      //      }
-      //    });
-      //    session[`${registerType}Transactions`].push(trans);
-      //  } else {
-      //    i.rowNumber = session[`${registerType}Transactions`].length + 3;
-      //    i.assetNarrative = i.narrative;
-      //    i.assetSubCatCodes = [i.assetSubCatCode];
-      //    i["subTransactions"] = [
-      //      {
-      //        assetSubCategory: i.assetSubCategory,
-      //        assetSubCatCode: i.assetSubCatCode,
-      //        regColNameOne: i.regColNameOne,
-      //        regColNameTwo: i.regColNameTwo,
-      //        value: i.value,
-      //      },
-      //    ];
-      //    session[`${registerType}Transactions`].push(i);
-      //  }
-      //});
       relevantTrans.forEach((i) => {
         //i.rowNumber = session[`${registerType}Transactions`].length + 3;
         //i.assetNarrative = i.narrative;
         const map = new TransactionMap(i._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
         sheetMapping.push(map);
         i.assetSubCatCodes = [i.assetSubCatCode];
-        i["subTransactions"] = [
+        i.subTransactions = [
           {
             assetSubCategory: i.assetSubCategory,
             assetSubCatCode: i.assetSubCatCode,
@@ -244,7 +160,7 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
         if (tran.transactionDate) {
           const dateString = tran.transactionDate.split("T")[0];
           const dateStringSplit = dateString.split("-");
-          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+          const dateConverted = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
           transVals.push(dateConverted);
           tran.transactionDateUser = dateConverted;
         } else if (tran.transactionDateClt) {
@@ -302,103 +218,6 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
       rangeM.numberFormat = [["#,##0.00;(#,##0.00);-"]];
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
-      // const definedCols = [
-      //   {
-      //     type: "transNo",
-      //     colNumber: 1,
-      //     mutable: false,
-      //     format: "0",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "date",
-      //     colNumber: 2,
-      //     mutable: true,
-      //     format: "dd/mm/yyyy",
-      //     deleted: false,
-      //     updateKey: "updatedDate",
-      //   },
-      //   {
-      //     type: "cerysNarrative",
-      //     colNumber: 3,
-      //     mutable: true,
-      //     format: "",
-      //     deleted: false,
-      //     updateKey: "updatedNarrative",
-      //   },
-      //   {
-      //     type: "transType",
-      //     colNumber: 4,
-      //     mutable: false,
-      //     format: "",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "cerysCode",
-      //     colNumber: 5,
-      //     mutable: true,
-      //     format: "0",
-      //     deleted: false,
-      //     updateKey: "updatedCode",
-      //   },
-      //   {
-      //     type: "cerysName",
-      //     colNumber: 6,
-      //     mutable: false,
-      //     format: "",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "clientCode",
-      //     colNumber: 7,
-      //     mutable: false,
-      //     format: "0",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "clientNominal",
-      //     colNumber: 8,
-      //     mutable: false,
-      //     format: "",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "clientNarrative",
-      //     colNumber: 9,
-      //     mutable: false,
-      //     format: "",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "value",
-      //     colNumber: 10,
-      //     mutable: false,
-      //     format: "#,##0.00;(#,##0.00);-",
-      //     deleted: false,
-      //   },
-      //   {
-      //     type: "depnBasis",
-      //     colNumber: 11,
-      //     mutable: true,
-      //     format: "",
-      //     deleted: false,
-      //     updateKey: "updatedDepnBasis",
-      //   },
-      //   {
-      //     type: "depnRate",
-      //     colNumber: 12,
-      //     mutable: true,
-      //     format: "0",
-      //     deleted: false,
-      //     updateKey: "updatedDepnRate",
-      //   },
-      //   {
-      //     type: "depnCharge",
-      //     colNumber: 13,
-      //     format: "#,##0.00;(#,##0.00);-",
-      //     deleted: false,
-      //   },
-      // ];
       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
       createEditableWorksheet(session, transactions, ws, valuesToPost, "FATransactions", sheetMapping);
       await context.sync();
@@ -409,7 +228,11 @@ export async function createTransSumm(session: Session, relevantTrans, registerT
   }
 }
 
-export async function createLikelyAdditionsSumm(session: Session, relevantTrans, registerType) {
+export async function createLikelyAdditionsSumm(
+  session: Session,
+  relevantTrans: NewFATransaction[],
+  registerType: string
+) {
   try {
     await Excel.run(async (context) => {
       const name = `${registerType} Possible Additions`;
@@ -422,9 +245,9 @@ export async function createLikelyAdditionsSumm(session: Session, relevantTrans,
         const transVals = [];
         transVals.push(tran.transactionNumber);
         if (tran.transactionDate) {
-          const dateString = tran.transactionDate.split("T")[0];
+          const dateString = typeof tran.transactionDate === "string" && tran.transactionDate.split("T")[0];
           const dateStringSplit = dateString.split("-");
-          const dateConverted = `${dateStringSplit[2]}/${dateStringSplit[1]}/${dateStringSplit[0]}`;
+          const dateConverted: string = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
           transVals.push(dateConverted);
           tran.transactionDateUser = dateConverted;
         } else if (tran.transactionDateClt) {

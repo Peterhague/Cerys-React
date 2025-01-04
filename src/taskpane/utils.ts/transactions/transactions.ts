@@ -2,6 +2,7 @@ import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
+import { NewFATransaction, RegisterType } from "../../interfaces/interfaces";
 import { IFARegister, IPRegister, TFARegister } from "../../static-values/register-types";
 import { getViewOptions } from "../../static-values/view-options";
 import { colNumToLetter } from "../excel-col-conversion";
@@ -127,9 +128,9 @@ export const checkAssetRegStatus = (session: Session, handleView) => {
   }
 };
 
-export const checkNewTransForAssets = (session: Session, newTransactions) => {
+export const checkNewTransForAssets = (session: Session, newTransactions: NewFATransaction[]) => {
   console.log(newTransactions);
-  const newFATransactions = [];
+  const newFATransactions: NewFATransaction[] = [];
   let iFAPresent = false;
   let tFAPresent = false;
   let iPPresent = false;
@@ -159,7 +160,7 @@ export const checkNewTransForAssets = (session: Session, newTransactions) => {
     }
   });
   session.newFATransactions = newFATransactions;
-  let register;
+  let register: RegisterType;
   if (nextView) {
     callNextView(session);
   } else if (iFAPresent) {
