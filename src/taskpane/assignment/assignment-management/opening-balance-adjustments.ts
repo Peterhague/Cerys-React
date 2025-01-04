@@ -1,3 +1,4 @@
+import { Assignment } from "../../classes/assignment";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
@@ -24,9 +25,6 @@ export const getOBARelTrans = (transactions: Transaction[]) => {
 export async function oBARelevantTransView(session: Session) {
   try {
     await Excel.run(async (context) => {
-      //const relTrans = session.activeAssignment.transactions.filter((tran) => {
-      //  return tran.clientAdj;
-      //});
       const relTrans = getOBARelTrans(session.activeAssignment.transactions);
       let sheetInMidEdit = false;
       relTrans.forEach((tran) => {
@@ -161,7 +159,7 @@ export const updateCerysCodeMapping = async (
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, client, assignment } = await updatedClientDb.json();
   session.customer = customer;
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   session.chart = client.cerysChart;
   callNextView(session);
 };

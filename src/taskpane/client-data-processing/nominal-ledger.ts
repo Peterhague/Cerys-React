@@ -1,3 +1,4 @@
+import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
@@ -7,7 +8,7 @@ export async function enterNL(session: Session) {
   const clientNL = await createClientNLObject();
   session.activeAssignment.clientNL = clientNL;
   const { customer, assignment } = await postCltNLToDb(session);
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   session.customer = customer;
 }
 

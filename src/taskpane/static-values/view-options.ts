@@ -13,6 +13,7 @@ export const BLANK_VIEW_OPTIONS = {
 };
 
 export const getViewOptions = (targets: { key: string; value: any }[]) => {
+  console.log(targets);
   const template = BLANK_VIEW_OPTIONS;
   targets.forEach((target) => (template[target.key] = target.value));
   return template;

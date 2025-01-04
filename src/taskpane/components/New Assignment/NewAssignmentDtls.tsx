@@ -8,6 +8,7 @@ import { calculateDiffInDays, populateUser } from "../../utils.ts/helperFunction
 import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-reg-generation";
 import { bFPrevPeriodMessage } from "../../utils.ts/messages";
 import { Session } from "../../classes/session";
+import { Assignment } from "../../classes/assignment";
 
 interface newAssignmentDtlsProps {
   handleView: (view) => void;
@@ -122,7 +123,8 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     populateStaffObjs(prelimAssignment);
     const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
     session.customer = customer;
-    session.activeAssignment = assignment;
+    //session.activeAssignment = assignment;
+    session.activeAssignment = new Assignment(assignment);
     session.clientChart = client.clientChart;
     session.IFARegister = IFARegister;
     session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];

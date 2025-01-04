@@ -48,7 +48,6 @@ export interface Assignment {
   clientName: string;
   reportingPeriod: ReportingPeriod;
   assignmentType: string;
-  _junior: string;
   senior: ShortUser;
   manager: ShortUser;
   responsibleIndividual: ShortUser;

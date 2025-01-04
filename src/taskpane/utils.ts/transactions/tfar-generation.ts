@@ -1,3 +1,4 @@
+import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
@@ -35,7 +36,7 @@ export const setAutoDepnNominals = (catNo) => {
 export async function createTFAR(context: Excel.RequestContext, session: Session) {
   console.log(session);
   const assignment = await postTFAtoDB(session);
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   console.log(session);
   createTFARWs(context, session);
 }

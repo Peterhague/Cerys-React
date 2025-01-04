@@ -26,6 +26,7 @@ interface PromptAssetRegisterCreationProps {
 }
 
 const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAssetRegisterCreationProps) => {
+  console.log(options);
   const { registerType } = options;
   console.log(registerType);
   const { initials, longCap, longLower, createRegister } = registerType;

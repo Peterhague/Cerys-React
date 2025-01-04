@@ -1,3 +1,4 @@
+import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
@@ -33,7 +34,7 @@ export const adjustAutoAmortJnls = (session: Session, tran, charge) => {
 
 export async function createIFAR(context: Excel.RequestContext, session: Session) {
   const assignment = await postIFAtoDB(session);
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   createIFARWs(context, session);
 }
 

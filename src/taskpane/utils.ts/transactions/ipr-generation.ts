@@ -1,3 +1,4 @@
+import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
 import { createIPRegister, updateAssignmentUrl, updateIPRegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
@@ -9,7 +10,7 @@ import { populateAssetRegWs } from "./asset-reg-population";
 
 export async function createIPR(context: Excel.RequestContext, session: Session) {
   const assignment = await postIPtoDB(session);
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   createIPRWs(context, session);
 }
 

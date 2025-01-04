@@ -1,3 +1,4 @@
+import { Assignment } from "../../classes/assignment";
 import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
@@ -37,7 +38,7 @@ export const processTransBatch = async (context, session: Session) => {
   });
   const transDtls = { customerId: session.customer._id, assignmentId: session.activeAssignment._id };
   const { assignment, newTransactions } = await postTransactionsDb(session, transactions, transDtls);
-  session.activeAssignment = assignment;
+  session.activeAssignment = new Assignment(assignment);
   newTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });
@@ -91,12 +92,12 @@ export const submitTransactionUpdates = async (session) => {
 export const processUpdateBatch = async (session: Session) => {
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
-  const updatedAssignmentAndTrans = await updatedAssignmentAndTransDB.json();
-  const updatedTransactions = updatedAssignmentAndTrans.processedTrans;
+  const { processedTrans, assignment } = await updatedAssignmentAndTransDB.json();
+  const updatedTransactions = processedTrans;
   updatedTransactions.forEach((tran) => {
     tran.processedAsAsset = false;
   });
-  session.activeAssignment = updatedAssignmentAndTrans.assignment;
+  session.activeAssignment = new Assignment(assignment);
   return updatedTransactions;
 };
 
@@ -163,6 +164,7 @@ export const checkNewTransForAssets = (session: Session, newTransactions: NewFAT
   let register: RegisterType;
   if (nextView) {
     callNextView(session);
+    return;
   } else if (iFAPresent) {
     //session.handleView("promptIFARCreation");
     register = IFARegister;
