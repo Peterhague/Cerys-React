@@ -1,13 +1,13 @@
 import { Session } from "../../classes/session";
 
 export function worksheetHeader(session: Session, wsName) {
-  const activeAssignment = session.activeAssignment;
+  const assignment = session.assignment;
   const headerValues = [];
-  headerValues.push(["Client name", activeAssignment.clientName]);
-  headerValues.push(["Client code", activeAssignment.clientCode]);
-  headerValues.push(["Period end", activeAssignment.reportingPeriod.reportingDateConverted]);
-  headerValues.push(["Prepared by", `${activeAssignment.senior.firstName} ${activeAssignment.senior.lastName}`]);
-  headerValues.push(["Reviewed by", `${activeAssignment.manager.firstName} ${activeAssignment.manager.lastName}`]);
+  headerValues.push(["Client name", assignment.clientName]);
+  headerValues.push(["Client code", assignment.clientCode]);
+  headerValues.push(["Period end", assignment.reportingPeriod.reportingDateConverted]);
+  headerValues.push(["Prepared by", `${assignment.senior.firstName} ${assignment.senior.lastName}`]);
+  headerValues.push(["Reviewed by", `${assignment.manager.firstName} ${assignment.manager.lastName}`]);
   headerValues.push(["", ""]);
   headerValues.push([wsName, ""]);
   return headerValues;

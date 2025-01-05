@@ -26,8 +26,8 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   const deleteSheets = async () => {
     try {
       await Excel.run(async (context) => {
-        await deleteManyWorksheets(context, sheetsToDelete);
-        checkNewTransForAssets(session, session.options.updatedTransactions);
+        deleteManyWorksheets(context, sheetsToDelete);
+        checkNewTransForAssets(session);
         session.options.updatedTransactions = [];
       });
     } catch (e) {
@@ -51,7 +51,7 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   };
 
   const skipDeleteSheets = () => {
-    checkNewTransForAssets(session, session.options.updatedTransactions);
+    checkNewTransForAssets(session);
     session.options.updatedTransactions = [];
   };
 

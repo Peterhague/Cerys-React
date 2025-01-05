@@ -36,24 +36,20 @@ export const setAutoDepnNominals = (catNo) => {
 export async function createTFAR(context: Excel.RequestContext, session: Session) {
   console.log(session);
   const assignment = await postTFAtoDB(session);
-  session.activeAssignment = new Assignment(assignment);
+  session.assignment = new Assignment(assignment);
   console.log(session);
   createTFARWs(context, session);
 }
 
 export async function postTFAtoDB(session: Session) {
-  let assignment = session.activeAssignment;
+  let assignment = session.assignment;
   const options = fetchOptionsTFA(session);
-  const endpoint = session.activeAssignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
+  const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
   const tFARDb = await fetch(endpoint, options);
   const tFAR = await tFARDb.json();
   session.TFARegister = createCurrentPeriodRegister(tFAR, session);
-  if (!session.activeAssignment.TFARegisterCreated) {
-    const options = fetchOptionsUpdateAssignment(
-      session.customer._id,
-      session.activeAssignment._id,
-      "TFARegisterCreated"
-    );
+  if (!session.assignment.TFARegisterCreated) {
+    const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "TFARegisterCreated");
     const assignmentDb = await fetch(updateAssignmentUrl, options);
     assignment = await assignmentDb.json();
   }

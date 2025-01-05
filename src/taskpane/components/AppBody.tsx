@@ -34,9 +34,6 @@ import NewAssignmentDtls from "./New Assignment/NewAssignmentDtls";
 import AssignmentDashHome from "./Assignment/AssignmentDashHome";
 import EnterClientDataHome from "./Assignment/EnterClientDataHome";
 import EnterJournal from "./Assignment/EnterJournal";
-import PromptIFARCreation from "./Assignment/Asset-Registers/PromptIFARCreation";
-import PromptTFARCreation from "./Assignment/Asset-Registers/PromptTFARCreation";
-import PromptIPRCreation from "./Assignment/Asset-Registers/PromptIPRCreation";
 import HandleTransUpdates from "./Assignment/Transaction-Updates/HandleTransUpdates";
 import ReviewTransUpdates from "./Assignment/Transaction-Updates/ReviewTransUpdates";
 import Footer from "./Footer";
@@ -220,15 +217,6 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "promptAssetRegisterCreation":
         body = <PromptAssetRegisterCreation handleView={handleView} session={session} options={options} />;
-        break;
-      case "promptIFARCreation":
-        body = <PromptIFARCreation handleView={handleView} session={session} />;
-        break;
-      case "promptTFARCreation":
-        body = <PromptTFARCreation handleView={handleView} session={session} />;
-        break;
-      case "promptIPRCreation":
-        body = <PromptIPRCreation handleView={handleView} session={session} />;
         break;
       case "handleTransUpdates":
         body = <HandleTransUpdates handleView={handleView} session={session} />;

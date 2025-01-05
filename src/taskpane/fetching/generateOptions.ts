@@ -1,5 +1,6 @@
 // takes a variable and returns it embedded in a valid fetch options
 
+import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
@@ -28,7 +29,7 @@ export function fetchOptionsTransBatch(session: Session, journals, transDtls) {
       assignmentId: transDtls.assignmentId,
       transactionType: session.activeJournal.journalType,
       chart: session.chart,
-      clientSoftware: session.activeAssignment.clientSoftware,
+      clientSoftware: session.assignment.clientSoftware,
     }),
   };
 }
@@ -42,8 +43,8 @@ export function fetchOptionsTransBatchUpdate(session: Session) {
     body: JSON.stringify({
       updatedTransactions: getUpdatedTransactions(session),
       customerId: session.customer._id,
-      assignmentId: session.activeAssignment._id,
-      clientSoftware: session.activeAssignment.clientSoftware,
+      assignmentId: session.assignment._id,
+      clientSoftware: session.assignment.clientSoftware,
       clientChart: session.clientChart,
     }),
   };
@@ -136,7 +137,7 @@ export function fetchOptionsUpdateClientChart(newCodes, session: Session) {
     body: JSON.stringify({
       newCodes,
       customerId: session.customer._id,
-      clientId: session.activeAssignment.clientId,
+      clientId: session.assignment.clientId,
     }),
   };
 }
@@ -382,17 +383,17 @@ export function fetchOptionsUpdateAssignment(customerId, workbookId, target) {
   };
 }
 
-export function fetchOptionsFinaliseAssignment(activeAssignment, customerId) {
+export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerId) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      activeAssignment,
-      workbookId: activeAssignment._id,
+      assignment,
+      workbookId: assignment._id,
       customerId,
-      clientId: activeAssignment.clientId,
+      clientId: assignment.clientId,
     }),
   };
 }
@@ -433,8 +434,8 @@ export function fetchOptionsIFA(session: Session) {
     body: JSON.stringify({
       assets: session.IFATransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment._id,
-      clientId: session.activeAssignment.clientId,
+      workbookId: session.assignment._id,
+      clientId: session.assignment.clientId,
     }),
   };
 }
@@ -448,8 +449,8 @@ export function fetchOptionsTFA(session: Session) {
     body: JSON.stringify({
       assets: session.TFATransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment._id,
-      clientId: session.activeAssignment.clientId,
+      workbookId: session.assignment._id,
+      clientId: session.assignment.clientId,
     }),
   };
 }
@@ -463,8 +464,8 @@ export function fetchOptionsIP(session: Session) {
     body: JSON.stringify({
       assets: session.IPTransactions,
       customerId: session.customer._id,
-      workbookId: session.activeAssignment._id,
-      clientId: session.activeAssignment.clientId,
+      workbookId: session.assignment._id,
+      clientId: session.assignment.clientId,
     }),
   };
 }
@@ -513,12 +514,12 @@ export function fetchOptionsUpdateCerysCodeMapping(session: Session, nominalCode
     },
     body: JSON.stringify({
       customerId: session.customer._id,
-      clientId: session.activeAssignment.clientId,
-      clientSoftware: session.activeAssignment.clientSoftware,
+      clientId: session.assignment.clientId,
+      clientSoftware: session.assignment.clientSoftware,
       clientCode: nominalCode,
       clientCodeName: nominalCodeName,
       cerysCode,
-      workbookId: session.activeAssignment._id,
+      workbookId: session.assignment._id,
     }),
   };
 }

@@ -1,4 +1,4 @@
-import { Transaction } from "../interfaces/interfaces";
+import { TransactionProps } from "../interfaces/interfaces";
 import { DEFINED_COLS as cols } from "../static-values/defined-cols";
 import _ from "lodash";
 
@@ -13,7 +13,7 @@ export class DefinedCol {
   isUnique: Boolean;
   key: [string];
 
-  getTargetProperty(transaction: Transaction) {
+  getTargetProperty(transaction: TransactionProps) {
     let property = _.cloneDeep(transaction);
     this.key.forEach((key) => (property = property[key]));
     return property;

@@ -20,13 +20,13 @@ import { showClientNominalDetail } from "./client-drilling";
 export function addTbClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
   ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
-  session.activeAssignment.tbListenerAdded = true;
+  session.assignment.tbListenerAdded = true;
 }
 
 export function addPlClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
-  session.activeAssignment.pLListenerAdded = true;
+  session.assignment.pLListenerAdded = true;
 }
 
 export async function showNominalDetail(e, session: Session) {
@@ -40,7 +40,7 @@ export async function showNominalDetail(e, session: Session) {
       await context.sync();
       const innerValues = values.values;
       const code = innerValues[0][0];
-      const detail = getCerysNomDetail(session.activeAssignment.transactions, code);
+      const detail = getCerysNomDetail(session.assignment.transactions, code);
       await cerysNomDetailView(context, detail, session);
       await context.sync();
     });
@@ -199,7 +199,7 @@ export async function cerysNomDetailViewPL(context, session: Session, detail) {
 export function addBsClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, session, e));
-  session.activeAssignment.bSListenerAdded = true;
+  session.assignment.bSListenerAdded = true;
 }
 
 export async function showNominalDetailBS(context, session: Session, e) {
@@ -216,7 +216,7 @@ export async function showNominalDetailBS(context, session: Session, e) {
 }
 
 async function cerysNomDetailViewBS(context, session: Session, detail) {
-  const activeAssignment = session.activeAssignment;
+  const assignment = session.assignment;
   const { ws } = await addOneWorksheet(context, session, {
     name: `${detail[0][0].cerysCategory} analysis`,
     addListeners: undefined,
@@ -236,10 +236,10 @@ async function cerysNomDetailViewBS(context, session: Session, detail) {
     valuesToPost.push(["", "", "", ""]);
   });
   if (detail[0][0].cerysCategory === "Profit & loss reserve") {
-    if (activeAssignment.profit > 0) {
-      valuesToPost.push(["Profit for the period", "", "", activeAssignment.profit]);
-    } else if (activeAssignment.profit < 0) {
-      valuesToPost.push(["Loss for the period", "", "", activeAssignment.profit]);
+    if (assignment.profit > 0) {
+      valuesToPost.push(["Profit for the period", "", "", assignment.profit]);
+    } else if (assignment.profit < 0) {
+      valuesToPost.push(["Loss for the period", "", "", assignment.profit]);
     }
   }
   const range = ws.getRange(`A1:D${valuesToPost.length}`);

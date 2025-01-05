@@ -1,5 +1,6 @@
 import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
+import { Transaction } from "../classes/transaction";
 import React from "react";
 /*global Excel */
 
@@ -132,11 +133,14 @@ export interface ShortUser {
   _id: string;
 }
 
-export interface Transaction extends BaseCerysCodeObject {
+export interface TransactionProps {
+  cerysCode: number;
   value: number;
   transactionType: string;
   transactionDate: Date | string;
   transactionDateExcel: number;
+  transactionDateUser?: string;
+  transactionDateClt?: number;
   transactionNumber: number;
   transactionBatchNumber: number;
   iteration: number;
@@ -161,19 +165,26 @@ export interface Transaction extends BaseCerysCodeObject {
   defaultClientMapping: ClientMapping;
   activeClientMapping: ClientMapping;
   updates: TransactionUpdate[];
+  processedAsAsset: boolean;
   _id: string;
 }
 
-export interface NewFATransaction extends Transaction {
-  processedAsAsset?: boolean;
+export interface AssetTransactionProps {
+  cerysCode: number;
   transactionDateUser?: string;
   transactionDateClt?: number;
   assetNarrative?: string;
   assetSubCatCodes?: (number | null)[];
-  subTransactions?: FASubTransaction[];
+  amortBasis?: string;
+  amortRate?: string;
+  amortChg?: number;
+  depnBasis?: string;
+  depnRate?: string;
+  depnChg?: number;
+  subTransactions?: AssetSubTransaction[];
 }
 
-export interface FASubTransaction {
+export interface AssetSubTransaction {
   assetSubCategory: string;
   assetSubCatCode: number;
   regColNameOne: string;
@@ -186,16 +197,26 @@ export interface FATransaction extends Transaction {
   amortRate: string;
 }
 
-export interface Journal {
+export interface JournalProps {
   cerysCodeObj: BaseCerysCodeObject;
   transactionId?: string;
   value: number;
+  narrative: string;
   transactionType: string;
   clientTB: boolean;
   journal: boolean;
   transactionDate: string | Date;
   transactionDateExcel: number;
+}
+
+export interface JournalDetailsProps {
+  cerysCode: number;
+  value: number | string;
   narrative: string;
+  transactionDate: Date | string;
+  transactionType: string;
+  clientTB: boolean;
+  journal: boolean;
 }
 
 export interface ClientTransaction {

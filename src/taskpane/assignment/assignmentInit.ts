@@ -19,18 +19,18 @@ export async function addPrimarySheets(session: Session) {
 }
 
 function convertDataForWbook(session: Session) {
-  const activeAssignment = session.activeAssignment;
+  const assignment = session.assignment;
   let newArray = [];
-  newArray.push(["Client code", activeAssignment.clientCode]);
-  newArray.push(["Client name", activeAssignment.clientName]);
-  newArray.push(["Period end", activeAssignment.reportingPeriod.reportingDateConverted]);
-  newArray.push(["Assignment type", activeAssignment.assignmentType]);
-  newArray.push(["Client software", activeAssignment.clientSoftware]);
-  newArray.push(["Prepared by", `${activeAssignment.senior.firstName} ${activeAssignment.senior.lastName}`]);
-  newArray.push(["Reviewed by", `${activeAssignment.manager.firstName} ${activeAssignment.manager.lastName}`]);
+  newArray.push(["Client code", assignment.clientCode]);
+  newArray.push(["Client name", assignment.clientName]);
+  newArray.push(["Period end", assignment.reportingPeriod.reportingDateConverted]);
+  newArray.push(["Assignment type", assignment.assignmentType]);
+  newArray.push(["Client software", assignment.clientSoftware]);
+  newArray.push(["Prepared by", `${assignment.senior.firstName} ${assignment.senior.lastName}`]);
+  newArray.push(["Reviewed by", `${assignment.manager.firstName} ${assignment.manager.lastName}`]);
   newArray.push([
     "Responsible individual",
-    `${activeAssignment.responsibleIndividual.firstName} ${activeAssignment.responsibleIndividual.lastName}`,
+    `${assignment.responsibleIndividual.firstName} ${assignment.responsibleIndividual.lastName}`,
   ]);
   return newArray;
 }
@@ -45,11 +45,11 @@ async function writeToDATA(context, dataSpread: string[][]) {
 export const postOpBalJnls = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
-      const transactionDate = session.activeAssignment.reportingPeriod.periodStart.split("T")[0];
+      const transactionDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
       const chart = session.chart;
       session.activeJournal.journalType = "opening balance";
       session.activeJournal.journal = false;
-      session.activeAssignment.reportingPeriod.bFTB.forEach((line) => {
+      session.assignment.reportingPeriod.bFTB.forEach((line) => {
         for (let i = 0; i < chart.length; i++) {
           if (line.cerysCode === chart[i].cerysCode) {
             const jnl = {

@@ -26,15 +26,13 @@ interface PromptAssetRegisterCreationProps {
 }
 
 const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAssetRegisterCreationProps) => {
-  console.log(options);
   const { registerType } = options;
-  console.log(registerType);
   const { initials, longCap, longLower, createRegister } = registerType;
-  let nLEntered = session.activeAssignment.NLEntered;
-  const tBEntered = session.activeAssignment.TBEntered;
+  let nLEntered = session.assignment.NLEntered;
+  const tBEntered = session.assignment.TBEntered;
   const [view, setView] = useState(session.options[`${initials}RCreationSetting`]);
   const journal = session.activeJournal.journal;
-  const registerCreated = session.activeAssignment[`${initials}RegisterCreated`];
+  const registerCreated = session.assignment[`${initials}RegisterCreated`];
 
   const handleCreateRequest = () => {
     if (nLEntered || !tBEntered) {
@@ -47,7 +45,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
   const handleNLImport = async () => {
     await enterNL(session);
     convertNewFATrans(session);
-    nLEntered = session.activeAssignment.NLEntered;
+    nLEntered = session.assignment.NLEntered;
     handleCreateRequest();
   };
 
@@ -69,7 +67,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
         session.activeJournal.journal = false;
         session.activeJournal.journalType = "auto-journal";
         await processTransBatch(context, session);
-        checkNewTransForAssets(session, session.newFATransactions);
+        checkNewTransForAssets(session);
         await context.sync();
       });
     } catch (e) {

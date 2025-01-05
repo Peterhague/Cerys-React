@@ -117,7 +117,7 @@ export function getCerysNomDetailPL(category, session: Session) {
     cat = "Interest payable";
   }
   let selection;
-  session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+  session.assignment.activeCategoriesDetails.forEach((obj) => {
     if (obj.cerysCategory === cat || obj.cerysCategory === category) {
       selection = obj.cerysCodes;
     }
@@ -125,7 +125,7 @@ export function getCerysNomDetailPL(category, session: Session) {
   let selectionArray = [];
   selection.forEach((code) => {
     let arr = [];
-    session.activeAssignment.transactions.forEach((transaction) => {
+    session.assignment.transactions.forEach((transaction) => {
       if (transaction.cerysCode === code) {
         arr.push(transaction);
       }
@@ -136,7 +136,7 @@ export function getCerysNomDetailPL(category, session: Session) {
 }
 
 export async function getCerysNomDetailBS(category, session: Session) {
-  const activeAssignment = session.activeAssignment;
+  const assignment = session.assignment;
   let cat = category;
   if (category === "Cash at bank and in hand") {
     cat = "Cash";
@@ -146,7 +146,7 @@ export async function getCerysNomDetailBS(category, session: Session) {
     cat = "Creditors > 1 year";
   }
   let selection;
-  activeAssignment.activeCategoriesDetails.forEach((obj) => {
+  assignment.activeCategoriesDetails.forEach((obj) => {
     if (obj.cerysCategory === cat || obj.cerysCategory === category) {
       selection = obj.cerysCodes;
     }
@@ -154,7 +154,7 @@ export async function getCerysNomDetailBS(category, session: Session) {
   let selectionArray = [];
   selection.forEach((code) => {
     let arr = [];
-    activeAssignment.transactions.forEach((transaction) => {
+    assignment.transactions.forEach((transaction) => {
       if (transaction.cerysCode === code) {
         arr.push(transaction);
       }

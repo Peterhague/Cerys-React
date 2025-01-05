@@ -74,7 +74,7 @@ export function populateUser(session: Session, userId: string) {
 }
 
 export async function updateAssignmentDb(session: Session, target: any) {
-  const workbookId = session.activeAssignment._id;
+  const workbookId = session.assignment._id;
   const customerId = session.customer._id;
   const options = fetchOptionsUpdateAssignment(customerId, workbookId, target);
   const updatedCustAndAssDb = await fetch(updateAssignmentUrl, options);
@@ -285,7 +285,7 @@ export const simulateEditButtonClick = async (session: Session) => {
 };
 
 export const updateAssignmentFigures = async (context, session: Session) => {
-  const tbArray = tbForPosting(session.activeAssignment.tb);
+  const tbArray = tbForPosting(session.assignment.tb);
   await postTbToWbook(context, session, tbArray);
   await wsPLAccount(context, session);
   await wsBalanceSheet(context, session);
@@ -630,7 +630,7 @@ export const getUpdatedClientCodeMapping = (tran) => {
 };
 
 export const getUpdatedTransactions = (session: Session) => {
-  const updatedTrans = session.activeAssignment.transactions.filter((tran) => tran.updates.length > 0);
+  const updatedTrans = session.assignment.transactions.filter((tran) => tran.updates.length > 0);
   return updatedTrans;
 };
 

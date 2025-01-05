@@ -2,13 +2,13 @@ import { DefinedCol } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
+import { Transaction } from "../../classes/transaction";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import {
   AddressObject,
   AutoFillObject,
   FATransaction,
   QuasiEventObject,
-  Transaction,
   TranUpdateFinalValidation,
   TranUpdatePrimaryValidation,
 } from "../../interfaces/interfaces";
@@ -266,11 +266,11 @@ export const validateTransactionDate = (
 ) => {
   if (typeof e.details.valueAfter !== "number") finalValidationObj.isInvalid = true;
   if (e.details.valueAfter === tran.transactionDateExcel) finalValidationObj.isNegation = true;
-  if (e.details.valueAfter > session.activeAssignment.reportingPeriod.reportingDateExcel) {
+  if (e.details.valueAfter > session.assignment.reportingPeriod.reportingDateExcel) {
     finalValidationObj.isInvalid = true;
   } else if (
     e.details.valueAfter <=
-    session.activeAssignment.reportingPeriod.reportingDateExcel - session.activeAssignment.reportingPeriod.noOfDays
+    session.assignment.reportingPeriod.reportingDateExcel - session.assignment.reportingPeriod.noOfDays
   ) {
     finalValidationObj.isInvalid = true;
   }

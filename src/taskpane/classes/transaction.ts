@@ -1,4 +1,5 @@
-import { ClientMapping, Transaction as TransactionProps } from "../interfaces/interfaces";
+import { AssetSubTransaction, AssetTransactionProps, ClientMapping, TransactionProps } from "../interfaces/interfaces";
+import { Session } from "./session";
 import { TransactionUpdate } from "./transaction-update";
 
 export class Transaction implements TransactionProps {
@@ -6,6 +7,8 @@ export class Transaction implements TransactionProps {
   transactionType: string;
   transactionDate: Date | string;
   transactionDateExcel: number;
+  transactionDateUser?: string;
+  transactionDateClt?: number;
   transactionNumber: number;
   transactionBatchNumber: number;
   iteration: number;
@@ -31,22 +34,7 @@ export class Transaction implements TransactionProps {
   activeClientMapping: ClientMapping;
   updates: TransactionUpdate[];
   cerysCode: number;
-  cerysName: string;
-  cerysShortName: string;
-  cerysExcelName: string;
-  cerysCategory: string;
-  cerysSubCategory: string | null;
-  assetCategory: string | null;
-  assetCategoryNo: number | null;
-  assetSubCategory: string | null;
-  assetSubCatCode: number | null;
-  assetCodeType: string | null;
-  regColNameOne: string | null;
-  regColNameTwo: string | null;
-  altCategory: string | null;
-  defaultSign: string | null;
-  clientAdj: boolean;
-  closeOffCode: number;
+  processedAsAsset: boolean;
   _id: string;
 
   constructor(transaction: Transaction) {
@@ -73,19 +61,53 @@ export class Transaction implements TransactionProps {
     this.activeClientMapping = transaction.activeClientMapping;
     this.updates = transaction.updates;
     this.cerysCode = transaction.cerysCode;
-    this.cerysName = transaction.cerysName;
-    this.cerysShortName = transaction.cerysShortName;
-    this.cerysExcelName = transaction.cerysExcelName;
-    this.cerysCategory = transaction.cerysCategory;
-    this.cerysSubCategory = transaction.cerysSubCategory;
-    this.assetSubCatCode = transaction.assetSubCatCode;
-    this.assetCodeType = transaction.assetCodeType;
-    this.regColNameOne = transaction.regColNameOne;
-    this.regColNameTwo = transaction.regColNameTwo;
-    this.altCategory = transaction.altCategory;
-    this.defaultSign = transaction.defaultSign;
-    this.clientAdj = transaction.clientAdj;
-    this.closeOffCode = transaction.closeOffCode;
+    this.processedAsAsset = transaction.processedAsAsset;
     this._id = transaction._id;
+  }
+
+  getCerysCodeObj(session: Session) {
+    return session.chart.find((code) => code.cerysCode === this.cerysCode);
+  }
+}
+
+export class AssetTransaction implements AssetTransactionProps {
+  cerysCode: number;
+  transactionDateUser?: string;
+  transactionDateClt?: number;
+  assetNarrative?: string;
+  assetSubCatCodes?: (number | null)[];
+  amortBasis?: string;
+  amortRate?: string;
+  amortChg?: number;
+  depnBasis?: string;
+  depnRate?: string;
+  depnChg?: number;
+  subTransactions?: AssetSubTransaction[];
+  _id: string;
+
+  constructor(session: Session, transaction: Transaction) {
+    this.cerysCode = transaction.cerysCode;
+    const cerysCodeObj = transaction.getCerysCodeObj(session);
+    this.assetSubCatCodes = [cerysCodeObj.assetSubCatCode];
+    this.subTransactions = [
+      {
+        assetSubCategory: cerysCodeObj.assetSubCategory,
+        assetSubCatCode: cerysCodeObj.assetSubCatCode,
+        regColNameOne: cerysCodeObj.regColNameOne,
+        regColNameTwo: cerysCodeObj.regColNameTwo,
+        value: transaction.value,
+      },
+    ];
+    this._id = transaction._id;
+  }
+
+  getTransaction(session: Session) {
+    return session.assignment.transactions.find((tran) => tran._id === this._id);
+  }
+
+  getTranAndCerysCodeObj(session: Session) {
+    const transaction = session.assignment.transactions.find((tran) => tran._id === this._id);
+    const cerysCodeObj = transaction.getCerysCodeObj(session);
+    return { transaction, cerysCodeObj };
   }
 }

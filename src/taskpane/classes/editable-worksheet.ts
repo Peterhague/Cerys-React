@@ -1,4 +1,4 @@
-import { FATransaction, Transaction } from "../interfaces/interfaces";
+import { FATransaction } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils.ts/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils.ts/helperFunctions";
 import { createDeletionObject } from "../utils.ts/transactions/transactions";
@@ -6,6 +6,7 @@ import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils.ts/wo
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
 import { ExcelRangeUpdate } from "./excel-range-editing";
 import { Session } from "./session";
+import { Transaction } from "./transaction";
 import { TransactionMap } from "./transaction-map";
 /* global Excel */
 

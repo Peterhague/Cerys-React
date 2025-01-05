@@ -6,9 +6,9 @@ import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 
 export async function enterNL(session: Session) {
   const clientNL = await createClientNLObject();
-  session.activeAssignment.clientNL = clientNL;
+  session.assignment.clientNL = clientNL;
   const { customer, assignment } = await postCltNLToDb(session);
-  session.activeAssignment = new Assignment(assignment);
+  session.assignment = new Assignment(assignment);
   session.customer = customer;
 }
 
@@ -55,9 +55,9 @@ export async function createClientNLObject() {
 }
 
 export const postCltNLToDb = async (session: Session) => {
-  let assignmentId = session.activeAssignment._id;
+  let assignmentId = session.assignment._id;
   let customerId = session.customer._id;
-  let clientNL = session.activeAssignment.clientNL;
+  let clientNL = session.assignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
   const updatedCustAndAssDb = await fetch(postClientNLUrl, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();

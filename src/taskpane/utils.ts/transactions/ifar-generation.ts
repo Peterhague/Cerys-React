@@ -34,24 +34,20 @@ export const adjustAutoAmortJnls = (session: Session, tran, charge) => {
 
 export async function createIFAR(context: Excel.RequestContext, session: Session) {
   const assignment = await postIFAtoDB(session);
-  session.activeAssignment = new Assignment(assignment);
+  session.assignment = new Assignment(assignment);
   createIFARWs(context, session);
 }
 
 export async function postIFAtoDB(session: Session) {
-  let assignment = session.activeAssignment;
+  let assignment = session.assignment;
   console.log(session.IFATransactions["subTransactions"]);
   const options = fetchOptionsIFA(session);
-  const endpoint = session.activeAssignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
+  const endpoint = session.assignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
   const iFARDb = await fetch(endpoint, options);
   const iFAR = await iFARDb.json();
   session.IFARegister = createCurrentPeriodRegister(iFAR, session);
-  if (!session.activeAssignment.IFARegisterCreated) {
-    const options = fetchOptionsUpdateAssignment(
-      session.customer._id,
-      session.activeAssignment._id,
-      "IFARegisterCreated"
-    );
+  if (!session.assignment.IFARegisterCreated) {
+    const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "IFARegisterCreated");
     const assignmentDb = await fetch(updateAssignmentUrl, options);
     assignment = await assignmentDb.json();
   }
@@ -60,7 +56,7 @@ export async function postIFAtoDB(session: Session) {
 }
 
 export async function createIFARWs(context: Excel.RequestContext, session: Session) {
-  //const transToPost = session.activeAssignment.IFAR;
+  //const transToPost = session.assignment.IFAR;
   const transToPost = session.IFARegister;
   console.log(transToPost);
   const activeCatsNames = [];

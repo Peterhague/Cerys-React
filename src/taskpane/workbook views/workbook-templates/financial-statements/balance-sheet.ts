@@ -14,35 +14,35 @@ export async function wsBalanceSheet(context, session: Session) {
     ["", "", "", "", "", ""],
   ];
   if (
-    session.activeAssignment.activeCategories.includes("Intangible assets") ||
-    session.activeAssignment.activeCategories.includes("Tangible assets") ||
-    session.activeAssignment.activeCategories.includes("Fixed asset investments") ||
-    session.activeAssignment.activeCategories.includes("Investment property")
+    session.assignment.activeCategories.includes("Intangible assets") ||
+    session.assignment.activeCategories.includes("Tangible assets") ||
+    session.assignment.activeCategories.includes("Fixed asset investments") ||
+    session.assignment.activeCategories.includes("Investment property")
   ) {
-    const nextArrays = displayFixedAssets(session.activeAssignment);
+    const nextArrays = displayFixedAssets(session.assignment);
     nextArrays.forEach((arr) => {
       values.push(arr);
     });
   }
   if (
-    session.activeAssignment.activeCategories.includes("Stocks") ||
-    session.activeAssignment.activeCategories.includes("Debtors") ||
-    session.activeAssignment.activeCategories.includes("Financial assets") ||
-    session.activeAssignment.activeCategories.includes("Cash")
+    session.assignment.activeCategories.includes("Stocks") ||
+    session.assignment.activeCategories.includes("Debtors") ||
+    session.assignment.activeCategories.includes("Financial assets") ||
+    session.assignment.activeCategories.includes("Cash")
   ) {
-    const arrays = displayCurrentAssets(session.activeAssignment);
+    const arrays = displayCurrentAssets(session.assignment);
     arrays.forEach((arr) => {
       values.push(arr);
     });
   }
-  if (session.activeAssignment.activeCategories.includes("Creditors < 1 year")) {
-    const nextArrays = displayCurrentLiabilities(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Creditors < 1 year")) {
+    const nextArrays = displayCurrentLiabilities(session.assignment);
     nextArrays.forEach((arr) => {
       values.push(arr);
     });
   }
   values.push(["", "", "", "", "", ""]);
-  const netCA = calculateNCA(session.activeAssignment);
+  const netCA = calculateNCA(session.assignment);
   if (netCA) {
     if (netCA > 0) {
       values.push(["Net current assets", "", "", "", "", netCA.toString()]);
@@ -51,26 +51,26 @@ export async function wsBalanceSheet(context, session: Session) {
     }
   }
   values.push(["", "", "", "", "", ""]);
-  const tALCL = totalAssetsLessCL(session.activeAssignment);
+  const tALCL = totalAssetsLessCL(session.assignment);
   if (tALCL >= 0) {
     values.push(["Total assets less current liabilities", "", "", "", "", tALCL.toString()]);
   } else {
     values.push(["Current liabilities less total assets", "", "", "", "", tALCL.toString()]);
   }
-  if (session.activeAssignment.activeCategories.includes("Creditors > 1 year")) {
-    const nextArrays = displayNonCurrentLiabilities(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Creditors > 1 year")) {
+    const nextArrays = displayNonCurrentLiabilities(session.assignment);
     nextArrays.forEach((arr) => {
       values.push(arr);
     });
   }
-  if (session.activeAssignment.activeCategories.includes("Provisions for liabilities")) {
-    const nextArrays = displayProvisions(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Provisions for liabilities")) {
+    const nextArrays = displayProvisions(session.assignment);
     nextArrays.forEach((arr) => {
       values.push(arr);
     });
   }
   values.push(["", "", "", "", "", ""]);
-  const netAssets = calculateNetAssets(session.activeAssignment);
+  const netAssets = calculateNetAssets(session.assignment);
   if (netAssets >= 0) {
     values.push(["Net assets", "", "", "", "", netAssets.toString()]);
   } else {
@@ -87,62 +87,62 @@ export async function wsBalanceSheet(context, session: Session) {
       values.push(arr);
     });
   }
-  if (session.activeAssignment.activeCategories.includes("Share capital")) {
-    const arr = displayShareCapital(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Share capital")) {
+    const arr = displayShareCapital(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Share premium")) {
-    const arr = displaySharePremium(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Share premium")) {
+    const arr = displaySharePremium(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Capital redemption reserve")) {
-    const arr = displayCRR(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Capital redemption reserve")) {
+    const arr = displayCRR(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Other reserves 1")) {
-    const arr = displayOtherRes(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Other reserves 1")) {
+    const arr = displayOtherRes(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Fair value reserve")) {
-    const arr = displayFVRes(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Fair value reserve")) {
+    const arr = displayFVRes(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Other reserves 2")) {
-    const arr = displayOtherRes2(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Other reserves 2")) {
+    const arr = displayOtherRes2(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Other reserves 3")) {
-    const arr = displayOtherRes3(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Other reserves 3")) {
+    const arr = displayOtherRes3(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Other reserves 4")) {
-    const arr = displayOtherRes4(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Other reserves 4")) {
+    const arr = displayOtherRes4(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Other reserves 5")) {
-    const arr = displayOtherRes5(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Other reserves 5")) {
+    const arr = displayOtherRes5(session.assignment);
     values.push(arr);
   }
-  if (session.activeAssignment.activeCategories.includes("Minority interest")) {
-    const arr = displayMinorityInt(session.activeAssignment);
+  if (session.assignment.activeCategories.includes("Minority interest")) {
+    const arr = displayMinorityInt(session.assignment);
     values.push(arr);
   }
   if (
-    session.activeAssignment.activeCategories.includes("Profit & loss reserve") ||
-    session.activeAssignment.profit !== 0
+    session.assignment.activeCategories.includes("Profit & loss reserve") ||
+    session.assignment.profit !== 0
   ) {
-    const arr = displayPLRes(session.activeAssignment);
+    const arr = displayPLRes(session.assignment);
     values.push(arr);
   }
   values.push(["", "", "", "", "", ""]);
   let equity = 0;
-  session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+  session.assignment.activeCategoriesDetails.forEach((obj) => {
     if (obj.cerysCategory === "Capital & reserves") equity = obj.value / 100;
   });
-  session.activeAssignment.activeCategoriesDetails.forEach((obj) => {
+  session.assignment.activeCategoriesDetails.forEach((obj) => {
     if (obj.cerysCategory === "Profit & loss reserve") equity += obj.value / 100;
   });
-  values.push(["Total equity", "", "", "", "", (-equity + session.activeAssignment.profit / 100).toString()]);
+  values.push(["Total equity", "", "", "", "", (-equity + session.assignment.profit / 100).toString()]);
   const range = ws.getRange(`a9:f${values.length + 8}`);
   const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
   numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
@@ -242,45 +242,45 @@ export function cleanseValues(values) {
   return cleansedValues;
 }
 
-function calculateNCA(activeAssignment: Assignment) {
-  if (activeAssignment.tCA && activeAssignment.tCL) {
-    return activeAssignment.tCA + activeAssignment.tCL;
-  } else if (activeAssignment.tCA && !activeAssignment.tCL) {
-    return activeAssignment.tCA;
-  } else if (activeAssignment.tCL && !activeAssignment.tCA) {
-    return activeAssignment.tCL;
+function calculateNCA(assignment: Assignment) {
+  if (assignment.tCA && assignment.tCL) {
+    return assignment.tCA + assignment.tCL;
+  } else if (assignment.tCA && !assignment.tCL) {
+    return assignment.tCA;
+  } else if (assignment.tCL && !assignment.tCA) {
+    return assignment.tCL;
   } else {
     return null;
   }
 }
 
-function totalAssetsLessCL(activeAssignment: Assignment) {
+function totalAssetsLessCL(assignment: Assignment) {
   let fig = 0;
-  if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
-  if (activeAssignment.tCA) fig += activeAssignment.tCA;
-  if (activeAssignment.tCL) fig += activeAssignment.tCL;
+  if (assignment.nonCA) fig += assignment.nonCA;
+  if (assignment.tCA) fig += assignment.tCA;
+  if (assignment.tCL) fig += assignment.tCL;
   return fig;
 }
 
-function calculateNetAssets(activeAssignment: Assignment) {
+function calculateNetAssets(assignment: Assignment) {
   let fig = 0;
-  if (activeAssignment.nonCA) fig += activeAssignment.nonCA;
-  if (activeAssignment.tCA) fig += activeAssignment.tCA;
-  if (activeAssignment.tCL) fig += activeAssignment.tCL;
-  if (activeAssignment.nonCL) fig += activeAssignment.nonCL;
-  if (activeAssignment.provisions) fig += activeAssignment.provisions;
+  if (assignment.nonCA) fig += assignment.nonCA;
+  if (assignment.tCA) fig += assignment.tCA;
+  if (assignment.tCL) fig += assignment.tCL;
+  if (assignment.nonCL) fig += assignment.nonCL;
+  if (assignment.provisions) fig += assignment.provisions;
   return fig;
 }
 
-function displayFixedAssets(activeAssignment: Assignment) {
+function displayFixedAssets(assignment: Assignment) {
   const arrays = [
     ["Fixed assets", "", "", "", "", ""],
     ["", "", "", "", "", ""],
   ];
   let subtotal = 0;
-  if (activeAssignment.activeCategories.includes("Intangible assets")) {
+  if (assignment.activeCategories.includes("Intangible assets")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Intangible assets") {
         value = cat.value;
       }
@@ -289,9 +289,9 @@ function displayFixedAssets(activeAssignment: Assignment) {
     arrays.push(iARow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Tangible assets")) {
+  if (assignment.activeCategories.includes("Tangible assets")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Tangible assets") {
         value = cat.value;
       }
@@ -300,9 +300,9 @@ function displayFixedAssets(activeAssignment: Assignment) {
     arrays.push(tARow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Fixed asset investments")) {
+  if (assignment.activeCategories.includes("Fixed asset investments")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Fixed asset investments") {
         value = cat.value;
       }
@@ -311,9 +311,9 @@ function displayFixedAssets(activeAssignment: Assignment) {
     arrays.push(fAIRow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Investment property")) {
+  if (assignment.activeCategories.includes("Investment property")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Investment property") {
         value = cat.value;
       }
@@ -324,19 +324,19 @@ function displayFixedAssets(activeAssignment: Assignment) {
   }
   arrays.push(["", "", "", "", "", ""]);
   arrays.push(["subtotal", "", "", "", "", (subtotal / 100).toString()]);
-  activeAssignment.nonCA = subtotal / 100;
+  assignment.nonCA = subtotal / 100;
   return arrays;
 }
 
-function displayCurrentAssets(activeAssignment: Assignment) {
+function displayCurrentAssets(assignment: Assignment) {
   const arrays = [
     ["Current assets", "", "", "", "", ""],
     ["", "", "", "", "", ""],
   ];
   let subtotal = 0;
-  if (activeAssignment.activeCategories.includes("Stocks")) {
+  if (assignment.activeCategories.includes("Stocks")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Stocks") {
         value = cat.value;
       }
@@ -345,9 +345,9 @@ function displayCurrentAssets(activeAssignment: Assignment) {
     arrays.push(stocksRow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Debtors")) {
+  if (assignment.activeCategories.includes("Debtors")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Debtors") {
         value = cat.value;
       }
@@ -356,9 +356,9 @@ function displayCurrentAssets(activeAssignment: Assignment) {
     arrays.push(debtorsRow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Financial assets")) {
+  if (assignment.activeCategories.includes("Financial assets")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Financial assets") {
         value = cat.value;
       }
@@ -367,9 +367,9 @@ function displayCurrentAssets(activeAssignment: Assignment) {
     arrays.push(finAssetsRow);
     subtotal += value;
   }
-  if (activeAssignment.activeCategories.includes("Cash")) {
+  if (assignment.activeCategories.includes("Cash")) {
     let value = 0;
-    activeAssignment.activeCategoriesDetails.forEach((cat) => {
+    assignment.activeCategoriesDetails.forEach((cat) => {
       if (cat.cerysCategory === "Cash") {
         value = cat.value;
       }
@@ -379,18 +379,18 @@ function displayCurrentAssets(activeAssignment: Assignment) {
     subtotal += value;
   }
   arrays.push(["subtotalBottom", "", "", "", "", (subtotal / 100).toString()]);
-  activeAssignment.tCA = subtotal / 100;
+  assignment.tCA = subtotal / 100;
   return arrays;
 }
 
-function displayCurrentLiabilities(activeAssignment: Assignment) {
+function displayCurrentLiabilities(assignment: Assignment) {
   const arrays = [
     ["Current liabilities", "", "", "", "", ""],
     ["", "", "", "", "", ""],
   ];
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Creditors < 1 year") {
       value = cat.value;
     }
@@ -399,15 +399,15 @@ function displayCurrentLiabilities(activeAssignment: Assignment) {
   arrays.push(curCredRow);
   subtotal += value;
   arrays.push(["subtotalBottom", "", "", "", "", (subtotal / 100).toString()]);
-  activeAssignment.tCL = subtotal / 100;
+  assignment.tCL = subtotal / 100;
   return arrays;
 }
 
-function displayNonCurrentLiabilities(activeAssignment: Assignment) {
+function displayNonCurrentLiabilities(assignment: Assignment) {
   const arrays = [["", "", "", "", "", ""]];
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Creditors > 1 year") {
       value = cat.value;
     }
@@ -415,15 +415,15 @@ function displayNonCurrentLiabilities(activeAssignment: Assignment) {
   const nonCurCredRow = ["Creditors due in > 1 year", "", "", "", "", (value / 100).toString()];
   arrays.push(nonCurCredRow);
   subtotal += value;
-  activeAssignment.nonCL = subtotal / 100;
+  assignment.nonCL = subtotal / 100;
   return arrays;
 }
 
-function displayProvisions(activeAssignment: Assignment) {
+function displayProvisions(assignment: Assignment) {
   const arrays = [["", "", "", "", "", ""]];
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Provisions for liabilities") {
       value = cat.value;
     }
@@ -431,161 +431,161 @@ function displayProvisions(activeAssignment: Assignment) {
   const provisionsRow = ["Provisions for liabilities", "", "", "", "", (value / 100).toString()];
   arrays.push(provisionsRow);
   subtotal += value;
-  activeAssignment.provisions = subtotal / 100;
+  assignment.provisions = subtotal / 100;
   return arrays;
 }
 
-function displayShareCapital(activeAssignment: Assignment) {
+function displayShareCapital(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Share capital") {
       value = cat.value;
     }
   });
   const shareCapRow = ["Share capital", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.shareCapital = subtotal / 100;
+  assignment.shareCapital = subtotal / 100;
   return shareCapRow;
 }
 
-function displaySharePremium(activeAssignment: Assignment) {
+function displaySharePremium(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Share premium") {
       value = cat.value;
     }
   });
   const sharePremRow = ["Share premium", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.sharePremium = subtotal / 100;
+  assignment.sharePremium = subtotal / 100;
   return sharePremRow;
 }
 
-function displayPLRes(activeAssignment: Assignment) {
-  const profit = activeAssignment.profit;
+function displayPLRes(assignment: Assignment) {
+  const profit = assignment.profit;
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Profit & loss reserve") {
       value = cat.value;
     }
   });
   const pLReserveRow = ["Profit & loss reserve", "", "", "", "", ((profit - value) / 100).toString()];
   subtotal += value;
-  activeAssignment.profLossRes = subtotal / 100;
+  assignment.profLossRes = subtotal / 100;
   return pLReserveRow;
 }
 
-function displayCRR(activeAssignment: Assignment) {
+function displayCRR(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Capital redemption reserve") {
       value = cat.value;
     }
   });
   const crrRow = ["Capital redemption reserve", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.capRedRes = subtotal / 100;
+  assignment.capRedRes = subtotal / 100;
   return crrRow;
 }
 
-function displayOtherRes(activeAssignment: Assignment) {
+function displayOtherRes(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Other reserves 1") {
       value = cat.value;
     }
   });
   const otherResRow = ["Other reserves", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.otherRes = subtotal / 100;
+  assignment.otherRes = subtotal / 100;
   return otherResRow;
 }
 
-function displayFVRes(activeAssignment: Assignment) {
+function displayFVRes(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Fair value reserve") {
       value = cat.value;
     }
   });
   const fVRow = ["Fair value reserve", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.fVRes = subtotal / 100;
+  assignment.fVRes = subtotal / 100;
   return fVRow;
 }
 
-function displayOtherRes2(activeAssignment: Assignment) {
+function displayOtherRes2(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Other reserves 2") {
       value = cat.value;
     }
   });
   const otherRes2Row = ["Other reserves 2", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.otherRes2 = subtotal / 100;
+  assignment.otherRes2 = subtotal / 100;
   return otherRes2Row;
 }
 
-function displayOtherRes3(activeAssignment: Assignment) {
+function displayOtherRes3(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Other reserves 3") {
       value = cat.value;
     }
   });
   const otherRes3Row = ["Other reserves 3", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.otherRes3 = subtotal / 100;
+  assignment.otherRes3 = subtotal / 100;
   return otherRes3Row;
 }
 
-function displayOtherRes4(activeAssignment: Assignment) {
+function displayOtherRes4(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Other reserves 4") {
       value = cat.value;
     }
   });
   const otherRes4Row = ["Other reserves 4", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.otherRes4 = subtotal / 100;
+  assignment.otherRes4 = subtotal / 100;
   return otherRes4Row;
 }
 
-function displayOtherRes5(activeAssignment: Assignment) {
+function displayOtherRes5(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Other reserves 5") {
       value = cat.value;
     }
   });
   const otherRes5Row = ["Other reserves 5", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.otherRes5 = subtotal / 100;
+  assignment.otherRes5 = subtotal / 100;
   return otherRes5Row;
 }
 
-function displayMinorityInt(activeAssignment: Assignment) {
+function displayMinorityInt(assignment: Assignment) {
   let subtotal = 0;
   let value = 0;
-  activeAssignment.activeCategoriesDetails.forEach((cat) => {
+  assignment.activeCategoriesDetails.forEach((cat) => {
     if (cat.cerysCategory === "Minority interest") {
       value = cat.value;
     }
   });
   const minIntRow = ["Minority interest", "", "", "", "", (-value / 100).toString()];
   subtotal += value;
-  activeAssignment.minorityInt = subtotal / 100;
+  assignment.minorityInt = subtotal / 100;
   return minIntRow;
 }

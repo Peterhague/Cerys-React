@@ -4,16 +4,16 @@ import {
   ClientCerysCodeObject,
   ClientCodeObject,
   Customer,
-  Journal,
-  NewFATransaction,
   NewPreliminaryClient,
 } from "../interfaces/interfaces";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
+import { Journal } from "./journal";
+import { Transaction } from "./transaction";
 import { Worksheet } from "./worksheet";
 
 export class Session {
-  activeAssignment: Assignment;
+  assignment: Assignment;
   chart: ClientCerysCodeObject[];
   clientChart: ClientCodeObject[];
   currentView: string = "";
@@ -35,7 +35,6 @@ export class Session {
     journal: true,
     clientTB: false,
   };
-  newFATransactions: NewFATransaction[] = [];
   editableSheets: EditableWorksheet[] = [];
   IFARegister: { assetCategory: string; assetCategoryNo: number }[];
   IPRegister: { assetCategory: string; assetCategoryNo: number }[];
@@ -56,7 +55,7 @@ export class Session {
     TFARCreationSetting: string;
     IPRCreationSetting: string;
     autoFillOverride: Boolean;
-    updatedTransactions: [];
+    updatedTransactions: Transaction[];
     allowEffects: number;
     ignoreWsAddition: number;
   } = {

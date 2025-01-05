@@ -1,120 +1,120 @@
-import * as React from "react";
-import { useState } from "react";
-import CerysButton from "../../CerysButton";
-import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { createIPR } from "../../../utils.ts/transactions/ipr-generation";
-import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
-import {
-  checkNewTransForAssets,
-  processTransBatch,
-  processUpdateBatch,
-} from "../../../utils.ts/transactions/transactions";
-import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
-import { Session } from "../../../classes/session";
-/* global Excel */
+// import * as React from "react";
+// import { useState } from "react";
+// import CerysButton from "../../CerysButton";
+// import { enterNL } from "../../../client-data-processing/nominal-ledger";
+// import { createIPR } from "../../../utils.ts/transactions/ipr-generation";
+// import { identifyLikelyAdditions, previewRelTrans } from "../../../utils.ts/transactions/asset-reg-generation";
+// import {
+//   checkNewTransForAssets,
+//   processTransBatch,
+//   processUpdateBatch,
+// } from "../../../utils.ts/transactions/transactions";
+// import { updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+// import { Session } from "../../../classes/session";
+// /* global Excel */
 
-interface promptIPRCreationProps {
-  handleView: (view) => void;
-  session: Session;
-}
+// interface promptIPRCreationProps {
+//   handleView: (view) => void;
+//   session: Session;
+// }
 
-const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
-  const nLEntered = session.activeAssignment.NLEntered;
-  const tBEntered = session.activeAssignment.TBEntered;
-  const [view, setView] = useState(session.options.IPRCreationSetting);
-  const journal = session.activeJournal.journal;
-  const registerType = "IP";
-  const registerCreated = session.activeAssignment.IPRegisterCreated;
+// const PromptIPRCreation = ({ handleView, session }: promptIPRCreationProps) => {
+//   const nLEntered = session.assignment.NLEntered;
+//   const tBEntered = session.assignment.TBEntered;
+//   const [view, setView] = useState(session.options.IPRCreationSetting);
+//   const journal = session.activeJournal.journal;
+//   const registerType = "IP";
+//   const registerCreated = session.assignment.IPRegisterCreated;
 
-  const handleCreateRequest = () => {
-    if (nLEntered || !tBEntered) {
-      identifyLikelyAdditions(session, registerType, setView);
-    } else {
-      setView("NLPrompt");
-    }
-  };
+//   const handleCreateRequest = () => {
+//     if (nLEntered || !tBEntered) {
+//       identifyLikelyAdditions(session, registerType, setView);
+//     } else {
+//       setView("NLPrompt");
+//     }
+//   };
 
-  const handleNLImport = async () => {
-    await enterNL(session);
-    handleCreateRequest();
-  };
+//   const handleNLImport = async () => {
+//     await enterNL(session);
+//     handleCreateRequest();
+//   };
 
-  const handleAbort = (view) => {
-    session.options.IPRCreationSetting = "main";
-    session.activeJournal.journals = [];
-    handleView(view);
-  };
+//   const handleAbort = (view) => {
+//     session.options.IPRCreationSetting = "main";
+//     session.activeJournal.journals = [];
+//     handleView(view);
+//   };
 
-  const handleSubmit = async () => {
-    try {
-      await Excel.run(async (context) => {
-        session.options.IPRCreationSetting = "main";
-        await createIPR(context, session);
-        session.IPTransactions = [];
-        session.activeJournal.clientTB = false;
-        session.activeJournal.journal = false;
-        session.activeJournal.journalType = "auto-journal";
-        await processTransBatch(context, session);
-        checkNewTransForAssets(session, session.newFATransactions);
-        await context.sync();
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+//   const handleSubmit = async () => {
+//     try {
+//       await Excel.run(async (context) => {
+//         session.options.IPRCreationSetting = "main";
+//         await createIPR(context, session);
+//         session.IPTransactions = [];
+//         session.activeJournal.clientTB = false;
+//         session.activeJournal.journal = false;
+//         session.activeJournal.journalType = "auto-journal";
+//         await processTransBatch(context, session);
+//         checkNewTransForAssets(session, session.newFATransactions);
+//         await context.sync();
+//       });
+//     } catch (e) {
+//       console.error(e);
+//     }
+//   };
 
-  const handleReanalysis = async () => {
-    try {
-      await Excel.run(async (context) => {
-        await processUpdateBatch(session);
-        await updateAssignmentFigures(context, session);
-        previewRelTrans(session, registerType, setView);
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+//   const handleReanalysis = async () => {
+//     try {
+//       await Excel.run(async (context) => {
+//         await processUpdateBatch(session);
+//         await updateAssignmentFigures(context, session);
+//         previewRelTrans(session, registerType, setView);
+//       });
+//     } catch (e) {
+//       console.error(e);
+//     }
+//   };
 
-  return (
-    <>
-      {view === "main" && !registerCreated && (
-        <>
-          <p>Your data suggests this client owns investment property.</p>
-          <p>You have not set up a relevant asset register.</p>
-          <p>Would you like to create one automatically?</p>
-          <CerysButton buttonText={"CREATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
-        </>
-      )}
-      {view === "main" && registerCreated && (
-        <>
-          <p>Update your Investment Property Register for new transactions?</p>
-          <CerysButton buttonText={"UPDATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
-        </>
-      )}
+//   return (
+//     <>
+//       {view === "main" && !registerCreated && (
+//         <>
+//           <p>Your data suggests this client owns investment property.</p>
+//           <p>You have not set up a relevant asset register.</p>
+//           <p>Would you like to create one automatically?</p>
+//           <CerysButton buttonText={"CREATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
+//         </>
+//       )}
+//       {view === "main" && registerCreated && (
+//         <>
+//           <p>Update your Investment Property Register for new transactions?</p>
+//           <CerysButton buttonText={"UPDATE IP REGISTER"} handleClick={() => handleCreateRequest()} />
+//         </>
+//       )}
 
-      {view === "NLPrompt" && (
-        <>
-          <p>You have not yet imported a nominal ledger to support the current period's client data.</p>
-          <p>This is required for auto-generation of an Investment Property Register.</p>
-          <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleClick={() => handleNLImport()} />
-        </>
-      )}
-      {view === "confirmBFAreAddns" && (
-        <>
-          <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
-          <p>Would you like to repost them as additions?</p>
-          <CerysButton buttonText={"REPOST AS ADDITIONS"} handleClick={() => handleReanalysis()} />
-          <CerysButton buttonText={"NO THANKS"} handleClick={() => previewRelTrans(session, registerType, setView)} />
-        </>
-      )}
-      {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
-      {journal && (
-        <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />
-      )}
+//       {view === "NLPrompt" && (
+//         <>
+//           <p>You have not yet imported a nominal ledger to support the current period's client data.</p>
+//           <p>This is required for auto-generation of an Investment Property Register.</p>
+//           <CerysButton buttonText={"IMPORT NOMINAL LEDGER NOW"} handleClick={() => handleNLImport()} />
+//         </>
+//       )}
+//       {view === "confirmBFAreAddns" && (
+//         <>
+//           <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
+//           <p>Would you like to repost them as additions?</p>
+//           <CerysButton buttonText={"REPOST AS ADDITIONS"} handleClick={() => handleReanalysis()} />
+//           <CerysButton buttonText={"NO THANKS"} handleClick={() => previewRelTrans(session, registerType, setView)} />
+//         </>
+//       )}
+//       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
+//       {journal && (
+//         <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />
+//       )}
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleAbort("assignmentDashHome")} />
-    </>
-  );
-};
+//       <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleAbort("assignmentDashHome")} />
+//     </>
+//   );
+// };
 
-export default PromptIPRCreation;
+// export default PromptIPRCreation;

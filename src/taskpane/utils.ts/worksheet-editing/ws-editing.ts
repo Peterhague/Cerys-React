@@ -1,7 +1,8 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
-import { QuasiEventObject, Transaction } from "../../interfaces/interfaces";
+import { Transaction } from "../../classes/transaction";
+import { QuasiEventObject } from "../../interfaces/interfaces";
 import {
   getDefinedCol,
   interpretEventAddress,
@@ -22,12 +23,7 @@ import {
 
 export const handleWorksheetSelection = async (session: Session, e, wsName: string) => {
   const addressObj = interpretEventAddress(e);
-  let ws;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name == wsName) {
-      ws = sheet;
-    }
-  });
+  const ws = session.editableSheets.find(sheet => sheet.name === wsName);
   if (addressObj.firstRow !== addressObj.lastRow || addressObj.firstCol !== addressObj.lastCol) return;
   let withinEditableRange = false;
   ws.editableRowRanges.forEach((range) => {
@@ -167,7 +163,7 @@ export const updateEdSheetClientCodeMapping = async (
 export const renewEdSheetsTransRefs = (context: Excel.RequestContext, session: Session) => {
   let promptSheetDeletion = false;
   session.editableSheets.forEach((sheet) => {
-    sheet.renewTransactions(context, session, session.activeAssignment.transactions);
+    sheet.renewTransactions(context, session, session.assignment.transactions);
     if (sheet.transactions.length === 0) {
       sheet.promptDeletion = true;
       promptSheetDeletion = true;

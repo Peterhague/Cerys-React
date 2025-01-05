@@ -123,15 +123,15 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     populateStaffObjs(prelimAssignment);
     const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
     session.customer = customer;
-    //session.activeAssignment = assignment;
-    session.activeAssignment = new Assignment(assignment);
+    //session.assignment = assignment;
+    session.assignment = new Assignment(assignment);
     session.clientChart = client.clientChart;
     session.IFARegister = IFARegister;
     session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
     session.TFARegister = TFARegister;
     session.TFARegister = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
     addPrimarySheets(session);
-    if (session.activeAssignment.reportingPeriod.bFTB.length > 0) {
+    if (session.assignment.reportingPeriod.bFTB.length > 0) {
       const options = {
         handleYes: () => postOpBalJnls(session),
         handleNo: () => session.handleView("assignmentDashHome"),

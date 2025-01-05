@@ -6,7 +6,7 @@ import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transa
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
 import { ClientCerysCodeObject } from "../../interfaces/interfaces";
-import { calculateExcelDate } from "../../utils.ts/helperFunctions";
+import { Journal } from "../../classes/journal";
 /*global Excel */
 
 interface enterJournalProps {
@@ -29,8 +29,8 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     try {
       await Excel.run(async (context) => {
         e.preventDefault();
-        const newTransactions = await processTransBatch(context, session);
-        checkNewTransForAssets(session, newTransactions);
+        await processTransBatch(context, session);
+        checkNewTransForAssets(session);
       });
     } catch (e) {
       console.error(e);
@@ -42,17 +42,16 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     const cerysObj = session.chart.find((code) => code.cerysCode === parseInt(nominalCode));
     console.log(cerysObj);
     const journalDtls = {
-      cerysCodeObj: cerysObj,
-      value: parseInt(value) * 100,
+      cerysCode: parseInt(nominalCode),
+      value,
       narrative,
       transactionDate,
       transactionType: "journal",
       clientTB: false,
       journal: true,
-      transactionDateExcel: calculateExcelDate(transactionDate),
     };
-    session.activeJournal.journals.push(journalDtls);
-    session.activeJournal.netValue += journalDtls.value;
+    session.activeJournal.journals.push(new Journal(session, journalDtls));
+    session.activeJournal.netValue += parseInt(journalDtls.value) * 100;
     setNominalCode("");
     setNominalCodeName("");
     setSearchTerm("");

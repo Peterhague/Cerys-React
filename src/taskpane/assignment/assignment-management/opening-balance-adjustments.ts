@@ -5,7 +5,6 @@ import { TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
-import { Transaction } from "../../interfaces/interfaces";
 import {
   callNextView,
   getActiveClientCodeMapping,
@@ -18,14 +17,14 @@ import { addOneWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
 import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
 /* global Excel */
 
-export const getOBARelTrans = (transactions: Transaction[]) => {
-  return transactions.filter((tran) => tran.clientAdj);
+export const getOBARelTrans = (session: Session) => {
+  return session.assignment.transactions.filter((tran) => tran.getCerysCodeObj(session));
 };
 
 export async function oBARelevantTransView(session: Session) {
   try {
     await Excel.run(async (context) => {
-      const relTrans = getOBARelTrans(session.activeAssignment.transactions);
+      const relTrans = getOBARelTrans(session);
       let sheetInMidEdit = false;
       relTrans.forEach((tran) => {
         if (tran.updates.length > 0) sheetInMidEdit = true;
@@ -65,7 +64,7 @@ export async function oBARelevantTransView(session: Session) {
         const cerysCode = hasUpdatedCerysCode ? hasUpdatedCerysCode.value : line.cerysCode;
         const shortName = hasUpdatedCerysCode
           ? hasUpdatedCerysCode.cerysCodeObject.cerysShortName
-          : line.cerysShortName;
+          : line.getCerysCodeObj(session).cerysShortName;
         const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
         const { clientCode, clientCodeName } = getActiveClientCodeMapping(session, line);
         let arr = [];
@@ -129,7 +128,7 @@ export const updateCerysCodeMapping = async (
   cerysCode: number,
   wsName: string
 ) => {
-  const relTrans = session.activeAssignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
+  const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   relTrans.forEach(
     (tran) =>
@@ -159,7 +158,7 @@ export const updateCerysCodeMapping = async (
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, client, assignment } = await updatedClientDb.json();
   session.customer = customer;
-  session.activeAssignment = new Assignment(assignment);
+  session.assignment = new Assignment(assignment);
   session.chart = client.cerysChart;
   callNextView(session);
 };

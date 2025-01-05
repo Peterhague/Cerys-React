@@ -10,24 +10,20 @@ import { populateAssetRegWs } from "./asset-reg-population";
 
 export async function createIPR(context: Excel.RequestContext, session: Session) {
   const assignment = await postIPtoDB(session);
-  session.activeAssignment = new Assignment(assignment);
+  session.assignment = new Assignment(assignment);
   createIPRWs(context, session);
 }
 
 export async function postIPtoDB(session: Session) {
-  let assignment = session.activeAssignment;
+  let assignment = session.assignment;
   console.log(session.IPTransactions["subTransactions"]);
   const options = fetchOptionsIP(session);
-  const endpoint = session.activeAssignment.IPRegisterCreated ? updateIPRegister : createIPRegister;
+  const endpoint = session.assignment.IPRegisterCreated ? updateIPRegister : createIPRegister;
   const iPRDb = await fetch(endpoint, options);
   const iPR = await iPRDb.json();
   session.IPRegister = createCurrentPeriodRegister(iPR, session);
-  if (!session.activeAssignment.IPRegisterCreated) {
-    const options = fetchOptionsUpdateAssignment(
-      session.customer._id,
-      session.activeAssignment._id,
-      "IPRegisterCreated"
-    );
+  if (!session.assignment.IPRegisterCreated) {
+    const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "IPRegisterCreated");
     const assignmentDb = await fetch(updateAssignmentUrl, options);
     assignment = await assignmentDb.json();
   }

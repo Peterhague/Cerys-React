@@ -25,8 +25,8 @@ export async function enterTB(session: Session) {
       session.activeJournal.journal = false;
       session.activeJournal.clientTB = true;
       console.log(session.activeJournal);
-      const newTransactions = await processTransBatch(context, session);
-      checkNewTransForAssets(session, newTransactions);
+      await processTransBatch(context, session);
+      checkNewTransForAssets(session);
     });
   } catch (e) {
     console.error(e);
