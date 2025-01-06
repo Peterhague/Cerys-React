@@ -1,11 +1,10 @@
 import { Assignment } from "../../classes/assignment";
 import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
-import { Transaction } from "../../classes/transaction";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { RegisterType } from "../../interfaces/interfaces";
-import { IFARegister, IPRegister, TFARegister } from "../../static-values/register-types";
+import { getAssetRegisterType } from "../../static-values/register-types";
 import { getViewOptions } from "../../static-values/view-options";
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
@@ -13,12 +12,13 @@ import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs } from "../worksheet-editing/ws-editing";
 /* global Excel */
 
-export const processTransBatch = async (context, session: Session) => {
+export const processTransBatch = async (context: Excel.RequestContext, session: Session) => {
   const activeJournal = session.activeJournal;
   const transactions = activeJournal.journals.map((jnl) => {
     return { ...jnl, ...jnl.cerysCodeObj };
   });
   transactions.forEach((jnl) => {
+    console.log(jnl);
     const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.transactionDate === "") {
@@ -38,14 +38,10 @@ export const processTransBatch = async (context, session: Session) => {
     jnl.journal = activeJournal.journal;
   });
   const transDtls = { customerId: session.customer._id, assignmentId: session.assignment._id };
-  const { assignment, newTransactions } = await postTransactionsDb(session, transactions, transDtls);
+  const { assignment } = await postTransactionsDb(session, transactions, transDtls);
   session.assignment = new Assignment(assignment);
-  newTransactions.forEach((tran) => {
-    tran.processedAsAsset = false;
-  });
   session.activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   await updateAssignmentFigures(context, session);
-  return newTransactions;
 };
 
 export const submitTransactionUpdates = async (session: Session) => {
@@ -131,57 +127,20 @@ export const checkAssetRegStatus = (session: Session, handleView) => {
 };
 
 export const checkNewTransForAssets = (session: Session) => {
-  //const newFATransactions: Transaction[] = [];
-  let iFAPresent = false;
-  let tFAPresent = false;
-  let iPPresent = false;
-  let nextView = true;
-  // newTransactions.forEach((tran) => {
-  //   const cerysCodeObj = tran.getCerysCodeObj(session);
-  //   if (
-  //     tran.processedAsAsset === false &&
-  //     (cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF")
-  //   ) {
-  //     iFAPresent = true;
-  //     nextView = false;
-  //     newFATransactions.push(tran);
-  //   } else if (
-  //     tran.processedAsAsset === false &&
-  //     (cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF")
-  //   ) {
-  //     tFAPresent = true;
-  //     nextView = false;
-  //     newFATransactions.push(tran);
-  //   } else if (
-  //     tran.processedAsAsset === false &&
-  //     (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF")
-  //   ) {
-  //     iPPresent = true;
-  //     nextView = false;
-  //     newFATransactions.push(tran);
-  //   }
-  // });
+  const nextRegisterPrompt: "IFA" | "TFA" | "IP" = session.assignment.getNextRegisterPrompt(session);
   let register: RegisterType;
-  if (nextView) {
+  if (!nextRegisterPrompt) {
     callNextView(session);
     return;
-  } else if (iFAPresent) {
-    //session.handleView("promptIFARCreation");
-    register = IFARegister;
-  } else if (tFAPresent) {
-    //session.handleView("promptTFARCreation");
-    register = TFARegister;
-  } else if (iPPresent) {
-    //session.handleView("promptIPRCreation");
-    register = IPRegister;
+  } else {
+    register = getAssetRegisterType(nextRegisterPrompt);
   }
   const options = getViewOptions([{ key: "registerType", value: register }]);
   session.handleDynamicView("promptAssetRegisterCreation", options);
 };
 
-export const checkFATranUpdatesForAssets = (session: Session, newTransactions: Transaction[]) => {
-  console.log(newTransactions);
-  newTransactions.forEach((tran) => {
+export const checkFATranUpdatesForAssets = (session: Session) => {
+  session.assignment.transactions.forEach((tran) => {
     const cerysCodeObj = tran.getCerysCodeObj(session);
     if (tran.processedAsAsset === false && cerysCodeObj.assetCodeType === "iFACostAddns") {
       //session.newFATransactions.push(tran);

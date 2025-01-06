@@ -1,13 +1,15 @@
 import {
-  Assignment as AssignmentProps,
+  AssignmentProps,
   ClientTransaction,
   ReportingPeriod,
   ShortUser,
-  TrialBalanceLine,
+  TrialBalanceLineProps,
 } from "../interfaces/interfaces";
+import { calculateDiffInDays } from "../utils.ts/helperFunctions";
+import { Session } from "./session";
 import { Transaction } from "./transaction";
 
-export class Assignment implements AssignmentProps {
+export class Assignment {
   clientId: string;
   clientCode: string;
   clientName: string;
@@ -31,7 +33,7 @@ export class Assignment implements AssignmentProps {
   IFARegisterCreated: boolean;
   TFARegisterCreated: boolean;
   IPRegisterCreated: boolean;
-  tb: TrialBalanceLine[];
+  tb: TrialBalanceLineProps[];
   activeCategories: string[];
   activeCategoriesDetails: {
     cerysCategory: string;
@@ -113,5 +115,45 @@ export class Assignment implements AssignmentProps {
     this.otherRes4 = assignment.otherRes4;
     this.otherRes5 = assignment.otherRes5;
     this.minorityInt = assignment.minorityInt;
+  }
+
+  getNextRegisterPrompt(session: Session) {
+    const relevantTrans = this.transactions.filter((tran) => !tran.processedAsAsset);
+    let nextRegisterPrompt: "IFA" | "TFA" | "IP" | null = null;
+    relevantTrans.forEach((tran) => {
+      const cerysCodeObj = tran.getCerysCodeObj(session);
+      if (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF") {
+        nextRegisterPrompt = "IP";
+      } else if (cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF") {
+        nextRegisterPrompt = "TFA";
+      } else if (cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF") {
+        nextRegisterPrompt = "IFA";
+      }
+    });
+    return nextRegisterPrompt;
+  }
+
+  getBFTransLikelyAdditions(session: Session, registerType: string) {
+    const filteredArr = this.transactions.filter((tran) => {
+      let test: number;
+      if (!tran.processedAsAsset) {
+        const cerysCodeObj = tran.getCerysCodeObj(session);
+        if (
+          (registerType === "IFA" &&
+            cerysCodeObj.cerysCategory === "Intangible assets" &&
+            cerysCodeObj.assetCodeType === "iFACostBF") ||
+          (registerType === "TFA" &&
+            cerysCodeObj.cerysCategory === "Tangible assets" &&
+            cerysCodeObj.assetCodeType === "tFACostBF") ||
+          (registerType === "IP" &&
+            cerysCodeObj.cerysCategory === "Investment property" &&
+            cerysCodeObj.assetCodeType === "iPCostBF")
+        ) {
+          test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
+        }
+      }
+      return test > 0;
+    });
+    return filteredArr;
   }
 }

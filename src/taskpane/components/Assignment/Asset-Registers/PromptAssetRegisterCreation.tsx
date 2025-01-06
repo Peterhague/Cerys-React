@@ -79,13 +79,13 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
     try {
       await Excel.run(async (context) => {
         if (getUpdatedTransactions(session).length > 0) {
-          const updatedTransactions = await processUpdateBatch(session);
+          await processUpdateBatch(session);
           updateAssignmentFigures(context, session);
-          checkFATranUpdatesForAssets(session, updatedTransactions);
+          checkFATranUpdatesForAssets(session);
         }
         if (session.activeJournal.journals.length > 0) {
-          const newTransactions = await processTransBatch(context, session);
-          checkFATranUpdatesForAssets(session, newTransactions);
+          await processTransBatch(context, session);
+          checkFATranUpdatesForAssets(session);
         }
         previewRelTrans(session, initials, setView);
       });

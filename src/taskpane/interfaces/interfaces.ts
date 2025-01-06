@@ -2,6 +2,7 @@ import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
 import { Transaction } from "../classes/transaction";
 import React from "react";
+import { TrialBalanceLine } from "../classes/trial-balance-line";
 /*global Excel */
 
 export interface BaseCerysCodeObject {
@@ -11,6 +12,7 @@ export interface BaseCerysCodeObject {
   cerysExcelName: string;
   cerysCategory: string;
   cerysSubCategory: string | null;
+  isFixedAsset: boolean;
   assetCategory: string | null;
   assetCategoryNo: number | null;
   assetSubCategory: string | null;
@@ -43,7 +45,7 @@ export interface ClientCodeObject {
   _id: string;
 }
 
-export interface Assignment {
+export interface AssignmentProps {
   clientId: string;
   clientCode: string;
   clientName: string;
@@ -110,12 +112,12 @@ export interface ReportingPeriod {
   reportingDateOrig: Date;
   reportingDateConverted: string;
   reportingDateExcel: number;
-  finalTB: TrialBalanceLine[];
-  bFTB: TrialBalanceLine[];
+  finalTB: TrialBalanceLineProps[];
+  bFTB: TrialBalanceLineProps[];
   _id: string;
 }
 
-export interface TrialBalanceLine {
+export interface TrialBalanceLineProps {
   cerysCategory: string;
   cerysCode: number;
   closeOffCode: number;
@@ -207,6 +209,7 @@ export interface JournalProps {
   journal: boolean;
   transactionDate: string | Date;
   transactionDateExcel: number;
+  processedAsAsset: boolean;
 }
 
 export interface JournalDetailsProps {

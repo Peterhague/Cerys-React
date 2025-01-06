@@ -1,11 +1,11 @@
 import {
-  Assignment,
   BaseIndividual,
   ClientCerysCodeObject,
   ClientCodeObject,
   Customer,
   NewPreliminaryClient,
 } from "../interfaces/interfaces";
+import { Assignment } from "./assignment";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
 import { Journal } from "./journal";

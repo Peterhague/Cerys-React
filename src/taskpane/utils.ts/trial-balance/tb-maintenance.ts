@@ -1,9 +1,11 @@
 import { Session } from "../../classes/session";
+import { TrialBalanceLine } from "../../classes/trial-balance-line";
 import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { clearUsedRange, getOrAddWorksheet } from "../worksheet";
+/* global Excel */
 
-export function tbForPosting(tb) {
+export function tbForPosting(tb: TrialBalanceLine[]) {
   const tbArray = [];
   tb.sort((a, b) => {
     return a.cerysCode - b.cerysCode;
@@ -18,7 +20,7 @@ export function tbForPosting(tb) {
   return tbArray;
 }
 
-export async function postTbToWbook(context, session: Session, tbExcel) {
+export async function postTbToWbook(context: Excel.RequestContext, session: Session, tbExcel: string[][]) {
   const { ws } = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, TRIAL_BALANCE.name);

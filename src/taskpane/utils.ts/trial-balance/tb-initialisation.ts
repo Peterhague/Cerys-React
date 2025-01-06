@@ -1,28 +1,42 @@
-export function tbCreator(transactions) {
+import { Session } from "../../classes/session";
+import { Transaction } from "../../classes/transaction";
+import { TrialBalanceLine } from "../../classes/trial-balance-line";
+import { TrialBalanceLineProps } from "../../interfaces/interfaces";
+
+export function tbCreator(session: Session, transactions: Transaction[]) {
   const tbCodes = [];
   transactions.forEach((tran) => {
     if (!tbCodes.includes(tran.cerysCode)) {
       tbCodes.push(tran.cerysCode);
     }
   });
-  const tb = [];
-  populateTransactions(transactions, tbCodes, tb);
+  const tb: TrialBalanceLine[] = [];
+  populateTransactions(session, transactions, tbCodes, tb);
   return tb;
 }
 
-export function populateTransactions(transactions, tbCodes, tb) {
+export function populateTransactions(
+  session: Session,
+  transactions: Transaction[],
+  tbCodes: number[],
+  tb: TrialBalanceLine[]
+) {
   tbCodes.forEach((code) => {
-    const obj = {};
-    obj["cerysCode"] = code;
-    obj["value"] = 0;
+    const cerysCodeObj = session.chart.find((nom) => nom.cerysCode === code);
+    const line: TrialBalanceLineProps = {
+      cerysCode: code,
+      cerysName: cerysCodeObj.cerysName,
+      cerysCategory: cerysCodeObj.cerysCategory,
+      closeOffCode: cerysCodeObj.closeOffCode,
+      assetCodeType: cerysCodeObj.assetCodeType,
+      value: 0,
+    };
     transactions.forEach((tran) => {
       if (tran.cerysCode === code) {
-        obj["cerysName"] = tran.cerysName;
-        obj["value"] += tran.value;
-        obj["cerysCategory"] = tran.cerysCategory;
+        line.value += tran.value;
       }
     });
-    tb.push(obj);
+    tb.push(new TrialBalanceLine(line));
   });
 }
 

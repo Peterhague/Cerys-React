@@ -12,6 +12,7 @@ export class Journal implements JournalProps {
   journal: boolean;
   transactionDate: string | Date;
   transactionDateExcel: number;
+  processedAsAsset: boolean;
 
   constructor(session: Session, journalDetails: JournalDetailsProps) {
     this.cerysCodeObj = session.chart.find((code) => code.cerysCode === journalDetails.cerysCode);
@@ -24,5 +25,6 @@ export class Journal implements JournalProps {
     this.journal = journalDetails.journal;
     this.transactionDate = journalDetails.transactionDate;
     this.transactionDateExcel = calculateExcelDate(this.transactionDate);
+    this.processedAsAsset = !this.cerysCodeObj.isFixedAsset;
   }
 }

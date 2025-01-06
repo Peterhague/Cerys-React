@@ -23,3 +23,13 @@ export const IPRegister: RegisterType = {
   longCap: "Investment Property",
   createRegister: async (a, b) => createIPR(a, b),
 };
+
+export const registerTypes: { IFA: RegisterType; TFA: RegisterType; IP: RegisterType } = {
+  IFA: IFARegister,
+  TFA: TFARegister,
+  IP: IPRegister,
+};
+
+export const getAssetRegisterType = (nextRegisterPrompt: "IFA" | "TFA" | "IP") => {
+  return registerTypes[nextRegisterPrompt];
+};

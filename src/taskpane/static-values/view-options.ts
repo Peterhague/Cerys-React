@@ -1,3 +1,6 @@
+/*global Excel */
+import { Session } from "../classes/session";
+
 export const BLANK_VIEW_OPTIONS = {
   handleYes: () => console.log("yes"),
   handleNo: () => console.log("no"),
@@ -8,12 +11,11 @@ export const BLANK_VIEW_OPTIONS = {
     initials: "",
     longLower: "",
     longCap: "",
-    createRegister: async (context, session) => console.log(context + session),
+    createRegister: async (context: Excel.RequestContext, session: Session) => console.log(context, session),
   },
 };
 
 export const getViewOptions = (targets: { key: string; value: any }[]) => {
-  console.log(targets);
   const template = BLANK_VIEW_OPTIONS;
   targets.forEach((target) => (template[target.key] = target.value));
   return template;

@@ -19,26 +19,7 @@ import _ from "lodash";
 
 export const identifyLikelyAdditions = async (session: Session, registerType: string, setView) => {
   console.log("next step working");
-  const bFTransLikelyAddns: AssetTransaction[] = [];
-  session.assignment.transactions.forEach((tran) => {
-    const cerysCodeObj = tran.getCerysCodeObj(session);
-    if (
-      (registerType === "IFA" &&
-        cerysCodeObj.cerysCategory === "Intangible assets" &&
-        cerysCodeObj.assetCodeType === "iFACostBF") ||
-      (registerType === "TFA" &&
-        cerysCodeObj.cerysCategory === "Tangible assets" &&
-        cerysCodeObj.assetCodeType === "tFACostBF") ||
-      (registerType === "IP" &&
-        cerysCodeObj.cerysCategory === "Investment property" &&
-        cerysCodeObj.assetCodeType === "iPCostBF")
-    ) {
-      const test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
-      console.log(test);
-      if (test > 0) bFTransLikelyAddns.push(new AssetTransaction(session, tran));
-      tran.processedAsAsset = true;
-    }
-  });
+  const bFTransLikelyAddns: Transaction[] = session.assignment.getBFTransLikelyAdditions(session, registerType);
   console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
     await createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
@@ -239,11 +220,7 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
   }
 }
 
-export async function createLikelyAdditionsSumm(
-  session: Session,
-  assetTrans: AssetTransaction[],
-  registerType: string
-) {
+export async function createLikelyAdditionsSumm(session: Session, transactions: Transaction[], registerType: string) {
   try {
     await Excel.run(async (context) => {
       const name = `${registerType} Possible Additions`;
@@ -252,8 +229,9 @@ export async function createLikelyAdditionsSumm(
         ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
         ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
       ];
-      assetTrans.forEach((assetTran) => {
-        const { transaction, cerysCodeObj } = assetTran.getTranAndCerysCodeObj(session);
+      transactions.forEach((transaction) => {
+        const assetTran = new AssetTransaction(session, transaction);
+        const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
         if (transaction.transactionDate) {

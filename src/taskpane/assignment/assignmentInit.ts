@@ -1,5 +1,6 @@
+import { Journal } from "../classes/journal";
 import { Session } from "../classes/session";
-import { calculateExcelDate } from "../utils.ts/helperFunctions";
+import { JournalDetailsProps } from "../interfaces/interfaces";
 import { processTransBatch } from "../utils.ts/transactions/transactions";
 import { addWorksheets } from "../utils.ts/worksheet";
 /*global Excel */
@@ -46,26 +47,19 @@ export const postOpBalJnls = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const transactionDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
-      const chart = session.chart;
       session.activeJournal.journalType = "opening balance";
       session.activeJournal.journal = false;
       session.assignment.reportingPeriod.bFTB.forEach((line) => {
-        for (let i = 0; i < chart.length; i++) {
-          if (line.cerysCode === chart[i].cerysCode) {
-            const jnl = {
-              cerysCodeObj: chart[i],
-              journal: false,
-              clientTB: false,
-              narrative: "automatic opening balance",
-              transactionType: "opening balance",
-              value: line.value,
-              transactionDate,
-              transactionDateExcel: calculateExcelDate(transactionDate),
-            };
-            session.activeJournal.journals.push(jnl);
-            break;
-          }
-        }
+        const journalDetails: JournalDetailsProps = {
+          cerysCode: line.cerysCode,
+          journal: false,
+          clientTB: false,
+          narrative: "automatic opening balance",
+          transactionType: "opening balance",
+          value: line.value,
+          transactionDate,
+        };
+        session.activeJournal.journals.push(new Journal(session, journalDetails));
       });
       await processTransBatch(context, session);
       await context.sync();

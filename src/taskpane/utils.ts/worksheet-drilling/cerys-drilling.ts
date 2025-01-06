@@ -1,7 +1,9 @@
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
+import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
+import { AddressObject } from "../../interfaces/interfaces";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import {
   handleEditButtonClick,
@@ -29,7 +31,7 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
   session.assignment.pLListenerAdded = true;
 }
 
-export async function showNominalDetail(e, session: Session) {
+export async function showNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
   try {
     await Excel.run(async (context) => {
       const address = e.address;
@@ -40,8 +42,8 @@ export async function showNominalDetail(e, session: Session) {
       await context.sync();
       const innerValues = values.values;
       const code = innerValues[0][0];
-      const detail = getCerysNomDetail(session.assignment.transactions, code);
-      await cerysNomDetailView(context, detail, session);
+      const transactions = getCerysNomDetail(session.assignment.transactions, code);
+      await cerysNomDetailView(context, transactions, session);
       await context.sync();
     });
   } catch (e) {
@@ -49,7 +51,7 @@ export async function showNominalDetail(e, session: Session) {
   }
 }
 
-export async function showNominalDetailPL(e, session: Session) {
+export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
   try {
     await Excel.run(async (context) => {
       console.log(e);
@@ -61,8 +63,8 @@ export async function showNominalDetailPL(e, session: Session) {
       await context.sync();
       const innerValues = values.values;
       const category = innerValues[0][0];
-      const detail = getCerysNomDetailPL(category, session);
-      await cerysNomDetailViewPL(context, session, detail);
+      const arrOfTransArrs = getCerysNomDetailPL(category, session);
+      await cerysNomDetailViewPL(context, session, arrOfTransArrs);
       await context.sync();
     });
   } catch (e) {
@@ -70,15 +72,16 @@ export async function showNominalDetailPL(e, session: Session) {
   }
 }
 
-async function cerysNomDetailView(context, detail, session: Session) {
+async function cerysNomDetailView(context: Excel.RequestContext, transactions: Transaction[], session: Session) {
   let sheetInMidEdit = false;
-  const isValueInverted = detail[0].defaultSign === "credit" ? true : false;
-  detail.forEach((tran) => {
+  const cerysCodeObj = transactions[0].getCerysCodeObj(session);
+  const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
+  transactions.forEach((tran) => {
     if (tran.updates.length > 0) sheetInMidEdit = true;
   });
-  const wsName = `${detail[0].cerysExcelName} analysis`;
+  const wsName = `${cerysCodeObj.cerysExcelName} analysis`;
   const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
-  const range = ws.getRange(`A1:G${detail.length + 2}`);
+  const range = ws.getRange(`A1:G${transactions.length + 2}`);
   const valuesToPost = [
     ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
     ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
@@ -86,7 +89,7 @@ async function cerysNomDetailView(context, detail, session: Session) {
   isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
   let rowNumber = 3;
   const sheetMapping = [];
-  detail.forEach((line) => {
+  transactions.forEach((line) => {
     const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
     const cerysCode = getUpdatedCerysCode(line) ? getUpdatedCerysCode(line) : line.cerysCode;
     const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
@@ -111,19 +114,13 @@ async function cerysNomDetailView(context, detail, session: Session) {
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = [["#,##0.00;(#,##0.00);-"]];
-  // const definedCols = createDefinedCols("cerysCodeAnalysis");
-  // const filter = detail[0].cerysCode;
-  // createEditableWs(session, detail, ws, definedCols, valuesToPost, "cerysCodeAnalysis", sheetMapping, null, {
-  //   target: "cerysCode",
-  //   value: filter,
-  // });
-  createEditableWorksheet(session, detail, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
+  createEditableWorksheet(session, transactions, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
 }
 
-export const handleSingleClick = (session: Session, e, wsName) => {
+export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClickedEventArgs, wsName: string) => {
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   const editModeEnabled = checkEditMode(sheet);
   const addressObj = interpretEventAddress(e);
@@ -156,12 +153,18 @@ export const handleSingleClick = (session: Session, e, wsName) => {
   }
 };
 
-export const handleClientMappingCellClick = (session: Session, addressObj, wsName) => {
+export const handleClientMappingCellClick = (session: Session, addressObj: AddressObject, wsName: string) => {
   session.handleView("clientNomCodeSelection");
   session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
 };
 
-export const handleOtherCellClick = (session: Session, e, addressObj, clientCodeCol, withinEditableRange) => {
+export const handleOtherCellClick = (
+  session: Session,
+  e: Excel.WorksheetSingleClickedEventArgs,
+  addressObj: AddressObject,
+  clientCodeCol: number,
+  withinEditableRange: boolean
+) => {
   if (session.currentView === "nomCodeSelection" || session.currentView === "clientNomCodeSelection") {
     callNextView(session);
     session.activeEditableCell = createEditableCell(null, null, null);
@@ -171,21 +174,27 @@ export const handleOtherCellClick = (session: Session, e, addressObj, clientCode
   }
 };
 
-export async function cerysNomDetailViewPL(context, session: Session, detail) {
+export async function cerysNomDetailViewPL(
+  context: Excel.RequestContext,
+  session: Session,
+  arrOfTransArrs: Transaction[][]
+) {
+  const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
   const { ws } = await addOneWorksheet(context, session, {
-    name: `${detail[0][0].cerysCategory} analysis`,
+    name: `${cerysCategory} analysis`,
     addListeners: undefined,
   });
   const valuesToPost = [];
-  detail.forEach((code) => {
-    valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
+  arrOfTransArrs.forEach((arrOfTrans) => {
+    const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
+    valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
     valuesToPost.push(["", "", "", ""]);
-    code.forEach((line) => {
+    arrOfTrans.forEach((tran) => {
       let arr = [];
-      arr.push(line.transactionType);
-      line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
-      arr.push(line.narrative);
-      arr.push(line.value / 100);
+      arr.push(tran.transactionType);
+      tran.clientNominalCode > 0 ? arr.push(tran.clientNominalCode) : arr.push("NA");
+      arr.push(tran.narrative);
+      arr.push(tran.value / 100);
       valuesToPost.push(arr);
     });
     valuesToPost.push(["", "", "", ""]);
@@ -202,7 +211,11 @@ export function addBsClickListener(context: Excel.RequestContext, session: Sessi
   session.assignment.bSListenerAdded = true;
 }
 
-export async function showNominalDetailBS(context, session: Session, e) {
+export async function showNominalDetailBS(
+  context: Excel.RequestContext,
+  session: Session,
+  e: Excel.WorksheetSingleClickedEventArgs
+) {
   const address = e.address;
   if (address[0] !== "A") return;
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
@@ -210,22 +223,24 @@ export async function showNominalDetailBS(context, session: Session, e) {
   const values = range.load("values");
   await context.sync();
   const innerValues = values.values;
-  const category = innerValues[0][0];
-  const detail = await getCerysNomDetailBS(category, session);
-  cerysNomDetailViewBS(context, session, detail);
+  const category: string = innerValues[0][0];
+  const arrOfTransArrs: Transaction[][] = await getCerysNomDetailBS(category, session);
+  cerysNomDetailViewBS(context, session, arrOfTransArrs);
 }
 
-async function cerysNomDetailViewBS(context, session: Session, detail) {
+async function cerysNomDetailViewBS(context: Excel.RequestContext, session: Session, arrOfTransArrs: Transaction[][]) {
   const assignment = session.assignment;
+  const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
   const { ws } = await addOneWorksheet(context, session, {
-    name: `${detail[0][0].cerysCategory} analysis`,
+    name: `${cerysCategory} analysis`,
     addListeners: undefined,
   });
   const valuesToPost = [];
-  detail.forEach((code) => {
-    valuesToPost.push([`Nominal Code ${code[0].cerysCode}: ${code[0].cerysName}`, "", "", ""]);
+  arrOfTransArrs.forEach((arrOfTrans) => {
+    const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
+    valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
     valuesToPost.push(["", "", "", ""]);
-    code.forEach((line) => {
+    arrOfTrans.forEach((line) => {
       let arr = [];
       arr.push(line.transactionType);
       line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
@@ -235,7 +250,7 @@ async function cerysNomDetailViewBS(context, session: Session, detail) {
     });
     valuesToPost.push(["", "", "", ""]);
   });
-  if (detail[0][0].cerysCategory === "Profit & loss reserve") {
+  if (cerysCategory === "Profit & loss reserve") {
     if (assignment.profit > 0) {
       valuesToPost.push(["Profit for the period", "", "", assignment.profit]);
     } else if (assignment.profit < 0) {
