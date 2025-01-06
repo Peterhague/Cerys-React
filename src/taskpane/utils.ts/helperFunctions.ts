@@ -1,5 +1,7 @@
+import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
+import { Transaction } from "../classes/transaction";
 import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
@@ -378,7 +380,7 @@ export const addEditableSheetEventHandlers = (session: Session, ws) => {
   ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
 };
 
-export const hasDefinedColOf = (sheet, colType) => {
+export const hasDefinedColOf = (sheet: EditableWorksheet, colType: string) => {
   let definedCol;
   sheet.definedCols.forEach((col) => {
     if (col.type === colType) definedCol = col;
@@ -411,21 +413,21 @@ export const getActiveEdSheet = async (session: Session) => {
   }
 };
 
-export const checkEditMode = (sheet) => {
+export const checkEditMode = (sheet: EditableWorksheet) => {
   return sheet.editButtonStatus === "hide" || sheet.editButtonStatus === "inProgress" ? true : false;
 };
 
-export const getDefinedCol = (sheet, addressCol) => {
+export const getDefinedCol = (sheet: EditableWorksheet, addressCol: number) => {
   const definedCol = sheet.definedCols.find((col) => col.colNumber === addressCol);
   return definedCol;
 };
 
-export const getTransRowNumber = (transaction, sheet) => {
+export const getTransRowNumber = (transaction: Transaction, sheet: EditableWorksheet) => {
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
   return map.rowNumber;
 };
 
-export const getUpdatedDate = (tran) => {
+export const getUpdatedDate = (tran: Transaction) => {
   let date = undefined;
   tran.updates.forEach((update) => {
     if (update.type === "date") {
@@ -435,7 +437,7 @@ export const getUpdatedDate = (tran) => {
   return date;
 };
 
-export const getUpdatedNarrative = (tran) => {
+export const getUpdatedNarrative = (tran: Transaction) => {
   let narrative = undefined;
   tran.updates.forEach((update) => {
     if (update.type === "cerysNarrative") {
@@ -445,7 +447,7 @@ export const getUpdatedNarrative = (tran) => {
   return narrative;
 };
 
-export const getUpdatedCerysCode = (tran) => {
+export const getUpdatedCerysCode = (tran: Transaction) => {
   let code = undefined;
   tran.updates.forEach((update) => {
     if (update.type === "cerysCode") {
@@ -455,7 +457,7 @@ export const getUpdatedCerysCode = (tran) => {
   return code;
 };
 
-export const getUpdatedClientCodeMapping = (tran) => {
+export const getUpdatedClientCodeMapping = (tran: Transaction) => {
   let mapping = undefined;
   tran.updates.forEach((update) => {
     if (update.type === "clientCodeMapping") {
@@ -470,10 +472,14 @@ export const getUpdatedTransactions = (session: Session) => {
   return updatedTrans;
 };
 
-export const getActiveClientCodeMapping = (session: Session, transaction) => {
+export const getActiveClientCodeMapping = (session: Session, transaction: Transaction) => {
   let obj = transaction.activeClientMapping;
   const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
-  if (update) obj = session.clientChart.find((code) => code.clientCode === update.value);
+  if (update) {
+    const code = session.clientChart.find((code) => code.clientCode === update.value);
+    const newObj = { ...code, ...obj };
+    obj = newObj;
+  }
   return obj;
 };
 
