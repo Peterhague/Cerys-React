@@ -184,6 +184,12 @@ export interface AssetTransactionProps {
   depnRate?: string;
   depnChg?: number;
   subTransactions?: AssetSubTransaction[];
+  activePeriods?: ReportingPeriod["_id"][];
+  periods?: {
+    reportingPeriodNumber: ReportingPeriod["periodNumber"];
+    reportingPeriodId: ReportingPeriod["_id"];
+    subTransactions: AssetSubTransaction[];
+  }[];
 }
 
 export interface AssetSubTransaction {
@@ -193,6 +199,8 @@ export interface AssetSubTransaction {
   regColNameTwo: string;
   value: number;
 }
+
+export interface DetailedTransaction extends BaseCerysCodeObject, AssetTransactionProps, TransactionProps {}
 
 export interface FATransaction extends Transaction {
   depnRate: string;
@@ -478,5 +486,9 @@ export interface RegisterType {
   initials: string;
   longLower: string;
   longCap: string;
-  createRegister: (context: Excel.RequestContext, session: Session) => Promise<void>;
+  createRegister: (
+    context: Excel.RequestContext,
+    session: Session,
+    relevantTrans: DetailedTransaction[]
+  ) => Promise<void>;
 }

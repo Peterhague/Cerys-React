@@ -1,23 +1,25 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
+import { AssetTransaction } from "../../classes/transaction";
 import { createIPRegister, updateAssignmentUrl, updateIPRegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
+import { DetailedTransaction } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createIPR(context: Excel.RequestContext, session: Session) {
-  const assignment = await postIPtoDB(session);
+export async function createIPR(context: Excel.RequestContext, session: Session, relevantTrans: DetailedTransaction[]) {
+  const assignment = await postIPtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createIPRWs(context, session);
 }
 
-export async function postIPtoDB(session: Session) {
+export async function postIPtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
   let assignment = session.assignment;
   console.log(session.IPTransactions["subTransactions"]);
-  const options = fetchOptionsIP(session);
+  const options = fetchOptionsIP(session, relevantTrans);
   const endpoint = session.assignment.IPRegisterCreated ? updateIPRegister : createIPRegister;
   const iPRDb = await fetch(endpoint, options);
   const iPR = await iPRDb.json();

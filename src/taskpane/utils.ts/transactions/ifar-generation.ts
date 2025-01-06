@@ -1,7 +1,9 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
+import { AssetTransaction } from "../../classes/transaction";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
+import { DetailedTransaction } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
@@ -32,16 +34,19 @@ export const adjustAutoAmortJnls = (session: Session, tran, charge) => {
   });
 };
 
-export async function createIFAR(context: Excel.RequestContext, session: Session) {
-  const assignment = await postIFAtoDB(session);
+export async function createIFAR(
+  context: Excel.RequestContext,
+  session: Session,
+  relevantTrans: DetailedTransaction[]
+) {
+  const assignment = await postIFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createIFARWs(context, session);
 }
 
-export async function postIFAtoDB(session: Session) {
+export async function postIFAtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
   let assignment = session.assignment;
-  console.log(session.IFATransactions["subTransactions"]);
-  const options = fetchOptionsIFA(session);
+  const options = fetchOptionsIFA(session, relevantTrans);
   const endpoint = session.assignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
   const iFARDb = await fetch(endpoint, options);
   const iFAR = await iFARDb.json();

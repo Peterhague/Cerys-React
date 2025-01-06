@@ -1,7 +1,9 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
+import { AssetTransaction } from "../../classes/transaction";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
+import { DetailedTransaction } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { createCurrentPeriodRegister } from "./asset-reg-generation";
@@ -33,17 +35,20 @@ export const setAutoDepnNominals = (catNo) => {
   }
 };
 
-export async function createTFAR(context: Excel.RequestContext, session: Session) {
-  console.log(session);
-  const assignment = await postTFAtoDB(session);
+export async function createTFAR(
+  context: Excel.RequestContext,
+  session: Session,
+  relevantTrans: DetailedTransaction[]
+) {
+  const assignment = await postTFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   console.log(session);
   createTFARWs(context, session);
 }
 
-export async function postTFAtoDB(session: Session) {
+export async function postTFAtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
   let assignment = session.assignment;
-  const options = fetchOptionsTFA(session);
+  const options = fetchOptionsTFA(session, relevantTrans);
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
   const tFARDb = await fetch(endpoint, options);
   const tFAR = await tFARDb.json();
@@ -53,8 +58,6 @@ export async function postTFAtoDB(session: Session) {
     const assignmentDb = await fetch(updateAssignmentUrl, options);
     assignment = await assignmentDb.json();
   }
-  //const updatedAssignmentDb = await fetch(postIFA, options);
-  //const updatedAssignment = await updatedAssignmentDb.json();
   console.log(assignment);
   return assignment;
 }

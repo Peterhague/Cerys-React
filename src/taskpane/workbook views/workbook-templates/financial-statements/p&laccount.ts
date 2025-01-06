@@ -1,9 +1,11 @@
+import { CalcSwtiches, ReversedProfLossFigures } from "../../../classes/p&laccount";
 import { Session } from "../../../classes/session";
 import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils.ts/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
+/* global Excel */
 
-export async function wsPLAccount(context, session: Session) {
+export async function wsPLAccount(context: Excel.RequestContext, session: Session) {
   const { ws } = await getOrAddWorksheet(context, session, PL_ACCOUNT);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, PL_ACCOUNT.name);
@@ -14,46 +16,26 @@ export async function wsPLAccount(context, session: Session) {
   const currencyRange = ws.getRange("F9:F9");
   currencyRange.format.horizontalAlignment = "Center";
   currencyRange.format.font.bold = true;
-  let turnover;
-  let COS;
-  let otherOpIncome;
-  let distCosts;
-  let adminExes;
-  let valAdjs;
-  let intRec;
-  let intPayable;
-  let tax;
-  let calcSwitches = {};
+  const { turnover, COS, otherOpIncome, distCosts, adminExes, valAdjs, intRec, intPayable, tax } =
+    new ReversedProfLossFigures(session);
+  let calcSwitches = new CalcSwtiches();
   let runningTotal = 0;
   if (session.assignment.activeCategories.includes("Turnover")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Turnover") turnover = (obj.value * -1) / 100;
-    });
     values.push(["Turnover", "", "", "", "", turnover]);
     runningTotal += turnover;
     values.push(["", "", "", "", "", ""]);
   }
   if (session.assignment.activeCategories.includes("Cost of sales")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Cost of sales") COS = (obj.value * -1) / 100;
-    });
     values.push(["Cost of sales", "", "", "", "", COS]);
     runningTotal += COS;
     values.push(["", "", "", "", "", ""]);
   }
   if (session.assignment.activeCategories.includes("Other operating income")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Other operating income") otherOpIncome = (obj.value * -1) / 100;
-    });
     values.push(["Other operating income", "", "", "", "", otherOpIncome]);
     runningTotal += otherOpIncome;
     values.push(["", "", "", "", "", ""]);
   }
   if (session.assignment.activeCategories.includes("Value adjustments on fixed assets and current asset investments")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Value adjustments on fixed assets and current asset investments")
-        valAdjs = (obj.value * -1) / 100;
-    });
     values.push(["Value adjustments on fixed assets", "", "", "", "", valAdjs]);
     values.push(["and current asset investments", "", "", "", "", ""]);
     runningTotal += valAdjs;
@@ -66,21 +48,15 @@ export async function wsPLAccount(context, session: Session) {
   }
   values.push(["", "", "", "", "", ""]);
   if (session.assignment.activeCategories.includes("Distribution costs")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Distribution costs") distCosts = (obj.value * -1) / 100;
-    });
     values.push(["Distribution costs", "", "", "", "", distCosts]);
     runningTotal += distCosts;
-    calcSwitches["calcOpProf"] = true;
+    calcSwitches.calcOpProf = true;
     values.push(["", "", "", "", "", ""]);
   }
   if (session.assignment.activeCategories.includes("Administrative expenses")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Administrative expenses") adminExes = (obj.value * -1) / 100;
-    });
     values.push(["Administrative expenses", "", "", "", "", adminExes]);
     runningTotal += adminExes;
-    calcSwitches["calcOpProf"] = true;
+    calcSwitches.calcOpProf = true;
     values.push(["", "", "", "", "", ""]);
   }
   if (runningTotal >= 0) {
@@ -89,7 +65,7 @@ export async function wsPLAccount(context, session: Session) {
     values.push(["Operating loss", "", "", "", "", runningTotal]);
   }
   values.push(["", "", "", "", "", ""]);
-  calcSwitches["calcOrdActs"] = false;
+  calcSwitches.calcOrdActs = false;
   if (runningTotal >= 0) {
     values.push(["Profit on ordinary activities before interest", "", "", "", "", runningTotal]);
   } else {
@@ -97,12 +73,9 @@ export async function wsPLAccount(context, session: Session) {
   }
   values.push(["", "", "", "", "", ""]);
   if (session.assignment.activeCategories.includes("Other interest receivable and similar income")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Other interest receivable and similar income") intRec = (obj.value * -1) / 100;
-    });
     values.push(["Interest receivable and other income", "", "", "", "", intRec]);
     runningTotal += intRec;
-    calcSwitches["calcPBIT"] = true;
+    calcSwitches.calcPBIT = true;
     values.push(["", "", "", "", "", ""]);
   }
   if (runningTotal >= 0) {
@@ -112,12 +85,9 @@ export async function wsPLAccount(context, session: Session) {
   }
   values.push(["", "", "", "", "", ""]);
   if (session.assignment.activeCategories.includes("Interest payable and similar charges")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Interest payable and similar charges") intPayable = (obj.value * -1) / 100;
-    });
     values.push(["Interest payable and similar charges", "", "", "", "", intPayable]);
     runningTotal += intPayable;
-    calcSwitches["calcPBT"] = true;
+    calcSwitches.calcPBT = true;
     values.push(["", "", "", "", "", ""]);
   }
   if (runningTotal >= 0) {
@@ -127,9 +97,6 @@ export async function wsPLAccount(context, session: Session) {
   }
   values.push(["", "", "", "", "", ""]);
   if (session.assignment.activeCategories.includes("Taxation")) {
-    session.assignment.activeCategoriesDetails.forEach((obj) => {
-      if (obj.cerysCategory === "Taxation") tax = (obj.value * -1) / 100;
-    });
     if (runningTotal >= 0) {
       values.push(["Taxation on profit", "", "", "", "", tax]);
     } else {
@@ -152,7 +119,7 @@ export async function wsPLAccount(context, session: Session) {
   session.assignment.profit = runningTotal * 100;
 }
 
-export function wsPLAccountFormat(ws, values, calcSwitches) {
+export function wsPLAccountFormat(ws: Excel.Worksheet, values: string[][], calcSwitches: CalcSwtiches) {
   const bold = [];
   const topBorder = [];
   const totalBorders = [];

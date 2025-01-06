@@ -7,7 +7,7 @@ import {
 } from "../interfaces/interfaces";
 import { calculateDiffInDays } from "../utils.ts/helperFunctions";
 import { Session } from "./session";
-import { Transaction } from "./transaction";
+import { AssetTransaction, Transaction } from "./transaction";
 
 export class Assignment {
   clientId: string;
@@ -117,6 +117,29 @@ export class Assignment {
     this.minorityInt = assignment.minorityInt;
   }
 
+  getUnprocessedFATransByType(session: Session, registerType: string) {
+    const relevantTrans: AssetTransaction[] = [];
+    this.transactions.forEach((tran) => {
+      if (!tran.processedAsAsset) {
+        const cerysCodeObj = tran.getCerysCodeObj(session);
+        if (
+          (registerType === "IFA" &&
+            cerysCodeObj.cerysCategory === "Intangible assets" &&
+            cerysCodeObj.assetCodeType === "iFACostAddns") ||
+          (registerType === "TFA" &&
+            cerysCodeObj.cerysCategory === "Tangible assets" &&
+            cerysCodeObj.assetCodeType === "tFACostAddns") ||
+          (registerType === "IP" &&
+            cerysCodeObj.cerysCategory === "Investment property" &&
+            cerysCodeObj.assetCodeType === "iPCostAddns")
+        ) {
+          relevantTrans.push(new AssetTransaction(session, tran));
+        }
+      }
+    });
+    return relevantTrans;
+  }
+
   getNextRegisterPrompt(session: Session) {
     const relevantTrans = this.transactions.filter((tran) => !tran.processedAsAsset);
     let nextRegisterPrompt: "IFA" | "TFA" | "IP" | null = null;
@@ -155,5 +178,78 @@ export class Assignment {
       return test > 0;
     });
     return filteredArr;
+  }
+
+  calculateTurnover() {
+    let turnover = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Turnover") turnover = obj.value / 100;
+    });
+    return turnover;
+  }
+
+  calculateCOS() {
+    let COS = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Cost of sales") COS = obj.value / 100;
+    });
+    return COS;
+  }
+
+  calculateOOI() {
+    let OOI = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Other operating income") OOI = obj.value / 100;
+    });
+    return OOI;
+  }
+
+  calculateAdjsFAAndCAI() {
+    let AdjsFAAndCAI = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Value adjustments on fixed assets and current asset investments")
+        AdjsFAAndCAI = obj.value / 100;
+    });
+    return AdjsFAAndCAI;
+  }
+
+  calculateDistCosts() {
+    let distCosts = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Distribution costs") distCosts = obj.value / 100;
+    });
+    return distCosts;
+  }
+
+  calculateAdminExes() {
+    let adminExes = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Administrative expenses") adminExes = obj.value / 100;
+    });
+    return adminExes;
+  }
+
+  calculateOtherIntRec() {
+    let otherIntRec = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Other interest receivable and similar income") otherIntRec = obj.value / 100;
+    });
+    return otherIntRec;
+  }
+
+  calculateintPay() {
+    let intPay = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Interest payable and similar charges") intPay = obj.value / 100;
+    });
+    return intPay;
+  }
+
+  calculateTax() {
+    let tax = 0;
+    this.activeCategoriesDetails.forEach((obj) => {
+      if (obj.cerysCategory === "Taxation") tax = obj.value / 100;
+    });
+    return tax;
   }
 }

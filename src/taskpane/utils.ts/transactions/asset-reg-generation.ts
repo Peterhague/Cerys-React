@@ -38,24 +38,7 @@ export const previewRelTrans = (session: Session, registerType: string, setView)
 };
 
 export async function createRelTrans(session: Session, registerType: string) {
-  const relevantTrans: AssetTransaction[] = [];
-  session.assignment.transactions.forEach((tran) => {
-    const cerysCodeObj = tran.getCerysCodeObj(session);
-    if (
-      (registerType === "IFA" &&
-        cerysCodeObj.cerysCategory === "Intangible assets" &&
-        cerysCodeObj.assetCodeType === "iFACostAddns") ||
-      (registerType === "TFA" &&
-        cerysCodeObj.cerysCategory === "Tangible assets" &&
-        cerysCodeObj.assetCodeType === "tFACostAddns") ||
-      (registerType === "IP" &&
-        cerysCodeObj.cerysCategory === "Investment property" &&
-        cerysCodeObj.assetCodeType === "iPCostAddns")
-    ) {
-      relevantTrans.push(new AssetTransaction(session, tran));
-      tran.processedAsAsset = true;
-    }
-  });
+  const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
   createTransSumm(session, relevantTrans, registerType);
   console.log(relevantTrans);
 }
@@ -688,10 +671,9 @@ export const createCurrentPeriodRegister = (regsiter, session: Session) => {
   return currentPeriodRegister;
 };
 
-export const finaliseAssetObjects = (session: Session, registerType) => {
+export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {
   const reportingPeriod = session.assignment.reportingPeriod;
-  const assets = session[`${registerType}Transactions`];
-  assets.forEach((asset) => {
+  relevantTrans.forEach((asset) => {
     asset.activePeriods = [reportingPeriod._id];
     asset.periods = [
       {
@@ -701,5 +683,4 @@ export const finaliseAssetObjects = (session: Session, registerType) => {
       },
     ];
   });
-  console.log(session[`${registerType}Transactions`]);
 };

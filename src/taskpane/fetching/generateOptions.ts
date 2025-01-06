@@ -2,6 +2,8 @@
 
 import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
+import { AssetTransaction } from "../classes/transaction";
+import { DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
@@ -425,14 +427,14 @@ export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
   };
 }
 
-export function fetchOptionsIFA(session: Session) {
+export function fetchOptionsIFA(session: Session, relevantTrans: DetailedTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: session.IFATransactions,
+      assets: relevantTrans,
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,
@@ -440,14 +442,14 @@ export function fetchOptionsIFA(session: Session) {
   };
 }
 
-export function fetchOptionsTFA(session: Session) {
+export function fetchOptionsTFA(session: Session, relevantTrans: DetailedTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: session.TFATransactions,
+      assets: relevantTrans,
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,
@@ -455,14 +457,14 @@ export function fetchOptionsTFA(session: Session) {
   };
 }
 
-export function fetchOptionsIP(session: Session) {
+export function fetchOptionsIP(session: Session, relevantTrans: DetailedTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: session.IPTransactions,
+      assets: relevantTrans,
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,

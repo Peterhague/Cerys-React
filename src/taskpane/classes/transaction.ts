@@ -1,4 +1,10 @@
-import { AssetSubTransaction, AssetTransactionProps, ClientMapping, TransactionProps } from "../interfaces/interfaces";
+import {
+  AssetSubTransaction,
+  AssetTransactionProps,
+  ClientMapping,
+  ReportingPeriod,
+  TransactionProps,
+} from "../interfaces/interfaces";
 import { Session } from "./session";
 import { TransactionUpdate } from "./transaction-update";
 
@@ -83,6 +89,12 @@ export class AssetTransaction implements AssetTransactionProps {
   depnRate?: string;
   depnChg?: number;
   subTransactions?: AssetSubTransaction[];
+  activePeriods?: string[];
+  periods?: {
+    reportingPeriodNumber: ReportingPeriod["periodNumber"];
+    reportingPeriodId: ReportingPeriod["_id"];
+    subTransactions: AssetSubTransaction[];
+  }[];
   _id: string;
 
   constructor(session: Session, transaction: Transaction) {
@@ -111,3 +123,130 @@ export class AssetTransaction implements AssetTransactionProps {
     return { transaction, cerysCodeObj };
   }
 }
+
+// export class DetailedTransaction implements BaseCerysCodeObject, AssetTransactionProps, TransactionProps {
+//   cerysCode: number;
+//   cerysName: string;
+//   cerysShortName: string;
+//   cerysExcelName: string;
+//   cerysCategory: string;
+//   cerysSubCategory: string | null;
+//   isFixedAsset: boolean;
+//   assetCategory: string | null;
+//   assetCategoryNo: number | null;
+//   assetSubCategory: string | null;
+//   assetSubCatCode: number | null;
+//   assetCodeType: string | null;
+//   regColNameOne: string | null;
+//   regColNameTwo: string | null;
+//   altCategory: string | null;
+//   defaultSign: string | null;
+//   clientAdj: boolean;
+//   closeOffCode: number;
+//   transactionDateUser?: string;
+//   transactionDateClt?: number;
+//   assetNarrative?: string;
+//   assetSubCatCodes?: (number | null)[];
+//   amortBasis?: string;
+//   amortRate?: string;
+//   amortChg?: number;
+//   depnBasis?: string;
+//   depnRate?: string;
+//   depnChg?: number;
+//   subTransactions?: AssetSubTransaction[];
+//   activePeriods?: string[];
+//   periods?: {
+//     reportingPeriodNumber: ReportingPeriod["periodNumber"];
+//     reportingPeriodId: ReportingPeriod["_id"];
+//     subTransactions: AssetSubTransaction[];
+//   }[];
+//   value: number;
+//   transactionType: string;
+//   transactionDate: Date | string;
+//   transactionDateExcel: number;
+//   transactionNumber: number;
+//   transactionBatchNumber: number;
+//   iteration: number;
+//   iterations: {
+//     iteration: number;
+//     transactionDate: string;
+//     cerysCode: number;
+//     narrative: string;
+//   }[];
+//   narrative: string;
+//   user: string;
+//   clientTB: boolean;
+//   clientNominalCode: number;
+//   clientNominalName: string;
+//   clientAdjustment: boolean;
+//   journal: boolean;
+//   reviewJournal: boolean;
+//   finalJournal: boolean;
+//   workbookRef: string;
+//   worksheetRef: string;
+//   dateCreated: string;
+//   defaultClientMapping: ClientMapping;
+//   activeClientMapping: ClientMapping;
+//   updates: TransactionUpdate[];
+//   processedAsAsset: boolean;
+//   _id: string;
+//   constructor(session: Session, transaction: Transaction) {
+//     const cerysCodeObj = transaction.getCerysCodeObj(session);
+//     this.cerysCode = transaction.cerysCode;
+//     this.cerysName = cerysCodeObj.cerysName;
+//     this.cerysShortName = cerysCodeObj.cerysShortName;
+//     this.cerysExcelName = cerysCodeObj.cerysExcelName;
+//     this.cerysCategory = cerysCodeObj.cerysCategory;
+//     this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
+//     this.isFixedAsset = cerysCodeObj.isFixedAsset;
+//     this.assetCategory = cerysCodeObj.assetCategory;
+//     assetCategoryNo;
+//     assetSubCategory;
+//     assetSubCatCode;
+//     assetCodeType;
+//     regColNameOne;
+//     regColNameTwo;
+//     altCategory;
+//     defaultSign;
+//     clientAdj;
+//     closeOffCode;
+//     transactionDateUser;
+//     transactionDateClt;
+//     assetNarrative;
+//     assetSubCatCodes;
+//     amortBasis;
+//     amortRate;
+//     amortChg;
+//     depnBasis;
+//     depnRate;
+//     depnChg;
+//     subTransactions;
+//     activePeriods;
+//     periods;
+//     value;
+//     transactionType;
+//     transactionDate;
+//     transactionDateExcel;
+//     transactionNumber;
+//     transactionBatchNumber;
+//     iteration;
+//     iterations;
+//     narrative;
+//     user;
+//     clientTB;
+//     clientNominalCode;
+//     clientNominalName;
+//     clientAdjustment;
+//     journal;
+//     reviewJournal;
+//     finalJournal;
+//     workbookRef;
+//     worksheetRef;
+//     dateCreated;
+//     defaultClientMapping;
+//     activeClientMapping;
+//     updates;
+//     processedAsAsset;
+//     _id;
+//   }
+// }
