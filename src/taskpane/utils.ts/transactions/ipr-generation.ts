@@ -1,6 +1,5 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { AssetTransaction } from "../../classes/transaction";
 import { createIPRegister, updateAssignmentUrl, updateIPRegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { DetailedTransaction } from "../../interfaces/interfaces";
@@ -18,7 +17,6 @@ export async function createIPR(context: Excel.RequestContext, session: Session,
 
 export async function postIPtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
   let assignment = session.assignment;
-  console.log(session.IPTransactions["subTransactions"]);
   const options = fetchOptionsIP(session, relevantTrans);
   const endpoint = session.assignment.IPRegisterCreated ? updateIPRegister : createIPRegister;
   const iPRDb = await fetch(endpoint, options);

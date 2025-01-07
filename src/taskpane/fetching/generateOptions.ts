@@ -2,7 +2,6 @@
 
 import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
-import { AssetTransaction } from "../classes/transaction";
 import { DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 

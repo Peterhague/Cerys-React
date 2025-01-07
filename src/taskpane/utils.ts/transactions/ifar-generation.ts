@@ -1,6 +1,5 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { AssetTransaction } from "../../classes/transaction";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { DetailedTransaction } from "../../interfaces/interfaces";
