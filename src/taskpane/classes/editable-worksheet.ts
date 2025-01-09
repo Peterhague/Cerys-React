@@ -30,6 +30,7 @@ export class EditableWorksheet {
   usedRange: any[][];
   sheetMapping: TransactionMap[];
   filterObj: { target: string; value: string | number | boolean };
+  transactionFilter: (tran: Transaction) => boolean;
   isValueInverted: boolean;
 
   constructor(
@@ -64,10 +65,15 @@ export class EditableWorksheet {
     this.usedRange = wsValues;
     this.sheetMapping = sheetMapping;
     this.filterObj = this.createEditableSheetFilterObj();
+    this.transactionFilter = this.createTransactionFilter(session);
     this.isValueInverted = this.testValueInversion(session);
   }
-  async renewTransactions(context, session: Session, assignmentTrans) {
-    const newTrans = assignmentTrans.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+  async renewTransactions(context: Excel.RequestContext, session: Session, assignmentTrans: Transaction[]) {
+    //const newTrans = assignmentTrans.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
+    // const newTrans = assignmentTrans.filter(
+    //   (tran) => tran.getCerysCodeObj(session)[this.filterObj.target] === this.filterObj.value
+    // );
+    const newTrans = assignmentTrans.filter(this.transactionFilter);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran._id === newTran._id);
       if (transaction) newTran.updates = transaction.updates;
@@ -190,6 +196,17 @@ export class EditableWorksheet {
           target: "cerysCode",
           value: this.transactions[0].cerysCode,
         };
+      default:
+        return null;
+    }
+  };
+
+  createTransactionFilter = (session: Session) => {
+    switch (this.type) {
+      case "OBARelevantAdjustments":
+        return (tran: Transaction) => tran.getCerysCodeObj(session).clientAdj;
+      case "cerysCodeAnalysis":
+        return (tran: Transaction) => tran.cerysCode === this.transactions[0].cerysCode;
       default:
         return null;
     }

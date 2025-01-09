@@ -60,6 +60,7 @@ export const submitTransactionUpdates = async (session: Session) => {
       });
       await processUpdateBatch(session);
       const promptSheetDeletion = renewEdSheetsTransRefs(context, session);
+      console.log(promptSheetDeletion);
       //await updateEdSheetsTransValues(context, session); // pertains to all other sheets, ie effects of the update
       if (isTBUpdated) {
         if (promptSheetDeletion) {

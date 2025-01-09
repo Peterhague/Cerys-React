@@ -71,14 +71,6 @@ export const getWorksheetRangeValues = async (context, wsName, range) => {
 //  sheet.activate();
 //}
 
-// export const getActiveWorksheet = async (context: Excel.RequestContext) => {
-//   const sheet = context.workbook.worksheets.getActiveWorksheet();
-//   sheet.load("name");
-//   await context.sync();
-//   console.log(sheet.name);
-//   return sheet;
-// };
-
 export const getActiveWorksheet = async () => {
   try {
     const rtnVal: Excel.Worksheet = await Excel.run(async (context) => {
