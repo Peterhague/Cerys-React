@@ -6,7 +6,7 @@ export const cerysCodeUrl = "http://localhost:4000/api/get-cerys-code";
 
 export const trialBalanceUrl = "http://localhost:4000/api/trial-balance";
 
-export const customerUrl = "http://localhost:4000/api/customer-super";
+export const customerUrl = "http://localhost:4000/api/customer";
 
 export const clientUrl = "http://localhost:4000/api/client";
 

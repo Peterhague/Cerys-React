@@ -16,8 +16,7 @@ const CustomerSignUpPlan = ({ handleView, session }: customerSignUpPlanProps) =>
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newCustObj = { ...session.newCustDtlsOne, ...session.newCustDtlsTwo, licences };
-    const newCustomer = await processNewCustomer(newCustObj);
-    session.customer = newCustomer;
+    session.customer = await processNewCustomer(newCustObj);
     delete session.newCustDtlsOne;
     delete session.newCustDtlsTwo;
     handleView("newCustomerLanding");

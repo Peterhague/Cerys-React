@@ -23,7 +23,7 @@ import {
 
 export const handleWorksheetSelection = async (session: Session, e, wsName: string) => {
   const addressObj = interpretEventAddress(e);
-  const ws = session.editableSheets.find(sheet => sheet.name === wsName);
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   if (addressObj.firstRow !== addressObj.lastRow || addressObj.firstCol !== addressObj.lastCol) return;
   let withinEditableRange = false;
   ws.editableRowRanges.forEach((range) => {
@@ -66,11 +66,11 @@ export const handleWorksheetEdit = async (
       sheet.usedRange = await getWorksheetUsedRange(context, wsName);
       session.options.autoFillOverride = false;
       if (handledSuccessfully && definedCol.type === "cerysCode") {
-        await completeCerysCodeUpdate(context, session, e, sheet, addressObj);
+        await completeCerysCodeUpdate(session, e, sheet, addressObj);
       } else if (handledSuccessfully && definedCol.type === "cerysName") {
         await completeCerysNameUpdate(context, session, e, sheet, addressObj);
       } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
-        await completeClientCodeMappingUpdate(context, session, e, sheet, addressObj);
+        await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
       }
       await context.sync();
     });

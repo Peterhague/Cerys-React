@@ -31,9 +31,9 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
         const wsName = session.activeEditableCell.wsName;
         const range = session.activeEditableCell.getRange();
         if (session.activeEditableCell.options.action === "clientCodeMapping") {
-          handleClientCodeMapping(context, session, nominalCode, nominalCodeName);
+          handleClientCodeMapping(session, nominalCode, nominalCodeName);
         } else {
-          await setExcelRangeValue(context, wsName, range, nominalCode);
+          await setExcelRangeValue(wsName, range, nominalCode);
         }
         session.activeEditableCell = createEditableCell(null, null, null);
         await context.sync();

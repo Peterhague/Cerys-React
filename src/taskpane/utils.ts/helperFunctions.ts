@@ -68,6 +68,7 @@ export const handleSheetAddition = async (
   const ws = getWorksheet(context, e.worksheetId);
   ws.load("name");
   await context.sync();
+  console.log(ws.name);
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 

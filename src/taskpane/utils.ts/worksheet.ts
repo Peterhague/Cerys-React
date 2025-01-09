@@ -71,14 +71,31 @@ export const getWorksheetRangeValues = async (context, wsName, range) => {
 //  sheet.activate();
 //}
 
-export const getActiveWorksheet = async (context) => {
-  const sheet = context.workbook.worksheets.getActiveWorksheet();
-  sheet.load("name");
-  await context.sync();
-  return sheet;
+// export const getActiveWorksheet = async (context: Excel.RequestContext) => {
+//   const sheet = context.workbook.worksheets.getActiveWorksheet();
+//   sheet.load("name");
+//   await context.sync();
+//   console.log(sheet.name);
+//   return sheet;
+// };
+
+export const getActiveWorksheet = async () => {
+  try {
+    const rtnVal: Excel.Worksheet = await Excel.run(async (context) => {
+      const sheet = context.workbook.worksheets.getActiveWorksheet();
+      sheet.load("name");
+      await context.sync();
+      console.log(sheet.name);
+      return sheet;
+    });
+    return rtnVal;
+  } catch (e) {
+    console.error(e);
+    return e;
+  }
 };
 
-export const activateWorksheet = (context, wsName) => {
+export const activateWorksheet = (context: Excel.RequestContext, wsName: string) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   sheet.activate();
 };
@@ -100,15 +117,17 @@ export const getWorksheetUsedRange = async (context: Excel.RequestContext, wsNam
   return values;
 };
 
-export const setExcelRangeValue = (
-  context: Excel.RequestContext,
-  wsName: string,
-  range: string,
-  value: string | number
-) => {
-  const ws = context.workbook.worksheets.getItem(wsName);
-  const wsRange = ws.getRange(range);
-  wsRange.values = [[value]];
+export const setExcelRangeValue = async (wsName: string, range: string, value: string | number) => {
+  try {
+    await Excel.run(async (context) => {
+      const ws = context.workbook.worksheets.getItem(wsName);
+      const wsRange = ws.getRange(range);
+      wsRange.values = [[value]];
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const setManyExcelRangeValues = (context: Excel.RequestContext, wsName: string, updates: ExcelRangeUpdate[]) => {

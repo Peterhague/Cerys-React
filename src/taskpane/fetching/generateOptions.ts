@@ -47,6 +47,7 @@ export function fetchOptionsTransBatchUpdate(session: Session) {
       assignmentId: session.assignment._id,
       clientSoftware: session.assignment.clientSoftware,
       clientChart: session.clientChart,
+      chart: session.chart,
     }),
   };
 }

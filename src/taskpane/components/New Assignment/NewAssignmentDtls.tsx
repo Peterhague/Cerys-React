@@ -149,7 +149,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
     console.log(updatedCustAndNewAss);
-    session.chart = updatedCustAndNewAss.client.cerysChart;
+    session.chart = updatedCustAndNewAss.chart;
     return updatedCustAndNewAss;
   };
 

@@ -411,7 +411,6 @@ export function calculateCharge(
 }
 
 export const recalculateCharge = async (
-  context: Excel.RequestContext,
   session: Session,
   sheet: EditableWorksheet,
   tran: FATransaction,
@@ -449,7 +448,7 @@ export const recalculateCharge = async (
   const colLetter = colNumToLetter(depnChgColNumber);
   const rowNumber = getTransRowNumber(tran, sheet);
   const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
-  setExcelRangeValue(context, sheet.name, range, charge / 100);
+  await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
     if (i._id === tran._id) {
       i[`${amortOrDepn}Chg`] = charge;
@@ -632,25 +631,6 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
   }
   console.log(session.activeJournal);
 };
-
-//export async function createIFAR(session) {
-//  try {
-//    await Excel.run(async (context) => {
-//      const assignment = await postIFAtoDB(session);
-//      session.assignment = assignment;
-//      createIFARWs(context, session);
-//    });
-//  } catch (e) {
-//    console.error(e);
-//  }
-//}
-
-//export async function postIFAtoDB(session) {
-//  const options = fetchOptionsIFA(session);
-//  const updatedAssignmentDb = await fetch(postIFA, options);
-//  const updatedAssignment = await updatedAssignmentDb.json();
-//  return updatedAssignment;
-//}
 
 export const createCurrentPeriodRegister = (regsiter, session: Session) => {
   const periodId = session.assignment.reportingPeriod._id;

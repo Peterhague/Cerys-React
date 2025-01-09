@@ -12,7 +12,7 @@ import {
   TranUpdateFinalValidation,
   TranUpdatePrimaryValidation,
 } from "../../interfaces/interfaces";
-import { colLetterToNum, colNumToLetter } from "../excel-col-conversion";
+import { colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
   convertExcelDate,
@@ -43,9 +43,8 @@ export const handleRangeEdit = async (
   session.activeEditableCell = createEditableCell(null, null, null);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
-  const autoFillObj = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
-  if (!autoFillObj.isAutoFill)
-    await testChangesForRejection(context, e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
+  const autoFillObj: AutoFillObject = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
+  if (!autoFillObj.isAutoFill) await testChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
     await simulateAutoFillChanges(context, session, sheet, autoFillObj);
   } else {
@@ -56,7 +55,6 @@ export const handleRangeEdit = async (
 };
 
 export const testChangesForRejection = async (
-  context: Excel.RequestContext,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
   addressObj: AddressObject,
@@ -75,36 +73,26 @@ export const testChangesForRejection = async (
   if (!withinProtectedRange) sheet.edited = true;
   if (withinProtectedRange && e.triggerSource !== "ThisLocalAddin") {
     const range = `${e.address}:${e.address}`;
-    setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+    await setExcelRangeValue(wsName, range, e.details.valueBefore);
   }
 };
 
 export const checkForAutoFill = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
-  const addressSplit = e.address.split(":");
-  const isAutoFill = !addressSplit[1] ? false : true;
-  const firstColLetter = parseInt(addressSplit[0][1])
-    ? addressSplit[0].substring(0, 2)
-    : addressSplit[0].substring(0, 3);
-  const firstColNumber = colLetterToNum(firstColLetter);
-  const lastColLetter = parseInt(addressSplit[1][1])
-    ? addressSplit[1].substring(0, 2)
-    : addressSplit[1].substring(0, 3);
-  const lastColNumber = colLetterToNum(lastColLetter);
-  const autoFillCols = firstColLetter === lastColLetter ? false : true;
-  const firstRow = parseInt(addressSplit[0][1])
-    ? parseInt(addressSplit[0].substring(1))
-    : parseInt(addressSplit[0].substring(2));
-  const lastRow = parseInt(addressSplit[1][1])
-    ? parseInt(addressSplit[1].substring(1))
-    : parseInt(addressSplit[1].substring(2));
+  console.log(e.address);
+  const addressObj: AddressObject = interpretExcelAddress(e.address);
+  const { firstRow, firstCol, lastRow, lastCol } = addressObj;
+  const isAutoFill = firstRow !== lastRow || firstCol !== lastCol ? true : false;
+  const firstColLetter = colNumToLetter(firstCol);
+  const lastColLetter = colNumToLetter(lastCol);
+  const autoFillCols = firstCol === lastCol ? false : true;
   const autoFillRows = firstRow === lastRow ? false : true;
   const repRange = `${firstColLetter}${firstRow}`;
   const autoFillObj: AutoFillObject = {
     isAutoFill,
+    firstCol,
     firstColLetter,
-    firstColNumber,
+    lastCol,
     lastColLetter,
-    lastColNumber,
     autoFillCols,
     firstRow,
     lastRow,
@@ -141,17 +129,17 @@ export const captureReanalysis = async (
   const isValidTransactionUpdate: boolean = combineAllValidation(definedCol, validationObj);
   const range = `${e.address}:${e.address}`;
   if (isValidTransactionUpdate) {
-    processTransactionUpdate(context, session, tran, tests, definedCol, validationObj, e, newValue, sheet);
+    processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
   } else {
     if (definedCol.isQuasiMutable) {
       tests.isValid = true;
     } else {
-      setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+      await setExcelRangeValue(wsName, range, e.details.valueBefore);
       return handledSuccessfully;
     }
   }
   if (tests.changeRejected) {
-    setExcelRangeValue(context, wsName, range, e.details.valueBefore);
+    await setExcelRangeValue(wsName, range, e.details.valueBefore);
     return handledSuccessfully;
   }
   if (tests.isValid) {
@@ -169,7 +157,6 @@ export const combineAllValidation = (definedCol: DefinedCol, validationObj: Tran
 };
 
 export const processTransactionUpdate = (
-  context: Excel.RequestContext,
   session: Session,
   tran: Transaction | FATransaction,
   tests: TranUpdatePrimaryValidation,
@@ -189,7 +176,7 @@ export const processTransactionUpdate = (
     (sheet.type === "IFARPreview" || sheet.type === "TFARPreview") &&
     "depnRate" in tran
   )
-    recalculateCharge(context, session, sheet, tran, e);
+    recalculateCharge(session, sheet, tran, e);
   if (definedCol.type === "cerysNarrative" && (sheet.type === "IFARPreview" || sheet.type === "TFARPreview"))
     updateAssetNarrative(session, sheet, tran, e);
 };
@@ -384,13 +371,13 @@ export const simulateAutoFillChanges = async (
   const wsName = sheet.name;
   const ranges = [];
   if (autoFillObj.autoFillCols) {
-    for (let i = autoFillObj.firstColNumber; i < autoFillObj.lastColNumber + 1; i++) {
+    for (let i = autoFillObj.firstCol; i < autoFillObj.lastCol + 1; i++) {
       const rangeObj = { colNumber: i, rowNumber: autoFillObj.firstRow };
       ranges.push(rangeObj);
     }
   } else if (autoFillObj.autoFillRows) {
     for (let i = autoFillObj.firstRow; i < autoFillObj.lastRow + 1; i++) {
-      const rangeObj = { colNumber: autoFillObj.firstColNumber, rowNumber: i };
+      const rangeObj = { colNumber: autoFillObj.firstCol, rowNumber: i };
       ranges.push(rangeObj);
     }
   }
@@ -461,7 +448,6 @@ export const reinstateNumberFormats = async (sheet: EditableWorksheet) => {
 };
 
 export const completeCerysCodeUpdate = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
@@ -478,7 +464,7 @@ export const completeCerysCodeUpdate = async (
     const nomCodeObj = session.chart.find((code) => code.cerysCode === e.details.valueAfter);
     const colLetter = colNumToLetter(cerysNameCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-    setExcelRangeValue(context, sheet.name, range, nomCodeObj.cerysShortName);
+    await setExcelRangeValue(sheet.name, range, nomCodeObj.cerysShortName);
   }
 };
 
@@ -505,18 +491,17 @@ export const completeCerysNameUpdate = async (
     const colLetter = colNumToLetter(clientCodeMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
     session.options.allowEffects = 1;
-    setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
+    await setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
     sheet.usedRange = await getWorksheetUsedRange(context, sheet.name);
     if (clientCodeNameMappingCol > 0) {
       const colLetter = colNumToLetter(clientCodeNameMappingCol);
       const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-      setExcelRangeValue(context, sheet.name, range, nomCodeObj.currentClientMapping.clientCodeName);
+      await setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCodeName);
     }
   }
 };
 
 export const completeClientCodeMappingUpdate = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
@@ -533,6 +518,6 @@ export const completeClientCodeMappingUpdate = async (
     const nomCodeObj = session.clientChart.find((code) => code.clientCode === e.details.valueAfter);
     const colLetter = colNumToLetter(clientCodeNameMappingCol);
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
-    setExcelRangeValue(context, sheet.name, range, nomCodeObj.clientCodeName);
+    await setExcelRangeValue(sheet.name, range, nomCodeObj.clientCodeName);
   }
 };

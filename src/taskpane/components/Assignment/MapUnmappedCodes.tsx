@@ -46,8 +46,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
   const handleSubmit = async () => {
     const options = fetchOptionsUpdateClientChart(codeObjects, session);
     const updatedCustAndClientDb = await fetch(updateClientChartUrl, options);
-    const { customer, client } = await updatedCustAndClientDb.json();
-    session.customer = customer;
+    const { client } = await updatedCustAndClientDb.json();
     session.clientChart = client.clientChart;
     console.log(session);
     enterTB(session);

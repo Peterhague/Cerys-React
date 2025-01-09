@@ -76,7 +76,7 @@ export const submitTransactionUpdates = async (session: Session) => {
       session.editableSheets.forEach((sheet) => {
         if (sheet.editButtonStatus === "inProgress") sheet.editButtonStatus = "hide";
       });
-      const activeWs = await getActiveWorksheet(context);
+      const activeWs = await getActiveWorksheet();
       const acitveEditableWS = session.editableSheets.find((sheet) => sheet.name === activeWs.name);
       if (acitveEditableWS) session.setEditButton(acitveEditableWS.editButtonStatus);
       await context.sync();

@@ -35,7 +35,7 @@ export interface CerysCodeObject extends BaseCerysCodeObject {
 
 export interface ClientCerysCodeObject extends BaseCerysCodeObject {
   currentClientMapping: ClientMapping;
-  previousClientMapping: ClientMapping[];
+  previousClientMappings: ClientMapping[];
 }
 
 export interface ClientCodeObject {
@@ -347,8 +347,14 @@ export interface Client {
     clientCodeName: string;
     cerysCode: number;
   }[];
-  cerysChart: [ClientCerysCodeObject];
+  cerysChart: CerysCodeClientMapping[];
   _id: string;
+}
+
+export interface CerysCodeClientMapping {
+  cerysCode: number;
+  currentClientMapping: ClientMapping;
+  previousClientMappings: ClientMapping[];
 }
 
 export interface BaseIndividual {
@@ -452,10 +458,10 @@ export interface TranUpdateFinalValidation {
 
 export interface AutoFillObject {
   isAutoFill: boolean;
+  firstCol: number;
   firstColLetter: string;
-  firstColNumber: number;
+  lastCol: number;
   lastColLetter: string;
-  lastColNumber: number;
   firstRow: number;
   lastRow: number;
   autoFillCols: boolean;

@@ -18,7 +18,7 @@ import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing
 /* global Excel */
 
 export const getOBARelTrans = (session: Session) => {
-  return session.assignment.transactions.filter((tran) => tran.getCerysCodeObj(session));
+  return session.assignment.transactions.filter((tran) => tran.getCerysCodeObj(session).clientAdj);
 };
 
 export async function oBARelevantTransView(session: Session) {
@@ -101,19 +101,14 @@ export async function oBARelevantTransView(session: Session) {
   }
 }
 
-export const handleClientCodeMapping = (
-  context,
-  session: Session,
-  nominalCode: number | string,
-  nominalCodeName: string
-) => {
+export const handleClientCodeMapping = (session: Session, nominalCode: number | string, nominalCodeName: string) => {
   const tran = session.activeEditableCell.getActiveTransaction(session);
   const cerysCode = tran.cerysCode;
   const wsName = session.activeEditableCell.wsName;
   const range = session.activeEditableCell.getRange();
   const options = {
     handleYes: () => updateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode, wsName),
-    handleNo: () => setExcelRangeValue(context, wsName, range, nominalCode),
+    handleNo: async () => await setExcelRangeValue(wsName, range, nominalCode),
     message: getClientCodeMappingMessage(nominalCode, nominalCodeName),
     yesButtonText: "All transactions",
     noButtonText: "This transaction only",
@@ -156,9 +151,15 @@ export const updateCerysCodeMapping = async (
   updateEdSheetClientCodeMapping(session, wsName, relTrans);
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
-  const { customer, client, assignment } = await updatedClientDb.json();
+  const { customer, assignment, newMapping } = await updatedClientDb.json();
+  console.log(newMapping);
   session.customer = customer;
   session.assignment = new Assignment(assignment);
-  session.chart = client.cerysChart;
+  session.chart.forEach((code) => {
+    if (code.cerysCode === newMapping.cerysCode) {
+      code.currentClientMapping = newMapping.currentClientMapping;
+      code.previousClientMappings = newMapping.previousClientMappings;
+    }
+  });
   callNextView(session);
 };
