@@ -3,8 +3,8 @@ import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
-import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
-import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
+import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
+import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import {
   callNextView,
@@ -225,6 +225,58 @@ export const updateCerysCodeMappingIgnoreCustom = async (
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
   console.log(newMapping);
+  session.customer = customer;
+  session.assignment = new Assignment(assignment);
+  session.chart.forEach((code) => {
+    if (code.cerysCode === newMapping.cerysCode) {
+      code.currentClientMapping = newMapping.currentClientMapping;
+      code.previousClientMappings = newMapping.previousClientMappings;
+    }
+  });
+  callNextView(session);
+};
+
+export const updateCerysCodeMappingIncludeCustom = async (
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string,
+  cerysCode: number,
+  wsName: string
+) => {
+  const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
+  const transRemapped = relTrans.filter((tran) => tran.clientMappingOverridden);
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
+  relTrans.forEach((tran) => {
+    const clientMappingObj = tran.getClientMappingObj(session);
+    tran.updates = [
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeMapping",
+        nominalCode,
+        clientMappingObj.clientCode,
+        null
+      ),
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeNameMapping",
+        nominalCodeName,
+        clientMappingObj.clientCodeName,
+        null
+      ),
+    ];
+  });
+  updateEdSheetClientCodeMapping(session, wsName, relTrans);
+  const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
+  const { customer, newMapping } = await updatedClientDb.json();
+  const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
+  const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
+  const assignment = await updatedAssDb.json();
   session.customer = customer;
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {

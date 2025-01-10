@@ -2,6 +2,7 @@
 
 import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
+import { Transaction } from "../classes/transaction";
 import { ClientCerysCodeObject, DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
@@ -530,3 +531,16 @@ export function fetchOptionsUpdateCerysCodeMapping(
     }),
   };
 }
+
+export const fetchOptionsReverseCustomMapping = (session: Session, transactions: Transaction[]) => {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      assignmentId: session.assignment._id,
+      transactions,
+    }),
+  };
+};

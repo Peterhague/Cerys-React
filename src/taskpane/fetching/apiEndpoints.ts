@@ -89,3 +89,5 @@ export const postJournalBatch = "http://localhost:4000/api/transaction/batch-pos
 export const updateTransactionBatch = "http://localhost:4000/api/transaction/batch-update";
 
 export const updateCerysCodeMappingUrl = "http://localhost:4000/api/client/update-cerys-code-mapping";
+
+export const reverseCustomMappingUrl = "http://localhost:4000/api/transaction/reverse-custom-mapping";
