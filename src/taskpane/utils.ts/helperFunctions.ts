@@ -473,17 +473,6 @@ export const getUpdatedTransactions = (session: Session) => {
   return updatedTrans;
 };
 
-export const getActiveClientCodeMapping = (session: Session, transaction: Transaction) => {
-  let obj = transaction.activeClientMapping;
-  const update = transaction.updates.find((update) => update.type === "clientCodeMapping");
-  if (update) {
-    const code = session.clientChart.find((code) => code.clientCode === update.value);
-    const newObj = { ...code, ...obj };
-    obj = newObj;
-  }
-  return obj;
-};
-
 export const accessExcelContext = async (func, args) => {
   try {
     const rtnVal = await Excel.run(async (context) => {

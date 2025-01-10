@@ -69,10 +69,6 @@ export class EditableWorksheet {
     this.isValueInverted = this.testValueInversion(session);
   }
   async renewTransactions(context: Excel.RequestContext, session: Session, assignmentTrans: Transaction[]) {
-    //const newTrans = assignmentTrans.filter((tran) => tran[this.filterObj.target] === this.filterObj.value);
-    // const newTrans = assignmentTrans.filter(
-    //   (tran) => tran.getCerysCodeObj(session)[this.filterObj.target] === this.filterObj.value
-    // );
     const newTrans = assignmentTrans.filter(this.transactionFilter);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran._id === newTran._id);

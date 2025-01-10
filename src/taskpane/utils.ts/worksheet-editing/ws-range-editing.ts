@@ -270,7 +270,7 @@ export const validateClientCode = (
   finalValidationObj: TranUpdateFinalValidation
 ) => {
   const valueAfter = e.details.valueAfter;
-  if (valueAfter === tran.defaultClientMapping.clientCode) finalValidationObj.isNegation = true;
+  if (valueAfter === tran.getClientMappingObj(session).clientCode) finalValidationObj.isNegation = true;
   let inValidCode = true;
   session.clientChart.forEach((code) => {
     if (code.clientCode === e.details.valueAfter) inValidCode = false;
@@ -313,7 +313,7 @@ export const createNewTransactionUpdate = (
   } else if (definedCol.type === "cerysNarrative") {
     reversion = tran.narrative;
   } else if (definedCol.type === "clientCodeMapping") {
-    reversion = tran.activeClientMapping;
+    reversion = tran.getClientMappingObj(session).clientCode;
   }
   const mongoDate = definedCol.type === "date" ? convertExcelDate(newValue) : null;
   const update = new TransactionUpdate(

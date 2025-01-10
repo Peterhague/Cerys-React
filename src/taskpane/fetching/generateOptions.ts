@@ -2,7 +2,7 @@
 
 import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
-import { DetailedTransaction } from "../interfaces/interfaces";
+import { ClientCerysCodeObject, DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
@@ -508,7 +508,12 @@ export function fetchOptionsIPRStatusUpdate(workbookId) {
   };
 }
 
-export function fetchOptionsUpdateCerysCodeMapping(session: Session, nominalCode, nominalCodeName, cerysCode) {
+export function fetchOptionsUpdateCerysCodeMapping(
+  session: Session,
+  nominalCode: string | number,
+  nominalCodeName: string,
+  cerysCodeObj: ClientCerysCodeObject
+) {
   return {
     method: "POST",
     headers: {
@@ -520,7 +525,7 @@ export function fetchOptionsUpdateCerysCodeMapping(session: Session, nominalCode
       clientSoftware: session.assignment.clientSoftware,
       clientCode: nominalCode,
       clientCodeName: nominalCodeName,
-      cerysCode,
+      cerysCodeObj,
       workbookId: session.assignment._id,
     }),
   };

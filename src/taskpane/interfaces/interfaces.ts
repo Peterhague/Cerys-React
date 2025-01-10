@@ -164,10 +164,10 @@ export interface TransactionProps {
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
-  defaultClientMapping: ClientMapping;
-  activeClientMapping: ClientMapping;
   updates: TransactionUpdate[];
   processedAsAsset: boolean;
+  clientMappingOverridden: boolean;
+  clientMappingOverride: ClientMapping;
   _id: string;
 }
 
@@ -198,6 +198,16 @@ export interface AssetSubTransaction {
   regColNameOne: string;
   regColNameTwo: string;
   value: number;
+}
+
+export interface TransactionUpdateProps {
+  worksheetName: string;
+  worksheetId: string;
+  type: string;
+  value: string | number;
+  mongoDate: string | null;
+  reversion: string | number;
+  cerysCodeObject: BaseCerysCodeObject | null;
 }
 
 export interface DetailedTransaction extends BaseCerysCodeObject, AssetTransactionProps, TransactionProps {}
@@ -486,6 +496,10 @@ export interface ViewOptions {
   yesButtonText: string;
   noButtonText: string;
   registerType: RegisterType;
+  nominalCode: string | number;
+  nominalCodeName: string;
+  wsName: string;
+  cerysCode: number;
 }
 
 export interface RegisterType {

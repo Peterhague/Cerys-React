@@ -5,9 +5,9 @@ import { TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
+import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import {
   callNextView,
-  getActiveClientCodeMapping,
   getUpdatedDate,
   getUpdatedNarrative,
   handleEditButtonClick,
@@ -59,14 +59,14 @@ export async function oBARelevantTransView(session: Session) {
       let rowNumber = 3;
       const sheetMapping = [];
       relTrans.forEach((line) => {
+        const cerysCodeObj = line.getCerysCodeObj(session);
         const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
         const hasUpdatedCerysCode = line.updates.find((update) => update.type === "cerysCode");
         const cerysCode = hasUpdatedCerysCode ? hasUpdatedCerysCode.value : line.cerysCode;
         const shortName = hasUpdatedCerysCode
           ? hasUpdatedCerysCode.cerysCodeObject.cerysShortName
-          : line.getCerysCodeObj(session).cerysShortName;
+          : cerysCodeObj.cerysShortName;
         const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
-        const { clientCode, clientCodeName } = getActiveClientCodeMapping(session, line);
         let arr = [];
         arr.push(line.transactionNumber);
         arr.push(date);
@@ -75,8 +75,8 @@ export async function oBARelevantTransView(session: Session) {
         arr.push(shortName);
         arr.push(narrative);
         arr.push(line.value / 100);
-        arr.push(clientCode);
-        arr.push(clientCodeName);
+        arr.push(line.getClientMappingObj(session).clientCode);
+        arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
         const map = new TransactionMap(line._id, rowNumber);
         sheetMapping.push(map);
@@ -103,17 +103,38 @@ export async function oBARelevantTransView(session: Session) {
 
 export const handleClientCodeMapping = (session: Session, nominalCode: number | string, nominalCodeName: string) => {
   const tran = session.activeEditableCell.getActiveTransaction(session);
-  const cerysCode = tran.cerysCode;
+  const cerysCodeObj = tran.getCerysCodeObj(session);
   const wsName = session.activeEditableCell.wsName;
   const range = session.activeEditableCell.getRange();
   const options = {
-    handleYes: () => updateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode, wsName),
+    handleYes: () => checkTransForCustomMapping(session, nominalCode, nominalCodeName, cerysCodeObj.cerysCode, wsName),
     handleNo: async () => await setExcelRangeValue(wsName, range, nominalCode),
-    message: getClientCodeMappingMessage(nominalCode, nominalCodeName),
+    message: getClientCodeMappingMessage(cerysCodeObj.cerysCode, cerysCodeObj.cerysName),
     yesButtonText: "All transactions",
     noButtonText: "This transaction only",
   };
   session.handleDynamicView("userConfirmPrompt", options);
+};
+
+export const checkTransForCustomMapping = (
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string,
+  cerysCode: number,
+  wsName: string
+) => {
+  const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
+  const customRemappedTrans = relTrans.filter((tran) => tran.clientMappingOverridden);
+  if (customRemappedTrans.length === 0) {
+    updateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode, wsName);
+  } else {
+    const options = BLANK_VIEW_OPTIONS;
+    options.nominalCode = nominalCode;
+    options.nominalCodeName = nominalCodeName;
+    options.cerysCode = cerysCode;
+    options.wsName = wsName;
+    session.handleDynamicView("reviewCustomMappedTrans", options);
+  }
 };
 
 export const updateCerysCodeMapping = async (
@@ -125,31 +146,82 @@ export const updateCerysCodeMapping = async (
 ) => {
   const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
-  relTrans.forEach(
-    (tran) =>
-      (tran.updates = [
-        new TransactionUpdate(
-          session,
-          wsName,
-          ws.worksheetId,
-          "clientCodeMapping",
-          nominalCode,
-          tran.activeClientMapping.clientCode,
-          null
-        ),
-        new TransactionUpdate(
-          session,
-          wsName,
-          ws.worksheetId,
-          "clientCodeNameMapping",
-          nominalCodeName,
-          tran.activeClientMapping.clientCodeName,
-          null
-        ),
-      ])
-  );
+  relTrans.forEach((tran) => {
+    const clientMappingObj = tran.getClientMappingObj(session);
+    tran.updates = [
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeMapping",
+        nominalCode,
+        clientMappingObj.clientCode,
+        null
+      ),
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeNameMapping",
+        nominalCodeName,
+        clientMappingObj.clientCodeName,
+        null
+      ),
+    ];
+  });
   updateEdSheetClientCodeMapping(session, wsName, relTrans);
-  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCode);
+  const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
+  const { customer, assignment, newMapping } = await updatedClientDb.json();
+  console.log(newMapping);
+  session.customer = customer;
+  session.assignment = new Assignment(assignment);
+  session.chart.forEach((code) => {
+    if (code.cerysCode === newMapping.cerysCode) {
+      code.currentClientMapping = newMapping.currentClientMapping;
+      code.previousClientMappings = newMapping.previousClientMappings;
+    }
+  });
+  callNextView(session);
+};
+
+export const updateCerysCodeMappingIgnoreCustom = async (
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string,
+  cerysCode: number,
+  wsName: string
+) => {
+  const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
+  const transNotRemapped = relTrans.filter((tran) => !tran.clientMappingOverridden);
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
+  transNotRemapped.forEach((tran) => {
+    const clientMappingObj = tran.getClientMappingObj(session);
+    tran.updates = [
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeMapping",
+        nominalCode,
+        clientMappingObj.clientCode,
+        null
+      ),
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeNameMapping",
+        nominalCodeName,
+        clientMappingObj.clientCodeName,
+        null
+      ),
+    ];
+  });
+  updateEdSheetClientCodeMapping(session, wsName, transNotRemapped);
+  const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
   console.log(newMapping);

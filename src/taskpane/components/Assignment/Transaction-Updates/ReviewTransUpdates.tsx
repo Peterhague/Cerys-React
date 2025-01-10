@@ -86,12 +86,12 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
             <td>Client mapping</td>
             {getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
               <td>
-                {updatedTransactions[activeIndex].activeClientMapping.clientCode} {"=> "}
+                {updatedTransactions[activeIndex].getClientMappingObj(session).clientCode} {"=> "}
                 {getUpdatedClientCodeMapping(updatedTransactions[activeIndex])}
               </td>
             )}
             {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex]) && (
-              <td>{updatedTransactions[activeIndex].activeClientMapping.clientCode}</td>
+              <td>{updatedTransactions[activeIndex].getClientMappingObj(session).clientCode}</td>
             )}
           </tr>
         </tbody>
@@ -143,12 +143,12 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
               <td>Client mapping</td>
               {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
                 <td>
-                  {updatedTransactions[activeIndex + 1].activeClientMapping.clientCode} {"=> "}
+                  {updatedTransactions[activeIndex + 1].getClientMappingObj(session).clientCode} {"=> "}
                   {getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1])}
                 </td>
               )}
               {!getUpdatedClientCodeMapping(updatedTransactions[activeIndex + 1]) && (
-                <td>{updatedTransactions[activeIndex + 1].activeClientMapping.clientCode}</td>
+                <td>{updatedTransactions[activeIndex + 1].getClientMappingObj(session).clientCode}</td>
               )}
             </tr>
           </tbody>

@@ -1,7 +1,7 @@
-import { BaseCerysCodeObject } from "../interfaces/interfaces";
+import { BaseCerysCodeObject, TransactionUpdateProps } from "../interfaces/interfaces";
 import { Session } from "./session";
 
-export class TransactionUpdate {
+export class TransactionUpdate implements TransactionUpdateProps {
   worksheetName: string;
   worksheetId: string;
   type: string;
