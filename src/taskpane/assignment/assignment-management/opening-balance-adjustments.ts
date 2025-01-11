@@ -193,8 +193,9 @@ export const updateCerysCodeMappingIgnoreCustom = async (
   cerysCode: number,
   wsName: string
 ) => {
-  const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
-  const transNotRemapped = relTrans.filter((tran) => !tran.clientMappingOverridden);
+  const transNotRemapped = session.assignment.transactions.filter(
+    (tran) => tran.cerysCode === cerysCode && !tran.clientMappingOverridden
+  );
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   transNotRemapped.forEach((tran) => {
     const clientMappingObj = tran.getClientMappingObj(session);
@@ -245,6 +246,63 @@ export const updateCerysCodeMappingIncludeCustom = async (
 ) => {
   const relTrans = session.assignment.transactions.filter((tran) => tran.cerysCode === cerysCode);
   const transRemapped = relTrans.filter((tran) => tran.clientMappingOverridden);
+  const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
+  relTrans.forEach((tran) => {
+    const clientMappingObj = tran.getClientMappingObj(session);
+    tran.updates = [
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeMapping",
+        nominalCode,
+        clientMappingObj.clientCode,
+        null
+      ),
+      new TransactionUpdate(
+        session,
+        wsName,
+        ws.worksheetId,
+        "clientCodeNameMapping",
+        nominalCodeName,
+        clientMappingObj.clientCodeName,
+        null
+      ),
+    ];
+  });
+  updateEdSheetClientCodeMapping(session, wsName, relTrans);
+  const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
+  const { customer, newMapping } = await updatedClientDb.json();
+  const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
+  const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
+  const assignment = await updatedAssDb.json();
+  session.customer = customer;
+  session.assignment = new Assignment(assignment);
+  session.chart.forEach((code) => {
+    if (code.cerysCode === newMapping.cerysCode) {
+      code.currentClientMapping = newMapping.currentClientMapping;
+      code.previousClientMappings = newMapping.previousClientMappings;
+    }
+  });
+  callNextView(session);
+};
+
+export const updateCerysCodeMappingIncludeCustomAsSelected = async (
+  session: Session,
+  nominalCode: number | string,
+  nominalCodeName: string,
+  cerysCode: number,
+  wsName: string,
+  selectedTransactions: { transactionId: string; narrative: string; included: boolean }[]
+) => {
+  const relTrans = session.assignment.transactions.filter(
+    (tran) =>
+      tran.cerysCode === cerysCode &&
+      (!tran.clientMappingOverridden || selectedTransactions.find((item) => item.transactionId === tran._id))
+  );
+  const transRemapped = selectedTransactions.map((obj) => relTrans.find((tran) => tran._id === obj.transactionId));
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   relTrans.forEach((tran) => {
     const clientMappingObj = tran.getClientMappingObj(session);
