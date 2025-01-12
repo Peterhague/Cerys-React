@@ -1,7 +1,7 @@
 import { Assignment } from "../../../classes/assignment";
 import { Session } from "../../../classes/session";
 import { BALANCE_SHEET } from "../../../static-values/worksheet-defaults";
-import { clearUsedRange, getOrAddWorksheet } from "../../../utils.ts/worksheet";
+import { clearUsedRange, getOrAddWorksheet } from "../../../utils/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 /* global Excel */
 

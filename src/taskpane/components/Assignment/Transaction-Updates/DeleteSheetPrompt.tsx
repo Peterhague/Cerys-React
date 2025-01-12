@@ -1,9 +1,9 @@
 import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
-import { accessExcelContext, clearNextViewButOne } from "../../../utils.ts/helperFunctions";
-import { activateWorksheet, deleteManyWorksheets } from "../../../utils.ts/worksheet";
-import { checkNewTransForAssets } from "../../../utils.ts/transactions/transactions";
+import { accessExcelContext, clearNextViewButOne } from "../../../utils/helperFunctions";
+import { activateWorksheet, deleteManyWorksheets } from "../../../utils/worksheet";
+import { checkNewTransForAssets } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 /* global Excel */
 

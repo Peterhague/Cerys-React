@@ -4,7 +4,7 @@ import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
 import { ClientCerysCodeObject, ClientTBLineProps, DetailedTransaction } from "../interfaces/interfaces";
-import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
+import { getUpdatedTransactions } from "../utils/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
 export function fetchOptionsNC(nominalCode) {

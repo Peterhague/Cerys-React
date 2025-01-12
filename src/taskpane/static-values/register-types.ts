@@ -1,8 +1,8 @@
 import { Session } from "../classes/session";
 import { DetailedTransaction, RegisterType } from "../interfaces/interfaces";
-import { createIFAR } from "../utils.ts/transactions/ifar-generation";
-import { createIPR } from "../utils.ts/transactions/ipr-generation";
-import { createTFAR } from "../utils.ts/transactions/tfar-generation";
+import { createIFAR } from "../utils/transactions/ifar-generation";
+import { createIPR } from "../utils/transactions/ipr-generation";
+import { createTFAR } from "../utils/transactions/tfar-generation";
 /* global Excel */
 
 export const IFARegister: RegisterType = {

@@ -1,8 +1,8 @@
 import { FATransaction } from "../interfaces/interfaces";
-import { colNumToLetter } from "../utils.ts/excel-col-conversion";
-import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils.ts/helperFunctions";
-import { createDeletionObject } from "../utils.ts/transactions/transactions";
-import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils.ts/worksheet";
+import { colNumToLetter } from "../utils/excel-col-conversion";
+import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helperFunctions";
+import { createDeletionObject } from "../utils/transactions/transactions";
+import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
 import { ExcelRangeUpdate } from "./excel-range-editing";
 import { Session } from "./session";

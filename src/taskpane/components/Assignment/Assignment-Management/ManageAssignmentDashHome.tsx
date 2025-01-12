@@ -1,7 +1,7 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { finaliseAssignment } from "../../../assignment/assignment-management/assignment-finalisation";
-import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
+import { bFPrevPeriodMessage } from "../../../utils/messages";
 import { trialBalanceUrl } from "../../../fetching/apiEndpoints";
 import { Session } from "../../../classes/session";
 

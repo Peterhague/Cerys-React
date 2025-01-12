@@ -3,8 +3,8 @@ import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
 import { ClientCerysCodeObject, ClientTBLineProps } from "../interfaces/interfaces";
-import { clientCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
-import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
+import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
+import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
 
 export async function enterTB(session: Session) {

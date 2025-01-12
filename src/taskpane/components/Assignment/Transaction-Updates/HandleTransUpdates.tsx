@@ -1,8 +1,8 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
-import { callNextView } from "../../../utils.ts/helperFunctions";
-import { reverseTransactionUpdates } from "../../../utils.ts/worksheet-editing/ws-range-editing";
-import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
+import { callNextView } from "../../../utils/helperFunctions";
+import { reverseTransactionUpdates } from "../../../utils/worksheet-editing/ws-range-editing";
+import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 /* global Excel */
 

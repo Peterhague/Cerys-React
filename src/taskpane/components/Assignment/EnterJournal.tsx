@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useRef } from "react";
 import CerysButton from "../CerysButton";
-import { checkNewTransForAssets, processTransBatch } from "../../utils.ts/transactions/transactions";
+import { checkNewTransForAssets, processTransBatch } from "../../utils/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
 import { ClientCerysCodeObject } from "../../interfaces/interfaces";

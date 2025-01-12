@@ -6,15 +6,10 @@ import { TransactionUpdate } from "../../classes/transaction-update";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
-import {
-  callNextView,
-  getUpdatedDate,
-  getUpdatedNarrative,
-  handleEditButtonClick,
-} from "../../utils.ts/helperFunctions";
-import { getClientCodeMappingMessage } from "../../utils.ts/messages";
-import { addOneWorksheet, setExcelRangeValue } from "../../utils.ts/worksheet";
-import { updateEdSheetClientCodeMapping } from "../../utils.ts/worksheet-editing/ws-editing";
+import { callNextView, getUpdatedDate, getUpdatedNarrative, handleEditButtonClick } from "../../utils/helperFunctions";
+import { getClientCodeMappingMessage } from "../../utils/messages";
+import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
+import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ws-editing";
 /* global Excel */
 
 export const getOBARelTrans = (session: Session) => {

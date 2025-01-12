@@ -7,7 +7,7 @@ import {
   ShortUser,
   TrialBalanceLineProps,
 } from "../interfaces/interfaces";
-import { calculateDiffInDays } from "../utils.ts/helperFunctions";
+import { calculateDiffInDays } from "../utils/helperFunctions";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
 

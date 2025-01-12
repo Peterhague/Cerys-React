@@ -1,8 +1,8 @@
 import { Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { JournalDetailsProps } from "../interfaces/interfaces";
-import { processTransBatch } from "../utils.ts/transactions/transactions";
-import { addWorksheets } from "../utils.ts/worksheet";
+import { processTransBatch } from "../utils/transactions/transactions";
+import { addWorksheets } from "../utils/worksheet";
 /*global Excel */
 
 export async function addPrimarySheets(session: Session) {

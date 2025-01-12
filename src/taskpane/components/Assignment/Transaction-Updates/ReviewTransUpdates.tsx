@@ -10,8 +10,8 @@ import {
   getUpdatedDate,
   getUpdatedNarrative,
   getUpdatedTransactions,
-} from "../../../utils.ts/helperFunctions";
-import { submitTransactionUpdates } from "../../../utils.ts/transactions/transactions";
+} from "../../../utils/helperFunctions";
+import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 
 interface reviewTransUpdatesProps {

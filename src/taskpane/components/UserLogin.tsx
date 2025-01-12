@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { registerWorksheetsCollectionHandler } from "../utils.ts/helperFunctions";
+import { registerWorksheetsCollectionHandler } from "../utils/helperFunctions";
 import { Session } from "../classes/session";
 
 interface userLoginProps {

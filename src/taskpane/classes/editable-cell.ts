@@ -1,4 +1,4 @@
-import { colNumToLetter } from "../utils.ts/excel-col-conversion";
+import { colNumToLetter } from "../utils/excel-col-conversion";
 import { Session } from "./session";
 
 export class EditableCell {

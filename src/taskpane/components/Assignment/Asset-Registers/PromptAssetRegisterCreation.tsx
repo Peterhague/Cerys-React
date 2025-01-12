@@ -1,19 +1,19 @@
 import * as React from "react";
 import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils.ts/helperFunctions";
+import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils/helperFunctions";
 import {
   convertNewFATrans,
   finaliseAssetObjects,
   identifyLikelyAdditions,
   previewRelTrans,
-} from "../../../utils.ts/transactions/asset-reg-generation";
+} from "../../../utils/transactions/asset-reg-generation";
 import {
   checkFATranUpdatesForAssets,
   checkNewTransForAssets,
   processTransBatch,
   processUpdateBatch,
-} from "../../../utils.ts/transactions/transactions";
+} from "../../../utils/transactions/transactions";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { DetailedTransaction, ViewOptions } from "../../../interfaces/interfaces";
