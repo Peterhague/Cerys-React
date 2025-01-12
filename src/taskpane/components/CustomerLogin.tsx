@@ -4,6 +4,7 @@ import CerysButton from "./CerysButton";
 import { getCustomerUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
 import { Session } from "../classes/session";
+import { CUSTOMER_DASH_HOME, LANDING_PAGE } from "../static-values/views";
 
 interface customerLoginProps {
   handleView: (view) => void;
@@ -26,7 +27,7 @@ const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
     session.setEditButton = setEditButton;
-    handleView("customerDashHome");
+    handleView(CUSTOMER_DASH_HOME);
   };
 
   return (
@@ -59,7 +60,7 @@ const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

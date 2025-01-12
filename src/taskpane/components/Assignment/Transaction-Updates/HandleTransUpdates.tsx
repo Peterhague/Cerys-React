@@ -4,6 +4,7 @@ import { callNextView } from "../../../utils/helperFunctions";
 import { reverseTransactionUpdates } from "../../../utils/worksheet-editing/ws-range-editing";
 import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
+import { ASSIGNMENT_DASH_HOME, REVIEW_TRANS_UPDATES } from "../../../static-values/views";
 /* global Excel */
 
 interface handleTransUpdatesProps {
@@ -13,7 +14,7 @@ interface handleTransUpdatesProps {
 
 const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) => {
   const handleReview = () => {
-    handleView("reviewTransUpdates");
+    handleView(REVIEW_TRANS_UPDATES);
   };
 
   const handleDiscard = async () => {
@@ -37,7 +38,7 @@ const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) =>
       <CerysButton buttonText={"SUBMIT CHANGES NOW"} handleClick={() => handleSubmit()} />
       <CerysButton buttonText={"DISCARD TRANSACTION CHANGES"} handleClick={() => handleDiscard()} />
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

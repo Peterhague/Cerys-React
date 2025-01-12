@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { Session } from "../classes/session";
+import { CUSTOMER_SIGN_UP_DETAILS, LANDING_PAGE } from "../static-values/views";
 
 interface customerSignUpProps {
   handleView: (view) => void;
@@ -17,7 +18,7 @@ const CustomerSignUp = ({ handleView, session }: customerSignUpProps) => {
     e.preventDefault();
     const newCustDtlsOne = { email, password, confirmPassword };
     session.newCustDtlsOne = newCustDtlsOne;
-    handleView("customerSignUpDtls");
+    handleView(CUSTOMER_SIGN_UP_DETAILS);
   };
 
   return (
@@ -61,7 +62,7 @@ const CustomerSignUp = ({ handleView, session }: customerSignUpProps) => {
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

@@ -4,6 +4,7 @@ import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
 import { registerWorksheetsCollectionHandler } from "../utils/helperFunctions";
 import { Session } from "../classes/session";
+import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 
 interface userLoginProps {
   handleView: (view) => void;
@@ -33,7 +34,7 @@ const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: us
     session.setEditButton = setEditButton;
     console.log(session);
     await registerWorksheetsCollectionHandler(session);
-    handleView("userDashHome");
+    handleView(USER_DASH_HOME);
   };
   return (
     <>
@@ -65,7 +66,7 @@ const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: us
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

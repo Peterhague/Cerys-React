@@ -6,6 +6,7 @@ import { TransactionUpdate } from "../../classes/transaction-update";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
+import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
 import { callNextView, getUpdatedDate, getUpdatedNarrative, handleEditButtonClick } from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
@@ -108,7 +109,7 @@ export const handleClientCodeMapping = (session: Session, nominalCode: number | 
     yesButtonText: "All transactions",
     noButtonText: "This transaction only",
   };
-  session.handleDynamicView("userConfirmPrompt", options);
+  session.handleDynamicView(USER_CONFIRM_PROMPT, options);
 };
 
 export const checkTransForCustomMapping = (
@@ -128,7 +129,7 @@ export const checkTransForCustomMapping = (
     options.nominalCodeName = nominalCodeName;
     options.cerysCode = cerysCode;
     options.wsName = wsName;
-    session.handleDynamicView("reviewCustomMappedTrans", options);
+    session.handleDynamicView(REVIEW_CUSTOM_MAPPED_TRANS, options);
   }
 };
 

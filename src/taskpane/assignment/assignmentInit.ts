@@ -1,6 +1,7 @@
 import { Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { JournalDetailsProps } from "../interfaces/interfaces";
+import { ASSIGNMENT_DASH_HOME } from "../static-values/views";
 import { processTransBatch } from "../utils/transactions/transactions";
 import { addWorksheets } from "../utils/worksheet";
 /*global Excel */
@@ -63,7 +64,7 @@ export const postOpBalJnls = async (session: Session) => {
       });
       await processTransBatch(context, session);
       await context.sync();
-      session.handleView("assignmentDashHome");
+      session.handleView(ASSIGNMENT_DASH_HOME);
     });
   } catch (e) {
     console.error(e);

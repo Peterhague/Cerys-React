@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_CORP_CLIENT_SHARES, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientDtlsProps {
   handleView: (view) => void;
   session: Session;
@@ -41,7 +42,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
       existingIndividuals: [],
     };
     session.newClientPrelim = newClientDtls;
-    handleView("addCorpClientShares");
+    handleView(ADD_CORP_CLIENT_SHARES);
   };
 
   const generateAccRefDate = (month, nominatedDay) => {
@@ -365,7 +366,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
           <button type="submit">Add share classes</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

@@ -2,6 +2,11 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import {
+  ADD_CORP_CLIENT_INDI_NEW,
+  ADD_CORP_CLIENT_OPTIONS,
+  ADD_CORP_CLIENT_SHARES,
+} from "../../../static-values/views";
 
 interface addCorpClientIndisHomeProps {
   handleView: (view) => void;
@@ -213,9 +218,9 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
         </>
       )}
 
-      <CerysButton buttonText={"Select individual"} handleClick={() => handleView("addCorpClientShares")} />
-      <CerysButton buttonText={"Add new individual"} handleClick={() => handleView("addCorpClientIndiNew")} />
-      <CerysButton buttonText={"Finish"} handleClick={() => handleView("addCorpClientOptions")} />
+      <CerysButton buttonText={"Select individual"} handleClick={() => handleView(ADD_CORP_CLIENT_SHARES)} />
+      <CerysButton buttonText={"Add new individual"} handleClick={() => handleView(ADD_CORP_CLIENT_INDI_NEW)} />
+      <CerysButton buttonText={"Finish"} handleClick={() => handleView(ADD_CORP_CLIENT_OPTIONS)} />
     </>
   );
 };

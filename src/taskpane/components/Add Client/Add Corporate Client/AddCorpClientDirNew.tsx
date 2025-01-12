@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_CORP_CLIENT_DIRS_HOME, LANDING_PAGE } from "../../../static-values/views";
 
 interface addCorpClientDirNewProps {
   handleView: (view) => void;
@@ -19,7 +20,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
   const handleSubmit = async (e) => {
     e.preventDefault();
     session.newCorpClientDirectors.push({ firstName, lastName, email, phone, address, uTR });
-    handleView("addCorpClientDirsHome");
+    handleView(ADD_CORP_CLIENT_DIRS_HOME);
   };
 
   return (
@@ -97,7 +98,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

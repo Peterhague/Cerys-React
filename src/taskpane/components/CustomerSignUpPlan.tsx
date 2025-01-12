@@ -4,6 +4,7 @@ import CerysButton from "./CerysButton";
 import { fetchOptionsSignUp } from "../fetching/generateOptions";
 import { customerUrl } from "../fetching/apiEndpoints";
 import { Session } from "../classes/session";
+import { LANDING_PAGE, NEW_CUSTOMER_LANDING } from "../static-values/views";
 
 interface customerSignUpPlanProps {
   handleView: (view) => void;
@@ -19,7 +20,7 @@ const CustomerSignUpPlan = ({ handleView, session }: customerSignUpPlanProps) =>
     session.customer = await processNewCustomer(newCustObj);
     delete session.newCustDtlsOne;
     delete session.newCustDtlsTwo;
-    handleView("newCustomerLanding");
+    handleView(NEW_CUSTOMER_LANDING);
   };
 
   const processNewCustomer = async (newCustObj) => {
@@ -48,7 +49,7 @@ const CustomerSignUpPlan = ({ handleView, session }: customerSignUpPlanProps) =>
           <button type="submit">Next</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

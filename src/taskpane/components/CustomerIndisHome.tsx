@@ -1,5 +1,6 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
+import { ADD_INDI_DETAILS, CUSTOMER_SIGN_UP } from "../static-values/views";
 
 interface customerIndisHomeProps {
   handleView: (view) => void;
@@ -9,8 +10,8 @@ interface customerIndisHomeProps {
 const CustomerIndisHome = (props: customerIndisHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"MANAGE INDIVIDUALS"} handleClick={() => props.handleView("customerSignUp")} />
-      <CerysButton buttonText={"ADD INDIVIDUAL"} handleClick={() => props.handleView("addIndiDtls")} />
+      <CerysButton buttonText={"MANAGE INDIVIDUALS"} handleClick={() => props.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"ADD INDIVIDUAL"} handleClick={() => props.handleView(ADD_INDI_DETAILS)} />
     </>
   );
 };

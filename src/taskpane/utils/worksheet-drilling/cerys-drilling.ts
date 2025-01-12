@@ -4,6 +4,7 @@ import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import { AddressObject } from "../../interfaces/interfaces";
+import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import {
   handleEditButtonClick,
@@ -144,7 +145,7 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
       }
     });
   if (withinEditableRange && cerysCodeCol === addressObj.firstCol) {
-    session.handleView("nomCodeSelection");
+    session.handleView(NOM_CODE_SELECTION);
     session.activeEditableCell = createEditableCell(addressObj, wsName, "cerysCoding");
   } else if (withinEditableRange && clientCodeMappingCol === addressObj.firstCol) {
     handleClientMappingCellClick(session, addressObj, wsName);
@@ -154,7 +155,7 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
 };
 
 export const handleClientMappingCellClick = (session: Session, addressObj: AddressObject, wsName: string) => {
-  session.handleView("clientNomCodeSelection");
+  session.handleView(CLIENT_NOM_CODE_SELECTION);
   session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
 };
 
@@ -165,7 +166,7 @@ export const handleOtherCellClick = (
   clientCodeCol: number,
   withinEditableRange: boolean
 ) => {
-  if (session.currentView === "nomCodeSelection" || session.currentView === "clientNomCodeSelection") {
+  if (session.currentView === NOM_CODE_SELECTION || session.currentView === CLIENT_NOM_CODE_SELECTION) {
     callNextView(session);
     session.activeEditableCell = createEditableCell(null, null, null);
   }

@@ -5,6 +5,7 @@ import { fetchOptionsUpdateClientChart } from "../../fetching/generateOptions";
 import { updateClientChartUrl } from "../../fetching/apiEndpoints";
 import { enterTB } from "../../client-data-processing/trial-balance";
 import { Session } from "../../classes/session";
+import { ASSIGNMENT_DASH_HOME } from "../../static-values/views";
 
 interface mapUnmappedCodes {
   handleView: (view) => void;
@@ -165,7 +166,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
         <button onClick={() => handleSubmit()}>Submit changes</button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

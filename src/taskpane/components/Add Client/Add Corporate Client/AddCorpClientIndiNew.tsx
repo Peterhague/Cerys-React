@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_CORP_CLIENT_INDIS_HOME, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientIndiNewProps {
   handleView: (view) => void;
   session: Session;
@@ -89,7 +90,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
     });
-    handleView("addCorpClientIndisHome");
+    handleView(ADD_CORP_CLIENT_INDIS_HOME);
   };
 
   const processNewIndi = async (newIndi) => {
@@ -304,7 +305,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
           ))}
         {showShareClasses && <button onClick={finishSharesAllocation}>Submit details</button>}
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

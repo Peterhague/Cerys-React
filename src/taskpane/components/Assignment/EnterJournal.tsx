@@ -7,6 +7,7 @@ import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
 import { ClientCerysCodeObject } from "../../interfaces/interfaces";
 import { Journal } from "../../classes/journal";
+import { LANDING_PAGE } from "../../static-values/views";
 /*global Excel */
 
 interface enterJournalProps {
@@ -123,7 +124,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
           </div>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

@@ -6,6 +6,7 @@ import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetc
 import { RegisterType } from "../../interfaces/interfaces";
 import { getAssetRegisterType } from "../../static-values/register-types";
 import { getViewOptions } from "../../static-values/view-options";
+import { DELETE_SHEET_PROMPT, PROMPT_ASSET_REGISTER_CREATION } from "../../static-values/views";
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
 import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
@@ -65,7 +66,7 @@ export const submitTransactionUpdates = async (session: Session) => {
         if (promptSheetDeletion) {
           await updateAssignmentFigures(context, session);
           session.options.updatedTransactions = updatedTrans;
-          session.handleView("deleteSheetPrompt");
+          session.handleView(DELETE_SHEET_PROMPT);
         } else {
           await updateAssignmentFigures(context, session);
           checkNewTransForAssets(session);
@@ -98,34 +99,6 @@ export const processUpdateBatch = async (session: Session) => {
   return updatedTransactions;
 };
 
-export const checkAssetRegStatus = (session: Session, handleView) => {
-  if (
-    !session.assignment.IFARegisterCreated &&
-    session.assignment.activeCategories.includes("Intangible assets") &&
-    (session.assignment.activeAssetCodeTypes.includes("iFACostAddns") ||
-      session.assignment.activeAssetCodeTypes.includes("iFACostBF"))
-  ) {
-    handleView("promptIFARCreation");
-  } else if (
-    !session.assignment.TFARegisterCreated &&
-    session.assignment.activeCategories.includes("Tangible assets") &&
-    (session.assignment.activeAssetCodeTypes.includes("tFACostAddns") ||
-      session.assignment.activeAssetCodeTypes.includes("tFACostBF"))
-  ) {
-    handleView("promptTFARCreation");
-  } else if (
-    !session.assignment.IPRegisterCreated &&
-    session.assignment.activeCategories.includes("Investment property") &&
-    (session.assignment.activeAssetCodeTypes.includes("iPCostAddns") ||
-      session.assignment.activeAssetCodeTypes.includes("iPCostBF"))
-  ) {
-    handleView("promptIPRCreation");
-  } else {
-    console.log("next view called");
-    callNextView(session);
-  }
-};
-
 export const checkNewTransForAssets = (session: Session) => {
   const nextRegisterPrompt: "IFA" | "TFA" | "IP" = session.assignment.getNextRegisterPrompt(session);
   let register: RegisterType;
@@ -136,7 +109,7 @@ export const checkNewTransForAssets = (session: Session) => {
     register = getAssetRegisterType(nextRegisterPrompt);
   }
   const options = getViewOptions([{ key: "registerType", value: register }]);
-  session.handleDynamicView("promptAssetRegisterCreation", options);
+  session.handleDynamicView(PROMPT_ASSET_REGISTER_CREATION, options);
 };
 
 export const checkFATranUpdatesForAssets = (session: Session) => {
@@ -178,22 +151,3 @@ export const createDeletionObject = (map, sheet) => {
   const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
   return new ExcelDeletionObject(sheet.name, deletionRange, rowNumber);
 };
-
-// export const createDeletionObjects = (session, updatedTrans) => {
-//   const deletionObjs = [];
-//   const otherTrans = [];
-//   updatedTrans.forEach((tran) => {
-//     session.editableSheets.forEach((sheet) => {
-//       if (tran[sheet.filterObj.target] !== sheet.filterObj.value) {
-//         const rowNumber = getTransRowNumber(tran, sheet);
-//         const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
-//         const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
-//         const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
-//         const deletionObj = { wsName: sheet.name, range: deletionRange, rowNumber };
-//         deletionObjs.push(deletionObj);
-//         sheet.editButtonStatus = "hide";
-//       } else otherTrans.push(tran);
-//     });
-//   });
-//   return { deletionObjs, otherTrans };
-// };

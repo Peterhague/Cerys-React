@@ -10,6 +10,7 @@ import { bFPrevPeriodMessage } from "../../utils/messages";
 import { Session } from "../../classes/session";
 import { Assignment } from "../../classes/assignment";
 import { Client } from "../../interfaces/interfaces";
+import { ASSIGNMENT_DASH_HOME, LANDING_PAGE, USER_CONFIRM_PROMPT } from "../../static-values/views";
 
 interface newAssignmentDtlsProps {
   handleView: (view) => void;
@@ -135,12 +136,12 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     if (session.assignment.reportingPeriod.bFTB.length > 0) {
       const options = {
         handleYes: () => postOpBalJnls(session),
-        handleNo: () => session.handleView("assignmentDashHome"),
+        handleNo: () => session.handleView(ASSIGNMENT_DASH_HOME),
         message: bFPrevPeriodMessage,
       };
-      session.handleDynamicView("userConfirmPrompt", options);
+      session.handleDynamicView(USER_CONFIRM_PROMPT, options);
     } else {
-      handleView("assignmentDashHome");
+      handleView(ASSIGNMENT_DASH_HOME);
     }
   };
 
@@ -333,7 +334,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
           </>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

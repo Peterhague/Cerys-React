@@ -3,6 +3,7 @@ import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { QuasiEventObject } from "../../interfaces/interfaces";
+import { NOM_CODE_SELECTION } from "../../static-values/views";
 import {
   getDefinedCol,
   interpretEventAddress,
@@ -37,7 +38,7 @@ export const handleWorksheetSelection = async (session: Session, e, wsName: stri
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
-    session.handleView("nomCodeSelection");
+    session.handleView(NOM_CODE_SELECTION);
     session.activeEditableCell = createEditableCell(addressObj, wsName, null);
   }
 };

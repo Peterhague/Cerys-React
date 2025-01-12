@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 interface addIndiClientAssocSHProps {
   handleView: (view) => void;
   session: Session;
@@ -14,7 +15,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    handleView("addIndiClientAssocOptions");
+    handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
   };
 
   const handleClientSelection = (e) => {
@@ -114,7 +115,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

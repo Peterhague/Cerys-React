@@ -13,6 +13,7 @@ import {
 } from "../../../utils/helperFunctions";
 import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
+import { ASSIGNMENT_DASH_HOME, HANDLE_TRANS_UPDATES } from "../../../static-values/views";
 
 interface reviewTransUpdatesProps {
   handleView: (view) => void;
@@ -163,10 +164,10 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
       )}
       <div>
         <button onClick={() => handleSubmit()}>Submit changes</button>
-        <button onClick={() => handleView("handleTransUpdates")}>Go back</button>
+        <button onClick={() => handleView(HANDLE_TRANS_UPDATES)}>Go back</button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView("assignmentDashHome")} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

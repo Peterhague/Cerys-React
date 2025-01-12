@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientDepnProps {
   handleView: (view) => void;
   session: Session;
@@ -87,7 +88,7 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
     };
     const updatedObj = { ...session.newClientPrelim, ...depnPols };
     session.newClientPrelim = updatedObj;
-    handleView("addCorpClientOptions");
+    handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -432,7 +433,7 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

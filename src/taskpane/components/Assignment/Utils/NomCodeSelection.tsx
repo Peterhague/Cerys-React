@@ -8,6 +8,7 @@ import { handleClientCodeMapping } from "../../../assignment/assignment-manageme
 import { createEditableCell } from "../../../classes/editable-cell";
 import { Session } from "../../../classes/session";
 import { ClientCerysCodeObject, ClientCodeObject } from "../../../interfaces/interfaces";
+import { HANDLE_TRANS_UPDATES, LANDING_PAGE } from "../../../static-values/views";
 
 interface nomCodeSelectionProps {
   handleView: (view) => void;
@@ -47,7 +48,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     e.preventDefault();
     session.activeEditableCell = createEditableCell(null, null, null);
     if (getUpdatedTransactions(session).length > 0) {
-      handleView("handleTransUpdates");
+      handleView(HANDLE_TRANS_UPDATES);
     } else {
       callNextView(session);
     }
@@ -75,7 +76,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
           <button onClick={(e) => handleGoBack(e)}>Back</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

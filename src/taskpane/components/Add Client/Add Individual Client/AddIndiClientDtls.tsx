@@ -4,6 +4,7 @@ import CerysButton from "../../CerysButton";
 import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
 import { postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 import { Session } from "../../../classes/session";
+import { LANDING_PAGE } from "../../../static-values/views";
 
 interface addIndiClientDtlsprops {
   handleView: (view) => void;
@@ -137,7 +138,7 @@ const AddIndiClientDtls = ({ handleView, session }: addIndiClientDtlsprops) => {
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

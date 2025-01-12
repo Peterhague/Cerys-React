@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 
 interface addIndiClientAssocDirProps {
   handleView: (view) => void;
@@ -23,7 +24,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
     };
     populateNewDirectorship(directorship);
     session.newIndiPrelim._clientDirectorships.push(directorship);
-    handleView("addIndiClientAssocOptions");
+    handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
   };
 
   const populateNewDirectorship = (directorship) => {
@@ -95,7 +96,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };

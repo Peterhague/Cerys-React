@@ -2,6 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
+import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 
 interface addCorpClientSharesProps {
   handleView: (view) => void;
@@ -24,7 +25,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
       prelimAllocation: 0,
     };
     session.newClientPrelim.shareClasses.push(newClientShares);
-    handleView("addCorpClientOptions");
+    handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -71,7 +72,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
           <button type="submit">Submit class</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView("landingPage")} />
+      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
     </>
   );
 };
