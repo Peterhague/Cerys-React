@@ -1,5 +1,8 @@
+import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
-import { ClientCerysCodeObject } from "../interfaces/interfaces";
+import { postClientTBUrl } from "../fetching/apiEndpoints";
+import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
+import { ClientCerysCodeObject, ClientTBLineProps } from "../interfaces/interfaces";
 import { clientCodeToCerysObject } from "../utils.ts/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils.ts/transactions/transactions";
 /* global Excel */
@@ -8,6 +11,7 @@ export async function enterTB(session: Session) {
   try {
     await Excel.run(async (context) => {
       const journals = await handleTBData(session);
+      console.log(journals);
       let check = 0;
       const transactions = [];
       journals.forEach((jnl) => {
@@ -27,6 +31,8 @@ export async function enterTB(session: Session) {
       console.log(session.activeJournal);
       await processTransBatch(context, session);
       checkNewTransForAssets(session);
+      const clientTB: ClientTBLineProps = buildClientTB(session, journals);
+      postClientTB(session, clientTB);
     });
   } catch (e) {
     console.error(e);
@@ -36,7 +42,6 @@ export async function enterTB(session: Session) {
 export async function checkTBMapping(session: Session) {
   try {
     const rtnVal = await Excel.run(async (context) => {
-      // appropriate
       const ws = context.workbook.worksheets.getItem("Client TB");
       const range = ws.getUsedRange();
       range.load("values");
@@ -118,3 +123,23 @@ export function convertToCerysObject(session: Session, formattedTB) {
   const copy = { ...objForPosting };
   return copy;
 }
+
+export const buildClientTB = (session: Session, journals) => {
+  const clientTB = journals.map((jnl) => {
+    const obj: ClientTBLineProps = {
+      clientCode: jnl.clientNominalCode,
+      clientCodeName: session.clientChart.find((code) => code.clientCode === jnl.clientNominalCode).clientCodeName,
+      value: jnl.value,
+    };
+    return obj;
+  });
+  return clientTB;
+};
+
+export const postClientTB = async (session: Session, clientTB: ClientTBLineProps) => {
+  const options = fetchOptionsPostClientTB(session, clientTB);
+  const assingmentDb = await fetch(postClientTBUrl, options);
+  const assignment = await assingmentDb.json();
+  session.assignment = new Assignment(assignment);
+  console.log(session);
+};

@@ -2,7 +2,6 @@ import * as React from "react";
 import CerysButton from "../../CerysButton";
 import { finaliseAssignment } from "../../../assignment/assignment-management/assignment-finalisation";
 import { bFPrevPeriodMessage } from "../../../utils.ts/messages";
-import { oBARelevantTransView } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { trialBalanceUrl } from "../../../fetching/apiEndpoints";
 import { Session } from "../../../classes/session";
 
@@ -31,7 +30,10 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
   return (
     <>
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
-      <CerysButton buttonText={"Opening Balance Adjustments"} handleClick={() => oBARelevantTransView(session)} />
+      <CerysButton
+        buttonText={"Opening Balance Adjustments"}
+        handleClick={() => handleView("openingBalanceAdjustments")}
+      />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
       <CerysButton buttonText={"Update chart"} handleClick={() => updateChart()} />
       <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView("assignmentDashHome")} />

@@ -3,7 +3,7 @@
 import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
-import { ClientCerysCodeObject, DetailedTransaction } from "../interfaces/interfaces";
+import { ClientCerysCodeObject, ClientTBLineProps, DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils.ts/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
@@ -31,7 +31,20 @@ export function fetchOptionsTransBatch(session: Session, journals, transDtls) {
       assignmentId: transDtls.assignmentId,
       transactionType: session.activeJournal.journalType,
       chart: session.chart,
-      clientSoftware: session.assignment.clientSoftware,
+      clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
+    }),
+  };
+}
+
+export function fetchOptionsPostClientTB(session: Session, clientTB: ClientTBLineProps) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      assignmentId: session.assignment._id,
+      clientTB,
     }),
   };
 }
@@ -46,7 +59,7 @@ export function fetchOptionsTransBatchUpdate(session: Session) {
       updatedTransactions: getUpdatedTransactions(session),
       customerId: session.customer._id,
       assignmentId: session.assignment._id,
-      clientSoftware: session.assignment.clientSoftware,
+      clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
       clientChart: session.clientChart,
       chart: session.chart,
     }),
@@ -523,7 +536,7 @@ export function fetchOptionsUpdateCerysCodeMapping(
     body: JSON.stringify({
       customerId: session.customer._id,
       clientId: session.assignment.clientId,
-      clientSoftware: session.assignment.clientSoftware,
+      clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
       clientCode: nominalCode,
       clientCodeName: nominalCodeName,
       cerysCodeObj,

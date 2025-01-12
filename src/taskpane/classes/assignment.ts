@@ -1,5 +1,7 @@
 import {
   AssignmentProps,
+  ClientSoftwareDefaultsProps,
+  ClientTBLineProps,
   ClientTransaction,
   ReportingPeriod,
   ShortUser,
@@ -18,7 +20,7 @@ export class Assignment {
   senior: ShortUser;
   manager: ShortUser;
   responsibleIndividual: ShortUser;
-  clientSoftware: string;
+  clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
   transactions: Transaction[];
   clientNL: ClientTransaction[];
@@ -34,6 +36,7 @@ export class Assignment {
   TFARegisterCreated: boolean;
   IPRegisterCreated: boolean;
   tb: TrialBalanceLineProps[];
+  clientTB: ClientTBLineProps[];
   activeCategories: string[];
   activeCategoriesDetails: {
     cerysCategory: string;
@@ -73,7 +76,7 @@ export class Assignment {
     this.senior = assignment.senior;
     this.manager = assignment.manager;
     this.responsibleIndividual = assignment.responsibleIndividual;
-    this.clientSoftware = assignment.clientSoftware;
+    this.clientSoftwareDefaults = assignment.clientSoftwareDefaults;
     this.workbookId = assignment.workbookId;
     this.transactions = assignment.transactions.map((tran) => new Transaction(tran));
     this.clientNL = assignment.clientNL;
@@ -89,6 +92,7 @@ export class Assignment {
     this.TFARegisterCreated = assignment.TFARegisterCreated;
     this.IPRegisterCreated = assignment.IPRegisterCreated;
     this.tb = assignment.tb;
+    this.clientTB = assignment.clientTB;
     this.activeCategories = assignment.activeCategories;
     this.activeCategoriesDetails = assignment.activeCategoriesDetails;
     this.activeAssetCodeTypes = assignment.activeAssetCodeTypes;

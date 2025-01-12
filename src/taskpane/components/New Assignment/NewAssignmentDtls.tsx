@@ -9,6 +9,7 @@ import { createCurrentPeriodRegister } from "../../utils.ts/transactions/asset-r
 import { bFPrevPeriodMessage } from "../../utils.ts/messages";
 import { Session } from "../../classes/session";
 import { Assignment } from "../../classes/assignment";
+import { Client } from "../../interfaces/interfaces";
 
 interface newAssignmentDtlsProps {
   handleView: (view) => void;
@@ -33,7 +34,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
 
   const handleClientSelection = (clientId) => {
     setClientId(clientId);
-    let clientObj;
+    let clientObj: Client;
     session.customer.clients.forEach((client) => {
       if (client._id === clientId) {
         clientObj = client;
@@ -50,7 +51,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     clientObj.accRefDate ? handleReportingDate(dateEst, clientObj) : handleReportingDate("", clientObj);
   };
 
-  const calculateDateEst = (clientObj) => {
+  const calculateDateEst = (clientObj: Client) => {
     if (clientObj.currentReportingPeriod) {
       const periodEnd = clientObj.currentReportingPeriod.periodEnd.split("T")[0].split("-");
       const currentYear = periodEnd[0];
@@ -76,7 +77,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     setPeriodStart(periodStartJS);
   };
 
-  const calculatePeriodStart = (date, clientObj) => {
+  const calculatePeriodStart = (date, clientObj: Client) => {
     const dateSplit = date.split("-");
     const month = calculateMonth(dateSplit[1]);
     let prelimPeriodStart;

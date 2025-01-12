@@ -54,7 +54,7 @@ export interface AssignmentProps {
   senior: ShortUser;
   manager: ShortUser;
   responsibleIndividual: ShortUser;
-  clientSoftware: string;
+  clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
   transactions: Transaction[];
   clientNL: ClientTransaction[];
@@ -70,6 +70,7 @@ export interface AssignmentProps {
   TFARegisterCreated: boolean;
   IPRegisterCreated: boolean;
   tb: TrialBalanceLine[];
+  clientTB: ClientTBLineProps[];
   activeCategories: string[];
   activeCategoriesDetails: {
     cerysCategory: string;
@@ -248,6 +249,12 @@ export interface ClientTransaction {
   date: number;
   value: number;
   cerysCode?: number;
+}
+
+export interface ClientTBLineProps {
+  clientCode: number;
+  clientCodeName: string;
+  value: number;
 }
 
 export interface ClientMapping {
@@ -511,4 +518,9 @@ export interface RegisterType {
     session: Session,
     relevantTrans: DetailedTransaction[]
   ) => Promise<void>;
+}
+
+export interface ClientSoftwareDefaultsProps {
+  softwareName: string;
+  PLReservesNominalCode: number;
 }

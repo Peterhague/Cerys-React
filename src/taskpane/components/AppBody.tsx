@@ -47,6 +47,7 @@ import { Session } from "../classes/session";
 import PromptAssetRegisterCreation from "./Assignment/Asset-Registers/PromptAssetRegisterCreation";
 import { BLANK_VIEW_OPTIONS } from "../static-values/view-options";
 import ReviewCustomMappedTrans from "./Assignment/Transaction-Updates/ReviewCustomMappedTrans";
+import OpeningBalanceAdjustments from "./Assignment/Assignment-Management/OpeningBalanceAdjustments";
 
 interface AppBodyProps {
   session: Session;
@@ -128,6 +129,10 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case "manageAssignmentDashHome":
         body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
+        session.nextView = view;
+        break;
+      case "openingBalanceAdjustments":
+        body = <OpeningBalanceAdjustments handleView={handleView} session={session} />;
         session.nextView = view;
         break;
       case "nomCodeSelection":

@@ -18,7 +18,6 @@ export const processTransBatch = async (context: Excel.RequestContext, session: 
     return { ...jnl, ...jnl.cerysCodeObj };
   });
   transactions.forEach((jnl) => {
-    console.log(jnl);
     const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.transactionDate === "") {

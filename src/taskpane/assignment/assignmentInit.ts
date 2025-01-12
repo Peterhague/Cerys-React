@@ -26,7 +26,7 @@ function convertDataForWbook(session: Session) {
   newArray.push(["Client name", assignment.clientName]);
   newArray.push(["Period end", assignment.reportingPeriod.reportingDateConverted]);
   newArray.push(["Assignment type", assignment.assignmentType]);
-  newArray.push(["Client software", assignment.clientSoftware]);
+  newArray.push(["Client software", assignment.clientSoftwareDefaults.softwareName]);
   newArray.push(["Prepared by", `${assignment.senior.firstName} ${assignment.senior.lastName}`]);
   newArray.push(["Reviewed by", `${assignment.manager.firstName} ${assignment.manager.lastName}`]);
   newArray.push([
