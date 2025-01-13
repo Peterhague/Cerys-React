@@ -42,6 +42,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     e.preventDefault();
     const cerysObj = session.chart.find((code) => code.cerysCode === parseInt(nominalCode));
     console.log(cerysObj);
+    console.log(value);
     const journalDtls = {
       cerysCode: parseInt(nominalCode),
       value,
@@ -51,8 +52,10 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
       clientTB: false,
       journal: true,
     };
+    console.log(journalDtls.value);
+    console.log(parseFloat(journalDtls.value));
     session.activeJournal.journals.push(new Journal(session, journalDtls));
-    session.activeJournal.netValue += parseInt(journalDtls.value) * 100;
+    session.activeJournal.netValue += parseFloat(journalDtls.value) * 100;
     setNominalCode("");
     setNominalCodeName("");
     setSearchTerm("");

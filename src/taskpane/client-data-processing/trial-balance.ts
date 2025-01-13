@@ -126,10 +126,12 @@ export function convertToCerysObject(session: Session, formattedTB) {
 
 export const buildClientTB = (session: Session, journals) => {
   const clientTB = journals.map((jnl) => {
+    const nomCodeObj = session.clientChart.find(code => code.clientCode === jnl.clientNominalCode);
     const obj: ClientTBLineProps = {
       clientCode: jnl.clientNominalCode,
-      clientCodeName: session.clientChart.find((code) => code.clientCode === jnl.clientNominalCode).clientCodeName,
+      clientCodeName: nomCodeObj.clientCodeName,
       value: jnl.value,
+      statement: nomCodeObj.statement,
     };
     return obj;
   });

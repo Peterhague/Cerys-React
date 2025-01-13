@@ -11,6 +11,7 @@ import {
   JournalDetailsProps,
   QuasiEventObject,
 } from "../../interfaces/interfaces";
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
@@ -188,9 +189,9 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = [["dd/mm/yyyy"]];
       const rangeJ = ws.getRange("J:J");
-      rangeJ.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+      rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
       const rangeM = ws.getRange("M:M");
-      rangeM.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+      rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
@@ -269,7 +270,7 @@ export async function createLikelyAdditionsSumm(session: Session, transactions: 
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = [["dd/mm/yyyy"]];
       const rangeJ = ws.getRange("J:J");
-      rangeJ.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+      rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
       const rangeAJ = ws.getRange("A:J");
       rangeAJ.format.autofitColumns();
       await context.sync();

@@ -1,3 +1,4 @@
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
 
 export function populateAssetRegWs(activeCats, transToPost, ws, regType) {
@@ -255,7 +256,7 @@ const formatRegister = (ws, underlineA, underlineAO, formatTotal, finalTotalRow,
   const rangeC = ws.getRange("C:C");
   rangeC.numberFormat = "0";
   const numbersRange = ws.getRange(`D:${numberColsAsLetter}`);
-  numbersRange.numberFormat = "#,##0.00;(#,##0.00);-";
+  numbersRange.numberFormat = STANDARD_NUMBER_FORMAT;
   underlineA.forEach((row) => {
     const range = ws.getRange(`A${row}:A${row}`);
     range.format.font.underline = "single";

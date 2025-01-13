@@ -6,6 +6,7 @@ import { TransactionMap } from "../../classes/transaction-map";
 import { AddressObject } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import {
   handleEditButtonClick,
   interpretEventAddress,
@@ -114,7 +115,7 @@ async function cerysNomDetailView(context: Excel.RequestContext, transactions: T
   columnA.numberFormat = [["dd/mm/yyyy"]];
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
-  columnG.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+  columnG.numberFormat = STANDARD_NUMBER_FORMAT;
   createEditableWorksheet(session, transactions, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
   columnsRange.format.autofitColumns();
   ws.activate();

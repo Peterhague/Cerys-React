@@ -6,13 +6,13 @@ import { ProxyWorksheet, WorksheetDefaults } from "../interfaces/interfaces";
 import { colNumToLetter } from "./excel-col-conversion";
 /* global Excel */
 
-export function addWorksheet(context, session: Session, wsDefaults: WorksheetDefaults) {
+export function addWorksheet(context: Excel.RequestContext, session: Session, wsDefaults: WorksheetDefaults) {
   const ws = context.workbook.worksheets.add(wsDefaults.name);
   wsDefaults.addListeners && wsDefaults.addListeners.forEach((fn) => fn(context, session));
   return ws;
 }
 
-export const addWorksheets = async (context, session: Session, sheetNames) => {
+export const addWorksheets = async (context: Excel.RequestContext, session: Session, sheetNames: string[]) => {
   const worksheets = [];
   session.options.ignoreWsAddition += sheetNames.length;
   sheetNames.forEach((i) => {
@@ -25,7 +25,11 @@ export const addWorksheets = async (context, session: Session, sheetNames) => {
 };
 
 // returns new Excel worksheet object with id and name preloaded
-export const addOneWorksheet = async (context, session: Session, wsDefaults: WorksheetDefaults) => {
+export const addOneWorksheet = async (
+  context: Excel.RequestContext,
+  session: Session,
+  wsDefaults: WorksheetDefaults
+) => {
   session.options.ignoreWsAddition += 1;
   const ws = addWorksheet(context, session, wsDefaults);
   const proxyObj: ProxyWorksheet = { name: wsDefaults.name, ws };
@@ -33,11 +37,11 @@ export const addOneWorksheet = async (context, session: Session, wsDefaults: Wor
   return proxyObj;
 };
 
-export function deleteWorksheet(context, sheetName) {
+export function deleteWorksheet(context: Excel.RequestContext, sheetName: string) {
   context.workbook.worksheets.getItem(sheetName).delete();
 }
 
-export const deleteManyWorksheets = (context, sheetsToDelete) => {
+export const deleteManyWorksheets = (context: Excel.RequestContext, sheetsToDelete: string[]) => {
   const sheets = [];
   sheetsToDelete.forEach((sheet) => {
     const ws = context.workbook.worksheets.getItemOrNullObject(sheet);
@@ -48,28 +52,23 @@ export const deleteManyWorksheets = (context, sheetsToDelete) => {
   });
 };
 
-export function getWorksheet(context, sheetNameOrId) {
+export function getWorksheet(context: Excel.RequestContext, sheetNameOrId: string) {
   return context.workbook.worksheets.getItem(sheetNameOrId);
 }
 
-export function getWorksheetAndRange(context, sheetName, range) {
+export function getWorksheetAndRange(context: Excel.RequestContext, sheetName: string, range: string) {
   const ws = context.workbook.worksheets.getItem(sheetName);
   const sheetRange = ws.getRange(range);
   return { ws, range: sheetRange };
 }
 
-export const getWorksheetRangeValues = async (context, wsName, range) => {
+export const getWorksheetRangeValues = async (context: Excel.RequestContext, wsName: string, range: string) => {
   const sheet = context.workbook.worksheets.getItem(wsName);
   const wsRange = sheet.getRange(range);
   wsRange.load("values");
   await context.sync();
   return wsRange.values;
 };
-
-//export async function gotToWorksheet(context, sheetName) {
-//  const sheet = context.workbook.worksheets.getItem(sheetName);
-//  sheet.activate();
-//}
 
 export const getActiveWorksheet = async () => {
   try {
@@ -92,7 +91,7 @@ export const activateWorksheet = (context: Excel.RequestContext, wsName: string)
   sheet.activate();
 };
 
-export const getActiveWorksheetName = async (context) => {
+export const getActiveWorksheetName = async (context: Excel.RequestContext) => {
   const sheet = context.workbook.worksheets.getActiveWorksheet();
   sheet.load("name");
   await context.sync();

@@ -1,6 +1,7 @@
 import {
   AssetSubTransaction,
   AssetTransactionProps,
+  ClientCodeObject,
   ClientMapping,
   ReportingPeriod,
   TransactionProps,
@@ -76,9 +77,25 @@ export class Transaction implements TransactionProps {
   }
 
   getClientMappingObj(session: Session) {
-    return this.clientMappingOverridden
-      ? this.clientMappingOverride
-      : this.getCerysCodeObj(session).currentClientMapping;
+    let clientCodeObj: ClientCodeObject;
+    if (this.clientNominalCode > 0)
+      clientCodeObj = session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
+    let clientMappingObj: ClientMapping;
+    if (clientCodeObj) {
+      clientMappingObj = {
+        clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
+        clientCode:
+          clientCodeObj.statement === "PL"
+            ? session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+            : clientCodeObj.clientCode,
+        clientCodeName: clientCodeObj.clientCodeName,
+      };
+    } else {
+      clientMappingObj = this.clientMappingOverridden
+        ? this.clientMappingOverride
+        : this.getCerysCodeObj(session).currentClientMapping;
+    }
+    return clientMappingObj;
   }
 }
 

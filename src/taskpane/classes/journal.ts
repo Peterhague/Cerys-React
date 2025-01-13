@@ -17,7 +17,7 @@ export class Journal implements JournalProps {
   constructor(session: Session, journalDetails: JournalDetailsProps) {
     this.cerysCodeObj = session.chart.find((code) => code.cerysCode === journalDetails.cerysCode);
     const value = journalDetails.value;
-    const numberValue = typeof value === "string" ? parseInt(value) : value;
+    const numberValue = typeof value === "string" ? parseFloat(value) : value;
     this.value = numberValue * 100;
     this.narrative = journalDetails.narrative;
     this.transactionType = journalDetails.transactionType;

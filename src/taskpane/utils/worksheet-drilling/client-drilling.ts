@@ -1,4 +1,5 @@
 import { Session } from "../../classes/session";
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { getClientNomDetail } from "../taskpane/client-system-access";
 import { addOneWorksheet } from "../worksheet";
 /* global Excel */
@@ -53,7 +54,7 @@ async function clientNomDetailView(context, session: Session, detail) {
   const rangeB = ws.getRange("B:B");
   rangeB.numberFormat = [["dd/mm/yyyy"]];
   const rangeD = ws.getRange("D:D");
-  rangeD.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+  rangeD.numberFormat = STANDARD_NUMBER_FORMAT;
   rangeD.format.horizontalAlignment = "Right";
   const currencyRange = ws.getRange("D1:D1");
   currencyRange.format.horizontalAlignment = "Center";

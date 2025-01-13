@@ -1,3 +1,5 @@
+import { STANDARD_NUMBER_FORMAT } from "./worksheet-formats";
+
 export const DEFINED_COLS = {
   transNo: {
     type: "transNo",
@@ -67,7 +69,7 @@ export const DEFINED_COLS = {
     type: "value",
     isMutable: false,
     isQuasiMutable: false,
-    format: [["#,##0.00;(#,##0.00);-"]],
+    format: STANDARD_NUMBER_FORMAT,
     isUnique: false,
     key: ["value"],
   },
@@ -115,7 +117,7 @@ export const DEFINED_COLS = {
     type: "depnCharge",
     isMutable: false,
     isQuasiMutable: true,
-    format: [["#,##0.00;(#,##0.00);-"]],
+    format: STANDARD_NUMBER_FORMAT,
     isUnique: false,
     key: undefined,
   },

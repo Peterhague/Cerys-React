@@ -1,6 +1,7 @@
 import { Session } from "../../classes/session";
 import { TrialBalanceLine } from "../../classes/trial-balance-line";
 import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { clearUsedRange, getOrAddWorksheet } from "../worksheet";
 /* global Excel */
@@ -39,7 +40,7 @@ export async function postTbToWbook(context: Excel.RequestContext, session: Sess
   const total = ws.getRange(`C${tbExcel.length + 12}: C${tbExcel.length + 12}`);
   total.values = [[0]];
   const drCrRange = ws.getRange(`C11:C${tbExcel.length + 12}`);
-  drCrRange.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+  drCrRange.numberFormat = STANDARD_NUMBER_FORMAT;
   range.format.autofitColumns();
   total.format.font.bold = true;
   const colC = ws.getRange("C:C");

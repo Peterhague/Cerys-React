@@ -1,10 +1,13 @@
+import { AssignmentClientTBObject } from "../classes/assignment-client-TB-obj";
 import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
 import { Worksheet } from "../classes/worksheet";
+import { buildClientTB } from "../client-data-processing/trial-balance";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
+import { ClientTBLineProps } from "../interfaces/interfaces";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
@@ -497,4 +500,59 @@ export const postEditableSheetEffects = async (
   setManyExcelRangeValues(context, wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   sheet.usedRange = await getWorksheetUsedRange(context, wsName);
+};
+
+export const buildClientTBBalSheetOnly = (session: Session) => {
+  const bSTB: ClientTBLineProps[] = [];
+  let pLResLine: ClientTBLineProps = session.assignment.clientTB.find(
+    (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+  );
+  session.assignment.clientTB.forEach((line) => {
+    if (line.statement === "BS") {
+      bSTB.push(line);
+    } else {
+      pLResLine.value += line.value;
+    }
+  });
+  return bSTB;
+};
+
+export const convertAssignmentTBForOBAs = (session: Session) => {
+  const TBCodes = [];
+  const TB: AssignmentClientTBObject[] = [];
+  session.assignment.transactions.forEach((tran) => {
+    const code: number = tran.getClientMappingObj(session).clientCode;
+    if (!TBCodes.includes(code)) {
+      TBCodes.push(code);
+      TB.push(new AssignmentClientTBObject(session, tran));
+    } else {
+      TB.forEach((line) => {
+        if (line.clientCode === code) {
+          line.assignmentValue += tran.value;
+          line.assignmentTransactions.push(tran);
+        }
+      });
+    }
+  });
+  TB.filter((obj) => obj.assignmentValue !== 0);
+  return TB;
+};
+
+export const combineClientTrialBalances = (
+  session: Session,
+  clientTB: ClientTBLineProps[],
+  assignmentTBObjects: AssignmentClientTBObject[]
+) => {
+  clientTB.forEach((line) => {
+    const assLine = (assignmentTBObjects.find((obj) => obj.clientCode === line.clientCode).clientValue += line.value);
+    !assLine &&
+      assignmentTBObjects.push(
+        new AssignmentClientTBObject(session, {
+          clientCode: line.clientCode,
+          clientCodeName: line.clientCodeName,
+          value: line.value,
+        })
+      );
+  });
+  assignmentTBObjects.sort((a, b) => a.clientCode - b.clientCode);
 };

@@ -1,6 +1,9 @@
 import * as React from "react";
 import CerysButton from "../../CerysButton";
-import { oBARelevantTransView } from "../../../assignment/assignment-management/opening-balance-adjustments";
+import {
+  oBARelevantTransView,
+  createOBAWorksheet,
+} from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { Session } from "../../../classes/session";
 
 interface OpeningBalanceAdjustmentsProps {
@@ -12,7 +15,7 @@ const OpeningBalanceAdjustments = ({ session }: OpeningBalanceAdjustmentsProps) 
   return (
     <>
       <CerysButton buttonText={"Review Transactions"} handleClick={() => oBARelevantTransView(session)} />
-      <CerysButton buttonText={"Generate Worksheet"} handleClick={() => oBARelevantTransView(session)} />
+      <CerysButton buttonText={"Generate Worksheet"} handleClick={() => createOBAWorksheet(session)} />
     </>
   );
 };

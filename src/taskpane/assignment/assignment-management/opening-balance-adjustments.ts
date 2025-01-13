@@ -1,5 +1,7 @@
 import { Assignment } from "../../classes/assignment";
+import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
+import { ExcelRangeObject } from "../../classes/excel-range-object";
 import { Session } from "../../classes/session";
 import { TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
@@ -7,10 +9,21 @@ import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetchi
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
-import { callNextView, getUpdatedDate, getUpdatedNarrative, handleEditButtonClick } from "../../utils/helperFunctions";
+import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
+import { OBA_WSNAME } from "../../static-values/worksheet-names";
+import {
+  buildClientTBBalSheetOnly,
+  callNextView,
+  combineClientTrialBalances,
+  convertAssignmentTBForOBAs,
+  getUpdatedDate,
+  getUpdatedNarrative,
+  handleEditButtonClick,
+} from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
 import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ws-editing";
+import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 /* global Excel */
 
 export const getOBARelTrans = (session: Session) => {
@@ -85,7 +98,7 @@ export async function oBARelevantTransView(session: Session) {
       columnA.numberFormat = [["dd/mm/yyyy"]];
       const columnsRange = ws.getRange("A:I");
       const columnG = ws.getRange("G:G");
-      columnG.numberFormat = [["#,##0.00;(#,##0.00);-"]];
+      columnG.numberFormat = STANDARD_NUMBER_FORMAT;
       createEditableWorksheet(session, relTrans, ws, valuesToPost, "OBARelevantAdjustments", sheetMapping);
       columnsRange.format.autofitColumns();
       ws.activate();
@@ -340,4 +353,49 @@ export const updateCerysCodeMappingIncludeCustomAsSelected = async (
     }
   });
   callNextView(session);
+};
+
+export const createOBAWorksheet = async (session: Session) => {
+  try {
+    await Excel.run(async (context) => {
+      const combinedTBObjs: AssignmentClientTBObject[] = buildConsolidatedClientTrialBalance(session);
+      const wsName = OBA_WSNAME;
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const wsHeaders = worksheetHeader(session, wsName);
+      applyWorkhseetHeader(ws, wsHeaders);
+      const values = [["", "", "Per Client", "", "Per Accounts", "", "Adjustments"]];
+      values.push(["Code", "Name", "DR/CR", "", "DR/CR", "", "DR/CR"], ["", "", "", "", "", "", ""]);
+      combinedTBObjs.forEach((obj) => {
+        values.push([
+          `${obj.clientCode}`,
+          `${obj.clientCodeName}`,
+          `${obj.clientValue / 100}`,
+          "",
+          `${obj.assignmentValue / 100}`,
+          "",
+          `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
+        ]);
+      });
+      const rangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
+      const wsRange = ws.getRange(rangeObj.address);
+      wsRange.values = values;
+      ws.getRange(rangeObj.getColRangeAbs(3)).numberFormat = STANDARD_NUMBER_FORMAT;
+      ws.getRange(rangeObj.getColRangeAbs(5)).numberFormat = STANDARD_NUMBER_FORMAT;
+      ws.getRange(rangeObj.getColRangeAbs(7)).numberFormat = STANDARD_NUMBER_FORMAT;
+      wsRange.format.autofitColumns();
+      ws.activate();
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
+
+export const buildConsolidatedClientTrialBalance = (session: Session) => {
+  const clientTBBalSheetOnly = buildClientTBBalSheetOnly(session);
+  const equivalentAssTB = convertAssignmentTBForOBAs(session);
+  combineClientTrialBalances(session, clientTBBalSheetOnly, equivalentAssTB);
+  console.log(clientTBBalSheetOnly);
+  console.log(equivalentAssTB);
+  return equivalentAssTB;
 };

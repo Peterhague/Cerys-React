@@ -42,6 +42,7 @@ export interface ClientCodeObject {
   cerysCode: number;
   clientCode: number;
   clientCodeName: string;
+  statement: string;
   _id: string;
 }
 
@@ -255,11 +256,12 @@ export interface ClientTBLineProps {
   clientCode: number;
   clientCodeName: string;
   value: number;
+  statement: string;
 }
 
 export interface ClientMapping {
   clientSoftware: string;
-  clientCode: string;
+  clientCode: number;
   clientCodeName: string;
 }
 

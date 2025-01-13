@@ -125,7 +125,6 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     populateStaffObjs(prelimAssignment);
     const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
     session.customer = customer;
-    //session.assignment = assignment;
     session.assignment = new Assignment(assignment);
     session.clientChart = client.clientChart;
     session.IFARegister = IFARegister;
@@ -150,7 +149,6 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
-    console.log(updatedCustAndNewAss);
     session.chart = updatedCustAndNewAss.chart;
     return updatedCustAndNewAss;
   };
