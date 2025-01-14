@@ -463,7 +463,7 @@ export const handleColumnSort = async (session: Session) => {
   sheet.columnsSorted = true;
 };
 
-export const handleRowSort = async (session: Session, wsName: string) => {
+export const handleEdSheetRowSort = async (session: Session, wsName: string) => {
   const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
   let uniqueCol: number;
   session.editableSheets.forEach((sheet) => {

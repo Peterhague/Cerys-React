@@ -22,9 +22,12 @@ import {
   unhighlightEditableRanges,
 } from "./worksheet";
 import { handleSingleClick } from "./worksheet-drilling/cerys-drilling";
-import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-manipulation";
+import { handleColumnSort, handleEdSheetRowSort } from "./worksheet-editing/ws-col-row-manipulation";
 import { handleEditableSheetChange } from "./worksheet-editing/ed-sheet-change-handling";
-import { handleControlledSheetChange } from "./worksheet-control/controlled-sheet-change-handling";
+import {
+  handleControlledSheetChange,
+  handleControlledSheetRowSort,
+} from "./worksheet-control/controlled-sheet-change-handling";
 import { QuasiEventObject } from "../classes/quasi-event-object";
 /* global Excel */
 
@@ -383,13 +386,13 @@ export const addEditableSheetEventHandlers = (session: Session, ws: Excel.Worksh
   ws.onSingleClicked.add(async (e: Excel.WorksheetSingleClickedEventArgs) => handleSingleClick(session, e, ws.name));
   ws.onChanged.add(async (e: Excel.WorksheetChangedEventArgs) => handleEditableSheetChange(session, e, ws.name));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
+  ws.onRowSorted.add(async () => handleEdSheetRowSort(session, ws.name));
 };
 
 export const addControlledSheetEventHandlers = (session: Session, ws: Excel.Worksheet) => {
   ws.onChanged.add(async (e: Excel.WorksheetChangedEventArgs) => handleControlledSheetChange(session, e, ws.name));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
-  ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
+  ws.onRowSorted.add(async () => handleControlledSheetRowSort(session, ws.name));
 };
 
 export const hasDefinedColOf = (sheet: EditableWorksheet, colType: string) => {

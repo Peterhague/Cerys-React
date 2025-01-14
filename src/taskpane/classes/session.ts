@@ -60,6 +60,7 @@ export class Session {
     updatedTransactions: Transaction[];
     allowEffects: number;
     ignoreWsAddition: number;
+    listeningForDoubleClick: boolean;
   } = {
     IFARCreationSetting: "main",
     TFARCreationSetting: "main",
@@ -68,6 +69,7 @@ export class Session {
     updatedTransactions: [],
     allowEffects: 0,
     ignoreWsAddition: 0,
+    listeningForDoubleClick: false,
   };
   worksheets: Worksheet[] = [];
   newClientPrelim: NewPreliminaryClient;

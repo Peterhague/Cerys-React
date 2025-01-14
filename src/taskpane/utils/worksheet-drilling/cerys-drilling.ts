@@ -24,7 +24,7 @@ import { showClientNominalDetail } from "./client-drilling";
 
 export function addTbClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
-  ws.onSingleClicked.add(async (e) => showNominalDetail(e, session));
+  ws.onSingleClicked.add((e) => showNominalDetail(e, session));
   session.assignment.tbListenerAdded = true;
 }
 
@@ -33,26 +33,6 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.assignment.pLListenerAdded = true;
 }
-
-// export async function showNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
-//   try {
-//     await Excel.run(async (context) => {
-//       const address = e.address;
-//       if (address[0] !== "A") return;
-//       const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
-//       const range = ws.getRange(`${address}:${address}`);
-//       const values = range.load("values");
-//       await context.sync();
-//       const innerValues = values.values;
-//       const code = innerValues[0][0];
-//       const transactions = getCerysNomDetail(session.assignment.transactions, code);
-//       await cerysNomDetailView(context, transactions, session);
-//       await context.sync();
-//     });
-//   } catch (e) {
-//     console.error(e);
-//   }
-// }
 
 export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {

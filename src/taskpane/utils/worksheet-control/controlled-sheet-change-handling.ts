@@ -3,7 +3,7 @@ import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { Session } from "../../classes/session";
 import { AddressObject } from "../../interfaces/interfaces";
 import { colNumToLetter } from "../excel-col-conversion";
-import { interpretEventAddress, parseChangeEventObjectType } from "../helperFunctions";
+import { accessExcelContext, interpretEventAddress, parseChangeEventObjectType } from "../helperFunctions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange, setExcelRangeValue } from "../worksheet";
 import { resetToPreviousValues } from "../worksheet-editing/ws-range-editing";
 /*global Excel */
@@ -403,4 +403,34 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
     console.log("DATA CORRUPPTED!!!!");
     sheet.dataCorrupted = true;
   }
+};
+
+export const handleControlledSheetRowSort = async (session: Session, wsName: string) => {
+  const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
+  const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
+  const uniqueCol = sheet.getUniqueColumn();
+  if (!uniqueCol) return;
+  const protectedRowNumbers: number[] = [];
+  sheet.sheetMapping.forEach((map) => {
+    const controlledInput = map.getControlledInput(sheet.controlledInputs);
+    usedRange.forEach((row, index) => {
+      if (row[uniqueCol - 1] === controlledInput[sheet.uniqueValue]) {
+        map.rowNumber = index + 1;
+        protectedRowNumbers.push(index + 1);
+      }
+    });
+  });
+  protectedRowNumbers.sort((a, b) => {
+    return a - b;
+  });
+  const controlledRowRanges = [{ firstRow: protectedRowNumbers[0], lastRow: protectedRowNumbers[0] }];
+  for (let i = 1; i < protectedRowNumbers.length; i++) {
+    if (controlledRowRanges.at(-1).lastRow + 1 === protectedRowNumbers[i]) {
+      controlledRowRanges.at(-1).lastRow += 1;
+    } else {
+      const nextRange = { firstRow: protectedRowNumbers[i], lastRow: protectedRowNumbers[i] };
+      controlledRowRanges.push(nextRange);
+    }
+  }
+  sheet.controlledRowRanges = controlledRowRanges;
 };

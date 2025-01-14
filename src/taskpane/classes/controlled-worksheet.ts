@@ -1,3 +1,4 @@
+import { AddressObject } from "../interfaces/interfaces";
 import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
 import { ControlledCol } from "./defined-col";
 import { ExcelRangeObject } from "./excel-range-object";
@@ -14,7 +15,7 @@ export class ControlledWorksheet {
   promptDeletion: boolean;
   worksheetId: string;
   controlledRowRanges: { firstRow: number; lastRow: number }[];
-  protectedRange: { firstRow: number; lastRow: number; firstCol: number; lastCol: number };
+  protectedRange: AddressObject;
   protectedRangeDeleted: boolean;
   controlledCols: ControlledCol[];
   changeRejected: boolean;
@@ -25,6 +26,8 @@ export class ControlledWorksheet {
   controlledInputs: TrialBalanceLine[];
   usedRange: any[][];
   sheetMapping: ControlledInputMap[];
+  uniqueColumn: number | null;
+  uniqueValue: string | null;
   filterObj: { target: string; value: string | number | boolean };
   transactionFilter: (tran: Transaction) => boolean;
   isValueInverted: boolean;
@@ -34,7 +37,9 @@ export class ControlledWorksheet {
     ws: Excel.Worksheet,
     wsValues: string[][],
     sheetMapping: ControlledInputMap[],
-    controlledRangeObject: ExcelRangeObject
+    controlledRangeObject: ExcelRangeObject,
+    uniqueColumn: number | null,
+    uniqueValue: string | null
   ) {
     const controlledCols = [];
     for (let i = controlledRangeObject.firstCol; i < controlledRangeObject.lastCol + 1; i++) {
@@ -46,12 +51,7 @@ export class ControlledWorksheet {
     this.worksheetId = ws.id;
     this.controlledCols = controlledCols;
     this.controlledRowRanges = [{ firstRow: controlledRangeObject.firstRow, lastRow: controlledRangeObject.lastRow }];
-    this.protectedRange = {
-      firstRow: controlledRangeObject.firstRow,
-      lastRow: controlledRangeObject.lastRow,
-      firstCol: controlledRangeObject.firstCol,
-      lastCol: controlledRangeObject.lastCol,
-    };
+    this.protectedRange = controlledRangeObject;
     this.protectedRangeDeleted = false;
     this.changeRejected = false;
     this.columnsSorted = false;
@@ -61,11 +61,19 @@ export class ControlledWorksheet {
     this.controlledInputs = controlledInputs;
     this.usedRange = wsValues;
     this.sheetMapping = sheetMapping;
+    this.uniqueColumn = uniqueColumn;
+    this.uniqueValue = uniqueValue;
   }
 
   hasControlledColOf(colNumber: number) {
     const cols = this.controlledCols.map((col) => col.colNumber);
     return cols.includes(colNumber);
+  }
+
+  getUniqueColumn() {
+    return this.uniqueColumn
+      ? this.controlledCols.find((col) => col.colNumberOrig === this.uniqueColumn).colNumber
+      : null;
   }
 }
 
@@ -75,9 +83,19 @@ export const createControlledWorksheet = (
   ws: Excel.Worksheet,
   wsValues: string[][],
   sheetMapping: ControlledInputMap[],
-  controlledRangeObject: ExcelRangeObject
+  controlledRangeObject: ExcelRangeObject,
+  uniqueColumn: number | null,
+  uniqueValue: string | null
 ) => {
-  const controlledWs = new ControlledWorksheet(controlledInputs, ws, wsValues, sheetMapping, controlledRangeObject);
+  const controlledWs = new ControlledWorksheet(
+    controlledInputs,
+    ws,
+    wsValues,
+    sheetMapping,
+    controlledRangeObject,
+    uniqueColumn,
+    uniqueValue
+  );
   const arr = [controlledWs];
   session.controlledSheets.forEach((sheet) => {
     if (sheet.name !== controlledWs.name) arr.push(sheet);
@@ -85,4 +103,27 @@ export const createControlledWorksheet = (
   session.controlledSheets = arr;
   addControlledSheetEventHandlers(session, ws);
   return controlledWs;
+};
+
+export const updateControlledWorksheet = (
+  session: Session,
+  controlledInputs: TrialBalanceLine[],
+  wsValues: string[][],
+  sheetMapping: ControlledInputMap[],
+  controlledRangeObject: ExcelRangeObject,
+  uniqueColumn: number | null,
+  wsName: string
+) => {
+  const controlledCols = [];
+  for (let i = controlledRangeObject.firstCol; i < controlledRangeObject.lastCol + 1; i++) {
+    controlledCols.push(new ControlledCol(i));
+  }
+  const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
+  sheet.controlledInputs = controlledInputs;
+  sheet.usedRange = wsValues;
+  sheet.sheetMapping = sheetMapping;
+  sheet.protectedRange = controlledRangeObject;
+  sheet.uniqueColumn = uniqueColumn;
+  sheet.uniqueValue;
+  sheet.controlledCols = controlledCols;
 };

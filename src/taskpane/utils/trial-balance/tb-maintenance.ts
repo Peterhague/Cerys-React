@@ -1,28 +1,13 @@
-import { createControlledWorksheet } from "../../classes/controlled-worksheet";
+import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
 import { ExcelRangeObject } from "../../classes/excel-range-object";
 import { Session } from "../../classes/session";
 import { ControlledInputMap } from "../../classes/transaction-map";
-import { TrialBalanceLine } from "../../classes/trial-balance-line";
 import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
+import { TB_WSNAME } from "../../static-values/worksheet-names";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { clearUsedRange, getOrAddWorksheet } from "../worksheet";
 /* global Excel */
-
-export function tbForPosting(tb: TrialBalanceLine[]) {
-  const tbArray = [];
-  tb.sort((a, b) => {
-    return a.cerysCode - b.cerysCode;
-  });
-  tb.forEach((line) => {
-    const lineArr = [];
-    lineArr.push(line.cerysCode);
-    lineArr.push(line.cerysName);
-    lineArr.push(line.value / 100);
-    tbArray.push(lineArr);
-  });
-  return tbArray;
-}
 
 export async function wsTrialBalance(context: Excel.RequestContext, session: Session) {
   const { ws } = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
@@ -60,5 +45,9 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   const bottomBorder = total.format.borders.getItem("EdgeBottom");
   topBorder.style = "Continuous";
   bottomBorder.style = "Double";
-  createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj);
+  if (session.controlledSheets.find((ws) => ws.name === TB_WSNAME)) {
+    updateControlledWorksheet(session, trialBalance, tBValues, sheetMapping, excelRangeObj, 1, TB_WSNAME);
+  } else {
+    createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj, 1, "cerysCode");
+  }
 }
