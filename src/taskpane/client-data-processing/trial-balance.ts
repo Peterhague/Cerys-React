@@ -126,7 +126,7 @@ export function convertToCerysObject(session: Session, formattedTB) {
 
 export const buildClientTB = (session: Session, journals) => {
   const clientTB = journals.map((jnl) => {
-    const nomCodeObj = session.clientChart.find(code => code.clientCode === jnl.clientNominalCode);
+    const nomCodeObj = session.clientChart.find((code) => code.clientCode === jnl.clientNominalCode);
     const obj: ClientTBLineProps = {
       clientCode: jnl.clientNominalCode,
       clientCodeName: nomCodeObj.clientCodeName,
@@ -143,5 +143,4 @@ export const postClientTB = async (session: Session, clientTB: ClientTBLineProps
   const assingmentDb = await fetch(postClientTBUrl, options);
   const assignment = await assingmentDb.json();
   session.assignment = new Assignment(assignment);
-  console.log(session);
 };

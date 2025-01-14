@@ -1,4 +1,7 @@
+import { createControlledWorksheet } from "../../classes/controlled-worksheet";
+import { ExcelRangeObject } from "../../classes/excel-range-object";
 import { Session } from "../../classes/session";
+import { ControlledInputMap } from "../../classes/transaction-map";
 import { TrialBalanceLine } from "../../classes/trial-balance-line";
 import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -21,7 +24,7 @@ export function tbForPosting(tb: TrialBalanceLine[]) {
   return tbArray;
 }
 
-export async function postTbToWbook(context: Excel.RequestContext, session: Session, tbExcel: string[][]) {
+export async function wsTrialBalance(context: Excel.RequestContext, session: Session) {
   const { ws } = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, TRIAL_BALANCE.name);
@@ -33,13 +36,21 @@ export async function postTbToWbook(context: Excel.RequestContext, session: Sess
   ];
   headersRange.values = headers;
   headersRange.format.font.bold = true;
-  const range = ws.getRange(`A11:C${tbExcel.length + 10}`);
+  const trialBalance = session.assignment.tb;
+  const tBValues = [];
+  const sheetMapping = [];
+  trialBalance.forEach((line) => {
+    tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
+    sheetMapping.push(new ControlledInputMap(line, "_id", sheetMapping.length + 11));
+  });
+  const excelRangeObj = new ExcelRangeObject({ row: 11, col: 1 }, tBValues);
+  const range = ws.getRange(excelRangeObj.address);
   range.format.font.bold = false;
-  range.values = tbExcel;
+  range.values = tBValues;
   range.format.horizontalAlignment = "Left";
-  const total = ws.getRange(`C${tbExcel.length + 12}: C${tbExcel.length + 12}`);
+  const total = ws.getRange(`C${tBValues.length + 12}: C${tBValues.length + 12}`);
   total.values = [[0]];
-  const drCrRange = ws.getRange(`C11:C${tbExcel.length + 12}`);
+  const drCrRange = ws.getRange(`C11:C${tBValues.length + 12}`);
   drCrRange.numberFormat = STANDARD_NUMBER_FORMAT;
   range.format.autofitColumns();
   total.format.font.bold = true;
@@ -49,4 +60,5 @@ export async function postTbToWbook(context: Excel.RequestContext, session: Sess
   const bottomBorder = total.format.borders.getItem("EdgeBottom");
   topBorder.style = "Continuous";
   bottomBorder.style = "Double";
+  createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj);
 }

@@ -2,24 +2,25 @@ import { createEditableCell } from "../../classes/editable-cell";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
-import { QuasiEventObject } from "../../interfaces/interfaces";
 import { NOM_CODE_SELECTION } from "../../static-values/views";
 import {
   getDefinedCol,
   interpretEventAddress,
+  parseChangeEventObjectType,
   postEditableSheetEffects,
   simulateEditButtonClick,
-} from ".././helperFunctions";
-import { getWorksheetUsedRange } from ".././worksheet";
+} from "../helperFunctions";
+import { getWorksheetUsedRange } from "../worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
-import { handleOtherChange } from "./ws-col-row-manipulation";
+import { handleOtherEdSheetChange } from "./ws-col-row-manipulation";
 import {
   completeCerysCodeUpdate,
   completeCerysNameUpdate,
   completeClientCodeMappingUpdate,
-  handleRangeEdit,
+  handleEdSheetRangeEdit,
   resetToPreviousValues,
 } from "./ws-range-editing";
+import { QuasiEventObject } from "../../classes/quasi-event-object";
 /* global Excel */
 
 export const handleWorksheetSelection = async (session: Session, e, wsName: string) => {
@@ -43,7 +44,7 @@ export const handleWorksheetSelection = async (session: Session, e, wsName: stri
   }
 };
 
-export const handleWorksheetEdit = async (
+export const handleEditableSheetChange = async (
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string
@@ -56,13 +57,13 @@ export const handleWorksheetEdit = async (
         return;
       }
       const isRangeEdited = parseChangeEventObjectType(e);
-      const { sheet, addressObj, definedCol } = parseChangeEventDetails(session, e, wsName);
-      if (!isRangeEdited) {
-        handleOtherChange(context, session, e, wsName, sheet, addressObj);
+      const { sheet, addressObj, definedCol } = parseEdSheetChangeEventDetails(session, e, wsName);
+      if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
+        handleOtherEdSheetChange(context, session, e, wsName, sheet, addressObj);
         return;
       }
       const handledSuccessfully =
-        isRangeEdited && (await handleRangeEdit(context, session, e, sheet, addressObj, definedCol));
+        isRangeEdited && (await handleEdSheetRangeEdit(context, session, e, sheet, addressObj, definedCol));
       await handleSheetDataCorruption(session, wsName, sheet);
       sheet.usedRange = await getWorksheetUsedRange(context, wsName);
       session.options.autoFillOverride = false;
@@ -80,11 +81,7 @@ export const handleWorksheetEdit = async (
   }
 };
 
-export const parseChangeEventObjectType = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
-  return e.changeType === "RangeEdited" ? true : false;
-};
-
-export const parseChangeEventDetails = (
+export const parseEdSheetChangeEventDetails = (
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string

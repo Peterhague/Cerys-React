@@ -1,6 +1,8 @@
+import { ControlledWorksheet } from "../../classes/controlled-worksheet";
 import { DefinedCol } from "../../classes/defined-col";
 import { createEditableCell } from "../../classes/editable-cell";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
+import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionUpdate } from "../../classes/transaction-update";
@@ -8,7 +10,6 @@ import {
   AddressObject,
   AutoFillObject,
   FATransaction,
-  QuasiEventObject,
   TranUpdateFinalValidation,
   TranUpdatePrimaryValidation,
 } from "../../interfaces/interfaces";
@@ -29,10 +30,10 @@ import {
   setExcelRangeValue,
   setManyWorksheetRangeValues,
 } from "../worksheet";
-import { handleWorksheetEdit } from "./ws-editing";
+import { handleEditableSheetChange } from "./ed-sheet-change-handling";
 /* global Excel */
 
-export const handleRangeEdit = async (
+export const handleEdSheetRangeEdit = async (
   context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
@@ -44,7 +45,8 @@ export const handleRangeEdit = async (
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
   const autoFillObj: AutoFillObject = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
-  if (!autoFillObj.isAutoFill) await testChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
+  if (!autoFillObj.isAutoFill)
+    await testEdSheetChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
     await simulateAutoFillChanges(context, session, sheet, autoFillObj);
   } else {
@@ -54,7 +56,7 @@ export const handleRangeEdit = async (
   return handledSuccessfully;
 };
 
-export const testChangesForRejection = async (
+export const testEdSheetChangesForRejection = async (
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
   addressObj: AddressObject,
@@ -391,17 +393,17 @@ export const simulateAutoFillChanges = async (
   for (let i = 0; i < ranges.length; i++) {
     const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
     const valueAfter = await getWorksheetRangeValues(context, wsName, valueAfterRange);
-    const event = {
+    const event = new QuasiEventObject({
       address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
       details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
       changeType: "RangeEdited",
       triggerSource: "",
-    };
-    await handleWorksheetEdit(session, event, wsName);
+    });
+    await handleEditableSheetChange(session, event, wsName);
   }
 };
 
-export const resetToPreviousValues = async (wsName: string, sheet: EditableWorksheet) => {
+export const resetToPreviousValues = async (wsName: string, sheet: EditableWorksheet | ControlledWorksheet) => {
   try {
     await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem(wsName);

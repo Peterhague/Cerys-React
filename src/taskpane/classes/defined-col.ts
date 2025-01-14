@@ -98,3 +98,12 @@ export const getDefinedColsSchema = (type) => {
       return null;
   }
 };
+
+export class ControlledCol {
+  colNumber: number;
+  colNumberOrig: number;
+  constructor(colNumber: number) {
+    this.colNumber = colNumber;
+    this.colNumberOrig = colNumber;
+  }
+}

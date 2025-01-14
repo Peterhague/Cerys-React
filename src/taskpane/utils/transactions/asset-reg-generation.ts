@@ -1,5 +1,6 @@
 import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
 import { Journal } from "../../classes/journal";
+import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { Session } from "../../classes/session";
 import { AssetTransaction, Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
@@ -9,7 +10,6 @@ import {
   Client,
   FATransaction,
   JournalDetailsProps,
-  QuasiEventObject,
 } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";

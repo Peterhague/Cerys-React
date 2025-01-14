@@ -22,7 +22,7 @@ import {
 } from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
-import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ws-editing";
+import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ed-sheet-change-handling";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 /* global Excel */
 
@@ -77,13 +77,7 @@ export async function oBARelevantTransView(session: Session) {
           : cerysCodeObj.cerysShortName;
         const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
         let arr = [];
-        arr.push(line.transactionNumber);
-        arr.push(date);
-        arr.push(line.transactionType);
-        arr.push(cerysCode);
-        arr.push(shortName);
-        arr.push(narrative);
-        arr.push(line.value / 100);
+        arr.push(line.transactionNumber, date, line.transactionType, cerysCode, shortName, narrative, line.value / 100);
         arr.push(line.getClientMappingObj(session).clientCode);
         arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
@@ -382,7 +376,8 @@ export const createOBAWorksheet = async (session: Session) => {
       ws.getRange(rangeObj.getColRangeAbs(3)).numberFormat = STANDARD_NUMBER_FORMAT;
       ws.getRange(rangeObj.getColRangeAbs(5)).numberFormat = STANDARD_NUMBER_FORMAT;
       ws.getRange(rangeObj.getColRangeAbs(7)).numberFormat = STANDARD_NUMBER_FORMAT;
-      wsRange.format.autofitColumns();
+      const autoFitRange = ws.getRange("B:G");
+      autoFitRange.format.autofitColumns();
       ws.activate();
       await context.sync();
     });

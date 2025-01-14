@@ -126,6 +126,7 @@ export interface TrialBalanceLineProps {
   cerysName: string;
   value: number;
   assetCodeType: string;
+  _id: string;
 }
 
 export interface ShortUser {
@@ -452,7 +453,7 @@ export interface AddressObject {
   lastRow: number;
 }
 
-export interface QuasiEventObject {
+export interface QuasiEventObjectProps {
   address: string;
   details: {
     valueBefore: string | number;

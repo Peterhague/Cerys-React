@@ -7,6 +7,7 @@ import { AddressObject } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
+import { TB_WSNAME } from "../../static-values/worksheet-names";
 import {
   handleEditButtonClick,
   interpretEventAddress,
@@ -16,7 +17,7 @@ import {
   getUpdatedCerysCode,
   getUpdatedNarrative,
 } from "../helperFunctions";
-import { getCerysNomDetail, getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
+import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addOneWorksheet } from "../worksheet";
 import { showClientNominalDetail } from "./client-drilling";
 /* global Excel */
@@ -33,25 +34,43 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
   session.assignment.pLListenerAdded = true;
 }
 
-export async function showNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
+// export async function showNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
+//   try {
+//     await Excel.run(async (context) => {
+//       const address = e.address;
+//       if (address[0] !== "A") return;
+//       const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
+//       const range = ws.getRange(`${address}:${address}`);
+//       const values = range.load("values");
+//       await context.sync();
+//       const innerValues = values.values;
+//       const code = innerValues[0][0];
+//       const transactions = getCerysNomDetail(session.assignment.transactions, code);
+//       await cerysNomDetailView(context, transactions, session);
+//       await context.sync();
+//     });
+//   } catch (e) {
+//     console.error(e);
+//   }
+// }
+
+export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
     await Excel.run(async (context) => {
-      const address = e.address;
-      if (address[0] !== "A") return;
-      const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
-      const range = ws.getRange(`${address}:${address}`);
-      const values = range.load("values");
-      await context.sync();
-      const innerValues = values.values;
-      const code = innerValues[0][0];
-      const transactions = getCerysNomDetail(session.assignment.transactions, code);
+      const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
+      const addressObj = interpretEventAddress(e);
+      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
+      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      if (!map) return;
+      const code = sheet.controlledInputs.find((input) => input._id === map.identity).cerysCode;
+      const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
       await cerysNomDetailView(context, transactions, session);
       await context.sync();
     });
   } catch (e) {
     console.error(e);
   }
-}
+};
 
 export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
   try {

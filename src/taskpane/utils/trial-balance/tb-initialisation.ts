@@ -30,6 +30,7 @@ export function populateTransactions(
       closeOffCode: cerysCodeObj.closeOffCode,
       assetCodeType: cerysCodeObj.assetCodeType,
       value: 0,
+      _id: "",
     };
     transactions.forEach((tran) => {
       if (tran.cerysCode === code) {

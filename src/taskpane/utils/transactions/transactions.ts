@@ -10,7 +10,7 @@ import { DELETE_SHEET_PROMPT, PROMPT_ASSET_REGISTER_CREATION } from "../../stati
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateExcelDate, callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helperFunctions";
 import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
-import { renewEdSheetsTransRefs } from "../worksheet-editing/ws-editing";
+import { renewEdSheetsTransRefs } from "../worksheet-editing/ed-sheet-change-handling";
 /* global Excel */
 
 export const processTransBatch = async (context: Excel.RequestContext, session: Session) => {

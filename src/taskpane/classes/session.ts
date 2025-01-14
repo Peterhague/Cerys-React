@@ -6,6 +6,7 @@ import {
   NewPreliminaryClient,
 } from "../interfaces/interfaces";
 import { Assignment } from "./assignment";
+import { ControlledWorksheet } from "./controlled-worksheet";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
 import { Journal } from "./journal";
@@ -36,6 +37,7 @@ export class Session {
     clientTB: false,
   };
   editableSheets: EditableWorksheet[] = [];
+  controlledSheets: ControlledWorksheet[] = [];
   IFARegister: { assetCategory: string; assetCategoryNo: number }[];
   IPRegister: { assetCategory: string; assetCategoryNo: number }[];
   TFARegister: { assetCategory: string; assetCategoryNo: number }[];

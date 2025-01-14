@@ -1,17 +1,17 @@
 import { AssignmentClientTBObject } from "../classes/assignment-client-TB-obj";
+import { DefinedCol } from "../classes/defined-col";
 import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
 import { Worksheet } from "../classes/worksheet";
-import { buildClientTB } from "../client-data-processing/trial-balance";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { ClientTBLineProps } from "../interfaces/interfaces";
 import { wsBalanceSheet } from "../workbook views/workbook-templates/financial-statements/balance-sheet";
 import { wsPLAccount } from "../workbook views/workbook-templates/financial-statements/p&laccount";
 import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
-import { postTbToWbook, tbForPosting } from "./trial-balance/tb-maintenance";
+import { wsTrialBalance } from "./trial-balance/tb-maintenance";
 import {
   getActiveWorksheetName,
   getWorksheet,
@@ -23,7 +23,9 @@ import {
 } from "./worksheet";
 import { handleSingleClick } from "./worksheet-drilling/cerys-drilling";
 import { handleColumnSort, handleRowSort } from "./worksheet-editing/ws-col-row-manipulation";
-import { handleWorksheetEdit } from "./worksheet-editing/ws-editing";
+import { handleEditableSheetChange } from "./worksheet-editing/ed-sheet-change-handling";
+import { handleControlledSheetChange } from "./worksheet-control/controlled-sheet-change-handling";
+import { QuasiEventObject } from "../classes/quasi-event-object";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -291,8 +293,8 @@ export const simulateEditButtonClick = async (session: Session) => {
 };
 
 export const updateAssignmentFigures = async (context: Excel.RequestContext, session: Session) => {
-  const tbArray = tbForPosting(session.assignment.tb);
-  await postTbToWbook(context, session, tbArray);
+  //const tbArray = tbForPosting(session.assignment.tb);
+  await wsTrialBalance(context, session);
   await wsPLAccount(context, session);
   await wsBalanceSheet(context, session);
 };
@@ -375,17 +377,23 @@ export const interpretExcelAddress = (excelAddress) => {
   return { firstRow, lastRow, firstCol, lastCol };
 };
 
-export const addEditableSheetEventHandlers = (session: Session, ws) => {
+export const addEditableSheetEventHandlers = (session: Session, ws: Excel.Worksheet) => {
   ws.onActivated.add(() => setEditButtonValue(session));
-  ws.onDeactivated.add(() => session.setEditButton("off"));
-  ws.onSingleClicked.add(async (e) => handleSingleClick(session, e, ws.name));
-  ws.onChanged.add(async (e) => handleWorksheetEdit(session, e, ws.name));
+  ws.onDeactivated.add(async () => session.setEditButton("off"));
+  ws.onSingleClicked.add(async (e: Excel.WorksheetSingleClickedEventArgs) => handleSingleClick(session, e, ws.name));
+  ws.onChanged.add(async (e: Excel.WorksheetChangedEventArgs) => handleEditableSheetChange(session, e, ws.name));
+  ws.onColumnSorted.add(async () => handleColumnSort(session));
+  ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
+};
+
+export const addControlledSheetEventHandlers = (session: Session, ws: Excel.Worksheet) => {
+  ws.onChanged.add(async (e: Excel.WorksheetChangedEventArgs) => handleControlledSheetChange(session, e, ws.name));
   ws.onColumnSorted.add(async () => handleColumnSort(session));
   ws.onRowSorted.add(async () => handleRowSort(session, ws.name));
 };
 
 export const hasDefinedColOf = (sheet: EditableWorksheet, colType: string) => {
-  let definedCol;
+  let definedCol: DefinedCol;
   sheet.definedCols.forEach((col) => {
     if (col.type === colType) definedCol = col;
   });
@@ -555,4 +563,8 @@ export const combineClientTrialBalances = (
       );
   });
   assignmentTBObjects.sort((a, b) => a.clientCode - b.clientCode);
+};
+
+export const parseChangeEventObjectType = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
+  return e.changeType === "RangeEdited" ? true : false;
 };
