@@ -25,15 +25,15 @@ export class ProfLossFigures {
   tax: number;
   constructor(session: Session) {
     const assignment = session.assignment;
-    this.turnover = assignment.calculateTurnover();
-    this.COS = assignment.calculateCOS();
-    this.otherOpIncome = assignment.calculateOOI();
-    this.distCosts = assignment.calculateDistCosts();
-    this.adminExes = assignment.calculateAdminExes();
-    this.valAdjs = assignment.calculateAdjsFAAndCAI();
-    this.intRec = assignment.calculateOtherIntRec();
-    this.intPayable = assignment.calculateintPay();
-    this.tax = assignment.calculateTax();
+    this.turnover = assignment.calculateTurnover().rawValue;
+    this.COS = assignment.calculateCOS().rawValue;
+    this.otherOpIncome = assignment.calculateOOI().rawValue;
+    this.distCosts = assignment.calculateDistCosts().rawValue;
+    this.adminExes = assignment.calculateAdminExes().rawValue;
+    this.valAdjs = assignment.calculateAdjsFAAndCAI().rawValue;
+    this.intRec = assignment.calculateOtherIntRec().rawValue;
+    this.intPayable = assignment.calculateintPay().rawValue;
+    this.tax = assignment.calculateTax(null).rawValue;
   }
 }
 
@@ -49,14 +49,14 @@ export class ReversedProfLossFigures {
   tax: number;
   constructor(session: Session) {
     const assignment = session.assignment;
-    this.turnover = assignment.calculateTurnover() * -1;
-    this.COS = assignment.calculateCOS() * -1;
-    this.otherOpIncome = assignment.calculateOOI() * -1;
-    this.distCosts = assignment.calculateDistCosts() * -1;
-    this.adminExes = assignment.calculateAdminExes() * -1;
-    this.valAdjs = assignment.calculateAdjsFAAndCAI() * -1;
-    this.intRec = assignment.calculateOtherIntRec() * -1;
-    this.intPayable = assignment.calculateintPay() * -1;
-    this.tax = assignment.calculateTax() * -1;
+    this.turnover = assignment.calculateTurnover().fSValue;
+    this.COS = assignment.calculateCOS().fSValue;
+    this.otherOpIncome = assignment.calculateOOI().fSValue;
+    this.distCosts = assignment.calculateDistCosts().fSValue;
+    this.adminExes = assignment.calculateAdminExes().fSValue;
+    this.valAdjs = assignment.calculateAdjsFAAndCAI().fSValue;
+    this.intRec = assignment.calculateOtherIntRec().fSValue;
+    this.intPayable = assignment.calculateintPay().fSValue;
+    this.tax = assignment.calculateTax(null).fSValue;
   }
 }

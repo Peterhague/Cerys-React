@@ -527,3 +527,11 @@ export interface ClientSoftwareDefaultsProps {
   softwareName: string;
   PLReservesNominalCode: number;
 }
+
+export interface FSCategory {
+  short: string;
+  shortTwo: string | null;
+  long: string;
+  sum: boolean;
+  total: boolean;
+}

@@ -296,7 +296,6 @@ export const simulateEditButtonClick = async (session: Session) => {
 };
 
 export const updateAssignmentFigures = async (context: Excel.RequestContext, session: Session) => {
-  //const tbArray = tbForPosting(session.assignment.tb);
   await wsTrialBalance(context, session);
   await wsPLAccount(context, session);
   await wsBalanceSheet(context, session);
