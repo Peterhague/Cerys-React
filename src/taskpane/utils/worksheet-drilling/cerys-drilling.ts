@@ -252,10 +252,11 @@ async function cerysNomDetailViewBS(context: Excel.RequestContext, session: Sess
     valuesToPost.push(["", "", "", ""]);
   });
   if (cerysCategory === "Profit & loss reserve") {
-    if (assignment.profit > 0) {
-      valuesToPost.push(["Profit for the period", "", "", assignment.profit]);
-    } else if (assignment.profit < 0) {
-      valuesToPost.push(["Loss for the period", "", "", assignment.profit]);
+    const profit = assignment.calculateProfit(null, null).fSValue;
+    if (profit > 0) {
+      valuesToPost.push(["Profit for the period", "", "", profit]);
+    } else if (profit < 0) {
+      valuesToPost.push(["Loss for the period", "", "", profit]);
     }
   }
   const range = ws.getRange(`A1:D${valuesToPost.length}`);

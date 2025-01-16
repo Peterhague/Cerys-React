@@ -528,10 +528,18 @@ export interface ClientSoftwareDefaultsProps {
   PLReservesNominalCode: number;
 }
 
-export interface FSCategory {
+export interface FSCategoryPL {
   short: string;
   shortTwo: string | null;
   long: string;
   sum: boolean;
   total: boolean;
+}
+
+export interface FSCategoryBS extends FSCategoryPL {
+  subTotalCol: boolean;
+  subTotal: boolean;
+  calculated: boolean;
+  spaceBefore: boolean;
+  spaceAfter: boolean;
 }

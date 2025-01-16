@@ -1,4 +1,4 @@
-import { FSCategoryLine } from "../../../classes/accounts-category-line";
+import { FSCategoryLinePL } from "../../../classes/accounts-category-line";
 import { createControlledWorksheet, updateControlledWorksheet } from "../../../classes/controlled-worksheet";
 import { Session } from "../../../classes/session";
 import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
@@ -31,7 +31,6 @@ export async function wsPLAccount(context: Excel.RequestContext, session: Sessio
   const numbersRange = ws.getRange("F:F");
   numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
   wsPLAccountFormat(ws, pLoss);
-  session.assignment.profit = session.assignment.calculateProfit(null, null).fSValue;
   // if (session.controlledSheets.find((ws) => ws.name === PL_WSNAME)) {
   //   updateControlledWorksheet(session, trialBalance, tBValues, sheetMapping, excelRangeObj, 1, TB_WSNAME);
   // } else {
@@ -39,7 +38,7 @@ export async function wsPLAccount(context: Excel.RequestContext, session: Sessio
   // }
 }
 
-export function wsPLAccountFormat(ws: Excel.Worksheet, profLossAccount: FSCategoryLine[]) {
+export function wsPLAccountFormat(ws: Excel.Worksheet, profLossAccount: FSCategoryLinePL[]) {
   profLossAccount.forEach((line) => {
     if (line.sum) ws.getRange(`A${line.rowNumber}:A${line.rowNumber}`).format.font.bold = true;
     if (line.calculated)
