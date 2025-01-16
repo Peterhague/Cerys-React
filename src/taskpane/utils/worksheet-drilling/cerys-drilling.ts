@@ -1,13 +1,15 @@
+import { FSCategoryLinePL } from "../../classes/accounts-category-line";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
+import { TrialBalanceLine } from "../../classes/trial-balance-line";
 import { AddressObject } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
-import { TB_WSNAME } from "../../static-values/worksheet-names";
+import { PL_WSNAME, TB_WSNAME } from "../../static-values/worksheet-names";
 import {
   handleEditButtonClick,
   interpretEventAddress,
@@ -42,7 +44,8 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
       const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
       if (!map) return;
-      const code = sheet.controlledInputs.find((input) => input._id === map.identity).cerysCode;
+      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const code = input instanceof TrialBalanceLine && input.cerysCode;
       const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
       await cerysNomDetailView(context, transactions, session);
       await context.sync();
@@ -52,18 +55,16 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
   }
 };
 
-export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
+export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
     await Excel.run(async (context) => {
-      console.log(e);
-      const address = e.address;
-      if (address[0] !== "A") return;
-      const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
-      const range = ws.getRange(`${address}:${address}`);
-      const values = range.load("values");
-      await context.sync();
-      const innerValues = values.values;
-      const category = innerValues[0][0];
+      const sheet = session.controlledSheets.find((sheet) => sheet.name === PL_WSNAME);
+      const addressObj = interpretEventAddress(e);
+      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
+      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      if (!map) return;
+      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
       await cerysNomDetailViewPL(context, session, arrOfTransArrs);
       await context.sync();
@@ -71,7 +72,28 @@ export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventAr
   } catch (e) {
     console.error(e);
   }
-}
+};
+
+// export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
+//   try {
+//     await Excel.run(async (context) => {
+//       console.log(e);
+//       const address = e.address;
+//       if (address[0] !== "A") return;
+//       const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
+//       const range = ws.getRange(`${address}:${address}`);
+//       const values = range.load("values");
+//       await context.sync();
+//       const innerValues = values.values;
+//       const category = innerValues[0][0];
+//       const arrOfTransArrs = getCerysNomDetailPL(category, session);
+//       await cerysNomDetailViewPL(context, session, arrOfTransArrs);
+//       await context.sync();
+//     });
+//   } catch (e) {
+//     console.error(e);
+//   }
+// }
 
 async function cerysNomDetailView(context: Excel.RequestContext, transactions: Transaction[], session: Session) {
   let sheetInMidEdit = false;
@@ -181,6 +203,8 @@ export async function cerysNomDetailViewPL(
   arrOfTransArrs: Transaction[][]
 ) {
   const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
+  console.log(cerysCategory);
+  console.log(arrOfTransArrs[0][0]);
   const { ws } = await addOneWorksheet(context, session, {
     name: `${cerysCategory} analysis`,
     addListeners: undefined,

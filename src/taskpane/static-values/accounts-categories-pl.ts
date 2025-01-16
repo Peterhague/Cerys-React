@@ -1,150 +1,178 @@
 import { FSCategoryPL } from "../interfaces/interfaces";
 
-export const TO_CAT: FSCategoryPL = { short: "Turnover", shortTwo: null, long: "Turnover", sum: false, total: false };
-export const COS_CAT: FSCategoryPL = {
-  short: "Cost of sales",
-  shortTwo: null,
-  long: "Cost of sales",
+export const TO_CAT: FSCategoryPL = {
+  statementName: "Turnover",
+  statementNameTwo: null,
+  categoryName: "Turnover",
   sum: false,
   total: false,
+  mappable: true,
+};
+export const COS_CAT: FSCategoryPL = {
+  statementName: "Cost of sales",
+  statementNameTwo: null,
+  categoryName: "Cost of sales",
+  sum: false,
+  total: false,
+  mappable: true,
 };
 export const OOI_CAT: FSCategoryPL = {
-  short: "Other operating income",
-  shortTwo: null,
-  long: "Other operating income",
+  statementName: "Other operating income",
+  statementNameTwo: null,
+  categoryName: "Other operating income",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const VAL_ADJ_CAT: FSCategoryPL = {
-  short: "Value adjustments on fixed assets",
-  shortTwo: "and current asset investments",
-  long: "Value adjustments on fixed assets and current asset investments",
+  statementName: "Value adjustments on fixed assets",
+  statementNameTwo: "and current asset investments",
+  categoryName: "Value adjustments on fixed assets and current asset investments",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const GP_CAT: FSCategoryPL = {
-  short: "Gross profit",
-  shortTwo: null,
-  long: "Gross profit",
+  statementName: "Gross profit",
+  statementNameTwo: null,
+  categoryName: "Gross profit",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const GL_CAT: FSCategoryPL = {
-  short: "Gross loss",
-  shortTwo: null,
-  long: "Gross loss",
+  statementName: "Gross loss",
+  statementNameTwo: null,
+  categoryName: "Gross loss",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const DIST_COSTS_CAT: FSCategoryPL = {
-  short: "Distribution costs",
-  shortTwo: null,
-  long: "Distribution costs",
+  statementName: "Distribution costs",
+  statementNameTwo: null,
+  categoryName: "Distribution costs",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const ADMIN_EXES_CAT: FSCategoryPL = {
-  short: "Administrative expenses",
-  shortTwo: null,
-  long: "Administrative expenses",
+  statementName: "Administrative expenses",
+  statementNameTwo: null,
+  categoryName: "Administrative expenses",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const OP_CAT: FSCategoryPL = {
-  short: "Operating profit",
-  shortTwo: null,
-  long: "Operating profit",
+  statementName: "Operating profit",
+  statementNameTwo: null,
+  categoryName: "Operating profit",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const OL_CAT: FSCategoryPL = {
-  short: "Operating loss",
-  shortTwo: null,
-  long: "Operating loss",
+  statementName: "Operating loss",
+  statementNameTwo: null,
+  categoryName: "Operating loss",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const PROF_ORD_ACTS: FSCategoryPL = {
-  short: "Profit on ordinary activities before interest",
-  shortTwo: null,
-  long: "Profit on ordinary activities before interest",
+  statementName: "Profit on ordinary activities before interest",
+  statementNameTwo: null,
+  categoryName: "Profit on ordinary activities before interest",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const LOSS_ORD_ACTS: FSCategoryPL = {
-  short: "Loss on ordinary activities before interest",
-  shortTwo: null,
-  long: "Loss on ordinary activities before interest",
+  statementName: "Loss on ordinary activities before interest",
+  statementNameTwo: null,
+  categoryName: "Loss on ordinary activities before interest",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const INT_REC_CAT: FSCategoryPL = {
-  short: "Interest receivable and other income",
-  shortTwo: null,
-  long: "Other interest receivable and similar income",
+  statementName: "Interest receivable and other income",
+  statementNameTwo: null,
+  categoryName: "Other interest receivable and similar income",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const PBIT_CAT: FSCategoryPL = {
-  short: "Profit before interest and taxation",
-  shortTwo: null,
-  long: "Profit before interest and taxation",
+  statementName: "Profit before interest and taxation",
+  statementNameTwo: null,
+  categoryName: "Profit before interest and taxation",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const LBIT_CAT: FSCategoryPL = {
-  short: "Loss before interest and taxation",
-  shortTwo: null,
-  long: "Loss before interest and taxation",
+  statementName: "Loss before interest and taxation",
+  statementNameTwo: null,
+  categoryName: "Loss before interest and taxation",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const INT_PAY_CAT: FSCategoryPL = {
-  short: "Interest payable and similar charges",
-  shortTwo: null,
-  long: "Interest payable and similar charges",
+  statementName: "Interest payable and similar charges",
+  statementNameTwo: null,
+  categoryName: "Interest payable and similar charges",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const PBT_CAT: FSCategoryPL = {
-  short: "Profit before taxation",
-  shortTwo: null,
-  long: "Profit before taxation",
+  statementName: "Profit before taxation",
+  statementNameTwo: null,
+  categoryName: "Profit before taxation",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const LBT_CAT: FSCategoryPL = {
-  short: "Loss before taxation",
-  shortTwo: null,
-  long: "Loss before taxation",
+  statementName: "Loss before taxation",
+  statementNameTwo: null,
+  categoryName: "Loss before taxation",
   sum: true,
   total: false,
+  mappable: false,
 };
 export const TAX_PROF: FSCategoryPL = {
-  short: "Taxation on profit",
-  shortTwo: null,
-  long: "Taxation on profit",
+  statementName: "Taxation on profit",
+  statementNameTwo: null,
+  categoryName: "Taxation",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const TAX_LOSS: FSCategoryPL = {
-  short: "Taxation on loss",
-  shortTwo: null,
-  long: "Taxation on loss",
+  statementName: "Taxation on loss",
+  statementNameTwo: null,
+  categoryName: "Taxation on loss",
   sum: false,
   total: false,
+  mappable: true,
 };
 export const PROFIT: FSCategoryPL = {
-  short: "Profit for the financial year",
-  shortTwo: null,
-  long: "Profit for the financial year",
+  statementName: "Profit for the financial year",
+  statementNameTwo: null,
+  categoryName: "Profit for the financial year",
   sum: true,
   total: true,
+  mappable: false,
 };
 export const LOSS: FSCategoryPL = {
-  short: "Loss for the financial year",
-  shortTwo: null,
-  long: "Loss for the financial year",
+  statementName: "Loss for the financial year",
+  statementNameTwo: null,
+  categoryName: "Loss for the financial year",
   sum: true,
   total: true,
+  mappable: false,
 };

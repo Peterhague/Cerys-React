@@ -19,8 +19,8 @@ export async function wsBalanceSheet(context: Excel.RequestContext, session: Ses
   balSheet.forEach((item) => {
     if (item.spaceBefore) values.push(["", "", "", "", "", ""]);
     item.subTotalCol
-      ? values.push([item.short, "", "", "", item.rawValue, ""])
-      : values.push([item.short, "", "", "", "", item.rawValue]);
+      ? values.push([item.statementName, "", "", "", item.rawValue, ""])
+      : values.push([item.statementName, "", "", "", "", item.rawValue]);
     item.rowNumber = values.length + 8;
     if (item.spaceAfter) values.push(["", "", "", "", "", ""]);
   });

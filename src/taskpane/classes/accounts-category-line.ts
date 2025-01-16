@@ -6,20 +6,24 @@ export class FSCategoryLinePL {
   calculated: boolean;
   sum: boolean;
   total: boolean;
-  short: string;
-  shortTwo: string | null;
-  long: string;
+  statementName: string;
+  statementNameTwo: string | null;
+  categoryName: string;
+  mappable: boolean;
   rowNumber: number;
-  constructor(value: number, category: FSCategoryPL, calculated: boolean) {
+  _id: string | null;
+  constructor(value: number, id: string | null, category: FSCategoryPL, calculated: boolean) {
     this.rawValue = value;
     this.fSValue = value * -1;
     this.sum = category.sum;
     this.total = category.total;
     this.calculated = calculated;
-    this.short = category.short;
-    this.shortTwo = category.shortTwo;
-    this.long = category.long;
+    this.statementName = category.statementName;
+    this.statementNameTwo = category.statementNameTwo;
+    this.categoryName = category.categoryName;
+    this.mappable = category.mappable;
     this.rowNumber = 0;
+    this._id = id;
   }
 }
 
@@ -33,11 +37,13 @@ export class FSCategoryLineBS {
   calculated: boolean;
   spaceBefore: boolean;
   spaceAfter: boolean;
-  short: string;
-  shortTwo: string | null;
-  long: string;
+  statementName: string;
+  statementNameTwo: string | null;
+  categoryName: string;
+  mappable: boolean;
   rowNumber: number;
-  constructor(value: number | string, category: FSCategoryBS) {
+  _id: string | null;
+  constructor(value: number | string, id: string | null, category: FSCategoryBS) {
     this.rawValue = value;
     this.numberValue = typeof value === "number" ? value : 0;
     this.sum = category.sum;
@@ -47,9 +53,11 @@ export class FSCategoryLineBS {
     this.calculated = category.calculated;
     this.spaceBefore = category.spaceBefore;
     this.spaceAfter = category.spaceAfter;
-    this.short = category.short;
-    this.shortTwo = category.shortTwo;
-    this.long = category.long;
+    this.statementName = category.statementName;
+    this.statementNameTwo = category.statementNameTwo;
+    this.categoryName = category.categoryName;
+    this.mappable = category.mappable;
     this.rowNumber = 0;
+    this._id = id;
   }
 }

@@ -1,5 +1,6 @@
 import { AddressObject } from "../interfaces/interfaces";
 import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
+import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { ControlledCol } from "./defined-col";
 import { ExcelRangeObject } from "./excel-range-object";
 import { Session } from "./session";
@@ -23,7 +24,7 @@ export class ControlledWorksheet {
   rowsSorted: boolean;
   dataCompromised: boolean;
   dataCorrupted: boolean;
-  controlledInputs: TrialBalanceLine[];
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[];
   usedRange: any[][];
   sheetMapping: ControlledInputMap[];
   uniqueColumn: number | null;
@@ -33,7 +34,7 @@ export class ControlledWorksheet {
   isValueInverted: boolean;
 
   constructor(
-    controlledInputs: TrialBalanceLine[],
+    controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
     ws: Excel.Worksheet,
     wsValues: string[][],
     sheetMapping: ControlledInputMap[],
@@ -79,7 +80,7 @@ export class ControlledWorksheet {
 
 export const createControlledWorksheet = (
   session: Session,
-  controlledInputs: TrialBalanceLine[],
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
   ws: Excel.Worksheet,
   wsValues: string[][],
   sheetMapping: ControlledInputMap[],
@@ -107,7 +108,7 @@ export const createControlledWorksheet = (
 
 export const updateControlledWorksheet = (
   session: Session,
-  controlledInputs: TrialBalanceLine[],
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
   wsValues: string[][],
   sheetMapping: ControlledInputMap[],
   controlledRangeObject: ExcelRangeObject,

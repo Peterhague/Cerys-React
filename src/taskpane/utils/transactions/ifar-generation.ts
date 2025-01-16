@@ -9,7 +9,7 @@ import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export const setAutoAmortNominals = (catNo) => {
+export const setAutoAmortNominals = (catNo: number) => {
   switch (catNo) {
     case 1:
       return { debit: 3891, credit: 5032 };

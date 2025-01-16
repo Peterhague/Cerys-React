@@ -1,6 +1,5 @@
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { AssetTransaction } from "../../classes/transaction";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { DetailedTransaction } from "../../interfaces/interfaces";
@@ -10,7 +9,7 @@ import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export const setAutoDepnNominals = (catNo) => {
+export const setAutoDepnNominals = (catNo: number) => {
   switch (catNo) {
     case 1:
       return { debit: 3901, credit: 5132 };

@@ -1,9 +1,9 @@
 import { FSCategoryBS } from "../interfaces/interfaces";
 
 export const TOTAL_QUASI_CAT: FSCategoryBS = {
-  short: "",
-  shortTwo: null,
-  long: "",
+  statementName: "",
+  statementNameTwo: null,
+  categoryName: "",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -11,12 +11,13 @@ export const TOTAL_QUASI_CAT: FSCategoryBS = {
   calculated: true,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: false,
 };
 
 export const SUBTOTAL_QUASI_CAT: FSCategoryBS = {
-  short: "",
-  shortTwo: null,
-  long: "",
+  statementName: "",
+  statementNameTwo: null,
+  categoryName: "",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -24,12 +25,13 @@ export const SUBTOTAL_QUASI_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: false,
 };
 
 export const FIXED_ASS_CAT: FSCategoryBS = {
-  short: "Fixed assets",
-  shortTwo: null,
-  long: "Fixed assets",
+  statementName: "Fixed assets",
+  statementNameTwo: null,
+  categoryName: "Fixed assets",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -37,12 +39,13 @@ export const FIXED_ASS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: true,
+  mappable: false,
 };
 
 export const IFA_CAT: FSCategoryBS = {
-  short: "Intangible assets",
-  shortTwo: null,
-  long: "Intangible assets",
+  statementName: "Intangible assets",
+  statementNameTwo: null,
+  categoryName: "Intangible assets",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -50,12 +53,13 @@ export const IFA_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const TFA_CAT: FSCategoryBS = {
-  short: "Tangible assets",
-  shortTwo: null,
-  long: "Tangible assets",
+  statementName: "Tangible assets",
+  statementNameTwo: null,
+  categoryName: "Tangible assets",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -63,12 +67,13 @@ export const TFA_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const FAI_CAT: FSCategoryBS = {
-  short: "Fixed asset investments",
-  shortTwo: null,
-  long: "Fixed asset investments",
+  statementName: "Fixed asset investments",
+  statementNameTwo: null,
+  categoryName: "Fixed asset investments",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -76,12 +81,13 @@ export const FAI_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const IP_CAT: FSCategoryBS = {
-  short: "Investment property",
-  shortTwo: null,
-  long: "Investment property",
+  statementName: "Investment property",
+  statementNameTwo: null,
+  categoryName: "Investment property",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -89,12 +95,13 @@ export const IP_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const CURR_ASS_CAT: FSCategoryBS = {
-  short: "Current assets",
-  shortTwo: null,
-  long: "Current assets",
+  statementName: "Current assets",
+  statementNameTwo: null,
+  categoryName: "Current assets",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -102,12 +109,13 @@ export const CURR_ASS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: true,
+  mappable: false,
 };
 
 export const STOCKS_CAT: FSCategoryBS = {
-  short: "Stocks",
-  shortTwo: null,
-  long: "Stocks",
+  statementName: "Stocks",
+  statementNameTwo: null,
+  categoryName: "Stocks",
   sum: false,
   total: false,
   subTotalCol: true,
@@ -115,12 +123,13 @@ export const STOCKS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const DEBTORS_CAT: FSCategoryBS = {
-  short: "Debtors",
-  shortTwo: null,
-  long: "Debtors",
+  statementName: "Debtors",
+  statementNameTwo: null,
+  categoryName: "Debtors",
   sum: false,
   total: false,
   subTotalCol: true,
@@ -128,12 +137,13 @@ export const DEBTORS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const FIN_ASS_CAT: FSCategoryBS = {
-  short: "Financial assets",
-  shortTwo: null,
-  long: "Financial assets",
+  statementName: "Financial assets",
+  statementNameTwo: null,
+  categoryName: "Financial assets",
   sum: false,
   total: false,
   subTotalCol: true,
@@ -141,12 +151,13 @@ export const FIN_ASS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const CASH_CAT: FSCategoryBS = {
-  short: "Cash at bank and in hand",
-  shortTwo: null,
-  long: "Cash at bank and in hand",
+  statementName: "Cash at bank and in hand",
+  statementNameTwo: null,
+  categoryName: "Cash",
   sum: false,
   total: false,
   subTotalCol: true,
@@ -154,12 +165,13 @@ export const CASH_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const CURR_LIA_CAT: FSCategoryBS = {
-  short: "Current liabilities",
-  shortTwo: null,
-  long: "Current liabilties",
+  statementName: "Current liabilities",
+  statementNameTwo: null,
+  categoryName: "Current liabilties",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -167,12 +179,13 @@ export const CURR_LIA_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: true,
+  mappable: false,
 };
 
 export const ST_CRED_CAT: FSCategoryBS = {
-  short: "Creditors due in < 1 year",
-  shortTwo: null,
-  long: "Creditors due in < 1 year",
+  statementName: "Creditors due in < 1 year",
+  statementNameTwo: null,
+  categoryName: "Creditors < 1 year",
   sum: false,
   total: false,
   subTotalCol: true,
@@ -180,12 +193,13 @@ export const ST_CRED_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const NCA_CAT: FSCategoryBS = {
-  short: "Net current assets",
-  shortTwo: null,
-  long: "Net current assets",
+  statementName: "Net current assets",
+  statementNameTwo: null,
+  categoryName: "Net current assets",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -193,12 +207,13 @@ export const NCA_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: false,
 };
 
 export const TALCL_CAT: FSCategoryBS = {
-  short: "Total assets less current liabilities",
-  shortTwo: null,
-  long: "Total assets less current liabilities",
+  statementName: "Total assets less current liabilities",
+  statementNameTwo: null,
+  categoryName: "Total assets less current liabilities",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -206,12 +221,13 @@ export const TALCL_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: false,
 };
 
 export const LT_CRED_CAT: FSCategoryBS = {
-  short: "Creditors due in > 1 year",
-  shortTwo: null,
-  long: "Creditors due in > 1 year",
+  statementName: "Creditors due in > 1 year",
+  statementNameTwo: null,
+  categoryName: "Creditors > 1 year",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -219,12 +235,13 @@ export const LT_CRED_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const PROVS_CAT: FSCategoryBS = {
-  short: "Provisions for liabilities",
-  shortTwo: null,
-  long: "Provisions for liabilities",
+  statementName: "Provisions for liabilities",
+  statementNameTwo: null,
+  categoryName: "Provisions for liabilities",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -232,12 +249,13 @@ export const PROVS_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const NA_CAT: FSCategoryBS = {
-  short: "Net assets",
-  shortTwo: null,
-  long: "Net assets",
+  statementName: "Net assets",
+  statementNameTwo: null,
+  categoryName: "Net assets",
   sum: true,
   total: true,
   subTotalCol: false,
@@ -245,12 +263,13 @@ export const NA_CAT: FSCategoryBS = {
   calculated: true,
   spaceBefore: true,
   spaceAfter: true,
+  mappable: false,
 };
 
 export const CAP_RES_CAT: FSCategoryBS = {
-  short: "Capital and reserves",
-  shortTwo: null,
-  long: "Capital and reserves",
+  statementName: "Capital and reserves",
+  statementNameTwo: null,
+  categoryName: "Capital and reserves",
   sum: true,
   total: false,
   subTotalCol: false,
@@ -258,12 +277,13 @@ export const CAP_RES_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: true,
   spaceAfter: true,
+  mappable: false,
 };
 
 export const SHARE_CAP_CAT: FSCategoryBS = {
-  short: "Share capital",
-  shortTwo: null,
-  long: "Share capital",
+  statementName: "Share capital",
+  statementNameTwo: null,
+  categoryName: "Share capital",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -271,12 +291,13 @@ export const SHARE_CAP_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const SHARE_PREM_CAT: FSCategoryBS = {
-  short: "Share premium",
-  shortTwo: null,
-  long: "Share premium",
+  statementName: "Share premium",
+  statementNameTwo: null,
+  categoryName: "Share premium",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -284,12 +305,13 @@ export const SHARE_PREM_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const CAP_RED_RES_CAT: FSCategoryBS = {
-  short: "Capital redemption reserve",
-  shortTwo: null,
-  long: "Capital redemption reserve",
+  statementName: "Capital redemption reserve",
+  statementNameTwo: null,
+  categoryName: "Capital redemption reserve",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -297,12 +319,13 @@ export const CAP_RED_RES_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const FV_RES_CAT: FSCategoryBS = {
-  short: "Fair value reserve",
-  shortTwo: null,
-  long: "Fair value reserve",
+  statementName: "Fair value reserve",
+  statementNameTwo: null,
+  categoryName: "Fair value reserve",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -310,12 +333,13 @@ export const FV_RES_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const OR1_CAT: FSCategoryBS = {
-  short: "Other reserves",
-  shortTwo: null,
-  long: "Other reserves",
+  statementName: "Other reserves",
+  statementNameTwo: null,
+  categoryName: "Other reserves 1",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -323,12 +347,13 @@ export const OR1_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const OR2_CAT: FSCategoryBS = {
-  short: "Other reserves 2",
-  shortTwo: null,
-  long: "Other reserves 2",
+  statementName: "Other reserves 2",
+  statementNameTwo: null,
+  categoryName: "Other reserves 2",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -336,12 +361,13 @@ export const OR2_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const OR3_CAT: FSCategoryBS = {
-  short: "Other reserves 3",
-  shortTwo: null,
-  long: "Other reserves 3",
+  statementName: "Other reserves 3",
+  statementNameTwo: null,
+  categoryName: "Other reserves 3",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -349,12 +375,13 @@ export const OR3_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const OR4_CAT: FSCategoryBS = {
-  short: "Other reserves 4",
-  shortTwo: null,
-  long: "Other reserves 4",
+  statementName: "Other reserves 4",
+  statementNameTwo: null,
+  categoryName: "Other reserves 4",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -362,12 +389,13 @@ export const OR4_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const OR5_CAT: FSCategoryBS = {
-  short: "Other reserves 5",
-  shortTwo: null,
-  long: "Other reserves 5",
+  statementName: "Other reserves 5",
+  statementNameTwo: null,
+  categoryName: "Other reserves 5",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -375,12 +403,13 @@ export const OR5_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const MI_CAT: FSCategoryBS = {
-  short: "Minority interest",
-  shortTwo: null,
-  long: "Minority interest",
+  statementName: "Minority interest",
+  statementNameTwo: null,
+  categoryName: "Minority interest",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -388,12 +417,13 @@ export const MI_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const PL_RES_CAT: FSCategoryBS = {
-  short: "Profit & loss reserve",
-  shortTwo: null,
-  long: "Profit & loss reserve",
+  statementName: "Profit & loss reserve",
+  statementNameTwo: null,
+  categoryName: "Profit & loss reserve",
   sum: false,
   total: false,
   subTotalCol: false,
@@ -401,12 +431,13 @@ export const PL_RES_CAT: FSCategoryBS = {
   calculated: false,
   spaceBefore: false,
   spaceAfter: false,
+  mappable: true,
 };
 
 export const EQUITY_CAT: FSCategoryBS = {
-  short: "Total equity",
-  shortTwo: null,
-  long: "Total equity",
+  statementName: "Total equity",
+  statementNameTwo: null,
+  categoryName: "Total equity",
   sum: true,
   total: true,
   subTotalCol: false,
@@ -414,4 +445,5 @@ export const EQUITY_CAT: FSCategoryBS = {
   calculated: true,
   spaceBefore: true,
   spaceAfter: false,
+  mappable: false,
 };

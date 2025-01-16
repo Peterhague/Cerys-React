@@ -77,6 +77,7 @@ export interface AssignmentProps {
     cerysCategory: string;
     value: number;
     cerysCodes: number[];
+    _id: string;
   }[];
   activeAssetCodeTypes: string[];
   transactionBatches: number;
@@ -86,22 +87,6 @@ export interface AssignmentProps {
   tbListenerAdded: boolean;
   pLListenerAdded: boolean;
   bSListenerAdded?: boolean;
-  tCA: number;
-  tCL: number;
-  nonCA: number;
-  nonCL: number;
-  provisions: number;
-  shareCapital: number;
-  sharePremium: number;
-  profLossRes: number;
-  capRedRes: number;
-  otherRes: number;
-  fVRes: number;
-  otherRes2: number;
-  otherRes3: number;
-  otherRes4: number;
-  otherRes5: number;
-  minorityInt: number;
 }
 
 export interface ReportingPeriod {
@@ -529,11 +514,12 @@ export interface ClientSoftwareDefaultsProps {
 }
 
 export interface FSCategoryPL {
-  short: string;
-  shortTwo: string | null;
-  long: string;
+  statementName: string;
+  statementNameTwo: string | null;
+  categoryName: string;
   sum: boolean;
   total: boolean;
+  mappable: boolean;
 }
 
 export interface FSCategoryBS extends FSCategoryPL {

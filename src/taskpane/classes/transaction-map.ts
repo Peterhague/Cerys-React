@@ -1,3 +1,4 @@
+import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { Transaction } from "./transaction";
 import { TrialBalanceLine } from "./trial-balance-line";
 
@@ -22,13 +23,17 @@ export class ControlledInputMap {
   rowNumber: number;
   rowNumberOrig: number;
 
-  constructor(controlledInput: TrialBalanceLine, identifier: string, rowNumber: number) {
+  constructor(
+    controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS,
+    identifier: string,
+    rowNumber: number
+  ) {
     this.identifier = identifier;
     this.identity = controlledInput[this.identifier];
     this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
   }
-  getControlledInput(controlledInputs: TrialBalanceLine[]) {
+  getControlledInput(controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[]) {
     return controlledInputs.find((input) => input[this.identifier] === this.identity);
   }
 }

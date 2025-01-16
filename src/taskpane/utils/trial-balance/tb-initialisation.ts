@@ -40,27 +40,3 @@ export function populateTransactions(
     tb.push(new TrialBalanceLine(line));
   });
 }
-
-export function setActiveCategories(tb) {
-  const categories = [];
-  tb.forEach((line) => {
-    if (!categories.includes(line.cerysCategory)) {
-      categories.push(line.cerysCategory);
-    }
-  });
-  const arrCats = [];
-  categories.forEach((cat) => {
-    const obj = {};
-    obj["cerysCategory"] = cat;
-    obj["value"] = 0;
-    obj["cerysCodes"] = [];
-    tb.forEach((line) => {
-      if (line.cerysCategory === cat) {
-        obj["value"] += line.value;
-        obj["cerysCodes"].push(line.cerysCode);
-      }
-    });
-    arrCats.push(obj);
-  });
-  return { arrCats, categories };
-}
