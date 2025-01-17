@@ -42,7 +42,6 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
     await Excel.run(async (context) => {
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
-      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
       const map = sheet.sheetMapping.find(
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );
@@ -65,7 +64,6 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
     await Excel.run(async (context) => {
       const sheet = session.controlledSheets.find((sheet) => sheet.name === PL_WSNAME);
       const addressObj = interpretEventAddress(e);
-      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
       const map = sheet.sheetMapping.find(
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );
@@ -227,7 +225,6 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
     await Excel.run(async (context) => {
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
-      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
       const map = sheet.sheetMapping.find(
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );

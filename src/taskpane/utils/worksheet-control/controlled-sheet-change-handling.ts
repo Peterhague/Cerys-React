@@ -102,12 +102,10 @@ const handleColumnInsertion = async (sheet: ControlledWorksheet, addressObj: Add
   } else if (firstCol <= sheet.protectedRange.lastCol) {
     sheet.protectedRange.lastCol += colsInserted;
   }
-  sheet.controlledCols.forEach((col) => {
-    if (col.colNumber >= firstCol) col.colNumber += colsInserted;
-  });
   sheet.sheetMapping.forEach((map) => {
     if (map.colNumber >= firstCol) map.colNumber += colsInserted;
   });
+  if (sheet.uniqueColumn >= firstCol) sheet.uniqueColumn += colsInserted;
   return;
 };
 
@@ -135,13 +133,6 @@ const handleColumnDeletion = async (sheet: ControlledWorksheet, addressObj: Addr
   } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
     sheet.protectedRangeDeleted = true;
   }
-  sheet.controlledCols.forEach((col) => {
-    if (col.colNumber > lastCol) {
-      col.colNumber -= colsDeleted;
-    } else if (col.colNumber >= firstCol && col.colNumber <= lastCol) {
-      sheet.controlledCols = sheet.controlledCols.filter((i) => i !== col);
-    }
-  });
   sheet.sheetMapping.forEach((map) => {
     if (map.colNumber > lastCol) {
       map.colNumber -= colsDeleted;
@@ -149,6 +140,11 @@ const handleColumnDeletion = async (sheet: ControlledWorksheet, addressObj: Addr
       sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
     }
   });
+  if (sheet.uniqueColumn > lastCol) {
+    sheet.uniqueColumn -= colsDeleted;
+  } else if (sheet.uniqueColumn >= firstCol && sheet.uniqueColumn <= lastCol) {
+    sheet.uniqueColumn = 0;
+  }
   return;
 };
 
@@ -278,22 +274,6 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
     } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
       sheet.protectedRangeDeleted = true;
     }
-    sheet.controlledCols.forEach((col) => {
-      if (
-        col.colNumber > lastCol &&
-        firstRow <= sheet.protectedRange.firstRow &&
-        lastRow >= sheet.protectedRange.lastRow
-      ) {
-        col.colNumber -= colsDeleted;
-      } else if (
-        col.colNumber >= firstCol &&
-        col.colNumber <= lastCol &&
-        firstRow <= sheet.protectedRange.firstRow &&
-        lastRow >= sheet.protectedRange.lastRow
-      ) {
-        sheet.controlledCols = sheet.controlledCols.filter((i) => i !== col);
-      }
-    });
     sheet.sheetMapping.forEach((map) => {
       if (map.colNumber > lastCol && map.rowNumber >= firstRow && map.rowNumber <= lastRow) {
         map.colNumber -= colsDeleted;
@@ -306,6 +286,11 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
         sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
       }
     });
+    if (sheet.uniqueColumn > lastCol) {
+      sheet.uniqueColumn -= colsDeleted;
+    } else if (sheet.uniqueColumn >= firstCol && sheet.uniqueColumn <= lastCol) {
+      sheet.uniqueColumn = 0;
+    }
     return;
   } else if (
     (firstRow > sheet.protectedRange.firstRow &&
@@ -361,12 +346,10 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
     } else if (firstCol <= sheet.protectedRange.lastCol) {
       sheet.protectedRange.lastCol += colsInserted;
     }
-    sheet.controlledCols.forEach((col) => {
-      if (col.colNumber >= firstCol) col.colNumber += colsInserted;
-    });
     sheet.sheetMapping.forEach((map) => {
       if (map.colNumber >= firstCol) map.colNumber += colsInserted;
     });
+    if (sheet.uniqueColumn >= firstCol) sheet.uniqueColumn += colsInserted;
     //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
     return;
   } else if (
@@ -387,7 +370,7 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
 export const handleControlledSheetRowSort = async (session: Session, wsName: string) => {
   const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
   const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
-  const uniqueCol = sheet.getUniqueColumn();
+  const uniqueCol = sheet.uniqueColumn;
   if (!uniqueCol) return;
   sheet.sheetMapping.forEach((map) => {
     const controlledInput = map.getControlledInput(sheet.controlledInputs);
