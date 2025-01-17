@@ -536,3 +536,13 @@ export interface DrillableCollectionProps {
   collection: Transaction[];
   colNumbers: number[];
 }
+
+export interface MapTrackingProps {
+  original: number;
+  current: number;
+}
+
+export interface MappingObjectProps {
+  columns: MapTrackingProps[];
+  rows: MapTrackingProps[];
+}

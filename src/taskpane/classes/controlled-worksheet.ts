@@ -1,4 +1,4 @@
-import { AddressObject } from "../interfaces/interfaces";
+import { AddressObject, MappingObjectProps, MapTrackingProps } from "../interfaces/interfaces";
 import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
@@ -25,6 +25,7 @@ export class ControlledWorksheet {
   controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[];
   usedRange: any[][];
   sheetMapping: ControlledInputMap[];
+  mappingObject: MappingObjectProps;
   uniqueColumn: number | null;
   uniqueValue: string | null;
   filterObj: { target: string; value: string | number | boolean };
@@ -54,6 +55,7 @@ export class ControlledWorksheet {
     this.controlledInputs = controlledInputs;
     this.usedRange = wsValues;
     this.sheetMapping = sheetMapping;
+    this.mappingObject = createMappingObject(controlledRangeObject);
     this.uniqueColumn = uniqueColumn;
     this.uniqueValue = uniqueValue;
   }
@@ -103,4 +105,16 @@ export const updateControlledWorksheet = (
   sheet.protectedRange = controlledRangeObject;
   sheet.uniqueColumn = uniqueColumn;
   sheet.uniqueValue;
+};
+
+export const createMappingObject = (excelRangeObj: ExcelRangeObject) => {
+  const columns: MapTrackingProps[] = [];
+  for (let i = 0; i < excelRangeObj.numberOfCols; i++) {
+    columns.push({ original: i + excelRangeObj.firstCol, current: i + excelRangeObj.firstCol });
+  }
+  const rows: MapTrackingProps[] = [];
+  for (let i = 0; i < excelRangeObj.numberOfRows; i++) {
+    rows.push({ original: i + excelRangeObj.firstRow, current: i + excelRangeObj.firstRow });
+  }
+  return { columns, rows };
 };
