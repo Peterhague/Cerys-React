@@ -1,6 +1,7 @@
 import { AddressObject } from "../interfaces/interfaces";
 import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
+import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { ExcelRangeObject } from "./excel-range-object";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
@@ -21,7 +22,7 @@ export class ControlledWorksheet {
   rowsSorted: boolean;
   dataCompromised: boolean;
   dataCorrupted: boolean;
-  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[];
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[];
   usedRange: any[][];
   sheetMapping: ControlledInputMap[];
   uniqueColumn: number | null;
@@ -31,7 +32,7 @@ export class ControlledWorksheet {
   isValueInverted: boolean;
 
   constructor(
-    controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
+    controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
     ws: Excel.Worksheet,
     wsValues: string[][],
     sheetMapping: ControlledInputMap[],
@@ -60,7 +61,7 @@ export class ControlledWorksheet {
 
 export const createControlledWorksheet = (
   session: Session,
-  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
   ws: Excel.Worksheet,
   wsValues: string[][],
   sheetMapping: ControlledInputMap[],
@@ -88,7 +89,7 @@ export const createControlledWorksheet = (
 
 export const updateControlledWorksheet = (
   session: Session,
-  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[],
+  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
   wsValues: string[][],
   sheetMapping: ControlledInputMap[],
   controlledRangeObject: ExcelRangeObject,

@@ -46,7 +46,7 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );
       if (!map) return;
-      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
       console.log(input);
       console.log(code);
@@ -68,7 +68,7 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );
       if (!map) return;
-      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
       await cerysNomDetailViewPL(context, session, arrOfTransArrs);
@@ -229,7 +229,7 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
         (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
       );
       if (!map) return;
-      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailBS(category, session);
       await cerysNomDetailViewBS(context, session, arrOfTransArrs);

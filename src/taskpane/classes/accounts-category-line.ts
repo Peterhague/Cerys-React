@@ -11,7 +11,7 @@ export class FSCategoryLinePL {
   categoryName: string;
   mappable: boolean;
   rowNumber: number;
-  _id: string | null;
+  identifier: string | null;
   constructor(value: number, id: string | null, category: FSCategoryPL, calculated: boolean) {
     this.rawValue = value;
     this.fSValue = value * -1;
@@ -23,7 +23,7 @@ export class FSCategoryLinePL {
     this.categoryName = category.categoryName;
     this.mappable = category.mappable;
     this.rowNumber = 0;
-    this._id = id;
+    this.identifier = id;
   }
 }
 
@@ -42,7 +42,7 @@ export class FSCategoryLineBS {
   categoryName: string;
   mappable: boolean;
   rowNumber: number;
-  _id: string | null;
+  identifier: string | null;
   constructor(value: number | string, id: string | null, category: FSCategoryBS) {
     this.rawValue = value;
     this.numberValue = typeof value === "number" ? value : 0;
@@ -58,6 +58,6 @@ export class FSCategoryLineBS {
     this.categoryName = category.categoryName;
     this.mappable = category.mappable;
     this.rowNumber = 0;
-    this._id = id;
+    this.identifier = id;
   }
 }

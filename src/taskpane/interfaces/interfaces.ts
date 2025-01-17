@@ -111,7 +111,7 @@ export interface TrialBalanceLineProps {
   cerysName: string;
   value: number;
   assetCodeType: string;
-  _id: string;
+  identifier: string;
 }
 
 export interface ShortUser {

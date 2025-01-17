@@ -1,4 +1,5 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
+import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { Transaction } from "./transaction";
 import { TrialBalanceLine } from "./trial-balance-line";
 
@@ -26,7 +27,7 @@ export class ControlledInputMap {
   colNumberOrig: number;
 
   constructor(
-    controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS,
+    controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject,
     identifier: string,
     rowNumber: number,
     colNumber: number
@@ -38,7 +39,9 @@ export class ControlledInputMap {
     this.colNumber = colNumber;
     this.colNumberOrig = colNumber;
   }
-  getControlledInput(controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[]) {
+  getControlledInput(
+    controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[]
+  ) {
     return controlledInputs.find((input) => input[this.identifier] === this.identity);
   }
 }

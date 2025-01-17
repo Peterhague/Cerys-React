@@ -7,6 +7,7 @@ export class AssignmentClientTBObject {
   clientValue: number;
   assignmentValue: number;
   assignmentTransactions: Transaction[] | null;
+  identifier: number | string;
   constructor(
     session: Session,
     transaction: Transaction | { clientCode: number; clientCodeName: string; value: number }
@@ -20,5 +21,6 @@ export class AssignmentClientTBObject {
     this.clientValue = transaction instanceof Transaction ? 0 : transaction.value;
     this.assignmentValue = transaction instanceof Transaction ? transaction.value : 0;
     this.assignmentTransactions = transaction instanceof Transaction ? [transaction] : null;
+    this.identifier = this.clientCode;
   }
 }

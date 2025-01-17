@@ -1,9 +1,10 @@
 import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
+import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/excel-range-object";
 import { Session } from "../../classes/session";
-import { TransactionMap } from "../../classes/transaction-map";
+import { ControlledInputMap, TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
@@ -357,6 +358,7 @@ export const createOBAWorksheet = async (session: Session) => {
       const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
       const wsHeaders = worksheetHeader(session, wsName);
       applyWorkhseetHeader(ws, wsHeaders);
+      const sheetMapping: ControlledInputMap[] = [];
       const values = [["", "", "Per Client", "", "Per Accounts", "", "Adjustments"]];
       values.push(["Code", "Name", "DR/CR", "", "DR/CR", "", "DR/CR"], ["", "", "", "", "", "", ""]);
       combinedTBObjs.forEach((obj) => {
@@ -369,15 +371,25 @@ export const createOBAWorksheet = async (session: Session) => {
           "",
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
+        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 1));
+        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 2));
+        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 3));
+        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 5));
+        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 7));
       });
-      const rangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
-      const wsRange = ws.getRange(rangeObj.address);
+      const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
+      const wsRange = ws.getRange(excelRangeObj.address);
       wsRange.values = values;
-      ws.getRange(rangeObj.getColRangeAbs(3)).numberFormat = STANDARD_NUMBER_FORMAT;
-      ws.getRange(rangeObj.getColRangeAbs(5)).numberFormat = STANDARD_NUMBER_FORMAT;
-      ws.getRange(rangeObj.getColRangeAbs(7)).numberFormat = STANDARD_NUMBER_FORMAT;
+      ws.getRange(excelRangeObj.getColRangeAbs(3)).numberFormat = STANDARD_NUMBER_FORMAT;
+      ws.getRange(excelRangeObj.getColRangeAbs(5)).numberFormat = STANDARD_NUMBER_FORMAT;
+      ws.getRange(excelRangeObj.getColRangeAbs(7)).numberFormat = STANDARD_NUMBER_FORMAT;
       const autoFitRange = ws.getRange("B:G");
       autoFitRange.format.autofitColumns();
+      if (session.controlledSheets.find((ws) => ws.name === wsName)) {
+        updateControlledWorksheet(session, combinedTBObjs, values, sheetMapping, excelRangeObj, 1, wsName);
+      } else {
+        createControlledWorksheet(session, combinedTBObjs, ws, values, sheetMapping, excelRangeObj, 1, "clientCode");
+      }
       ws.activate();
       await context.sync();
     });
