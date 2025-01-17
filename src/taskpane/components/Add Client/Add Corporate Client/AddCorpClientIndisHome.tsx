@@ -61,7 +61,6 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
 
   const handleSubmit = (e) => {
     e.preventDefault();
-    console.log(selectedIndi);
     indis.forEach((indi) => {
       if (indi._id === selectedIndi) {
         indi.isDirector = isDirector;

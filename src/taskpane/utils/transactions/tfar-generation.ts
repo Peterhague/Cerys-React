@@ -9,31 +9,6 @@ import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export const setAutoDepnNominals = (catNo: number) => {
-  switch (catNo) {
-    case 1:
-      return { debit: 3901, credit: 5132 };
-    case 2:
-      return { debit: 3902, credit: 5152 };
-    case 3:
-      return { debit: 3903, credit: 5172 };
-    case 4:
-      return { debit: 3904, credit: 5192 };
-    case 5:
-      return { debit: 3905, credit: 5212 };
-    case 6:
-      return { debit: 3906, credit: 5232 };
-    case 7:
-      return { debit: 3907, credit: 5252 };
-    case 8:
-      return { debit: 3908, credit: 5272 };
-    case 9:
-      return { debit: 3909, credit: 5292 };
-    default:
-      return undefined;
-  }
-};
-
 export async function createTFAR(
   context: Excel.RequestContext,
   session: Session,
@@ -41,7 +16,6 @@ export async function createTFAR(
 ) {
   const assignment = await postTFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
-  console.log(session);
   createTFARWs(context, session);
 }
 

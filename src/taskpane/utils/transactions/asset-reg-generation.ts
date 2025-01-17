@@ -41,7 +41,6 @@ export const previewRelTrans = (session: Session, registerType: string, setView)
 export async function createRelTrans(session: Session, registerType: string) {
   const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
   createTransSumm(session, relevantTrans, registerType);
-  console.log(relevantTrans);
 }
 
 export const convertNewFATrans = (session: Session) => {
@@ -73,7 +72,6 @@ export const convertNewFATrans = (session: Session) => {
       }
     }
   });
-  console.log(updatedTrans);
 };
 
 export async function createTransSumm(session: Session, relevantTrans: AssetTransaction[], registerType: string) {
@@ -184,7 +182,6 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       const headerRange = ws.getRange("A1:M2");
       headerRange.format.font.bold = true;
       const range = ws.getRange(`A1:M${valuesToPost.length}`);
-      console.log(valuesToPost);
       range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = [["dd/mm/yyyy"]];
@@ -265,7 +262,6 @@ export async function createLikelyAdditionsSumm(session: Session, transactions: 
       const headerRange = ws.getRange("A1:J2");
       headerRange.format.font.bold = true;
       const range = ws.getRange(`A1:J${valuesToPost.length}`);
-      console.log(valuesToPost);
       range.values = valuesToPost;
       const rangeB = ws.getRange("B:B");
       rangeB.numberFormat = [["dd/mm/yyyy"]];
@@ -383,7 +379,6 @@ export function calculateCharge(
   const daysInPeriod = session.assignment.reportingPeriod.noOfDays;
   const rate = assetTran.amortRate ? assetTran.amortRate : assetTran.depnRate;
   const charge = Math.round(transaction.value * (parseInt(rate) / 100) * (daysHeld / daysInPeriod));
-  console.log(charge);
   let amortOrDepn: string;
   if (registerType === "IFA") {
     amortOrDepn = "Amort";
@@ -584,45 +579,32 @@ export const adjustAutoDepnJnls = (session: Session, tran, charge) => {
 
 export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) => {
   bFTransLikelyAddns.forEach((tran) => {
-    if (tran._id) {
-      //const newValue = tran.cerysCode + 1;
-      //const update = createNewTransactionUpdate(session, tran, newValue, "sheet", "updatedCode"); // Issue: this code is fudged, needs to be looked at... see code commented out below
-      //session.chart.forEach((code) => {
-      //  if (code.cerysCode === newValue) {
-      //      update.cerysCodeObject = code;
-      //  }
-      //});
-      //if (!tran.cerysCodeObject) tran.cerysCodeObject = session.chart.find(code => code.cerysCode = update.value)
-      //newArray.push(newUpdate);
-      //console.log(update);
-    } else {
-      const chart = session.chart;
-      let drJnl;
-      let crJnl;
-      for (let i = 0; i < chart.length; i++) {
-        if (chart[i].cerysCode === tran.cerysCode + 1) {
-          drJnl = { cerysCodeObj: chart[i] };
-          drJnl.value = tran.value;
-          drJnl.transactionDate = tran.transactionDate;
-          drJnl.journal = false;
-          drJnl.clientTB = false;
-          drJnl.transactionType = "autoAddition";
-          drJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-          drJnl.assetNarrative = tran.assetNarrative;
-          drJnl.clientNominalCode = tran.clientNominalCode;
-          drJnl.clientNominalName = tran.clientNominalName;
-          session.activeJournal.journals.push(drJnl);
-        }
-        if (chart[i].cerysCode === tran.cerysCode) {
-          crJnl = { cerysCodeObj: chart[i] };
-          crJnl.value = tran.value * -1;
-          crJnl.transactionDate = tran.transactionDate;
-          crJnl.journal = false;
-          crJnl.clientTB = false;
-          crJnl.transactionType = "autoAddition";
-          crJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-          session.activeJournal.journals.push(crJnl);
-        }
+    const chart = session.chart;
+    let drJnl;
+    let crJnl;
+    for (let i = 0; i < chart.length; i++) {
+      if (chart[i].cerysCode === tran.cerysCode + 1) {
+        drJnl = { cerysCodeObj: chart[i] };
+        drJnl.value = tran.value;
+        drJnl.transactionDate = tran.transactionDate;
+        drJnl.journal = false;
+        drJnl.clientTB = false;
+        drJnl.transactionType = "autoAddition";
+        drJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
+        drJnl.assetNarrative = tran.assetNarrative;
+        drJnl.clientNominalCode = tran.clientNominalCode;
+        drJnl.clientNominalName = tran.clientNominalName;
+        session.activeJournal.journals.push(drJnl);
+      }
+      if (chart[i].cerysCode === tran.cerysCode) {
+        crJnl = { cerysCodeObj: chart[i] };
+        crJnl.value = tran.value * -1;
+        crJnl.transactionDate = tran.transactionDate;
+        crJnl.journal = false;
+        crJnl.clientTB = false;
+        crJnl.transactionType = "autoAddition";
+        crJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
+        session.activeJournal.journals.push(crJnl);
       }
     }
   });
@@ -636,7 +618,6 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) =
 export const createCurrentPeriodRegister = (regsiter, session: Session) => {
   const periodId = session.assignment.reportingPeriod._id;
   const currentPeriodRegister = [];
-  console.log(regsiter);
   regsiter.assets.forEach((asset) => {
     if (asset.activePeriods.includes(periodId)) {
       const { periods, activePeriods, ...obj } = asset;

@@ -48,8 +48,6 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
-      console.log(input);
-      console.log(code);
       const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
       await cerysNomDetailView(context, transactions, session);
       await context.sync();

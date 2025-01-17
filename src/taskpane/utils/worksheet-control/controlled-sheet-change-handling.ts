@@ -56,8 +56,6 @@ export const testControlledSheetChangesForRejection = async (
   const { firstRow, firstCol } = addressObj;
   const eRowNumber = firstRow;
   const eColNumber = firstCol;
-  console.log(eRowNumber);
-  console.log(eColNumber);
   const mapping = sheet.sheetMapping.find((map) => map.colNumber === eColNumber && map.rowNumber === eRowNumber);
   const withinProtectedRange = mapping ? true : false;
   if (!withinProtectedRange) sheet.edited = true;

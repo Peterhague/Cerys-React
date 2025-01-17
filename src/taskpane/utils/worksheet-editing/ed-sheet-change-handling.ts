@@ -51,7 +51,6 @@ export const handleEditableSheetChange = async (
 ) => {
   try {
     await Excel.run(async (context) => {
-      console.log(e);
       if (session.options.allowEffects > 0) {
         session.options.allowEffects -= 1;
         return;
@@ -136,27 +135,6 @@ export const updateEdSheetClientCodeMapping = async (
     console.error(e);
   }
 };
-
-// export const updateEdSheetsTransValues = async (context, session: Session) => {
-//   const sheetUpdateObjects = [];
-//   const deletionObjs = [];
-//   session.editableSheets.forEach((sheet) => {
-//     sheetUpdateObjects.push(...sheet.updateObjects);
-//     deletionObjs.push(...sheet.deletionObjects);
-//   });
-//   console.log(sheetUpdateObjects);
-//   console.log(deletionObjs);
-//   sheetUpdateObjects.forEach((obj) => {
-//     setManyExcelRangeValues(context, obj.wsName, obj.updates);
-//   });
-//   if (deletionObjs.length > 0) {
-//     // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
-//     // therefore needs to be done from bottom of page up
-//     deletionObjs.sort((a, b) => b.rowNumber - a.rowNumber);
-//     console.log(deletionObjs);
-//     await deleteWorksheetRangesUp(context, deletionObjs);
-//   }
-// };
 
 export const renewEdSheetsTransRefs = (context: Excel.RequestContext, session: Session) => {
   let promptSheetDeletion = false;

@@ -33,7 +33,6 @@ import { accountsCategories } from "../static-values/accounts-categories-array";
 /* global Excel */
 
 export const getExcelContext = async () => {
-  console.log("getting context");
   try {
     const ctx = await Excel.run(async (context) => {
       return context;
@@ -77,7 +76,6 @@ export const handleSheetAddition = async (
   const ws = getWorksheet(context, e.worksheetId);
   ws.load("name");
   await context.sync();
-  console.log(ws.name);
   session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 

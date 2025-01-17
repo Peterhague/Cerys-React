@@ -76,7 +76,6 @@ export const getActiveWorksheet = async () => {
       const sheet = context.workbook.worksheets.getActiveWorksheet();
       sheet.load("name");
       await context.sync();
-      console.log(sheet.name);
       return sheet;
     });
     return rtnVal;
@@ -196,7 +195,6 @@ export const processWorksheetAdditions = async (
   session: Session,
   worksheets: ProxyWorksheet[]
 ) => {
-  console.log(worksheets);
   worksheets.forEach((sheet) => sheet.ws.load(["id", "name"]));
   await context.sync();
   worksheets.forEach((sheet) => session.worksheets.push(new Worksheet(sheet.name, sheet.ws.id)));

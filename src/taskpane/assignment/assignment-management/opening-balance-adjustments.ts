@@ -178,7 +178,6 @@ export const updateCerysCodeMapping = async (
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
-  console.log(newMapping);
   session.customer = customer;
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
@@ -229,7 +228,6 @@ export const updateCerysCodeMappingIgnoreCustom = async (
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
-  console.log(newMapping);
   session.customer = customer;
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
@@ -402,7 +400,5 @@ export const buildConsolidatedClientTrialBalance = (session: Session) => {
   const clientTBBalSheetOnly = buildClientTBBalSheetOnly(session);
   const equivalentAssTB = convertAssignmentTBForOBAs(session);
   combineClientTrialBalances(session, clientTBBalSheetOnly, equivalentAssTB);
-  console.log(clientTBBalSheetOnly);
-  console.log(equivalentAssTB);
   return equivalentAssTB;
 };

@@ -80,7 +80,6 @@ export const testEdSheetChangesForRejection = async (
 };
 
 export const checkForAutoFill = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
-  console.log(e.address);
   const addressObj: AddressObject = interpretExcelAddress(e.address);
   const { firstRow, firstCol, lastRow, lastCol } = addressObj;
   const isAutoFill = firstRow !== lastRow || firstCol !== lastCol ? true : false;
@@ -201,7 +200,6 @@ export const processTransUpdateEffects = (
     session.currentView === "propmptIPRCreation"
   )
     setNextViewButOne(session);
-  console.log(updatedTrans);
   const view = updatedTrans.length > 0 ? "handleTransUpdates" : session.nextView;
   session.handleView(view);
   if (updatedTrans.length > 0) {
@@ -229,7 +227,6 @@ export const validateChange = (
   } else if (definedCol.type === "cerysName") {
     finalValidationObj.isError = false;
   } else finalValidationObj.isError = true;
-  console.log(finalValidationObj);
   return finalValidationObj;
 };
 
@@ -285,14 +282,6 @@ export const deleteExistingUpdate = (
   primaryValidationObj: TranUpdatePrimaryValidation,
   definedCol: DefinedCol
 ) => {
-  console.log(tran);
-  // getUpdatedTransactions(session).forEach((updatedTran) => {
-  //   const existingUpdate = updatedTran.updates.find((update) => update.type === definedCol.type);
-  //   if (existingUpdate) {
-  //     tests.isValid = true;
-  //     updatedTran.updates = updatedTran.updates.filter((update) => update.type !== existingUpdate.type);
-  //   }
-  // });
   const existingUpdate = tran.updates.find((update) => update.type === definedCol.type);
   if (existingUpdate) {
     primaryValidationObj.isValid = true;

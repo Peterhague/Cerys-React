@@ -11,7 +11,6 @@ import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule
 
 export async function wsPLAccount(context: Excel.RequestContext, session: Session) {
   const pLoss = session.assignment.getPLAccount();
-  console.log(pLoss);
   const { ws } = await getOrAddWorksheet(context, session, PL_ACCOUNT);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, PL_ACCOUNT.name);

@@ -11,7 +11,6 @@ export async function enterTB(session: Session) {
   try {
     await Excel.run(async (context) => {
       const journals = await handleTBData(session);
-      console.log(journals);
       let check = 0;
       const transactions = [];
       journals.forEach((jnl) => {
@@ -28,7 +27,6 @@ export async function enterTB(session: Session) {
       session.activeJournal.journalType = "clientTB";
       session.activeJournal.journal = false;
       session.activeJournal.clientTB = true;
-      console.log(session.activeJournal);
       await processTransBatch(context, session);
       checkNewTransForAssets(session);
       const clientTB: ClientTBLineProps = buildClientTB(session, journals);

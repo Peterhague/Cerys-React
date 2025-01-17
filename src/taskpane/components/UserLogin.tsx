@@ -32,7 +32,6 @@ const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: us
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
     session.setEditButton = setEditButton;
-    console.log(session);
     await registerWorksheetsCollectionHandler(session);
     handleView(USER_DASH_HOME);
   };
