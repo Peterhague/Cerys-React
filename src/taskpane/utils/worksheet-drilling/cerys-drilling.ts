@@ -18,6 +18,7 @@ import {
   getUpdatedDate,
   getUpdatedCerysCode,
   getUpdatedNarrative,
+  getCategoryShortName,
 } from "../helperFunctions";
 import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addOneWorksheet } from "../worksheet";
@@ -46,6 +47,8 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item._id === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
+      console.log(input);
+      console.log(code);
       const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
       await cerysNomDetailView(context, transactions, session);
       await context.sync();
@@ -74,29 +77,9 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
   }
 };
 
-// export async function showNominalDetailPL(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
-//   try {
-//     await Excel.run(async (context) => {
-//       console.log(e);
-//       const address = e.address;
-//       if (address[0] !== "A") return;
-//       const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
-//       const range = ws.getRange(`${address}:${address}`);
-//       const values = range.load("values");
-//       await context.sync();
-//       const innerValues = values.values;
-//       const category = innerValues[0][0];
-//       const arrOfTransArrs = getCerysNomDetailPL(category, session);
-//       await cerysNomDetailViewPL(context, session, arrOfTransArrs);
-//       await context.sync();
-//     });
-//   } catch (e) {
-//     console.error(e);
-//   }
-// }
-
 async function cerysNomDetailView(context: Excel.RequestContext, transactions: Transaction[], session: Session) {
   let sheetInMidEdit = false;
+  console.log(transactions);
   const cerysCodeObj = transactions[0].getCerysCodeObj(session);
   const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
   transactions.forEach((tran) => {
@@ -202,11 +185,10 @@ export async function cerysNomDetailViewPL(
   session: Session,
   arrOfTransArrs: Transaction[][]
 ) {
-  const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
-  console.log(cerysCategory);
-  console.log(arrOfTransArrs[0][0]);
+  const cerysCodeObj = arrOfTransArrs[0][0].getCerysCodeObj(session);
+  const catName = getCategoryShortName(cerysCodeObj.cerysCategory);
   const { ws } = await addOneWorksheet(context, session, {
-    name: `${cerysCategory} analysis`,
+    name: `${catName} analysis`,
     addListeners: undefined,
   });
   const valuesToPost = [];

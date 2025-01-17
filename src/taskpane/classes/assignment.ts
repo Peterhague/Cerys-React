@@ -71,6 +71,7 @@ import { calculateDiffInDays } from "../utils/helperFunctions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
+import { TrialBalanceLine } from "./trial-balance-line";
 
 export class Assignment {
   clientId: string;
@@ -136,7 +137,7 @@ export class Assignment {
     this.IFARegisterCreated = assignment.IFARegisterCreated;
     this.TFARegisterCreated = assignment.TFARegisterCreated;
     this.IPRegisterCreated = assignment.IPRegisterCreated;
-    this.tb = assignment.tb;
+    this.tb = assignment.tb.map((line) => new TrialBalanceLine(line));
     this.clientTB = assignment.clientTB;
     this.activeCategories = assignment.activeCategories;
     this.activeCategoriesDetails = assignment.activeCategoriesDetails;

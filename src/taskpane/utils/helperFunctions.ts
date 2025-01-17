@@ -29,6 +29,7 @@ import {
   handleControlledSheetRowSort,
 } from "./worksheet-control/controlled-sheet-change-handling";
 import { QuasiEventObject } from "../classes/quasi-event-object";
+import { accountsCategories } from "../static-values/accounts-categories-array";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -569,4 +570,9 @@ export const combineClientTrialBalances = (
 
 export const parseChangeEventObjectType = (e: Excel.WorksheetChangedEventArgs | QuasiEventObject) => {
   return e.changeType === "RangeEdited" ? true : false;
+};
+
+export const getCategoryShortName = (cerysCategory: string) => {
+  const category = accountsCategories.find((cat) => cat.categoryName === cerysCategory);
+  return category.categoryShortName ? category.categoryShortName : category.categoryName;
 };

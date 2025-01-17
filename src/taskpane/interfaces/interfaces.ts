@@ -517,6 +517,7 @@ export interface FSCategoryPL {
   statementName: string;
   statementNameTwo: string | null;
   categoryName: string;
+  categoryShortName?: string;
   sum: boolean;
   total: boolean;
   mappable: boolean;
