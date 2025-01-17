@@ -43,7 +43,9 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
       if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
-      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      const map = sheet.sheetMapping.find(
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+      );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item._id === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
@@ -64,7 +66,9 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === PL_WSNAME);
       const addressObj = interpretEventAddress(e);
       if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
-      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      const map = sheet.sheetMapping.find(
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+      );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item._id === map.identity);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
@@ -224,7 +228,9 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
       if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
-      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      const map = sheet.sheetMapping.find(
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+      );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item._id === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;

@@ -22,16 +22,21 @@ export class ControlledInputMap {
   identifier: string;
   rowNumber: number;
   rowNumberOrig: number;
+  colNumber: number;
+  colNumberOrig: number;
 
   constructor(
     controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS,
     identifier: string,
-    rowNumber: number
+    rowNumber: number,
+    colNumber: number
   ) {
     this.identifier = identifier;
     this.identity = controlledInput[this.identifier];
     this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
+    this.colNumber = colNumber;
+    this.colNumberOrig = colNumber;
   }
   getControlledInput(controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[]) {
     return controlledInputs.find((input) => input[this.identifier] === this.identity);

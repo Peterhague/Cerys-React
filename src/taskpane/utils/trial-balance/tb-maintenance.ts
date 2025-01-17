@@ -26,7 +26,9 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   const sheetMapping = [];
   trialBalance.forEach((line) => {
     tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
-    sheetMapping.push(new ControlledInputMap(line, "_id", sheetMapping.length + 11));
+    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 1));
+    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 2));
+    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 3));
   });
   const excelRangeObj = new ExcelRangeObject({ row: 11, col: 1 }, tBValues);
   const range = ws.getRange(excelRangeObj.address);
