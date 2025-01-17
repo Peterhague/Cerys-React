@@ -136,7 +136,7 @@ export function getCerysNomDetailPL(category: string, session: Session) {
   return selectionArray;
 }
 
-export async function getCerysNomDetailBS(category: string, session: Session) {
+export function getCerysNomDetailBS(category: string, session: Session) {
   const assignment = session.assignment;
   let cat = category;
   if (category === "Cash at bank and in hand") {

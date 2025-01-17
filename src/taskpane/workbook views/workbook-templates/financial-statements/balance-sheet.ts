@@ -1,17 +1,21 @@
 import { FSCategoryLineBS } from "../../../classes/accounts-category-line";
+import { createControlledWorksheet, updateControlledWorksheet } from "../../../classes/controlled-worksheet";
+import { ExcelRangeObject } from "../../../classes/excel-range-object";
 import { Session } from "../../../classes/session";
+import { ControlledInputMap } from "../../../classes/transaction-map";
 import { BALANCE_SHEET } from "../../../static-values/worksheet-defaults";
+import { BS_WSNAME } from "../../../static-values/worksheet-names";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 /* global Excel */
 
 export async function wsBalanceSheet(context: Excel.RequestContext, session: Session) {
   const balSheet = session.assignment.getBalanceSheet();
-  console.log(balSheet);
   const { ws } = await getOrAddWorksheet(context, session, BALANCE_SHEET);
   await clearUsedRange(context, ws);
   const headerValues = worksheetHeader(session, BALANCE_SHEET.name);
   applyWorkhseetHeader(ws, headerValues);
+  const sheetMapping = [];
   const values: any[][] = [
     ["", "", "", "", "£", "£"],
     ["", "", "", "", "", ""],
@@ -22,9 +26,11 @@ export async function wsBalanceSheet(context: Excel.RequestContext, session: Ses
       ? values.push([item.statementName, "", "", "", item.rawValue, ""])
       : values.push([item.statementName, "", "", "", "", item.rawValue]);
     item.rowNumber = values.length + 8;
+    item.mappable && sheetMapping.push(new ControlledInputMap(item, "_id", item.rowNumber));
     if (item.spaceAfter) values.push(["", "", "", "", "", ""]);
   });
-  const range = ws.getRange(`a9:f${values.length + 8}`);
+  const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
+  const range = ws.getRange(excelRangeObj.address);
   const numbersRange = ws.getRange(`e11:f${values.length + 8}`);
   numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
   range.values = values;
@@ -32,6 +38,11 @@ export async function wsBalanceSheet(context: Excel.RequestContext, session: Ses
   currencyRange.format.horizontalAlignment = "Right";
   currencyRange.format.font.bold = true;
   wsBSAccountFormat(ws, balSheet);
+  if (session.controlledSheets.find((ws) => ws.name === BS_WSNAME)) {
+    updateControlledWorksheet(session, balSheet, values, sheetMapping, excelRangeObj, 1, BS_WSNAME);
+  } else {
+    createControlledWorksheet(session, balSheet, ws, values, sheetMapping, excelRangeObj, 1, "cerysCategory");
+  }
 }
 
 export function wsBSAccountFormat(ws: Excel.Worksheet, balanceSheet: FSCategoryLineBS[]) {

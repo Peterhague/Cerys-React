@@ -1,4 +1,4 @@
-import { FSCategoryLinePL } from "../../classes/accounts-category-line";
+import { FSCategoryLineBS, FSCategoryLinePL } from "../../classes/accounts-category-line";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { Session } from "../../classes/session";
@@ -9,7 +9,7 @@ import { AddressObject } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
-import { PL_WSNAME, TB_WSNAME } from "../../static-values/worksheet-names";
+import { BS_WSNAME, PL_WSNAME, TB_WSNAME } from "../../static-values/worksheet-names";
 import {
   handleEditButtonClick,
   interpretEventAddress,
@@ -214,32 +214,35 @@ export async function cerysNomDetailViewPL(
 
 export function addBsClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
-  ws.onSingleClicked.add(async (e) => showNominalDetailBS(context, session, e));
+  ws.onSingleClicked.add(async (e) => showNominalDetailBS(e, session));
   session.assignment.bSListenerAdded = true;
 }
 
-export async function showNominalDetailBS(
-  context: Excel.RequestContext,
-  session: Session,
-  e: Excel.WorksheetSingleClickedEventArgs
-) {
-  const address = e.address;
-  if (address[0] !== "A") return;
-  const ws = context.workbook.worksheets.getItem(BALANCE_SHEET.name);
-  const range = ws.getRange(`${address}:${address}`);
-  const values = range.load("values");
-  await context.sync();
-  const innerValues = values.values;
-  const category: string = innerValues[0][0];
-  const arrOfTransArrs: Transaction[][] = await getCerysNomDetailBS(category, session);
-  cerysNomDetailViewBS(context, session, arrOfTransArrs);
-}
+export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
+  try {
+    await Excel.run(async (context) => {
+      const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
+      const addressObj = interpretEventAddress(e);
+      if (!sheet.hasControlledColOf(addressObj.firstCol)) return;
+      const map = sheet.sheetMapping.find((mapping) => mapping.rowNumber === addressObj.firstRow);
+      if (!map) return;
+      const input = sheet.controlledInputs.find((item) => item._id === map.identity);
+      const category = input instanceof FSCategoryLineBS && input.categoryName;
+      const arrOfTransArrs = getCerysNomDetailBS(category, session);
+      await cerysNomDetailViewBS(context, session, arrOfTransArrs);
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
 
 async function cerysNomDetailViewBS(context: Excel.RequestContext, session: Session, arrOfTransArrs: Transaction[][]) {
   const assignment = session.assignment;
   const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
+  const catName = getCategoryShortName(cerysCategory);
   const { ws } = await addOneWorksheet(context, session, {
-    name: `${cerysCategory} analysis`,
+    name: `${catName} analysis`,
     addListeners: undefined,
   });
   const valuesToPost = [];
