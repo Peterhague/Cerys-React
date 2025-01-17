@@ -111,6 +111,7 @@ export interface TrialBalanceLineProps {
   cerysName: string;
   value: number;
   assetCodeType: string;
+  _id: string;
   identifier: string;
 }
 
@@ -529,4 +530,9 @@ export interface FSCategoryBS extends FSCategoryPL {
   calculated: boolean;
   spaceBefore: boolean;
   spaceAfter: boolean;
+}
+
+export interface DrillableCollectionProps {
+  collection: Transaction[];
+  colNumbers: number[];
 }

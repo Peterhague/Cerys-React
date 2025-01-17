@@ -43,7 +43,7 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
       );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
@@ -63,10 +63,12 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === PL_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
       );
       if (!map) return;
+      console.log(map);
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
+      console.log(input);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
       await cerysNomDetailViewPL(context, session, arrOfTransArrs);
@@ -224,7 +226,7 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumber === addressObj.firstCol
+        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
       );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);

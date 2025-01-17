@@ -8,6 +8,7 @@ export class TrialBalanceLine implements TrialBalanceLineProps {
   value: number;
   assetCodeType: string;
   identifier: string;
+  _id: string;
   constructor(line: TrialBalanceLineProps) {
     this.cerysCategory = line.cerysCategory;
     this.cerysCode = line.cerysCode;
@@ -15,6 +16,7 @@ export class TrialBalanceLine implements TrialBalanceLineProps {
     this.cerysName = line.cerysName;
     this.value = line.value;
     this.assetCodeType = line.assetCodeType;
-    this.identifier = line.identifier;
+    this.identifier = line._id;
+    this._id = line._id;
   }
 }

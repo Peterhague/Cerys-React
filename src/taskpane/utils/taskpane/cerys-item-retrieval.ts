@@ -107,6 +107,7 @@ export function getCerysNomDetail(transactions: Transaction[], cerysCode: number
 }
 
 export function getCerysNomDetailPL(category: string, session: Session) {
+  console.log(category);
   let cat = category;
   if (category === "Turnover") {
     cat = "Sales";
@@ -124,6 +125,7 @@ export function getCerysNomDetailPL(category: string, session: Session) {
     }
   });
   let selectionArray: Transaction[][] = [];
+  console.log(selection);
   selection.forEach((code) => {
     let arrOfTransactions: Transaction[] = [];
     session.assignment.transactions.forEach((transaction) => {

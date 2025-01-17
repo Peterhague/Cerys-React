@@ -24,11 +24,10 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   const trialBalance = session.assignment.tb;
   const tBValues = [];
   const sheetMapping = [];
+  console.log(trialBalance);
   trialBalance.forEach((line) => {
     tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
-    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 1));
-    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 2));
-    sheetMapping.push(new ControlledInputMap(line, "_id", tBValues.length + 10, 3));
+    sheetMapping.push(new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], null));
   });
   const excelRangeObj = new ExcelRangeObject({ row: 11, col: 1 }, tBValues);
   const range = ws.getRange(excelRangeObj.address);

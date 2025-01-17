@@ -18,13 +18,13 @@ export async function wsPLAccount(context: Excel.RequestContext, session: Sessio
   const pLValues = [];
   const sheetMapping = [];
   pLValues.push(["", "", "", "", "", "£"]);
+  console.log(pLoss);
   pLoss.forEach((item) => {
     pLValues.push(["", "", "", "", "", ""]);
     item.total && pLValues.push(["", "", "", "", "", ""]);
     pLValues.push([item.statementName, "", "", "", "", item.fSValue]);
     item.rowNumber = pLValues.length + 8;
-    item.mappable && sheetMapping.push(new ControlledInputMap(item, "_id", item.rowNumber, 1));
-    item.mappable && sheetMapping.push(new ControlledInputMap(item, "_id", item.rowNumber, 6));
+    item.mappable && sheetMapping.push(new ControlledInputMap(item, item.rowNumber, [1, 6], null));
     item.statementNameTwo && pLValues.push([item.statementNameTwo, "", "", "", "", ""]);
   });
   const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, pLValues);

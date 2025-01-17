@@ -27,8 +27,7 @@ export async function wsBalanceSheet(context: Excel.RequestContext, session: Ses
       : values.push([item.statementName, "", "", "", "", item.rawValue]);
     item.rowNumber = values.length + 8;
     const colNumber = item.subTotalCol ? 5 : 6;
-    item.mappable && sheetMapping.push(new ControlledInputMap(item, "_id", item.rowNumber, 1));
-    item.mappable && sheetMapping.push(new ControlledInputMap(item, "_id", item.rowNumber, colNumber));
+    item.mappable && sheetMapping.push(new ControlledInputMap(item, item.rowNumber, [1, colNumber], null));
     if (item.spaceAfter) values.push(["", "", "", "", "", ""]);
   });
   const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);

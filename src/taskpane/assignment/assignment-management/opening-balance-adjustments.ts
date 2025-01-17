@@ -8,6 +8,7 @@ import { ControlledInputMap, TransactionMap } from "../../classes/transaction-ma
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
+import { DrillableCollectionProps } from "../../interfaces/interfaces";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -20,6 +21,7 @@ import {
   getUpdatedDate,
   getUpdatedNarrative,
   handleEditButtonClick,
+  interpretEventAddress,
 } from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
@@ -352,6 +354,7 @@ export const createOBAWorksheet = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const combinedTBObjs: AssignmentClientTBObject[] = buildConsolidatedClientTrialBalance(session);
+      console.log(combinedTBObjs);
       const wsName = OBA_WSNAME;
       const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
       const wsHeaders = worksheetHeader(session, wsName);
@@ -359,6 +362,7 @@ export const createOBAWorksheet = async (session: Session) => {
       const sheetMapping: ControlledInputMap[] = [];
       const values = [["", "", "Per Client", "", "Per Accounts", "", "Adjustments"]];
       values.push(["Code", "Name", "DR/CR", "", "DR/CR", "", "DR/CR"], ["", "", "", "", "", "", ""]);
+      console.log(combinedTBObjs);
       combinedTBObjs.forEach((obj) => {
         values.push([
           `${obj.clientCode}`,
@@ -369,11 +373,11 @@ export const createOBAWorksheet = async (session: Session) => {
           "",
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
-        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 1));
-        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 2));
-        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 3));
-        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 5));
-        sheetMapping.push(new ControlledInputMap(obj, "clientCode", values.length + 8, 7));
+        const drillableCollection: DrillableCollectionProps = {
+          collection: obj.assignmentTransactions,
+          colNumbers: [5],
+        };
+        sheetMapping.push(new ControlledInputMap(obj, values.length + 8, [1, 2, 3, 5, 7], [drillableCollection]));
       });
       const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
       const wsRange = ws.getRange(excelRangeObj.address);
@@ -388,6 +392,7 @@ export const createOBAWorksheet = async (session: Session) => {
       } else {
         createControlledWorksheet(session, combinedTBObjs, ws, values, sheetMapping, excelRangeObj, 1, "clientCode");
       }
+      ws.onSingleClicked.add((e) => handleOBAWorksheetClick(e, session));
       ws.activate();
       await context.sync();
     });
@@ -401,4 +406,17 @@ export const buildConsolidatedClientTrialBalance = (session: Session) => {
   const equivalentAssTB = convertAssignmentTBForOBAs(session);
   combineClientTrialBalances(session, clientTBBalSheetOnly, equivalentAssTB);
   return equivalentAssTB;
+};
+
+export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
+  const sheet = session.controlledSheets.find((ws) => ws.name === OBA_WSNAME);
+  const addressObj = interpretEventAddress(e);
+  const map = sheet.sheetMapping.find(
+    (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
+  );
+  console.log(map);
+  map.drillableCollections.forEach((collection) => {
+    const valid = collection.colNumbers.find((num) => num === addressObj.firstCol);
+    if (valid) console.log(collection.collection);
+  });
 };

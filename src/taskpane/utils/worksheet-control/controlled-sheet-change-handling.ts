@@ -56,7 +56,7 @@ export const testControlledSheetChangesForRejection = async (
   const { firstRow, firstCol } = addressObj;
   const eRowNumber = firstRow;
   const eColNumber = firstCol;
-  const mapping = sheet.sheetMapping.find((map) => map.colNumber === eColNumber && map.rowNumber === eRowNumber);
+  const mapping = sheet.sheetMapping.find((map) => map.colNumbers.includes(eColNumber) && map.rowNumber === eRowNumber);
   const withinProtectedRange = mapping ? true : false;
   if (!withinProtectedRange) sheet.edited = true;
   if (withinProtectedRange && e.triggerSource !== "ThisLocalAddin") {
@@ -101,7 +101,11 @@ const handleColumnInsertion = async (sheet: ControlledWorksheet, addressObj: Add
     sheet.protectedRange.lastCol += colsInserted;
   }
   sheet.sheetMapping.forEach((map) => {
-    if (map.colNumber >= firstCol) map.colNumber += colsInserted;
+    map.colNumbers.forEach((col, index, arr) => {
+      if (col >= firstCol) {
+        arr[index] += colsInserted;
+      }
+    });
   });
   if (sheet.uniqueColumn >= firstCol) sheet.uniqueColumn += colsInserted;
   return;
@@ -132,11 +136,13 @@ const handleColumnDeletion = async (sheet: ControlledWorksheet, addressObj: Addr
     sheet.protectedRangeDeleted = true;
   }
   sheet.sheetMapping.forEach((map) => {
-    if (map.colNumber > lastCol) {
-      map.colNumber -= colsDeleted;
-    } else if (map.colNumber >= firstCol && map.colNumber <= lastCol) {
-      sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
-    }
+    map.colNumbers.forEach((col, index, arr) => {
+      if (col > lastCol) {
+        arr[index] -= colsDeleted;
+      } else if (col >= firstCol && col <= lastCol) {
+        map.colNumbers = map.colNumbers.filter((i) => i !== col);
+      }
+    });
   });
   if (sheet.uniqueColumn > lastCol) {
     sheet.uniqueColumn -= colsDeleted;
@@ -220,14 +226,9 @@ const handleCellDeletionUp = async (sheet: ControlledWorksheet, addressObj: Addr
       sheet.protectedRangeDeleted = true;
     }
     sheet.sheetMapping.forEach((map) => {
-      if (map.rowNumber > lastRow && map.colNumber >= firstCol && map.colNumber <= lastCol) {
+      if (map.rowNumber > lastRow) {
         map.rowNumber -= rowsDeleted;
-      } else if (
-        map.rowNumber >= firstRow &&
-        map.rowNumber <= lastRow &&
-        map.colNumber >= firstCol &&
-        map.colNumber <= lastCol
-      ) {
+      } else if (map.rowNumber >= firstRow && map.rowNumber <= lastRow) {
         sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
       }
     });
@@ -273,16 +274,11 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
       sheet.protectedRangeDeleted = true;
     }
     sheet.sheetMapping.forEach((map) => {
-      if (map.colNumber > lastCol && map.rowNumber >= firstRow && map.rowNumber <= lastRow) {
-        map.colNumber -= colsDeleted;
-      } else if (
-        map.rowNumber >= firstRow &&
-        map.rowNumber <= lastRow &&
-        map.colNumber >= firstCol &&
-        map.colNumber <= lastCol
-      ) {
-        sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
-      }
+      map.colNumbers.forEach((col, index, arr) => {
+        if (col > lastCol) arr[index] -= colsDeleted;
+        if (col >= firstCol && col <= lastCol) map.colNumbers = map.colNumbers.filter((i) => i !== col);
+      });
+      if (map.colNumbers.length === 0) sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
     });
     if (sheet.uniqueColumn > lastCol) {
       sheet.uniqueColumn -= colsDeleted;
@@ -322,8 +318,7 @@ const handleCellInsertionDown = (
     }
     //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
     sheet.sheetMapping.forEach((map) => {
-      if (map.rowNumber >= firstRow && map.colNumber >= firstCol && map.colNumber <= lastCol)
-        map.rowNumber += rowsInserted;
+      if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
     });
     return;
   } else if (firstCol < sheet.protectedRange.lastCol || lastCol > sheet.protectedRange.firstCol) {
@@ -345,7 +340,9 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
       sheet.protectedRange.lastCol += colsInserted;
     }
     sheet.sheetMapping.forEach((map) => {
-      if (map.colNumber >= firstCol) map.colNumber += colsInserted;
+      map.colNumbers.forEach((col, index, arr) => {
+        if (col >= firstCol) arr[index] += colsInserted;
+      });
     });
     if (sheet.uniqueColumn >= firstCol) sheet.uniqueColumn += colsInserted;
     //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
