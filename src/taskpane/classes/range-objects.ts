@@ -42,3 +42,16 @@ export class ExcelRangeObject {
     return `${colLetter}${this.firstRow}: ${colLetter}${this.lastRow}`;
   }
 }
+
+export class ProtectedRange {
+  firstColOrig: number;
+  lastColOrig: number;
+  firstRowOrig: number;
+  lastRowOrig: number;
+  constructor(excelRangeObj: ExcelRangeObject) {
+    this.firstColOrig = excelRangeObj.firstCol;
+    this.lastColOrig = excelRangeObj.lastCol;
+    this.firstRowOrig = excelRangeObj.firstRow;
+    this.lastRowOrig = excelRangeObj.lastRow;
+  }
+}

@@ -1,8 +1,8 @@
-import { AddressObject, MappingObjectProps, MapTrackingProps } from "../interfaces/interfaces";
+import { MappingObjectProps, MapTrackingProps } from "../interfaces/interfaces";
 import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
-import { ExcelRangeObject } from "./excel-range-object";
+import { ExcelRangeObject, ProtectedRange } from "./range-objects";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
 import { ControlledInputMap } from "./transaction-map";
@@ -15,7 +15,7 @@ export class ControlledWorksheet {
   edited: boolean;
   promptDeletion: boolean;
   worksheetId: string;
-  protectedRange: AddressObject;
+  protectedRange: ProtectedRange;
   protectedRangeDeleted: boolean;
   changeRejected: boolean;
   columnsSorted: boolean;
@@ -45,7 +45,7 @@ export class ControlledWorksheet {
     this.edited = false;
     this.promptDeletion = false;
     this.worksheetId = ws.id;
-    this.protectedRange = controlledRangeObject;
+    this.protectedRange = new ProtectedRange(controlledRangeObject);
     this.protectedRangeDeleted = false;
     this.changeRejected = false;
     this.columnsSorted = false;
@@ -74,6 +74,14 @@ export class ControlledWorksheet {
 
   getOriginalRow(currenRow: number) {
     return this.mappingObject.rows.find((obj) => obj.current === currenRow).original;
+  }
+
+  getCurrentProtectedRange() {
+    const protectedFirstCol = this.getCurrentColumn(this.protectedRange.firstColOrig);
+    const protectedLastCol = this.getCurrentColumn(this.protectedRange.lastColOrig);
+    const protectedFirstRow = this.getCurrentColumn(this.protectedRange.firstRowOrig);
+    const protectedLastRow = this.getCurrentColumn(this.protectedRange.lastRowOrig);
+    return { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow };
   }
 }
 
@@ -118,7 +126,7 @@ export const updateControlledWorksheet = (
   sheet.controlledInputs = controlledInputs;
   sheet.usedRange = wsValues;
   sheet.sheetMapping = sheetMapping;
-  sheet.protectedRange = controlledRangeObject;
+  sheet.protectedRange = new ProtectedRange(controlledRangeObject);
   sheet.uniqueColumn = uniqueColumn;
   sheet.uniqueValue;
 };

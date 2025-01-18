@@ -140,21 +140,22 @@ const handleRowDeletion = async (sheet: ControlledWorksheet, addressObj: Address
 const handleCellDeletionUp = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
-  if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstCol >= firstCol && protectedLastCol <= lastCol) {
     sheet.mappingObject.rows.forEach((rowObj) => {
       if (rowObj.current > lastRow) rowObj.current -= rowsDeleted;
       if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
     });
     return;
   } else if (
-    (firstCol > sheet.protectedRange.firstCol &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstRow >= sheet.protectedRange.firstRow) ||
-    (lastCol < sheet.protectedRange.lastCol &&
-      lastCol >= sheet.protectedRange.firstCol &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstRow >= sheet.protectedRange.firstRow)
+    (firstCol > protectedFirstCol &&
+      firstCol <= protectedLastCol &&
+      firstRow <= protectedLastRow &&
+      firstRow >= protectedFirstRow) ||
+    (lastCol < protectedLastCol &&
+      lastCol >= protectedFirstCol &&
+      firstRow <= protectedLastRow &&
+      firstRow >= protectedFirstRow)
   ) {
     console.log("DATA CORRUPTED!!!!");
     sheet.dataCorrupted = true;
@@ -164,7 +165,8 @@ const handleCellDeletionUp = async (sheet: ControlledWorksheet, addressObj: Addr
 const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
-  if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstRow >= firstRow && protectedLastRow <= lastRow) {
     sheet.mappingObject.columns.forEach((colObj) => {
       if (colObj.current > lastCol) colObj.current -= colsDeleted;
       if (colObj.current >= firstCol && colObj.current <= lastCol) colObj.current = 0;
@@ -176,14 +178,14 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
     }
     return;
   } else if (
-    (firstRow > sheet.protectedRange.firstRow &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol) ||
-    (lastRow < sheet.protectedRange.lastRow &&
-      lastRow >= sheet.protectedRange.firstRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol)
+    (firstRow > protectedFirstRow &&
+      firstRow <= protectedLastRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol) ||
+    (lastRow < protectedLastRow &&
+      lastRow >= protectedFirstRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol)
   ) {
     console.log("DATA CORRUPPTED!!!!");
     sheet.dataCorrupted = true;
@@ -197,13 +199,14 @@ const handleCellInsertionDown = (
   addressObj: AddressObject
 ) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
+  const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
   const rowsInserted = lastRow - firstRow + 1;
-  if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
+  if (protectedFirstCol >= firstCol && protectedLastCol <= lastCol) {
     sheet.mappingObject.rows.forEach((rowObj) => {
       if (rowObj.current >= firstRow) rowObj.current += rowsInserted;
     });
     return;
-  } else if (firstCol < sheet.protectedRange.lastCol || lastCol > sheet.protectedRange.firstCol) {
+  } else if (firstCol < protectedLastCol || lastCol > protectedFirstCol) {
     if (!sheet.dataCorrupted) {
       const range = `${colNumToLetter(firstCol)}${firstRow}:${colNumToLetter(lastCol)}${lastRow}`;
       deleteWorksheetRangeDown(context, wsName, range);
@@ -214,7 +217,8 @@ const handleCellInsertionDown = (
 const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
-  if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstRow >= firstRow && protectedLastRow <= lastRow) {
     sheet.mappingObject.columns.forEach((colObj) => {
       if (colObj.current >= firstCol) colObj.current += colsInserted;
     });
@@ -222,14 +226,14 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
     //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
     return;
   } else if (
-    (firstRow > sheet.protectedRange.firstRow &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol) ||
-    (lastRow < sheet.protectedRange.lastRow &&
-      lastRow >= sheet.protectedRange.firstRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol)
+    (firstRow > protectedFirstRow &&
+      firstRow <= protectedLastRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol) ||
+    (lastRow < protectedLastRow &&
+      lastRow >= protectedFirstRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol)
   ) {
     console.log("DATA CORRUPPTED!!!!");
     sheet.dataCorrupted = true;

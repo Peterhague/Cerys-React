@@ -2,7 +2,7 @@ import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
-import { ExcelRangeObject } from "../../classes/excel-range-object";
+import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { ControlledInputMap, TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";

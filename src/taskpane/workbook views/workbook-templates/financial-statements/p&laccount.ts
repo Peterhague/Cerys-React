@@ -1,6 +1,6 @@
 import { FSCategoryLinePL } from "../../../classes/accounts-category-line";
 import { createControlledWorksheet, updateControlledWorksheet } from "../../../classes/controlled-worksheet";
-import { ExcelRangeObject } from "../../../classes/excel-range-object";
+import { ExcelRangeObject } from "../../../classes/range-objects";
 import { Session } from "../../../classes/session";
 import { ControlledInputMap } from "../../../classes/transaction-map";
 import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
