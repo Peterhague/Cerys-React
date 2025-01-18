@@ -43,7 +43,9 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
+        (mapping) =>
+          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
       );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
@@ -63,7 +65,9 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === PL_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
+        (mapping) =>
+          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
       );
       if (!map) return;
       console.log(map);
@@ -226,7 +230,9 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
-        (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
+        (mapping) =>
+          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
       );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);

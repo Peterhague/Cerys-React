@@ -412,11 +412,13 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
   const sheet = session.controlledSheets.find((ws) => ws.name === OBA_WSNAME);
   const addressObj = interpretEventAddress(e);
   const map = sheet.sheetMapping.find(
-    (mapping) => mapping.rowNumber === addressObj.firstRow && mapping.colNumbers.includes(addressObj.firstCol)
+    (mapping) =>
+      sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+      mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
   );
   console.log(map);
   map.drillableCollections.forEach((collection) => {
-    const valid = collection.colNumbers.find((num) => num === addressObj.firstCol);
+    const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
     if (valid) console.log(collection.collection);
   });
 };

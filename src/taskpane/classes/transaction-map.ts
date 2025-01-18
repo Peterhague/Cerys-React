@@ -22,10 +22,10 @@ export class TransactionMap {
 export class ControlledInputMap {
   identity: string | number;
   identifier: string;
-  rowNumber: number;
+  //rowNumber: number;
   rowNumberOrig: number;
   colNumbers: number[];
-  colNumbersOrig: number[];
+  //colNumbersOrig: number[];
   drillableCollections: DrillableCollectionProps[];
 
   constructor(
@@ -36,10 +36,10 @@ export class ControlledInputMap {
   ) {
     this.identifier = "identifier";
     this.identity = controlledInput[this.identifier];
-    this.rowNumber = rowNumber;
+    //this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
     this.colNumbers = colNumbers;
-    this.colNumbersOrig = colNumbers.map((i) => i);
+    //this.colNumbersOrig = colNumbers.map((i) => i);
     this.drillableCollections = drillableCollections;
   }
   getControlledInput(

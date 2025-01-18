@@ -59,6 +59,22 @@ export class ControlledWorksheet {
     this.uniqueColumn = uniqueColumn;
     this.uniqueValue = uniqueValue;
   }
+
+  getCurrentColumn(originalColumn: number) {
+    return this.mappingObject.columns.find((obj) => obj.original === originalColumn).current;
+  }
+
+  getCurrentRow(originalRow: number) {
+    return this.mappingObject.rows.find((obj) => obj.original === originalRow).current;
+  }
+
+  getOriginalColumn(currentColumn: number) {
+    return this.mappingObject.columns.find((obj) => obj.current === currentColumn).original;
+  }
+
+  getOriginalRow(currenRow: number) {
+    return this.mappingObject.rows.find((obj) => obj.current === currenRow).original;
+  }
 }
 
 export const createControlledWorksheet = (
