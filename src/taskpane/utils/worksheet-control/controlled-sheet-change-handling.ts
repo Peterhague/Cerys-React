@@ -98,19 +98,6 @@ export const handleOtherControlledSheetChange = async (
 const handleColumnInsertion = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, lastCol } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
-  // if (firstCol <= sheet.protectedRange.firstCol) {
-  //   sheet.protectedRange.firstCol += colsInserted;
-  //   sheet.protectedRange.lastCol += colsInserted;
-  // } else if (firstCol <= sheet.protectedRange.lastCol) {
-  //   sheet.protectedRange.lastCol += colsInserted;
-  // }
-  // sheet.sheetMapping.forEach((map) => {
-  //   map.colNumbers.forEach((col, index, arr) => {
-  //     if (col >= firstCol) {
-  //       arr[index] += colsInserted;
-  //     }
-  //   });
-  // });
   sheet.mappingObject.columns.forEach((colObj) => {
     if (colObj.current >= firstCol) colObj.current += colsInserted;
   });
@@ -121,36 +108,6 @@ const handleColumnInsertion = async (sheet: ControlledWorksheet, addressObj: Add
 const handleColumnDeletion = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, lastCol } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
-  // if (lastCol < sheet.protectedRange.firstCol) {
-  //   sheet.protectedRange.firstCol -= colsDeleted;
-  //   sheet.protectedRange.lastCol -= colsDeleted;
-  // } else if (
-  //   firstCol <= sheet.protectedRange.firstCol &&
-  //   lastCol >= sheet.protectedRange.firstCol &&
-  //   lastCol < sheet.protectedRange.lastCol
-  // ) {
-  //   sheet.protectedRange.firstCol -= lastCol - sheet.protectedRange.firstCol;
-  //   sheet.protectedRange.lastCol -= colsDeleted;
-  // } else if (firstCol > sheet.protectedRange.firstCol && lastCol < sheet.protectedRange.lastCol) {
-  //   sheet.protectedRange.lastCol -= colsDeleted;
-  // } else if (
-  //   firstCol > sheet.protectedRange.firstCol &&
-  //   firstCol <= sheet.protectedRange.lastCol &&
-  //   lastCol >= sheet.protectedRange.lastCol
-  // ) {
-  //   sheet.protectedRange.lastCol -= sheet.protectedRange.lastCol - (firstCol - 1);
-  // } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
-  //   sheet.protectedRangeDeleted = true;
-  // }
-  // sheet.sheetMapping.forEach((map) => {
-  //   map.colNumbers.forEach((col, index, arr) => {
-  //     if (col > lastCol) {
-  //       arr[index] -= colsDeleted;
-  //     } else if (col >= firstCol && col <= lastCol) {
-  //       map.colNumbers = map.colNumbers.filter((i) => i !== col);
-  //     }
-  //   });
-  // });
   sheet.mappingObject.columns.forEach((colObj) => {
     if (colObj.current > lastCol) colObj.current -= colsDeleted;
     if (colObj.current >= firstCol && colObj.current <= lastCol) colObj.current = 0;
@@ -166,16 +123,6 @@ const handleColumnDeletion = async (sheet: ControlledWorksheet, addressObj: Addr
 const handleRowInsertion = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstRow, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
-  // if (firstRow <= sheet.protectedRange.firstRow) {
-  //   sheet.protectedRange.firstRow += rowsInserted;
-  //   sheet.protectedRange.lastRow += rowsInserted;
-  // } else if (firstRow <= sheet.protectedRange.lastRow) {
-  //   sheet.protectedRange.lastRow += rowsInserted;
-  // }
-  //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-  // sheet.sheetMapping.forEach((map) => {
-  //   if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
-  // });
   sheet.mappingObject.rows.forEach((rowObj) => {
     if (rowObj.current >= firstRow) rowObj.current += rowsInserted;
   });
@@ -184,34 +131,6 @@ const handleRowInsertion = async (sheet: ControlledWorksheet, addressObj: Addres
 const handleRowDeletion = async (sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
-  // if (lastRow < sheet.protectedRange.firstRow) {
-  //   sheet.protectedRange.firstRow -= rowsDeleted;
-  //   sheet.protectedRange.lastRow -= rowsDeleted;
-  // } else if (
-  //   firstRow <= sheet.protectedRange.firstRow &&
-  //   lastRow >= sheet.protectedRange.firstRow &&
-  //   lastRow < sheet.protectedRange.lastRow
-  // ) {
-  //   sheet.protectedRange.firstRow -= lastRow - sheet.protectedRange.firstRow;
-  //   sheet.protectedRange.lastRow -= rowsDeleted;
-  // } else if (firstRow > sheet.protectedRange.firstRow && lastRow < sheet.protectedRange.lastRow) {
-  //   sheet.protectedRange.lastRow -= rowsDeleted;
-  // } else if (
-  //   firstRow > sheet.protectedRange.firstRow &&
-  //   firstRow <= sheet.protectedRange.lastRow &&
-  //   lastRow >= sheet.protectedRange.lastRow
-  // ) {
-  //   sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (firstRow - 1);
-  // } else if (firstRow <= sheet.protectedRange.firstRow && lastRow >= sheet.protectedRange.lastRow) {
-  //   sheet.protectedRangeDeleted = true;
-  // }
-  // sheet.sheetMapping.forEach((map) => {
-  //   if (map.rowNumber > lastRow) {
-  //     map.rowNumber -= rowsDeleted;
-  //   } else if (map.rowNumber >= firstRow && map.rowNumber <= lastRow) {
-  //     sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
-  //   }
-  // });
   sheet.mappingObject.rows.forEach((rowObj) => {
     if (rowObj.current > lastRow) rowObj.current -= rowsDeleted;
     if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
@@ -222,34 +141,6 @@ const handleCellDeletionUp = async (sheet: ControlledWorksheet, addressObj: Addr
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
-    // if (lastRow < sheet.protectedRange.firstRow) {
-    //   sheet.protectedRange.firstRow -= rowsDeleted;
-    //   sheet.protectedRange.lastRow -= rowsDeleted;
-    // } else if (
-    //   firstRow <= sheet.protectedRange.firstRow &&
-    //   lastRow >= sheet.protectedRange.firstRow &&
-    //   lastRow < sheet.protectedRange.lastRow
-    // ) {
-    //   sheet.protectedRange.firstRow -= lastRow - sheet.protectedRange.firstRow;
-    //   sheet.protectedRange.lastRow -= rowsDeleted;
-    // } else if (firstRow > sheet.protectedRange.firstRow && lastRow < sheet.protectedRange.lastRow) {
-    //   sheet.protectedRange.lastRow -= rowsDeleted;
-    // } else if (
-    //   firstRow > sheet.protectedRange.firstRow &&
-    //   firstRow <= sheet.protectedRange.lastRow &&
-    //   lastRow >= sheet.protectedRange.lastRow
-    // ) {
-    //   sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (firstRow - 1);
-    // } else if (firstRow <= sheet.protectedRange.firstRow && lastRow >= sheet.protectedRange.lastRow) {
-    //   sheet.protectedRangeDeleted = true;
-    // }
-    // sheet.sheetMapping.forEach((map) => {
-    //   if (map.rowNumber > lastRow) {
-    //     map.rowNumber -= rowsDeleted;
-    //   } else if (map.rowNumber >= firstRow && map.rowNumber <= lastRow) {
-    //     sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
-    //   }
-    // });
     sheet.mappingObject.rows.forEach((rowObj) => {
       if (rowObj.current > lastRow) rowObj.current -= rowsDeleted;
       if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
@@ -274,34 +165,6 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsDeleted = lastCol - firstCol + 1;
   if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
-    // if (lastCol < sheet.protectedRange.firstCol) {
-    //   sheet.protectedRange.firstCol -= colsDeleted;
-    //   sheet.protectedRange.lastCol -= colsDeleted;
-    // } else if (
-    //   firstCol <= sheet.protectedRange.firstCol &&
-    //   lastCol >= sheet.protectedRange.firstCol &&
-    //   lastCol < sheet.protectedRange.lastCol
-    // ) {
-    //   sheet.protectedRange.firstCol -= lastCol - sheet.protectedRange.firstCol;
-    //   sheet.protectedRange.lastCol -= colsDeleted;
-    // } else if (firstCol > sheet.protectedRange.firstCol && lastCol < sheet.protectedRange.lastCol) {
-    //   sheet.protectedRange.lastCol -= colsDeleted;
-    // } else if (
-    //   firstCol > sheet.protectedRange.firstCol &&
-    //   firstCol <= sheet.protectedRange.lastCol &&
-    //   lastCol >= sheet.protectedRange.lastCol
-    // ) {
-    //   sheet.protectedRange.lastCol -= sheet.protectedRange.lastCol - (firstCol - 1);
-    // } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
-    //   sheet.protectedRangeDeleted = true;
-    // }
-    // sheet.sheetMapping.forEach((map) => {
-    //   map.colNumbers.forEach((col, index, arr) => {
-    //     if (col > lastCol) arr[index] -= colsDeleted;
-    //     if (col >= firstCol && col <= lastCol) map.colNumbers = map.colNumbers.filter((i) => i !== col);
-    //   });
-    //   if (map.colNumbers.length === 0) sheet.sheetMapping = sheet.sheetMapping.filter((i) => i !== map);
-    // });
     sheet.mappingObject.columns.forEach((colObj) => {
       if (colObj.current > lastCol) colObj.current -= colsDeleted;
       if (colObj.current >= firstCol && colObj.current <= lastCol) colObj.current = 0;
@@ -336,16 +199,6 @@ const handleCellInsertionDown = (
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
   if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
-    // if (firstRow <= sheet.protectedRange.firstRow) {
-    //   sheet.protectedRange.firstRow += rowsInserted;
-    //   sheet.protectedRange.lastRow += rowsInserted;
-    // } else if (firstRow <= sheet.protectedRange.lastRow) {
-    //   sheet.protectedRange.lastRow += rowsInserted;
-    // }
-    //sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-    // sheet.sheetMapping.forEach((map) => {
-    //   if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
-    // });
     sheet.mappingObject.rows.forEach((rowObj) => {
       if (rowObj.current >= firstRow) rowObj.current += rowsInserted;
     });
@@ -362,17 +215,6 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
   if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
-    // if (firstCol <= sheet.protectedRange.firstCol) {
-    //   sheet.protectedRange.firstCol += colsInserted;
-    //   sheet.protectedRange.lastCol += colsInserted;
-    // } else if (firstCol <= sheet.protectedRange.lastCol) {
-    //   sheet.protectedRange.lastCol += colsInserted;
-    // }
-    // sheet.sheetMapping.forEach((map) => {
-    //   map.colNumbers.forEach((col, index, arr) => {
-    //     if (col >= firstCol) arr[index] += colsInserted;
-    //   });
-    // });
     sheet.mappingObject.columns.forEach((colObj) => {
       if (colObj.current >= firstCol) colObj.current += colsInserted;
     });
