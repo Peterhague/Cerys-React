@@ -534,6 +534,7 @@ export interface FSCategoryBS extends FSCategoryPL {
 
 export interface DrillableCollectionProps {
   collection: Transaction[];
+  filter: () => Transaction[] | null;
   colNumbers: number[];
 }
 

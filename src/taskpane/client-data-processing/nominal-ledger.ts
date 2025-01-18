@@ -7,9 +7,8 @@ import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 export async function enterNL(session: Session) {
   const clientNL = await createClientNLObject();
   session.assignment.clientNL = clientNL;
-  const { customer, assignment } = await postCltNLToDb(session);
+  const assignment = await postCltNLToDb(session);
   session.assignment = new Assignment(assignment);
-  session.customer = customer;
 }
 
 export async function createClientNLObject() {
@@ -59,7 +58,7 @@ export const postCltNLToDb = async (session: Session) => {
   let customerId = session.customer._id;
   let clientNL = session.assignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
-  const updatedCustAndAssDb = await fetch(postClientNLUrl, options);
-  const updatedCustAndAss = await updatedCustAndAssDb.json();
-  return updatedCustAndAss;
+  const updatedAssignmentDb = await fetch(postClientNLUrl, options);
+  const updatedAssignment = await updatedAssignmentDb.json();
+  return updatedAssignment;
 };

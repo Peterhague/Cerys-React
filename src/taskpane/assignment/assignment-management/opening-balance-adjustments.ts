@@ -1,14 +1,16 @@
 import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
+import { Transaction } from "../../classes/transaction";
 import { ControlledInputMap, TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
-import { DrillableCollectionProps } from "../../interfaces/interfaces";
+import { ClientTransaction } from "../../interfaces/interfaces";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -373,11 +375,26 @@ export const createOBAWorksheet = async (session: Session) => {
           "",
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
-        const drillableCollection: DrillableCollectionProps = {
-          collection: obj.assignmentTransactions,
-          colNumbers: [5],
-        };
-        sheetMapping.push(new ControlledInputMap(obj, values.length + 8, [1, 2, 3, 5, 7], [drillableCollection]));
+        const clientNL = session.assignment.clientNL;
+        const clientFigsDrillableCollection = new DrillableCollection(
+          clientNL,
+          (tran: ClientTransaction) => tran.code === obj.clientCode,
+          [3]
+        );
+        const accountsDrillableCollection = new DrillableCollection(obj.assignmentTransactions, null, [5]);
+        const adjustmentsDrillableCollection = new DrillableCollection(
+          obj.assignmentTransactions,
+          (tran: Transaction) => !tran.clientTB,
+          [7]
+        );
+        sheetMapping.push(
+          new ControlledInputMap(
+            obj,
+            values.length + 8,
+            [1, 2, 3, 5, 7],
+            [clientFigsDrillableCollection, accountsDrillableCollection, adjustmentsDrillableCollection]
+          )
+        );
       });
       const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);
       const wsRange = ws.getRange(excelRangeObj.address);
@@ -416,7 +433,7 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
       sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
       mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
   );
-  console.log(map);
+  if (!map) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
     if (valid) console.log(collection.collection);

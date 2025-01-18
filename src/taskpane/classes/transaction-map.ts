@@ -1,6 +1,6 @@
-import { DrillableCollectionProps } from "../interfaces/interfaces";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
+import { DrillableCollection } from "./drillable-collection";
 import { Transaction } from "./transaction";
 import { TrialBalanceLine } from "./trial-balance-line";
 
@@ -22,24 +22,20 @@ export class TransactionMap {
 export class ControlledInputMap {
   identity: string | number;
   identifier: string;
-  //rowNumber: number;
   rowNumberOrig: number;
   colNumbers: number[];
-  //colNumbersOrig: number[];
-  drillableCollections: DrillableCollectionProps[];
+  drillableCollections: DrillableCollection[];
 
   constructor(
     controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject,
     rowNumber: number,
     colNumbers: number[],
-    drillableCollections: DrillableCollectionProps[] | null
+    drillableCollections: DrillableCollection[] | null
   ) {
     this.identifier = "identifier";
     this.identity = controlledInput[this.identifier];
-    //this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
     this.colNumbers = colNumbers;
-    //this.colNumbersOrig = colNumbers.map((i) => i);
     this.drillableCollections = drillableCollections;
   }
   getControlledInput(
