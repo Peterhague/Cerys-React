@@ -24,11 +24,11 @@ export const handleOtherEdSheetChange = async (
   addressObj: AddressObject
 ) => {
   if (e.changeType === "ColumnInserted") {
-    await handleColumnInsertion(session, e, wsName, sheet, addressObj);
+    await handleColumnInsertion(e, wsName, sheet, addressObj);
   } else if (e.changeType === "ColumnDeleted") {
     await handleColumnDeletion(session, sheet, addressObj);
   } else if (e.changeType === "RowInserted") {
-    await handleRowInsertion(session, e, wsName, sheet, addressObj);
+    await handleRowInsertion(e, wsName, sheet, addressObj);
   } else if (e.changeType === "RowDeleted") {
     await handleRowDeletion(session, sheet, addressObj);
   } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Up") {
@@ -36,9 +36,9 @@ export const handleOtherEdSheetChange = async (
   } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Left") {
     await handleCellDeletionLeft(session, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Down") {
-    handleCellInsertionDown(context, session, e, wsName, sheet, addressObj);
+    handleCellInsertionDown(context, e, wsName, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Right") {
-    handleCellInsertionRight(session, e, wsName, sheet, addressObj);
+    handleCellInsertionRight(e, wsName, sheet, addressObj);
   }
 };
 
@@ -553,7 +553,6 @@ export const handleOtherEdSheetChange = async (
 // };
 
 export const handleColumnInsertion = async (
-  session: Session,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: EditableWorksheet,
@@ -561,18 +560,8 @@ export const handleColumnInsertion = async (
 ) => {
   const { firstCol, lastCol } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
-  if (session.activeEditableCell.wsName === sheet.name && firstCol <= session.activeEditableCell.addressObj.firstCol) {
-    session.activeEditableCell.addressObj.firstCol += colsInserted;
-    session.activeEditableCell.addressObj.lastCol += colsInserted;
-  }
-  if (firstCol <= sheet.protectedRange.firstCol) {
-    sheet.protectedRange.firstCol += colsInserted;
-    sheet.protectedRange.lastCol += colsInserted;
-  } else if (firstCol <= sheet.protectedRange.lastCol) {
-    sheet.protectedRange.lastCol += colsInserted;
-  }
-  sheet.definedCols.forEach((col) => {
-    if (col.colNumber >= firstCol) col.colNumber += colsInserted;
+  sheet.mappingObject.columns.forEach((colObj) => {
+    if (colObj.current >= firstCol) colObj.current += colsInserted;
   });
   sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
   return;
@@ -583,46 +572,25 @@ export const handleColumnDeletion = async (session: Session, sheet: EditableWork
   const colsDeleted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
     if (
-      firstCol < session.activeEditableCell.addressObj.firstCol &&
-      lastCol < session.activeEditableCell.addressObj.firstCol
-    ) {
-      session.activeEditableCell.addressObj.firstCol -= colsDeleted;
-      session.activeEditableCell.addressObj.lastCol -= colsDeleted;
-    } else if (
-      firstCol <= session.activeEditableCell.addressObj.firstCol &&
-      lastCol >= session.activeEditableCell.addressObj.firstCol
+      firstCol <= sheet.getCurrentColumn(session.activeEditableCell.addressObj.firstColOrig) &&
+      lastCol >= sheet.getCurrentColumn(session.activeEditableCell.addressObj.firstColOrig)
     ) {
       session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
-  if (lastCol < sheet.protectedRange.firstCol) {
-    sheet.protectedRange.firstCol -= colsDeleted;
-    sheet.protectedRange.lastCol -= colsDeleted;
-  } else if (
-    firstCol <= sheet.protectedRange.firstCol &&
-    lastCol >= sheet.protectedRange.firstCol &&
-    lastCol < sheet.protectedRange.lastCol
-  ) {
-    sheet.protectedRange.firstCol -= lastCol - sheet.protectedRange.firstCol;
-    sheet.protectedRange.lastCol -= colsDeleted;
-  } else if (firstCol > sheet.protectedRange.firstCol && lastCol < sheet.protectedRange.lastCol) {
-    sheet.protectedRange.lastCol -= colsDeleted;
-  } else if (
-    firstCol > sheet.protectedRange.firstCol &&
-    firstCol <= sheet.protectedRange.lastCol &&
-    lastCol >= sheet.protectedRange.lastCol
-  ) {
-    sheet.protectedRange.lastCol -= sheet.protectedRange.lastCol - (firstCol - 1);
-  } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
+  sheet.mappingObject.columns.forEach((colObj) => {
+    if (colObj.current > lastCol) colObj.current -= colsDeleted;
+    if (colObj.current >= firstCol && colObj.current <= lastCol) colObj.current = 0;
+  });
+  const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
+  if (firstCol <= protectedFirstCol && lastCol >= protectedLastCol) {
     sheet.protectedRangeDeleted = true;
     session.setEditButton("off");
     sheet.editButtonStatus = "off";
   }
   sheet.definedCols.forEach((col) => {
-    if (col.colNumber > firstCol && col.colNumber > lastCol) {
-      col.colNumber -= colsDeleted;
-    } else if (!(firstCol > col.colNumber)) {
+    if (!(firstCol > sheet.getCurrentColumn(col.colNumberOrig))) {
       col.isDeleted = true;
     }
   });
@@ -630,7 +598,6 @@ export const handleColumnDeletion = async (session: Session, sheet: EditableWork
 };
 
 export const handleRowInsertion = async (
-  session: Session,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: EditableWorksheet,
@@ -638,17 +605,10 @@ export const handleRowInsertion = async (
 ) => {
   const { firstRow, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
-  if (session.activeEditableCell.wsName === sheet.name && firstRow <= session.activeEditableCell.addressObj.firstRow) {
-    session.activeEditableCell.addressObj.firstRow += rowsInserted;
-    session.activeEditableCell.addressObj.lastRow += rowsInserted;
-  }
-  if (firstRow <= sheet.protectedRange.firstRow) {
-    sheet.protectedRange.firstRow += rowsInserted;
-    sheet.protectedRange.lastRow += rowsInserted;
-  } else if (firstRow <= sheet.protectedRange.lastRow) {
-    sheet.protectedRange.lastRow += rowsInserted;
-  }
   const newRowRanges = [];
+  sheet.mappingObject.rows.forEach((rowObj) => {
+    if (rowObj.current >= firstRow) rowObj.current += rowsInserted;
+  });
   sheet.editableRowRanges.forEach((range) => {
     if (firstRow <= range.firstRow) {
       const newRange = { firstRow: range.firstRow + rowsInserted, lastRow: range.lastRow + rowsInserted };
@@ -662,48 +622,33 @@ export const handleRowInsertion = async (
   });
   sheet.editableRowRanges = newRowRanges;
   sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-  sheet.sheetMapping.forEach((map) => {
-    if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
-  });
 };
 
 export const handleRowDeletion = async (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
+  console.log("here");
   if (session.activeEditableCell.wsName === sheet.name) {
     if (
-      firstRow < session.activeEditableCell.addressObj.firstRow &&
-      lastRow < session.activeEditableCell.addressObj.firstRow
-    ) {
-      session.activeEditableCell.addressObj.firstRow -= rowsDeleted;
-      session.activeEditableCell.addressObj.lastRow -= rowsDeleted;
-    } else if (
-      firstRow <= session.activeEditableCell.addressObj.firstRow &&
-      lastRow >= session.activeEditableCell.addressObj.firstRow
+      firstRow <= sheet.getCurrentRow(session.activeEditableCell.addressObj.firstRowOrig) &&
+      lastRow >= sheet.getCurrentRow(session.activeEditableCell.addressObj.firstRowOrig)
     ) {
       session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
-  if (lastRow < sheet.protectedRange.firstRow) {
-    sheet.protectedRange.firstRow -= rowsDeleted;
-    sheet.protectedRange.lastRow -= rowsDeleted;
-  } else if (
-    firstRow <= sheet.protectedRange.firstRow &&
-    lastRow >= sheet.protectedRange.firstRow &&
-    lastRow < sheet.protectedRange.lastRow
-  ) {
-    sheet.protectedRange.firstRow -= lastRow - sheet.protectedRange.firstRow;
-    sheet.protectedRange.lastRow -= rowsDeleted;
-  } else if (firstRow > sheet.protectedRange.firstRow && lastRow < sheet.protectedRange.lastRow) {
-    sheet.protectedRange.lastRow -= rowsDeleted;
-  } else if (
-    firstRow > sheet.protectedRange.firstRow &&
-    firstRow <= sheet.protectedRange.lastRow &&
-    lastRow >= sheet.protectedRange.lastRow
-  ) {
-    sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (firstRow - 1);
-  } else if (firstRow <= sheet.protectedRange.firstRow && lastRow >= sheet.protectedRange.lastRow) {
+  console.log(sheet.mappingObject);
+  sheet.mappingObject.rows.forEach((rowObj) => {
+    console.log(rowObj.current);
+    console.log(lastRow);
+    if (rowObj.current > lastRow) {
+      console.log("rows deleted");
+      rowObj.current -= rowsDeleted;
+    }
+    if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
+  });
+  const { protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (firstRow <= protectedFirstRow && lastRow >= protectedLastRow) {
     sheet.protectedRangeDeleted = true;
     session.setEditButton("off");
     sheet.editButtonStatus = "off";
@@ -727,51 +672,29 @@ export const handleRowDeletion = async (session: Session, sheet: EditableWorkshe
     }
   });
   sheet.editableRowRanges = newRowRanges;
-  sheet.sheetMapping.forEach((map) => {
-    if (map.rowNumber > lastRow) map.rowNumber -= rowsDeleted;
-  });
 };
 
 export const handleCellDeletionUp = async (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
+    const currentRow = sheet.getCurrentRow(session.activeEditableCell.addressObj.firstRowOrig);
     if (
-      // ie deleted cells are all "above" activeCell range and therefore not not deleted
-      firstRow < session.activeEditableCell.addressObj.firstRow &&
-      lastRow < session.activeEditableCell.addressObj.firstRow
-    ) {
-      session.activeEditableCell.addressObj.firstRow -= rowsDeleted;
-      session.activeEditableCell.addressObj.lastRow -= rowsDeleted;
-    } else if (
       // ie activeEditableCell range is deleted
-      firstRow <= session.activeEditableCell.addressObj.firstRow &&
-      lastRow >= session.activeEditableCell.addressObj.firstRow
+      firstRow <= currentRow &&
+      lastRow >= currentRow
     ) {
       session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
-  if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
-    if (lastRow < sheet.protectedRange.firstRow) {
-      sheet.protectedRange.firstRow -= rowsDeleted;
-      sheet.protectedRange.lastRow -= rowsDeleted;
-    } else if (
-      firstRow <= sheet.protectedRange.firstRow &&
-      lastRow >= sheet.protectedRange.firstRow &&
-      lastRow < sheet.protectedRange.lastRow
-    ) {
-      sheet.protectedRange.firstRow -= lastRow - sheet.protectedRange.firstRow;
-      sheet.protectedRange.lastRow -= rowsDeleted;
-    } else if (firstRow > sheet.protectedRange.firstRow && lastRow < sheet.protectedRange.lastRow) {
-      sheet.protectedRange.lastRow -= rowsDeleted;
-    } else if (
-      firstRow > sheet.protectedRange.firstRow &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      lastRow >= sheet.protectedRange.lastRow
-    ) {
-      sheet.protectedRange.lastRow -= sheet.protectedRange.lastRow - (firstRow - 1);
-    } else if (firstRow <= sheet.protectedRange.firstRow && lastRow >= sheet.protectedRange.lastRow) {
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstCol >= firstCol && protectedLastCol <= lastCol) {
+    sheet.mappingObject.rows.forEach((rowObj) => {
+      if (rowObj.current > lastRow) rowObj.current -= rowsDeleted;
+      if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
+    });
+    if (firstRow <= protectedFirstRow && lastRow >= protectedLastRow) {
       sheet.protectedRangeDeleted = true;
       session.setEditButton("off");
       sheet.editButtonStatus = "off";
@@ -795,19 +718,16 @@ export const handleCellDeletionUp = async (session: Session, sheet: EditableWork
       }
     });
     sheet.editableRowRanges = newRowRanges;
-    sheet.sheetMapping.forEach((map) => {
-      if (map.rowNumber > lastRow) map.rowNumber -= rowsDeleted;
-    });
     return;
   } else if (
-    (firstCol > sheet.protectedRange.firstCol &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstRow >= sheet.protectedRange.firstRow) ||
-    (lastCol < sheet.protectedRange.lastCol &&
-      lastCol >= sheet.protectedRange.firstCol &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstRow >= sheet.protectedRange.firstRow)
+    (firstCol > protectedFirstCol &&
+      firstCol <= protectedLastCol &&
+      firstRow <= protectedLastRow &&
+      firstRow >= protectedFirstRow) ||
+    (lastCol < protectedLastCol &&
+      lastCol >= protectedFirstCol &&
+      firstRow <= protectedLastRow &&
+      firstRow >= protectedFirstRow)
   ) {
     console.log("DATA CORRUPTED!!!!");
     sheet.dataCorrupted = true;
@@ -819,60 +739,39 @@ export const handleCellDeletionLeft = async (session: Session, sheet: EditableWo
   const colsDeleted = lastCol - firstCol + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
     if (
-      firstCol < session.activeEditableCell.addressObj.firstCol &&
-      lastCol < session.activeEditableCell.addressObj.firstCol
-    ) {
-      session.activeEditableCell.addressObj.firstCol -= colsDeleted;
-      session.activeEditableCell.addressObj.lastCol -= colsDeleted;
-    } else if (
-      firstCol <= session.activeEditableCell.addressObj.firstCol &&
-      lastCol >= session.activeEditableCell.addressObj.firstCol
+      firstCol <= sheet.getCurrentColumn(session.activeEditableCell.addressObj.firstColOrig) &&
+      lastCol >= sheet.getCurrentColumn(session.activeEditableCell.addressObj.firstColOrig)
     ) {
       session.activeEditableCell = createEditableCell(null, null, null);
       callNextView(session);
     }
   }
-  if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
-    if (lastCol < sheet.protectedRange.firstCol) {
-      sheet.protectedRange.firstCol -= colsDeleted;
-      sheet.protectedRange.lastCol -= colsDeleted;
-    } else if (
-      firstCol <= sheet.protectedRange.firstCol &&
-      lastCol >= sheet.protectedRange.firstCol &&
-      lastCol < sheet.protectedRange.lastCol
-    ) {
-      sheet.protectedRange.firstCol -= lastCol - sheet.protectedRange.firstCol;
-      sheet.protectedRange.lastCol -= colsDeleted;
-    } else if (firstCol > sheet.protectedRange.firstCol && lastCol < sheet.protectedRange.lastCol) {
-      sheet.protectedRange.lastCol -= colsDeleted;
-    } else if (
-      firstCol > sheet.protectedRange.firstCol &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      lastCol >= sheet.protectedRange.lastCol
-    ) {
-      sheet.protectedRange.lastCol -= sheet.protectedRange.lastCol - (firstCol - 1);
-    } else if (firstCol <= sheet.protectedRange.firstCol && lastCol >= sheet.protectedRange.lastCol) {
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstRow >= firstRow && protectedLastRow <= lastRow) {
+    sheet.mappingObject.columns.forEach((colObj) => {
+      if (colObj.current > lastCol) colObj.current -= colsDeleted;
+      if (colObj.current >= firstCol && colObj.current <= lastCol) colObj.current = 0;
+    });
+    if (firstCol <= protectedFirstCol && lastCol >= protectedLastCol) {
       sheet.protectedRangeDeleted = true;
       session.setEditButton("off");
       sheet.editButtonStatus = "off";
     }
     sheet.definedCols.forEach((col) => {
-      if (col.colNumber > firstCol && col.colNumber > lastCol) {
-        col.colNumber -= colsDeleted;
-      } else if (!(firstCol > col.colNumber)) {
+      if (!(firstCol > sheet.getCurrentColumn(col.colNumberOrig))) {
         col.isDeleted = true;
       }
     });
     return;
   } else if (
-    (firstRow > sheet.protectedRange.firstRow &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol) ||
-    (lastRow < sheet.protectedRange.lastRow &&
-      lastRow >= sheet.protectedRange.firstRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol)
+    (firstRow > protectedFirstRow &&
+      firstRow <= protectedLastRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol) ||
+    (lastRow < protectedLastRow &&
+      lastRow >= protectedFirstRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol)
   ) {
     console.log("DATA CORRUPPTED!!!!");
     reinstateNumberFormats(sheet);
@@ -882,7 +781,6 @@ export const handleCellDeletionLeft = async (session: Session, sheet: EditableWo
 
 export const handleCellInsertionDown = (
   context: Excel.RequestContext,
-  session: Session,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: EditableWorksheet,
@@ -890,17 +788,11 @@ export const handleCellInsertionDown = (
 ) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsInserted = lastRow - firstRow + 1;
-  if (session.activeEditableCell.wsName === sheet.name && session.activeEditableCell.addressObj.firstRow >= firstRow) {
-    session.activeEditableCell.addressObj.firstRow += rowsInserted;
-    session.activeEditableCell.addressObj.lastRow += rowsInserted;
-  }
-  if (sheet.protectedRange.firstCol >= firstCol && sheet.protectedRange.lastCol <= lastCol) {
-    if (firstRow <= sheet.protectedRange.firstRow) {
-      sheet.protectedRange.firstRow += rowsInserted;
-      sheet.protectedRange.lastRow += rowsInserted;
-    } else if (firstRow <= sheet.protectedRange.lastRow) {
-      sheet.protectedRange.lastRow += rowsInserted;
-    }
+  const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
+  if (protectedFirstCol >= firstCol && protectedLastCol <= lastCol) {
+    sheet.mappingObject.rows.forEach((rowObj) => {
+      if (rowObj.current >= firstRow) rowObj.current += rowsInserted;
+    });
     const newRowRanges = [];
     sheet.editableRowRanges.forEach((range) => {
       if (firstRow <= range.firstRow) {
@@ -915,11 +807,8 @@ export const handleCellInsertionDown = (
     });
     sheet.editableRowRanges = newRowRanges;
     sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
-    sheet.sheetMapping.forEach((map) => {
-      if (map.rowNumber >= firstRow) map.rowNumber += rowsInserted;
-    });
     return;
-  } else if (firstCol < sheet.protectedRange.lastCol || lastCol > sheet.protectedRange.firstCol) {
+  } else if (firstCol < protectedLastCol || lastCol > protectedFirstCol) {
     if (!sheet.dataCorrupted) {
       const range = `${colNumToLetter(firstCol)}${firstRow}:${colNumToLetter(lastCol)}${lastRow}`;
       deleteWorksheetRangeDown(context, wsName, range);
@@ -928,7 +817,6 @@ export const handleCellInsertionDown = (
 };
 
 export const handleCellInsertionRight = (
-  session: Session,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: EditableWorksheet,
@@ -936,31 +824,22 @@ export const handleCellInsertionRight = (
 ) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const colsInserted = lastCol - firstCol + 1;
-  if (session.activeEditableCell.wsName === sheet.name && session.activeEditableCell.addressObj.firstCol >= firstCol) {
-    session.activeEditableCell.addressObj.firstRow += colsInserted;
-    session.activeEditableCell.addressObj.lastRow += colsInserted;
-  }
-  if (sheet.protectedRange.firstRow >= firstRow && sheet.protectedRange.lastRow <= lastRow) {
-    if (firstCol <= sheet.protectedRange.firstCol) {
-      sheet.protectedRange.firstCol += colsInserted;
-      sheet.protectedRange.lastCol += colsInserted;
-    } else if (firstCol <= sheet.protectedRange.lastCol) {
-      sheet.protectedRange.lastCol += colsInserted;
-    }
-    sheet.definedCols.forEach((col) => {
-      if (col.colNumber >= firstCol) col.colNumber += colsInserted;
+  const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
+  if (protectedFirstRow >= firstRow && protectedLastRow <= lastRow) {
+    sheet.mappingObject.columns.forEach((colObj) => {
+      if (colObj.current >= firstCol) colObj.current += colsInserted;
     });
     sheet.editButtonStatus === "hide" && cancelAutoFill(wsName, e.address);
     return;
   } else if (
-    (firstRow > sheet.protectedRange.firstRow &&
-      firstRow <= sheet.protectedRange.lastRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol) ||
-    (lastRow < sheet.protectedRange.lastRow &&
-      lastRow >= sheet.protectedRange.firstRow &&
-      firstCol <= sheet.protectedRange.lastCol &&
-      firstCol >= sheet.protectedRange.firstCol)
+    (firstRow > protectedFirstRow &&
+      firstRow <= protectedLastRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol) ||
+    (lastRow < protectedLastRow &&
+      lastRow >= protectedFirstRow &&
+      firstCol <= protectedLastCol &&
+      firstCol >= protectedFirstCol)
   ) {
     console.log("DATA CORRUPPTED!!!!");
     reinstateNumberFormats(sheet);
@@ -974,50 +853,52 @@ export const handleColumnSort = async (session: Session) => {
 };
 
 export const handleEdSheetRowSort = async (session: Session, wsName: string) => {
-  const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
-  let uniqueCol: number;
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.name === wsName) {
-      sheet.definedCols.forEach((col) => {
-        if (col.isUnique) uniqueCol = col.colNumber;
-      });
-      const protectedRowNumbers: number[] = [];
-      sheet.sheetMapping.forEach((map) => {
-        const transaction = map.getTran(sheet.transactions);
-        const currentRowNumber = map.rowNumber;
-        let activeCellMatched = false;
-        if (session.activeEditableCell.wsName === sheet.name) {
-          if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
-            activeCellMatched = true;
-          }
-        }
-        usedRange.forEach((row, index) => {
-          if (row[uniqueCol - 1] === transaction.transactionNumber) {
-            validateOtherValues(session, sheet, transaction, row);
-            map.rowNumber = index + 1;
-            if (activeCellMatched) {
-              session.activeEditableCell.addressObj.firstRow = index + 1;
-              session.activeEditableCell.addressObj.lastRow = index + 1;
-            }
-            protectedRowNumbers.push(index + 1);
-          }
-        });
-      });
-      protectedRowNumbers.sort((a, b) => {
-        return a - b;
-      });
-      const editableRowRanges = [{ firstRow: protectedRowNumbers[0], lastRow: protectedRowNumbers[0] }];
-      for (let i = 1; i < protectedRowNumbers.length; i++) {
-        if (editableRowRanges.at(-1).lastRow + 1 === protectedRowNumbers[i]) {
-          editableRowRanges.at(-1).lastRow += 1;
-        } else {
-          const nextRange = { firstRow: protectedRowNumbers[i], lastRow: protectedRowNumbers[i] };
-          editableRowRanges.push(nextRange);
-        }
-      }
-      sheet.editableRowRanges = editableRowRanges;
-    }
-  });
+  console.log(session);
+  console.log(wsName);
+  // const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
+  // let uniqueCol: number;
+  // session.editableSheets.forEach((sheet) => {
+  //   if (sheet.name === wsName) {
+  //     sheet.definedCols.forEach((col) => {
+  //       if (col.isUnique) uniqueCol = col.colNumber;
+  //     });
+  //     const protectedRowNumbers: number[] = [];
+  //     sheet.sheetMapping.forEach((map) => {
+  //       const transaction = map.getTran(sheet.transactions);
+  //       const currentRowNumber = map.rowNumber;
+  //       let activeCellMatched = false;
+  //       if (session.activeEditableCell.wsName === sheet.name) {
+  //         if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
+  //           activeCellMatched = true;
+  //         }
+  //       }
+  //       usedRange.forEach((row, index) => {
+  //         if (row[uniqueCol - 1] === transaction.transactionNumber) {
+  //           validateOtherValues(session, sheet, transaction, row);
+  //           map.rowNumber = index + 1;
+  //           if (activeCellMatched) {
+  //             session.activeEditableCell.addressObj.firstRow = index + 1;
+  //             session.activeEditableCell.addressObj.lastRow = index + 1;
+  //           }
+  //           protectedRowNumbers.push(index + 1);
+  //         }
+  //       });
+  //     });
+  //     protectedRowNumbers.sort((a, b) => {
+  //       return a - b;
+  //     });
+  //     const editableRowRanges = [{ firstRow: protectedRowNumbers[0], lastRow: protectedRowNumbers[0] }];
+  //     for (let i = 1; i < protectedRowNumbers.length; i++) {
+  //       if (editableRowRanges.at(-1).lastRow + 1 === protectedRowNumbers[i]) {
+  //         editableRowRanges.at(-1).lastRow += 1;
+  //       } else {
+  //         const nextRange = { firstRow: protectedRowNumbers[i], lastRow: protectedRowNumbers[i] };
+  //         editableRowRanges.push(nextRange);
+  //       }
+  //     }
+  //     sheet.editableRowRanges = editableRowRanges;
+  //   }
+  // });
 };
 
 export const validateOtherValues = (session: Session, sheet: EditableWorksheet, tran: Transaction, row: any[]) => {
@@ -1034,11 +915,11 @@ export const validateCerysTransaction = (session: Session, sheet: EditableWorksh
   let narrativeCol: number;
   let valueCol: number;
   sheet.definedCols.forEach((col) => {
-    if (col.type === "date") transDateCol = col.colNumber;
-    if (col.type === "transType") transTypeCol = col.colNumber;
-    if (col.type === "clientCode") clientCodeCol = col.colNumber;
-    if (col.type === "cerysNarrative") narrativeCol = col.colNumber;
-    if (col.type === "value") valueCol = col.colNumber;
+    if (col.type === "date") transDateCol = sheet.getCurrentColumn(col.colNumberOrig);
+    if (col.type === "transType") transTypeCol = sheet.getCurrentColumn(col.colNumberOrig);
+    if (col.type === "clientCode") clientCodeCol = sheet.getCurrentColumn(col.colNumberOrig);
+    if (col.type === "cerysNarrative") narrativeCol = sheet.getCurrentColumn(col.colNumberOrig);
+    if (col.type === "value") valueCol = sheet.getCurrentColumn(col.colNumberOrig);
   });
   let check = true;
   if (date !== row[transDateCol - 1]) {

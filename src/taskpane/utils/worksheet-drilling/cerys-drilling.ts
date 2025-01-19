@@ -1,6 +1,7 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "../../classes/accounts-category-line";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
+import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
@@ -45,7 +46,7 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       const map = sheet.sheetMapping.find(
         (mapping) =>
           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
-          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
+          sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
@@ -67,7 +68,7 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       const map = sheet.sheetMapping.find(
         (mapping) =>
           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
-          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
+          sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
       if (!map) return;
       console.log(map);
@@ -126,7 +127,16 @@ async function cerysNomDetailView(context: Excel.RequestContext, transactions: T
   const columnsRange = ws.getRange("A:G");
   const columnG = ws.getRange("G:G");
   columnG.numberFormat = STANDARD_NUMBER_FORMAT;
-  createEditableWorksheet(session, transactions, ws, valuesToPost, "cerysCodeAnalysis", sheetMapping);
+  const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
+  createEditableWorksheet(
+    session,
+    transactions,
+    ws,
+    valuesToPost,
+    "cerysCodeAnalysis",
+    sheetMapping,
+    controlledRangeObj
+  );
   columnsRange.format.autofitColumns();
   ws.activate();
   if (sheetInMidEdit) handleEditButtonClick(session);
@@ -148,11 +158,11 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
   editModeEnabled &&
     ws.definedCols.forEach((col) => {
       if (col.type === "cerysCode") {
-        cerysCodeCol = col.colNumber;
+        cerysCodeCol = ws.getCurrentColumn(col.colNumberOrig);
       } else if (col.type === "clientCode") {
-        clientCodeCol = col.colNumber;
+        clientCodeCol = ws.getCurrentColumn(col.colNumberOrig);
       } else if (col.type === "clientCodeMapping") {
-        clientCodeMappingCol = col.colNumber;
+        clientCodeMappingCol = ws.getCurrentColumn(col.colNumberOrig);
       }
     });
   if (withinEditableRange && cerysCodeCol === addressObj.firstCol) {
@@ -229,12 +239,14 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
     await Excel.run(async (context) => {
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
+      // issue in progress here
       const map = sheet.sheetMapping.find(
         (mapping) =>
           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
-          mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
+          sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
-      if (!map) return;
+      if (!map || !map.identity) return;
+      console.log(map);
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailBS(category, session);

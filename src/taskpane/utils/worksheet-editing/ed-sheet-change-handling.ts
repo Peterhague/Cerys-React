@@ -35,7 +35,7 @@ export const handleWorksheetSelection = async (session: Session, e, wsName: stri
   let cerysCodeCol;
   ws.definedCols.forEach((col) => {
     if (col.type === "cerysCode") {
-      cerysCodeCol = col.colNumber;
+      cerysCodeCol = ws.getCurrentColumn(col.colNumberOrig);
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
@@ -115,8 +115,8 @@ export const updateEdSheetClientCodeMapping = async (
           if (map.transactionId === affectedTran._id) {
             affectedTran.updates.forEach((updatedItem) => {
               sheet.definedCols.forEach((definedCol) => {
-                const col = colNumToLetter(definedCol.colNumber);
-                const row = map.rowNumber;
+                const col = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));
+                const row = sheet.getCurrentRow(map.rowNumberOrig);
                 let update: { address: string; value?: string | number } = {
                   address: `${col}${row}:${col}${row}`,
                 };
@@ -136,14 +136,21 @@ export const updateEdSheetClientCodeMapping = async (
   }
 };
 
-export const renewEdSheetsTransRefs = (context: Excel.RequestContext, session: Session) => {
+export const renewEdSheetsTransRefs = async (context: Excel.RequestContext, session: Session) => {
   let promptSheetDeletion = false;
-  session.editableSheets.forEach((sheet) => {
-    sheet.renewTransactions(context, session, session.assignment.transactions);
-    if (sheet.transactions.length === 0) {
-      sheet.promptDeletion = true;
+  // session.editableSheets.forEach((sheet) => {
+  //   await sheet.renewTransactions(context, session, session.assignment.transactions);
+  //   if (sheet.transactions.length === 0) {
+  //     sheet.promptDeletion = true;
+  //     promptSheetDeletion = true;
+  //   }
+  // });
+  for (let i = 0; i < session.editableSheets.length; i++) {
+    await session.editableSheets[i].renewTransactions(context, session, session.assignment.transactions);
+    if (session.editableSheets[i].transactions.length === 0) {
+      session.editableSheets[i].promptDeletion = true;
       promptSheetDeletion = true;
     }
-  });
+  }
   return promptSheetDeletion;
 };

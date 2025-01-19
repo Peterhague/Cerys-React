@@ -3,10 +3,10 @@ import { Session } from "./session";
 
 export class EditableCell {
   addressObj: {
-    firstRow: number;
-    lastRow: number;
-    firstCol: number;
-    lastCol: number;
+    firstRowOrig: number;
+    lastRowOrig: number;
+    firstColOrig: number;
+    lastColOrig: number;
   };
   wsName: string;
   options: {
@@ -18,23 +18,28 @@ export class EditableCell {
     wsName: string,
     options: { action: string }
   ) {
-    this.addressObj = addressObj;
+    this.addressObj = {
+      firstRowOrig: addressObj.firstRow,
+      lastRowOrig: addressObj.lastRow,
+      firstColOrig: addressObj.firstCol,
+      lastColOrig: addressObj.lastCol,
+    };
     this.wsName = wsName;
     this.options = options;
   }
   getCol() {
-    return colNumToLetter(this.addressObj.firstCol);
+    return colNumToLetter(this.addressObj.firstColOrig);
   }
 
   getRange() {
     const col = this.getCol();
-    const row = this.addressObj.firstRow;
+    const row = this.addressObj.firstRowOrig;
     return `${col}${row}:${col}${row}`;
   }
 
   getActiveTransaction(session: Session) {
     const sheet = session.editableSheets.find((sheet) => sheet.name === this.wsName);
-    const map = sheet.sheetMapping.find((map) => map.rowNumber === this.addressObj.firstRow);
+    const map = sheet.sheetMapping.find((map) => map.rowNumberOrig === this.addressObj.firstRowOrig);
     const tran = sheet.transactions.find((t) => t._id === map.transactionId);
     return tran;
   }

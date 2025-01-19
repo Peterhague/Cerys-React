@@ -1,10 +1,12 @@
-import { FATransaction } from "../interfaces/interfaces";
+import { AddressObject, FATransaction, MappingObjectProps } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helperFunctions";
 import { createDeletionObject } from "../utils/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
+import { createMappingObject } from "./controlled-worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
 import { ExcelRangeUpdate } from "./excel-range-editing";
+import { ExcelRangeObject, ProtectedRange } from "./range-objects";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
 import { TransactionMap } from "./transaction-map";
@@ -17,7 +19,7 @@ export class EditableWorksheet {
   promptDeletion: boolean;
   worksheetId: string;
   editableRowRanges: { firstRow: number; lastRow: number }[];
-  protectedRange: { firstRow: number; lastRow: number; firstCol: number; lastCol: number };
+  protectedRange: ProtectedRange;
   protectedRangeDeleted: boolean;
   definedCols: DefinedCol[];
   editButtonStatus: string;
@@ -29,6 +31,7 @@ export class EditableWorksheet {
   transactions: Transaction[];
   usedRange: any[][];
   sheetMapping: TransactionMap[];
+  mappingObject: MappingObjectProps;
   filterObj: { target: string; value: string | number | boolean };
   transactionFilter: (tran: Transaction) => boolean;
   isValueInverted: boolean;
@@ -39,7 +42,8 @@ export class EditableWorksheet {
     ws: Excel.Worksheet,
     wsValues: string[][],
     type: string,
-    sheetMapping: TransactionMap[]
+    sheetMapping: TransactionMap[],
+    controlledRangeObj: ExcelRangeObject
   ) {
     this.name = ws.name;
     this.type = type;
@@ -48,12 +52,7 @@ export class EditableWorksheet {
     this.worksheetId = ws.id;
     this.definedCols = this.createDefinedCols();
     this.editableRowRanges = [{ firstRow: 3, lastRow: transactions.length + 2 }];
-    this.protectedRange = {
-      firstRow: 3,
-      lastRow: transactions.length + 2,
-      firstCol: 1,
-      lastCol: this.definedCols.length,
-    };
+    this.protectedRange = new ProtectedRange(controlledRangeObj);
     this.protectedRangeDeleted = false;
     this.editButtonStatus = "show";
     this.changeRejected = false;
@@ -64,6 +63,7 @@ export class EditableWorksheet {
     this.transactions = transactions;
     this.usedRange = wsValues;
     this.sheetMapping = sheetMapping;
+    this.mappingObject = createMappingObject(controlledRangeObj);
     this.filterObj = this.createEditableSheetFilterObj();
     this.transactionFilter = this.createTransactionFilter(session);
     this.isValueInverted = this.testValueInversion(session);
@@ -89,7 +89,7 @@ export class EditableWorksheet {
     this.transactions.forEach((tran) => {
       const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
       if (existingMap) {
-        rowNumbers.push(existingMap.rowNumber);
+        rowNumbers.push(this.getCurrentRow(existingMap.rowNumberOrig));
         newMapping.push(existingMap);
       } else {
         newTransToMap.push(tran);
@@ -119,12 +119,10 @@ export class EditableWorksheet {
         } else if (definedCol.type === "clientCode" && typeof value === "number") {
           value = value >= 0 ? value : "NA";
         }
-        const col = colNumToLetter(definedCol.colNumber);
+        const col = colNumToLetter(this.getCurrentColumn(definedCol.colNumberOrig));
         const address = `${col}${row}:${col}${row}`;
         updates.push(new ExcelRangeUpdate(address, value, null));
       });
-      if (this.protectedRange.firstRow > row) this.protectedRange.firstRow = row;
-      if (this.protectedRange.lastRow < row) this.protectedRange.lastRow = row;
       this.editableRowRanges.forEach((range) => {
         if (range.firstRow - 1 === row) {
           range.firstRow = row;
@@ -140,18 +138,20 @@ export class EditableWorksheet {
     }
   }
 
-  async createChangeObjects(context) {
+  async createChangeObjects(context: Excel.RequestContext) {
     const updates = [];
     const deletionObjects = [];
+    console.log(this.sheetMapping);
     this.sheetMapping.forEach((map) => {
       const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
+      console.log(transaction);
       if (transaction) {
         transaction.updates.length > 0 &&
           transaction.updates.forEach((update) => {
             if (update.worksheetId && update.worksheetId !== this.worksheetId) {
               const definedCol = this.definedCols.find((col) => col.type === update.type);
-              const col = colNumToLetter(definedCol.colNumber);
-              const row = map.rowNumber;
+              const col = colNumToLetter(this.getCurrentColumn(definedCol.colNumberOrig));
+              const row = this.getCurrentRow(map.rowNumberOrig);
               const sheetUpdate: { address: string; value?: string | number } = {
                 address: `${col}${row}:${col}${row}`,
                 value: update.value,
@@ -160,10 +160,13 @@ export class EditableWorksheet {
             }
           });
       } else {
+        console.log("correct branch...");
         deletionObjects.push(createDeletionObject(map, this));
       }
     });
+    console.log(updates);
     updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
+    console.log(deletionObjects);
     if (deletionObjects.length > 0) {
       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
       // therefore needs to be done from bottom of page up
@@ -215,6 +218,38 @@ export class EditableWorksheet {
         : undefined;
     return cerysCodeObj && cerysCodeObj.defaultSign === "credit" ? true : false;
   }
+
+  getCurrentColumn(originalColumn: number) {
+    return this.mappingObject.columns.find((obj) => obj.original === originalColumn).current;
+  }
+
+  getCurrentRow(originalRow: number) {
+    return this.mappingObject.rows.find((obj) => obj.original === originalRow).current;
+  }
+
+  getOriginalColumn(currentColumn: number) {
+    return this.mappingObject.columns.find((obj) => obj.current === currentColumn).original;
+  }
+
+  getOriginalRow(currentRow: number) {
+    console.log(currentRow);
+    console.log(this.mappingObject.rows);
+    const proxy = this.mappingObject.rows.find((obj) => obj.current === currentRow).original;
+    console.log(proxy);
+    return this.mappingObject.rows.find((obj) => obj.current === currentRow).original;
+  }
+
+  getCurrentProtectedRange() {
+    const protectedFirstCol = this.getCurrentColumn(this.protectedRange.firstColOrig);
+    const protectedLastCol = this.getCurrentColumn(this.protectedRange.lastColOrig);
+    const protectedFirstRow = this.getCurrentColumn(this.protectedRange.firstRowOrig);
+    const protectedLastRow = this.getCurrentColumn(this.protectedRange.lastRowOrig);
+    return { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow };
+  }
+
+  getCurrentColNumbers(colNumbers: number[]) {
+    return colNumbers.map((no) => this.getCurrentColumn(no));
+  }
 }
 
 export const createEditableWorksheet = (
@@ -223,9 +258,10 @@ export const createEditableWorksheet = (
   ws: Excel.Worksheet,
   wsValues: string[][],
   type: string,
-  sheetMapping: TransactionMap[]
+  sheetMapping: TransactionMap[],
+  controlledRangeObj: ExcelRangeObject
 ) => {
-  const editableWs = new EditableWorksheet(session, transactions, ws, wsValues, type, sheetMapping);
+  const editableWs = new EditableWorksheet(session, transactions, ws, wsValues, type, sheetMapping, controlledRangeObj);
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name !== editableWs.name) arr.push(sheet);

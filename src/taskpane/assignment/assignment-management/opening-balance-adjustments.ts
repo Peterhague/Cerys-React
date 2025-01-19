@@ -98,7 +98,16 @@ export async function oBARelevantTransView(session: Session) {
       const columnsRange = ws.getRange("A:I");
       const columnG = ws.getRange("G:G");
       columnG.numberFormat = STANDARD_NUMBER_FORMAT;
-      createEditableWorksheet(session, relTrans, ws, valuesToPost, "OBARelevantAdjustments", sheetMapping);
+      const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
+      createEditableWorksheet(
+        session,
+        relTrans,
+        ws,
+        valuesToPost,
+        "OBARelevantAdjustments",
+        sheetMapping,
+        controlledRangeObj
+      );
       columnsRange.format.autofitColumns();
       ws.activate();
       if (sheetInMidEdit) handleEditButtonClick(session);
@@ -431,7 +440,7 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
   const map = sheet.sheetMapping.find(
     (mapping) =>
       sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
-      mapping.colNumbers.includes(sheet.getOriginalColumn(addressObj.firstCol))
+      sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
   );
   if (!map) return;
   map.drillableCollections.forEach((collection) => {

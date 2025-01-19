@@ -83,6 +83,10 @@ export class ControlledWorksheet {
     const protectedLastRow = this.getCurrentColumn(this.protectedRange.lastRowOrig);
     return { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow };
   }
+
+  getCurrentColNumbers(colNumbers: number[]) {
+    return colNumbers.map((no) => this.getCurrentColumn(no));
+  }
 }
 
 export const createControlledWorksheet = (

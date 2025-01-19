@@ -4,7 +4,7 @@ import _ from "lodash";
 
 export class DefinedCol {
   type: string;
-  colNumber: number;
+  colNumberOrig: number;
   isMutable: Boolean;
   isQuasiMutable: Boolean;
   format: any[][];
@@ -29,7 +29,7 @@ export class DefinedCol {
     key: [string]
   ) {
     this.type = type;
-    this.colNumber = colNumber;
+    this.colNumberOrig = colNumber;
     this.isMutable = isMutable;
     this.isQuasiMutable = isQuasiMutable;
     this.format = format;

@@ -433,10 +433,10 @@ export interface ShareClass {
 }
 
 export interface AddressObject {
-  firstCol: number;
-  lastCol: number;
-  firstRow: number;
-  lastRow: number;
+  firstCol: number | null;
+  lastCol: number | null;
+  firstRow: number | null;
+  lastRow: number | null;
 }
 
 export interface QuasiEventObjectProps {

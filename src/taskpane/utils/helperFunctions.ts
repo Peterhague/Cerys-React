@@ -185,15 +185,16 @@ export const handleEditButtonClick = async (session: Session) => {
       const highlightGreenRanges = [];
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === wsName) {
-          let dateCol;
-          let cerysCodeCol;
-          let cerysNarrativeCol;
-          let clientCodeMappingCol;
+          let dateCol: number;
+          let cerysCodeCol: number;
+          let cerysNarrativeCol: number;
+          let clientCodeMappingCol: number;
           sheet.definedCols.forEach((col) => {
-            if (col.type === "date") dateCol = col.colNumber;
-            if (col.type === "cerysCode") cerysCodeCol = col.colNumber;
-            if (col.type === "cerysNarrative") cerysNarrativeCol = col.colNumber;
-            if (col.type === "clientCodeMapping") clientCodeMappingCol = col.colNumber;
+            const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
+            if (col.type === "date") dateCol = currentCol;
+            if (col.type === "cerysCode") cerysCodeCol = currentCol;
+            if (col.type === "cerysNarrative") cerysNarrativeCol = currentCol;
+            if (col.type === "clientCodeMapping") clientCodeMappingCol = currentCol;
           });
           const dateColLetter = colNumToLetter(dateCol);
           const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
@@ -254,10 +255,11 @@ export const simulateEditButtonClick = async (session: Session) => {
           let narrColNumber;
           let clientCodeMappingNumber;
           sheet.definedCols.forEach((col) => {
-            if (col.type === "cerysCode") codeColNumber = col.colNumber;
-            if (col.type === "date") dateColNumber = col.colNumber;
-            if (col.type === "cerysNarrative") narrColNumber = col.colNumber;
-            if (col.type === "clientCodeMapping") clientCodeMappingNumber = col.colNumber;
+            const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
+            if (col.type === "cerysCode") codeColNumber = currentCol;
+            if (col.type === "date") dateColNumber = currentCol;
+            if (col.type === "cerysNarrative") narrColNumber = currentCol;
+            if (col.type === "clientCodeMapping") clientCodeMappingNumber = currentCol;
           });
           updatedTrans.forEach((tran) => {
             const rowNumber = getTransRowNumber(tran, sheet);
@@ -431,13 +433,13 @@ export const checkEditMode = (sheet: EditableWorksheet) => {
 };
 
 export const getDefinedCol = (sheet: EditableWorksheet, addressCol: number) => {
-  const definedCol = sheet.definedCols.find((col) => col.colNumber === addressCol);
+  const definedCol = sheet.definedCols.find((col) => sheet.getCurrentColumn(col.colNumberOrig) === addressCol);
   return definedCol;
 };
 
 export const getTransRowNumber = (transaction: Transaction, sheet: EditableWorksheet) => {
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
-  return map.rowNumber;
+  return sheet.getCurrentRow(map.rowNumberOrig);
 };
 
 export const getUpdatedDate = (tran: Transaction) => {

@@ -122,7 +122,7 @@ export const captureReanalysis = async (
     isNotNegation: true,
     updated: false,
   };
-  const map = sheet.sheetMapping.find((m) => m.rowNumber === eRowNumber);
+  const map = sheet.sheetMapping.find((m) => sheet.getCurrentRow(m.rowNumberOrig) === eRowNumber);
   const tran = map.getTran(sheet.transactions);
   const validationObj: TranUpdateFinalValidation = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
@@ -343,7 +343,7 @@ export const reverseTransactionUpdates = async (context: Excel.RequestContext, s
       sheet.editButtonStatus = "hide";
       const rowNumber = getTransRowNumber(tran, sheet);
       const definedCol = sheet.definedCols.find((col) => col.type === update.type);
-      const definedColLetter = colNumToLetter(definedCol.colNumber);
+      const definedColLetter = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));
       const address = `${definedColLetter}${rowNumber}:${definedColLetter}${rowNumber}`;
       const reversal = { wsName, address, value: update.reversion };
       reversals.push(reversal);
@@ -427,7 +427,7 @@ export const reinstateNumberFormats = async (sheet: EditableWorksheet) => {
     await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem(sheet.name);
       sheet.definedCols.forEach((col) => {
-        const colLetter = colNumToLetter(col.colNumber);
+        const colLetter = colNumToLetter(sheet.getCurrentColumn(col.colNumberOrig));
         const range = ws.getRange(`${colLetter}:${colLetter}`);
         range.numberFormat = col.format;
       });
@@ -448,7 +448,7 @@ export const completeCerysCodeUpdate = async (
   let cerysNameCol = 0;
   sheet.definedCols.forEach((col) => {
     if (col.type === "cerysName") {
-      cerysNameCol = col.colNumber;
+      cerysNameCol = sheet.getCurrentColumn(col.colNumberOrig);
     }
   });
   if (cerysNameCol > 0) {
@@ -471,10 +471,10 @@ export const completeCerysNameUpdate = async (
   let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {
     if (col.type === "clientCodeMapping") {
-      clientCodeMappingCol = col.colNumber;
+      clientCodeMappingCol = sheet.getCurrentColumn(col.colNumberOrig);
     }
     if (col.type === "clientCodeNameMapping") {
-      clientCodeNameMappingCol = col.colNumber;
+      clientCodeNameMappingCol = sheet.getCurrentColumn(col.colNumberOrig);
     }
   });
   if (clientCodeMappingCol > 0) {
@@ -502,7 +502,7 @@ export const completeClientCodeMappingUpdate = async (
   let clientCodeNameMappingCol = 0;
   sheet.definedCols.forEach((col) => {
     if (col.type === "clientCodeNameMapping") {
-      clientCodeNameMappingCol = col.colNumber;
+      clientCodeNameMappingCol = sheet.getCurrentColumn(col.colNumberOrig);
     }
   });
   if (clientCodeNameMappingCol > 0) {

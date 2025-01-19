@@ -58,7 +58,7 @@ export const testControlledSheetChangesForRejection = async (
   const eColNumber = firstCol;
   const mapping = sheet.sheetMapping.find(
     (map) =>
-      map.colNumbers.includes(sheet.getOriginalColumn(eColNumber)) &&
+      sheet.getCurrentColNumbers(map.colNumbers).includes(eColNumber) &&
       sheet.getCurrentRow(map.rowNumberOrig) === eRowNumber
   );
   const withinProtectedRange = mapping ? true : false;

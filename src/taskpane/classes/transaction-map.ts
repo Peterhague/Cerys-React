@@ -6,12 +6,12 @@ import { TrialBalanceLine } from "./trial-balance-line";
 
 export class TransactionMap {
   transactionId: string;
-  rowNumber: number;
+  //rowNumber: number;
   rowNumberOrig: number;
 
   constructor(transactionId: string, rowNumber: number) {
     this.transactionId = transactionId;
-    this.rowNumber = rowNumber;
+    //this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
   }
   getTran(transactions: Transaction[]) {

@@ -1,6 +1,7 @@
 import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
 import { Journal } from "../../classes/journal";
 import { QuasiEventObject } from "../../classes/quasi-event-object";
+import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { AssetTransaction, Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
@@ -191,8 +192,17 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
       const rangeAM = ws.getRange("A:M");
       rangeAM.format.autofitColumns();
+      const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
-      createEditableWorksheet(session, transactions, ws, valuesToPost, "FATransactions", sheetMapping);
+      createEditableWorksheet(
+        session,
+        transactions,
+        ws,
+        valuesToPost,
+        "FATransactions",
+        sheetMapping,
+        controlledRangeObj
+      );
       await context.sync();
       ws.activate();
     });
@@ -439,7 +449,7 @@ export const recalculateCharge = async (
   const charge = Math.round(tran.value * (parseInt(depnRate) / 100) * (daysHeld / daysInPeriod));
   let depnChgColNumber;
   sheet.definedCols.forEach((col) => {
-    if (col.type === "depnCharge") depnChgColNumber = col.colNumber;
+    if (col.type === "depnCharge") depnChgColNumber = sheet.getCurrentColumn(col.colNumberOrig);
   });
   const colLetter = colNumToLetter(depnChgColNumber);
   const rowNumber = getTransRowNumber(tran, sheet);

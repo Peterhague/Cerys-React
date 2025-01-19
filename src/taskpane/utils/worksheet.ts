@@ -159,7 +159,7 @@ export const highlightEditableRanges = (context: Excel.RequestContext, sheet: Ed
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
       if (!col.isDeleted && col.isMutable) {
-        const colLetter = colNumToLetter(col.colNumber);
+        const colLetter = colNumToLetter(sheet.getCurrentColumn(col.colNumberOrig));
         const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
         const wsColRange = ws.getRange(colRange);
         wsColRange.format.fill.color = "yellow";
@@ -173,7 +173,7 @@ export const unhighlightEditableRanges = (context: Excel.RequestContext, sheet: 
   sheet.editableRowRanges.forEach((range) => {
     sheet.definedCols.forEach((col) => {
       if (!col.isDeleted && col.isMutable) {
-        const colLetter = colNumToLetter(col.colNumber);
+        const colLetter = colNumToLetter(sheet.getCurrentColumn(col.colNumberOrig));
         const colRange = `${colLetter}${range.firstRow}:${colLetter}${range.lastRow}`;
         const wsColRange = ws.getRange(colRange);
         wsColRange.format.fill.clear();

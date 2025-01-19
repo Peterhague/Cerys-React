@@ -1,6 +1,8 @@
 import { Assignment } from "../../classes/assignment";
+import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelDeletionObject } from "../../classes/excel-range-editing";
 import { Session } from "../../classes/session";
+import { TransactionMap } from "../../classes/transaction-map";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { RegisterType } from "../../interfaces/interfaces";
@@ -142,10 +144,11 @@ export const checkTransForRecoding = (updatedTrans) => {
   return isTBUpdated;
 };
 
-export const createDeletionObject = (map, sheet) => {
-  const rowNumber = map.rowNumber;
-  const firstCol = colNumToLetter(sheet.protectedRange.firstCol);
-  const lastCol = colNumToLetter(sheet.protectedRange.lastCol);
+export const createDeletionObject = (map: TransactionMap, sheet: EditableWorksheet) => {
+  const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
+  const rowNumber = sheet.getCurrentRow(map.rowNumberOrig);
+  const firstCol = colNumToLetter(protectedFirstCol);
+  const lastCol = colNumToLetter(protectedLastCol);
   const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;
   return new ExcelDeletionObject(sheet.name, deletionRange, rowNumber);
 };
