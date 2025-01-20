@@ -17,7 +17,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
   const [address, setAddress] = useState("");
   const [uTR, setUTR] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     session.newCorpClientDirectors.push({ firstName, lastName, email, phone, address, uTR });
     handleView(ADD_CORP_CLIENT_DIRS_HOME);

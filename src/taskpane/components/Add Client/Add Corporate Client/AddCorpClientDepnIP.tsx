@@ -15,15 +15,15 @@ const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) 
   const [depnBasisIPLeased, setDepnBasisIPLeased] = useState("");
   const [depnRateIPLeased, setDepnRateIPLeased] = useState("");
 
-  const onDepnBasisIPOChange = (e) => {
+  const onDepnBasisIPOChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisIPOwned(e.target.value);
   };
 
-  const onDepnBasisIPLChange = (e) => {
+  const onDepnBasisIPLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisIPLeased(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const depnPols = {
       depnBasisIPOwned,

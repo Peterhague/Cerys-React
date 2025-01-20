@@ -26,20 +26,22 @@ export async function createClientNLObject() {
         await context.sync();
         const values = range.values;
         let operativeCode = 0;
-        let nominal;
+        let nominal: string;
         values.forEach((line) => {
           if (line[0] && line[1] && typeof line[1] === "string") {
             operativeCode = line[0];
             nominal = line[1];
           }
           if (typeof line[0] === "number" && typeof line[1] === "number") {
-            let transObj = {};
-            transObj["code"] = operativeCode;
-            transObj["name"] = nominal;
-            transObj["number"] = line[0];
-            transObj["date"] = line[1];
-            line[6] ? (transObj["detail"] = line[6]) : (transObj["detail"] = "No detail provided");
-            line[7] ? (transObj["value"] = line[7] * 100) : (transObj["value"] = line[8] * -100);
+            let transObj: { code: number; name: string; number: number; date: number; detail: string; value: number } =
+              {
+                code: operativeCode,
+                name: nominal,
+                number: line[0],
+                date: line[1],
+                detail: line[6] ? line[6] : "No detail provided",
+                value: line[7] ? line[7] * 100 : line[8] * -100,
+              };
             clientNL.push(transObj);
           }
         });

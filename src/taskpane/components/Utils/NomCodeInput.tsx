@@ -78,19 +78,26 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
         if (searchDisplay !== searchTerm) {
           setSearchTerm(searchDisplay);
         } else {
-          chart.forEach((code) => {
-            const codeStr = code.clientCode ? code.clientCode.toString() : code.cerysCode.toString();
-            const name = code.cerysName ? code.cerysName : code.clientCodeName;
-            const shortName = code.cerysExcelName ? code.cerysExcelName : code.clientCodeName;
-            let check = false;
-            if (name.toLowerCase() === searchTerm.toLowerCase() || codeStr === searchTerm) check = true;
-            if (check) {
-              setNominalCode(codeStr);
-              setNominalCodeName(shortName);
-              setSearchTerm(`${codeStr} ${shortName}`);
-              setSearchDisplay(`${codeStr} ${shortName}`);
+          const filteredChart = chart.filter((code) => {
+            const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
+            const name = "cerysName" in code ? code.cerysName : code.clientCodeName;
+            let check = true;
+            for (let i = 0; i < searchTerm.length; i++) {
+              if (codeStr[i] !== searchTerm[i]) check = false;
             }
+            if (name.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
+            return searchTerm && check;
           });
+          console.log(filteredChart);
+          if (filteredChart.length === 1) {
+            const codeObj = filteredChart[0];
+            const codeStr = "clientCode" in codeObj ? codeObj.clientCode.toString() : codeObj.cerysCode.toString();
+            const shortName = "cerysExcelName" in codeObj ? codeObj.cerysExcelName : codeObj.clientCodeName;
+            setNominalCode(codeStr);
+            setNominalCodeName(shortName);
+            setSearchTerm(`${codeStr} ${shortName}`);
+            setSearchDisplay(`${codeStr} ${shortName}`);
+          }
         }
       }
     };
@@ -156,6 +163,7 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
             {showSuggestions &&
               chart
                 .filter((code) => {
+                  if (searchTerm.length === 0) return code;
                   const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
                   const name = "cerysName" in code ? code.cerysName : code.clientCodeName;
                   let check = true;

@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_SHARES, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientDtlsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -21,7 +21,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
   const [_responsibleIndividual, set_ResponsibleIndividual] = useState("");
   const [clientSoftware, setClientSoftware] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newClientDtls = {
       clientCode,

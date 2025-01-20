@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_INDIS_HOME, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientIndiNewProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -25,16 +25,17 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
   const [isClient, setIsClient] = useState(false);
   const [clientCode, setClientCode] = useState("");
 
-  let newShareAllocations = [];
+  //let newShareAllocations = [];
 
   const handleShareholderChecked = () => {
     setIsShareholder(true);
     setShowShareClasses(true);
   };
 
-  const handleShareAllocation = (value, shareClassNumber) => {
+  const handleShareAllocation = (value: string, shareClassNumber: number) => {
+    const numberValue: number = parseInt(value);
     session.newClientPrelim.shareClasses.forEach((sClass) => {
-      if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= value) {
+      if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= numberValue) {
         sClass.prelimAllocation = parseInt(value);
         const allocation = {
           key: shareClassNumber,
@@ -43,16 +44,17 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
           clientId: session.newClientPrelim._id,
           shareClassName: sClass.shareClassName,
           shareClassNumber,
-          interest: parseInt(value),
+          interest: numberValue,
         };
         const updatedShareAllocations = [allocation];
-        newShareAllocations.forEach((item) => {
-          if (item.key !== shareClassNumber) {
-            updatedShareAllocations.push(item);
-          }
-        });
-        newShareAllocations = updatedShareAllocations;
-        setShareAllocations(newShareAllocations);
+        // newShareAllocations.forEach((item) => {
+        //   if (item.key !== shareClassNumber) {
+        //     updatedShareAllocations.push(item);
+        //   }
+        // });
+        // newShareAllocations = updatedShareAllocations;
+        // setShareAllocations(newShareAllocations);
+        setShareAllocations(updatedShareAllocations);
       } else {
         console.log("There aren't enough shares available for this allocation");
       }
@@ -63,7 +65,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
     setShowShareClasses(false);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const newIndi = {
       firstName,
@@ -84,6 +86,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
       otherDirectorships: [],
       otherShareholdings: [],
     };
+    console.log(newIndi);
     processNewIndi(newIndi);
     session.newClientPrelim.newIndividuals.push(newIndi);
     session.newClientPrelim.shareClasses.forEach((item) => {

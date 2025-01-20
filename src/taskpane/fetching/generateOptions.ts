@@ -36,7 +36,7 @@ export function fetchOptionsTransBatch(session: Session, journals, transDtls) {
   };
 }
 
-export function fetchOptionsPostClientTB(session: Session, clientTB: ClientTBLineProps) {
+export function fetchOptionsPostClientTB(session: Session, clientTB: ClientTBLineProps[]) {
   return {
     method: "POST",
     headers: {

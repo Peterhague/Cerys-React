@@ -1,8 +1,9 @@
 import { Assignment } from "../classes/assignment";
+import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
-import { ClientCerysCodeObject, ClientTBLineProps } from "../interfaces/interfaces";
+import { ClientTBLineProps } from "../interfaces/interfaces";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
@@ -10,10 +11,10 @@ import { checkNewTransForAssets, processTransBatch } from "../utils/transactions
 export async function enterTB(session: Session) {
   try {
     await Excel.run(async (context) => {
-      const journals = await handleTBData(session);
+      const clientTBObjs: ClientTrialBalanceLine[] = await handleTBData(session);
       let check = 0;
       const transactions = [];
-      journals.forEach((jnl) => {
+      clientTBObjs.forEach((jnl) => {
         const obj = {
           ...jnl,
           ...jnl.cerysCodeObj,
@@ -29,7 +30,7 @@ export async function enterTB(session: Session) {
       session.activeJournal.clientTB = true;
       await processTransBatch(context, session);
       checkNewTransForAssets(session);
-      const clientTB: ClientTBLineProps = buildClientTB(session, journals);
+      const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
       postClientTB(session, clientTB);
     });
   } catch (e) {
@@ -79,32 +80,16 @@ export async function handleTBData(session: Session) {
     const rtnVal = await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem("Client TB");
       const range = ws.getUsedRange();
-      const values = range.load("values");
+      range.load("values");
       await context.sync();
-      const innerValues = values.values;
-      const arrays = innerValues.slice(3, innerValues.length - 1);
-      const arrObjs: {
-        cerysCodeObj: ClientCerysCodeObject;
-        clientNominalCode: number;
-        value: number;
-        narrative: string;
-      }[] = [];
+      const values = range.values;
+      const arrays = values.slice(3, values.length - 1);
+      const arrObjs: ClientTrialBalanceLine[] = [];
       for (let i = 0; i < arrays.length; i++) {
         const cerysCodeObj = convertToCerysObject(session, arrays[i]);
-        const obj = {
-          cerysCodeObj,
-          clientNominalCode: arrays[i][0],
-          value: arrays[i][2] ? arrays[i][2] * 100 : arrays[i][3] * -1 * 100,
-          narrative: "Client TB auto-entry",
-        };
-        // obj.clientNominalCode = arrays[i][0];
-        // if (arrays[i][2]) {
-        //   obj.value = arrays[i][2] * 100;
-        // } else {
-        //   obj.value = arrays[i][3] * -1 * 100;
-        // }
-        // obj.narrative = "Client TB auto-entry";
-        arrObjs.push(obj);
+        const clientNomcCode = arrays[i][0];
+        const value = arrays[i][2] ? arrays[i][2] * 100 : arrays[i][3] * -1 * 100;
+        arrObjs.push(new ClientTrialBalanceLine(cerysCodeObj, clientNomcCode, value, "Client TB auto-entry"));
       }
       await context.sync();
       return arrObjs;
@@ -116,19 +101,19 @@ export async function handleTBData(session: Session) {
   }
 }
 
-export function convertToCerysObject(session: Session, formattedTB) {
+export function convertToCerysObject(session: Session, formattedTB: any[][]) {
   const objForPosting = clientCodeToCerysObject(session, formattedTB[0]);
   const copy = { ...objForPosting };
   return copy;
 }
 
-export const buildClientTB = (session: Session, journals) => {
-  const clientTB = journals.map((jnl) => {
-    const nomCodeObj = session.clientChart.find((code) => code.clientCode === jnl.clientNominalCode);
+export const buildClientTB = (session: Session, clientTBObjs: ClientTrialBalanceLine[]) => {
+  const clientTB = clientTBObjs.map((i) => {
+    const nomCodeObj = session.clientChart.find((code) => code.clientCode === i.clientNominalCode);
     const obj: ClientTBLineProps = {
-      clientCode: jnl.clientNominalCode,
+      clientCode: i.clientNominalCode,
       clientCodeName: nomCodeObj.clientCodeName,
-      value: jnl.value,
+      value: i.value,
       statement: nomCodeObj.statement,
     };
     return obj;
@@ -136,7 +121,7 @@ export const buildClientTB = (session: Session, journals) => {
   return clientTB;
 };
 
-export const postClientTB = async (session: Session, clientTB: ClientTBLineProps) => {
+export const postClientTB = async (session: Session, clientTB: ClientTBLineProps[]) => {
   const options = fetchOptionsPostClientTB(session, clientTB);
   const assingmentDb = await fetch(postClientTBUrl, options);
   const assignment = await assingmentDb.json();

@@ -28,7 +28,7 @@ import {
 } from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
-import { cerysNomDetailView, cerysNomDetailViewPL } from "../../utils/worksheet-drilling/cerys-drilling";
+import { cerysNomDetailView } from "../../utils/worksheet-drilling/cerys-drilling";
 import { clientNomDetailView } from "../../utils/worksheet-drilling/client-drilling";
 import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ed-sheet-change-handling";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
@@ -74,7 +74,7 @@ export async function oBARelevantTransView(session: Session) {
         ],
       ];
       let rowNumber = 3;
-      const sheetMapping = [];
+      const sheetMapping: TransactionMap[] = [];
       relTrans.forEach((line) => {
         const cerysCodeObj = line.getCerysCodeObj(session);
         const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
@@ -457,19 +457,4 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
     if (valid) console.log(collection.collection);
   });
-};
-
-export const createPlaceholderDrillableSheet = async (session: Session, detail) => {
-  try {
-    await Excel.run(async (context) => {
-      console.log(detail);
-      const wsName = "placeholder";
-      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
-      const values = [["placeholder"]];
-      ws.getRange("A1:A1").values = values;
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
 };

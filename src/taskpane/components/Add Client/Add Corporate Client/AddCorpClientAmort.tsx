@@ -19,23 +19,23 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
   const [amortBasisCompSware, setAmortBasisCompSware] = useState("SL");
   const [amortRateCompSware, setAmortRateCompSware] = useState("");
 
-  const onAmortBasisGWChange = (e) => {
+  const onAmortBasisGWChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmortBasisGwill(e.target.value);
   };
 
-  const onAmortBasisPLChange = (e) => {
+  const onAmortBasisPLChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmortBasisPatsLics(e.target.value);
   };
 
-  const onAmortBasisDCChange = (e) => {
+  const onAmortBasisDCChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmortBasisDevCosts(e.target.value);
   };
 
-  const onAmortBasisCSChange = (e) => {
+  const onAmortBasisCSChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setAmortBasisCompSware(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const amortPols = {
       amortBasisGwill,

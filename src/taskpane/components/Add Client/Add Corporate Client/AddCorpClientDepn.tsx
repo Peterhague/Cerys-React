@@ -28,43 +28,43 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
   const [depnBasisOfficeEquip, setDepnBasisOfficeEquip] = useState("SL");
   const [depnRateOfficeEquip, setDepnRateOfficeEquip] = useState("");
 
-  const onDepnBasisFHPChange = (e) => {
+  const onDepnBasisFHPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisFholdProp(e.target.value);
   };
 
-  const onDepnBasisSLHChange = (e) => {
+  const onDepnBasisSLHChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisShortLhold(e.target.value);
   };
 
-  const onDepnBasisLLHChange = (e) => {
+  const onDepnBasisLLHChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisLongLhold(e.target.value);
   };
 
-  const onDepnBasisItoPChange = (e) => {
+  const onDepnBasisItoPChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisImprovements(e.target.value);
   };
 
-  const onDepnBasisPMChange = (e) => {
+  const onDepnBasisPMChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisPlantMachinery(e.target.value);
   };
 
-  const onDepnBasisFFChange = (e) => {
+  const onDepnBasisFFChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisFixFittings(e.target.value);
   };
 
-  const onDepnBasisMVChange = (e) => {
+  const onDepnBasisMVChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisMotorVehicles(e.target.value);
   };
 
-  const onDepnBasisCEChange = (e) => {
+  const onDepnBasisCEChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisCompEquip(e.target.value);
   };
 
-  const onDepnBasisOEChange = (e) => {
+  const onDepnBasisOEChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setDepnBasisOfficeEquip(e.target.value);
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const depnPols = {
       depnBasisFholdProp,

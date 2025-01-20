@@ -22,6 +22,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const [isShareholder, setIsShareholder] = useState(false);
   const [showShareClasses, setShowShareClasses] = useState(false);
   const [shareAllocations, setShareAllocations] = useState([]);
+  const [indis] = useState([...session.customer.nonCorpClients, ...session.customer.individuals]);
 
   let newShareAllocations = [];
 
@@ -57,7 +58,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     });
   };
 
-  const indis = [...session.customer.nonCorpClients, ...session.customer.individuals];
+  //const indis = [...session.customer.nonCorpClients, ...session.customer.individuals];
 
   const handleSubmit = (e) => {
     e.preventDefault();
@@ -100,11 +101,9 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     session.newClientPrelim.shareholders.push(indi);
   };
 
-  const selectableIndis = session.customer.nonCorpClients.length > 0 || session.customer.individuals;
-
   return (
     <>
-      {selectableIndis && (
+      {indis.length > 0 && (
         <>
           <form onSubmit={handleSubmit} id="selectIndiForm" action="">
             <select
@@ -114,7 +113,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
               value={selectedIndi}
               onChange={(e) => setSelectedIndi(e.target.value)}
             >
-              {selectableIndis &&
+              {indis.length > 0 &&
                 indis.map((indi) => (
                   <>
                     <option key={indi._id} value={indi._id}>
