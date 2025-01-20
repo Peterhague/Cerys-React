@@ -39,6 +39,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   };
 
   const handleJournal = async (e) => {
+    console.log(nominalCode);
     e.preventDefault();
     const journalDtls = {
       cerysCode: parseInt(nominalCode),
@@ -49,6 +50,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
       clientTB: false,
       journal: true,
     };
+    console.log(journalDtls);
     session.activeJournal.journals.push(new Journal(session, journalDtls));
     session.activeJournal.netValue += parseFloat(journalDtls.value) * 100;
     setNominalCode("");

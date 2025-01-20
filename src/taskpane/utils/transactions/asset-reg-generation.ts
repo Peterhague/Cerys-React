@@ -121,7 +121,7 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       relevantTrans.forEach((tran) => {
         //i.rowNumber = session[`${registerType}Transactions`].length + 3;
         //i.assetNarrative = i.narrative;
-        const map = new TransactionMap(tran._id, session[`${registerType}Transactions`].length + 3); // Issue: is this right?? don't think so...
+        const map = new TransactionMap(tran._id, session[`${registerType}Transactions`].length + 3, null); // Issue: is this right?? don't think so...
         sheetMapping.push(map);
       });
       //const transMap = relevantTrans.map(tran => session.assignment.transactions.find(item => item._id === tran._id));

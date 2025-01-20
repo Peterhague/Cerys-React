@@ -1,4 +1,5 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "../../classes/accounts-category-line";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
@@ -6,7 +7,7 @@ import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import { TrialBalanceLine } from "../../classes/trial-balance-line";
-import { AddressObject } from "../../interfaces/interfaces";
+import { AddressObject, ClientTransaction } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -20,10 +21,11 @@ import {
   getUpdatedCerysCode,
   getUpdatedNarrative,
   getCategoryShortName,
+  handleWorksheetDrill,
 } from "../helperFunctions";
 import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addOneWorksheet } from "../worksheet";
-import { showClientNominalDetail } from "./client-drilling";
+import { clientNomDetailView, showClientNominalDetail } from "./client-drilling";
 /* global Excel */
 
 export function addTbClickListener(context: Excel.RequestContext, session: Session) {
@@ -41,6 +43,7 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
 export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
     await Excel.run(async (context) => {
+      console.log("click registered!!");
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
@@ -52,7 +55,7 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
       const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
-      await cerysNomDetailView(context, transactions, session);
+      await cerysNomDetailView(session, transactions);
       await context.sync();
     });
   } catch (e) {
@@ -84,63 +87,81 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
   }
 };
 
-async function cerysNomDetailView(context: Excel.RequestContext, transactions: Transaction[], session: Session) {
-  let sheetInMidEdit = false;
-  console.log(transactions);
-  const cerysCodeObj = transactions[0].getCerysCodeObj(session);
-  const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
-  transactions.forEach((tran) => {
-    if (tran.updates.length > 0) sheetInMidEdit = true;
-  });
-  const wsName = `${cerysCodeObj.cerysExcelName} analysis`;
-  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
-  const range = ws.getRange(`A1:G${transactions.length + 2}`);
-  const valuesToPost = [
-    ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
-    ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
-  ];
-  isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
-  let rowNumber = 3;
-  const sheetMapping = [];
-  transactions.forEach((line) => {
-    const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
-    const cerysCode = getUpdatedCerysCode(line) ? getUpdatedCerysCode(line) : line.cerysCode;
-    const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
-    let arr = [];
-    arr.push(line.transactionNumber);
-    arr.push(date);
-    arr.push(line.transactionType);
-    arr.push(cerysCode);
-    line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
-    arr.push(narrative);
-    isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
-    valuesToPost.push(arr);
-    const map = new TransactionMap(line._id, rowNumber);
-    sheetMapping.push(map);
-    rowNumber += 1;
-  });
-  range.values = valuesToPost;
-  const headerRange = ws.getRange("A1:G2");
-  headerRange.format.font.bold = true;
-  const columnA = ws.getRange("B:B");
-  columnA.numberFormat = [["dd/mm/yyyy"]];
-  const columnsRange = ws.getRange("A:G");
-  const columnG = ws.getRange("G:G");
-  columnG.numberFormat = STANDARD_NUMBER_FORMAT;
-  const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
-  createEditableWorksheet(
-    session,
-    transactions,
-    ws,
-    valuesToPost,
-    "cerysCodeAnalysis",
-    sheetMapping,
-    controlledRangeObj
-  );
-  columnsRange.format.autofitColumns();
-  ws.activate();
-  if (sheetInMidEdit) handleEditButtonClick(session);
-}
+export const cerysNomDetailView = async (session: Session, transactions: Transaction[]) => {
+  try {
+    await Excel.run(async (context) => {
+      let sheetInMidEdit = false;
+      console.log(transactions);
+      const cerysCodeObj = transactions[0].getCerysCodeObj(session);
+      const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
+      transactions.forEach((tran) => {
+        if (tran.updates.length > 0) sheetInMidEdit = true;
+      });
+      const wsName = `${cerysCodeObj.cerysExcelName} analysis`;
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const range = ws.getRange(`A1:G${transactions.length + 2}`);
+      const valuesToPost = [
+        ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
+        ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
+      ];
+      isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
+      let rowNumber = 3;
+      const sheetMapping = [];
+      transactions.forEach((line) => {
+        const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
+        const cerysCode = getUpdatedCerysCode(line) ? getUpdatedCerysCode(line) : line.cerysCode;
+        const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
+        let arr = [];
+        arr.push(line.transactionNumber);
+        arr.push(date);
+        arr.push(line.transactionType);
+        arr.push(cerysCode);
+        line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
+        arr.push(narrative);
+        isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
+        valuesToPost.push(arr);
+        const clientDrill =
+          line.clientNominalCode > 0
+            ? new DrillableCollection(
+                session.assignment.clientNL,
+                (tran: ClientTransaction) => tran.code === line.clientNominalCode,
+                [5],
+                clientNomDetailView
+              )
+            : null;
+        const map = clientDrill
+          ? new TransactionMap(line._id, rowNumber, [clientDrill])
+          : new TransactionMap(line._id, rowNumber, null);
+        sheetMapping.push(map);
+        rowNumber += 1;
+      });
+      range.values = valuesToPost;
+      const headerRange = ws.getRange("A1:G2");
+      headerRange.format.font.bold = true;
+      const columnA = ws.getRange("B:B");
+      columnA.numberFormat = [["dd/mm/yyyy"]];
+      const columnsRange = ws.getRange("A:G");
+      const columnG = ws.getRange("G:G");
+      columnG.numberFormat = STANDARD_NUMBER_FORMAT;
+      const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
+      createEditableWorksheet(
+        session,
+        transactions,
+        ws,
+        valuesToPost,
+        "cerysCodeAnalysis",
+        sheetMapping,
+        controlledRangeObj
+      );
+      columnsRange.format.autofitColumns();
+      ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, wsName));
+      ws.activate();
+      if (sheetInMidEdit) handleEditButtonClick(session);
+    });
+  } catch (e) {
+    console.error(e);
+  }
+};
 
 export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClickedEventArgs, wsName: string) => {
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
@@ -161,6 +182,8 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
         cerysCodeCol = ws.getCurrentColumn(col.colNumberOrig);
       } else if (col.type === "clientCode") {
         clientCodeCol = ws.getCurrentColumn(col.colNumberOrig);
+        console.log(col.colNumberOrig);
+        console.log(ws.getOriginalColumn(col.colNumberOrig));
       } else if (col.type === "clientCodeMapping") {
         clientCodeMappingCol = ws.getCurrentColumn(col.colNumberOrig);
       }
@@ -187,11 +210,13 @@ export const handleOtherCellClick = (
   clientCodeCol: number,
   withinEditableRange: boolean
 ) => {
+  console.log(clientCodeCol);
   if (session.currentView === NOM_CODE_SELECTION || session.currentView === CLIENT_NOM_CODE_SELECTION) {
     callNextView(session);
     session.activeEditableCell = createEditableCell(null, null, null);
   }
   if (withinEditableRange && clientCodeCol === addressObj.firstCol) {
+    console.log("here???");
     showClientNominalDetail(e, session);
   }
 };
@@ -246,7 +271,6 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
       if (!map || !map.identity) return;
-      console.log(map);
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailBS(category, session);

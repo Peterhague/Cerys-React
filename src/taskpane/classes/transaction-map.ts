@@ -6,13 +6,13 @@ import { TrialBalanceLine } from "./trial-balance-line";
 
 export class TransactionMap {
   transactionId: string;
-  //rowNumber: number;
   rowNumberOrig: number;
+  drillableCollections: DrillableCollection[];
 
-  constructor(transactionId: string, rowNumber: number) {
+  constructor(transactionId: string, rowNumber: number, drillableCollections: DrillableCollection[] | null) {
     this.transactionId = transactionId;
-    //this.rowNumber = rowNumber;
     this.rowNumberOrig = rowNumber;
+    this.drillableCollections = drillableCollections;
   }
   getTran(transactions: Transaction[]) {
     return transactions.find((transaction) => transaction._id === this.transactionId);

@@ -49,6 +49,7 @@ export const processTransBatch = async (context: Excel.RequestContext, session: 
 export const submitTransactionUpdates = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
+      console.log("surely here????");
       let updatedTrans = getUpdatedTransactions(session);
       const isTBUpdated = checkTransForRecoding(updatedTrans);
       updatedTrans.forEach((tran) => {
@@ -61,17 +62,19 @@ export const submitTransactionUpdates = async (session: Session) => {
         });
       });
       await processUpdateBatch(session);
-      const promptSheetDeletion = renewEdSheetsTransRefs(context, session);
+      const promptSheetDeletion = await renewEdSheetsTransRefs(context, session);
       if (isTBUpdated) {
         if (promptSheetDeletion) {
           await updateAssignmentFigures(context, session);
           session.options.updatedTransactions = updatedTrans;
           session.handleView(DELETE_SHEET_PROMPT);
         } else {
+          console.log("this branch?");
           await updateAssignmentFigures(context, session);
           checkNewTransForAssets(session);
         }
       } else {
+        console.log("this branch??");
         callNextView(session);
       }
       session.editableSheets.forEach((sheet) => {

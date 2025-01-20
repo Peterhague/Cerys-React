@@ -15,11 +15,7 @@ export const handleControlledSheetChange = async (
 ) => {
   try {
     await Excel.run(async (context) => {
-      console.log(e);
-      if (session.options.allowEffects > 0) {
-        session.options.allowEffects -= 1;
-        return;
-      }
+      if (e.triggerSource === "ThisLocalAddin") return;
       const isRangeEdited = parseChangeEventObjectType(e);
       const { sheet, addressObj } = parseControlledSheetChangeEventDetails(session, e, wsName);
       if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
@@ -246,12 +242,12 @@ export const handleControlledSheetRowSort = async (session: Session, wsName: str
   const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
   const uniqueCol = sheet.uniqueColumn;
   if (!uniqueCol) return;
-  // sheet.sheetMapping.forEach((map) => {
-  //   const controlledInput = map.getControlledInput(sheet.controlledInputs);
-  //   usedRange.forEach((row, index) => {
-  //     if (row[uniqueCol - 1] === controlledInput[sheet.uniqueValue]) {
-  //       map.rowNumber = index + 1;
-  //     }
-  //   });
-  // });
+  sheet.sheetMapping.forEach((map) => {
+    const controlledInput = map.getControlledInput(sheet.controlledInputs);
+    usedRange.forEach((row, index) => {
+      if (row[uniqueCol - 1] === controlledInput[sheet.uniqueValue]) {
+        sheet.mappingObject.rows.find((row) => row.original === map.rowNumberOrig).current = index + 1;
+      }
+    });
+  });
 };

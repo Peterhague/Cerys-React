@@ -1,4 +1,4 @@
-import { AddressObject, FATransaction, MappingObjectProps } from "../interfaces/interfaces";
+import { FATransaction, MappingObjectProps } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helperFunctions";
 import { createDeletionObject } from "../utils/transactions/transactions";
@@ -84,8 +84,8 @@ export class EditableWorksheet {
   async updateMapping(context, session: Session) {
     const rowNumbers = [];
     const newMapping: TransactionMap[] = [];
-    const newTransToMap = [];
-    const additionalTrans = [];
+    const newTransToMap: Transaction[] = [];
+    const additionalTrans: { tran: Transaction; map: TransactionMap }[] = [];
     this.transactions.forEach((tran) => {
       const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
       if (existingMap) {
@@ -98,17 +98,18 @@ export class EditableWorksheet {
     newTransToMap.forEach((tran) => {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
-      const newMap = new TransactionMap(tran._id, nextRow);
+      const newMap = new TransactionMap(tran._id, nextRow, null);
       newMapping.push(newMap);
       additionalTrans.push({ tran, map: newMap });
       rowNumbers.push(nextRow);
     });
     this.sheetMapping = newMapping;
     const updates: ExcelRangeUpdate[] = [];
-    additionalTrans.forEach((tran) => {
-      const row = tran.map.rowNumber;
+    additionalTrans.forEach((obj) => {
+      const row = obj.map.rowNumberOrig;
+      console.log(row);
       this.definedCols.forEach((definedCol) => {
-        let value = definedCol.getTargetProperty(tran.tran);
+        let value = definedCol.getTargetProperty(obj.tran);
         if (
           definedCol.type === "value" &&
           typeof value === "number" &&
@@ -144,7 +145,6 @@ export class EditableWorksheet {
     console.log(this.sheetMapping);
     this.sheetMapping.forEach((map) => {
       const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
-      console.log(transaction);
       if (transaction) {
         transaction.updates.length > 0 &&
           transaction.updates.forEach((update) => {
@@ -220,23 +220,23 @@ export class EditableWorksheet {
   }
 
   getCurrentColumn(originalColumn: number) {
-    return this.mappingObject.columns.find((obj) => obj.original === originalColumn).current;
+    const colObj = this.mappingObject.columns.find((obj) => obj.original === originalColumn);
+    return colObj ? colObj.current : undefined;
   }
 
   getCurrentRow(originalRow: number) {
-    return this.mappingObject.rows.find((obj) => obj.original === originalRow).current;
+    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
+    return rowObj ? rowObj.current : undefined;
   }
 
   getOriginalColumn(currentColumn: number) {
-    return this.mappingObject.columns.find((obj) => obj.current === currentColumn).original;
+    const colObj = this.mappingObject.columns.find((obj) => obj.current === currentColumn);
+    return colObj ? colObj.original : undefined;
   }
 
   getOriginalRow(currentRow: number) {
-    console.log(currentRow);
-    console.log(this.mappingObject.rows);
-    const proxy = this.mappingObject.rows.find((obj) => obj.current === currentRow).original;
-    console.log(proxy);
-    return this.mappingObject.rows.find((obj) => obj.current === currentRow).original;
+    const rowObj = this.mappingObject.rows.find((obj) => obj.current === currentRow);
+    return rowObj ? rowObj.original : undefined;
   }
 
   getCurrentProtectedRange() {

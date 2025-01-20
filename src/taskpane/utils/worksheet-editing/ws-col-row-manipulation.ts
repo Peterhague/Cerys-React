@@ -343,52 +343,39 @@ export const handleColumnSort = async (session: Session) => {
 };
 
 export const handleEdSheetRowSort = async (session: Session, wsName: string) => {
-  console.log(session);
-  console.log(wsName);
-  // const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
-  // let uniqueCol: number;
-  // session.editableSheets.forEach((sheet) => {
-  //   if (sheet.name === wsName) {
-  //     sheet.definedCols.forEach((col) => {
-  //       if (col.isUnique) uniqueCol = col.colNumber;
-  //     });
-  //     const protectedRowNumbers: number[] = [];
-  //     sheet.sheetMapping.forEach((map) => {
-  //       const transaction = map.getTran(sheet.transactions);
-  //       const currentRowNumber = map.rowNumber;
-  //       let activeCellMatched = false;
-  //       if (session.activeEditableCell.wsName === sheet.name) {
-  //         if (session.activeEditableCell.addressObj.firstRow === currentRowNumber) {
-  //           activeCellMatched = true;
-  //         }
-  //       }
-  //       usedRange.forEach((row, index) => {
-  //         if (row[uniqueCol - 1] === transaction.transactionNumber) {
-  //           validateOtherValues(session, sheet, transaction, row);
-  //           map.rowNumber = index + 1;
-  //           if (activeCellMatched) {
-  //             session.activeEditableCell.addressObj.firstRow = index + 1;
-  //             session.activeEditableCell.addressObj.lastRow = index + 1;
-  //           }
-  //           protectedRowNumbers.push(index + 1);
-  //         }
-  //       });
-  //     });
-  //     protectedRowNumbers.sort((a, b) => {
-  //       return a - b;
-  //     });
-  //     const editableRowRanges = [{ firstRow: protectedRowNumbers[0], lastRow: protectedRowNumbers[0] }];
-  //     for (let i = 1; i < protectedRowNumbers.length; i++) {
-  //       if (editableRowRanges.at(-1).lastRow + 1 === protectedRowNumbers[i]) {
-  //         editableRowRanges.at(-1).lastRow += 1;
-  //       } else {
-  //         const nextRange = { firstRow: protectedRowNumbers[i], lastRow: protectedRowNumbers[i] };
-  //         editableRowRanges.push(nextRange);
-  //       }
-  //     }
-  //     sheet.editableRowRanges = editableRowRanges;
-  //   }
-  // });
+  const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
+  let uniqueCol: number;
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      sheet.definedCols.forEach((col) => {
+        if (col.isUnique) uniqueCol = sheet.getCurrentColumn(col.colNumberOrig);
+      });
+      const protectedRowNumbers: number[] = [];
+      sheet.sheetMapping.forEach((map) => {
+        const transaction = map.getTran(sheet.transactions);
+        usedRange.forEach((row, index) => {
+          if (row[uniqueCol - 1] === transaction.transactionNumber) {
+            validateOtherValues(session, sheet, transaction, row);
+            sheet.mappingObject.rows.find((row) => row.original === map.rowNumberOrig).current = index + 1;
+            protectedRowNumbers.push(index + 1);
+          }
+        });
+      });
+      protectedRowNumbers.sort((a, b) => {
+        return a - b;
+      });
+      const editableRowRanges = [{ firstRow: protectedRowNumbers[0], lastRow: protectedRowNumbers[0] }];
+      for (let i = 1; i < protectedRowNumbers.length; i++) {
+        if (editableRowRanges.at(-1).lastRow + 1 === protectedRowNumbers[i]) {
+          editableRowRanges.at(-1).lastRow += 1;
+        } else {
+          const nextRange = { firstRow: protectedRowNumbers[i], lastRow: protectedRowNumbers[i] };
+          editableRowRanges.push(nextRange);
+        }
+      }
+      sheet.editableRowRanges = editableRowRanges;
+    }
+  });
 };
 
 export const validateOtherValues = (session: Session, sheet: EditableWorksheet, tran: Transaction, row: any[]) => {

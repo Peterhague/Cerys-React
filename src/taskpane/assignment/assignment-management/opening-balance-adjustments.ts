@@ -23,10 +23,13 @@ import {
   getUpdatedDate,
   getUpdatedNarrative,
   handleEditButtonClick,
+  handleWorksheetDrill,
   interpretEventAddress,
 } from "../../utils/helperFunctions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
+import { cerysNomDetailView, cerysNomDetailViewPL } from "../../utils/worksheet-drilling/cerys-drilling";
+import { clientNomDetailView } from "../../utils/worksheet-drilling/client-drilling";
 import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ed-sheet-change-handling";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 /* global Excel */
@@ -86,7 +89,7 @@ export async function oBARelevantTransView(session: Session) {
         arr.push(line.getClientMappingObj(session).clientCode);
         arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
-        const map = new TransactionMap(line._id, rowNumber);
+        const map = new TransactionMap(line._id, rowNumber, null);
         sheetMapping.push(map);
         rowNumber += 1;
       });
@@ -388,13 +391,20 @@ export const createOBAWorksheet = async (session: Session) => {
         const clientFigsDrillableCollection = new DrillableCollection(
           clientNL,
           (tran: ClientTransaction) => tran.code === obj.clientCode,
-          [3]
+          [3],
+          clientNomDetailView
         );
-        const accountsDrillableCollection = new DrillableCollection(obj.assignmentTransactions, null, [5]);
+        const accountsDrillableCollection = new DrillableCollection(
+          obj.assignmentTransactions,
+          null,
+          [5],
+          cerysNomDetailView
+        );
         const adjustmentsDrillableCollection = new DrillableCollection(
           obj.assignmentTransactions,
           (tran: Transaction) => !tran.clientTB,
-          [7]
+          [7],
+          cerysNomDetailView
         );
         sheetMapping.push(
           new ControlledInputMap(
@@ -418,7 +428,7 @@ export const createOBAWorksheet = async (session: Session) => {
       } else {
         createControlledWorksheet(session, combinedTBObjs, ws, values, sheetMapping, excelRangeObj, 1, "clientCode");
       }
-      ws.onSingleClicked.add((e) => handleOBAWorksheetClick(e, session));
+      ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, wsName));
       ws.activate();
       await context.sync();
     });
@@ -447,4 +457,19 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
     if (valid) console.log(collection.collection);
   });
+};
+
+export const createPlaceholderDrillableSheet = async (session: Session, detail) => {
+  try {
+    await Excel.run(async (context) => {
+      console.log(detail);
+      const wsName = "placeholder";
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const values = [["placeholder"]];
+      ws.getRange("A1:A1").values = values;
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };

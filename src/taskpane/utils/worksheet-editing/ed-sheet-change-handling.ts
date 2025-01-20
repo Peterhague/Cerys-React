@@ -147,10 +147,12 @@ export const renewEdSheetsTransRefs = async (context: Excel.RequestContext, sess
   // });
   for (let i = 0; i < session.editableSheets.length; i++) {
     await session.editableSheets[i].renewTransactions(context, session, session.assignment.transactions);
+    console.log("here???");
     if (session.editableSheets[i].transactions.length === 0) {
       session.editableSheets[i].promptDeletion = true;
       promptSheetDeletion = true;
     }
   }
+  console.log("here???");
   return promptSheetDeletion;
 };

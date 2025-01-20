@@ -30,6 +30,7 @@ import {
 } from "./worksheet-control/controlled-sheet-change-handling";
 import { QuasiEventObject } from "../classes/quasi-event-object";
 import { accountsCategories } from "../static-values/accounts-categories-array";
+import { ControlledWorksheet } from "../classes/controlled-worksheet";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -575,4 +576,21 @@ export const parseChangeEventObjectType = (e: Excel.WorksheetChangedEventArgs | 
 export const getCategoryShortName = (cerysCategory: string) => {
   const category = accountsCategories.find((cat) => cat.categoryName === cerysCategory);
   return category.categoryShortName ? category.categoryShortName : category.categoryName;
+};
+
+export const handleWorksheetDrill = async (
+  e: Excel.WorksheetSingleClickedEventArgs,
+  session: Session,
+  wsName: string
+) => {
+  let sheet: ControlledWorksheet | EditableWorksheet = session.controlledSheets.find((ws) => ws.name === wsName);
+  if (!sheet) sheet = session.editableSheets.find((ws) => ws.name === wsName);
+  if (!sheet) return;
+  const addressObj = interpretEventAddress(e);
+  const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow);
+  if (!map) return;
+  map.drillableCollections.forEach((collection) => {
+    const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
+    if (valid) collection.drillInto(session);
+  });
 };

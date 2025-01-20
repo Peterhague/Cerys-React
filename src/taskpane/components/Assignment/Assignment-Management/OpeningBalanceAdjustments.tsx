@@ -5,6 +5,7 @@ import {
   createOBAWorksheet,
 } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { Session } from "../../../classes/session";
+import { ASSIGNMENT_DASH_HOME } from "../../../static-values/views";
 
 interface OpeningBalanceAdjustmentsProps {
   handleView: (view) => void;
@@ -16,6 +17,7 @@ const OpeningBalanceAdjustments = ({ session }: OpeningBalanceAdjustmentsProps) 
     <>
       <CerysButton buttonText={"Review Transactions"} handleClick={() => oBARelevantTransView(session)} />
       <CerysButton buttonText={"Generate Worksheet"} handleClick={() => createOBAWorksheet(session)} />
+      <CerysButton buttonText={"ASSINGMENT HOME"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

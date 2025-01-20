@@ -123,6 +123,8 @@ export const setExcelRangeValue = async (wsName: string, range: string, value: s
 export const setManyExcelRangeValues = (context: Excel.RequestContext, wsName: string, updates: ExcelRangeUpdate[]) => {
   const ws = context.workbook.worksheets.getItem(wsName);
   // Issue: should this be a for loop because an await call is made during it?
+  console.log("LOOOK HEEEEEEERE!!!!");
+  console.log(updates);
   updates.forEach((update) => {
     const range = ws.getRange(update.address);
     range.values = update.value;

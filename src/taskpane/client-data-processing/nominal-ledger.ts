@@ -8,6 +8,7 @@ export async function enterNL(session: Session) {
   const clientNL = await createClientNLObject();
   session.assignment.clientNL = clientNL;
   const assignment = await postCltNLToDb(session);
+  console.log(assignment);
   session.assignment = new Assignment(assignment);
 }
 

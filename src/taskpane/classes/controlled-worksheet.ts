@@ -61,19 +61,23 @@ export class ControlledWorksheet {
   }
 
   getCurrentColumn(originalColumn: number) {
-    return this.mappingObject.columns.find((obj) => obj.original === originalColumn).current;
+    const colObj = this.mappingObject.columns.find((obj) => obj.original === originalColumn);
+    return colObj ? colObj.current : undefined;
   }
 
   getCurrentRow(originalRow: number) {
-    return this.mappingObject.rows.find((obj) => obj.original === originalRow).current;
+    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
+    return rowObj ? rowObj.current : undefined;
   }
 
   getOriginalColumn(currentColumn: number) {
-    return this.mappingObject.columns.find((obj) => obj.current === currentColumn).original;
+    const colObj = this.mappingObject.columns.find((obj) => obj.current === currentColumn);
+    return colObj ? colObj.original : undefined;
   }
 
   getOriginalRow(currenRow: number) {
-    return this.mappingObject.rows.find((obj) => obj.current === currenRow).original;
+    const rowObj = this.mappingObject.rows.find((obj) => obj.current === currenRow);
+    return rowObj ? rowObj.original : undefined;
   }
 
   getCurrentProtectedRange() {
