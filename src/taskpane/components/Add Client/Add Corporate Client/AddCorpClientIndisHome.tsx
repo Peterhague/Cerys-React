@@ -1,5 +1,5 @@
 import * as React from "react";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import {
@@ -7,6 +7,7 @@ import {
   ADD_CORP_CLIENT_OPTIONS,
   ADD_CORP_CLIENT_SHARES,
 } from "../../../static-values/views";
+import IndividualInput from "../../Utils/IndividualInput";
 
 interface addCorpClientIndisHomeProps {
   handleView: (view) => void;
@@ -14,7 +15,7 @@ interface addCorpClientIndisHomeProps {
 }
 
 const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeProps) => {
-  const [selectedIndi, setSelectedIndi] = useState("");
+  const [individualId, setIndividualId] = useState("");
   const [isDirector, setIsDirector] = useState(false);
   const [dateAppointed, setDateAppointed] = useState("");
   const [isCeased, setIsCeased] = useState(false);
@@ -23,6 +24,9 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const [showShareClasses, setShowShareClasses] = useState(false);
   const [shareAllocations, setShareAllocations] = useState([]);
   const [indis] = useState([...session.customer.nonCorpClients, ...session.customer.individuals]);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [searchDisplay, setSearchDisplay] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
 
   let newShareAllocations = [];
 
@@ -58,12 +62,10 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     });
   };
 
-  //const indis = [...session.customer.nonCorpClients, ...session.customer.individuals];
-
   const handleSubmit = (e) => {
     e.preventDefault();
     indis.forEach((indi) => {
-      if (indi._id === selectedIndi) {
+      if (indi._id === individualId) {
         indi.isDirector = isDirector;
         indi.dateAppointed = dateAppointed;
         indi.dateCeased = dateCeased;
@@ -106,22 +108,17 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       {indis.length > 0 && (
         <>
           <form onSubmit={handleSubmit} id="selectIndiForm" action="">
-            <select
-              name="selectedIndi"
-              id="selectedIndi"
-              className="form-control"
-              value={selectedIndi}
-              onChange={(e) => setSelectedIndi(e.target.value)}
-            >
-              {indis.length > 0 &&
-                indis.map((indi) => (
-                  <>
-                    <option key={indi._id} value={indi._id}>
-                      {indi.firstName} {indi.lastName}
-                    </option>
-                  </>
-                ))}
-            </select>
+            <IndividualInput
+              ref={inputRef}
+              session={session}
+              selection={indis}
+              individualId={individualId}
+              setIndividualId={setIndividualId}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchDisplay={searchDisplay}
+              setSearchDisplay={setSearchDisplay}
+            />
             <div>
               <label htmlFor="isDirector"> Designate as a director?</label>
               <input
