@@ -2,12 +2,13 @@ import * as React from "react";
 import { useState } from "react";
 import { Session } from "../../classes/session";
 import { ExtendedIndividual } from "../../interfaces/interfaces";
+import { NewIndividual } from "../../classes/new-individual";
 
 interface IndividualInputProps {
   session: Session;
   selection: ExtendedIndividual[];
-  individualId: string;
-  setIndividualId: (id: string) => void;
+  activeIndi: NewIndividual;
+  setActiveIndividual: (indi: ExtendedIndividual) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   searchDisplay: string;
@@ -19,8 +20,8 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
     {
       session,
       selection,
-      individualId,
-      setIndividualId,
+      activeIndi,
+      setActiveIndividual,
       searchTerm,
       setSearchTerm,
       searchDisplay,
@@ -31,14 +32,14 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     const handleChange = (value: string) => {
-      if (individualId) {
+      if (activeIndi) {
         if (value.length > searchDisplay.length) {
           return;
         } else if (value.length < searchDisplay.length) {
           session.arrowIndex = -1;
           setSearchTerm("");
           setSearchDisplay("");
-          setIndividualId("");
+          setActiveIndividual(null);
         }
       } else {
         session.arrowIndex = -1;
@@ -48,7 +49,7 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
     };
 
     const handleSelect = (indi: ExtendedIndividual) => {
-      setIndividualId(indi._id);
+      setActiveIndividual(indi);
       setSearchTerm(`${indi.firstName} ${indi.lastName}`);
       setSearchDisplay(`${indi.firstName} ${indi.lastName}`);
       setShowSuggestions(false);
@@ -99,14 +100,14 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
             if (session.arrowIndex < filteredSelection.length - 1) {
               session.arrowIndex += 1;
               const indi = filteredSelection[session.arrowIndex];
-              setIndividualId(indi._id);
+              setActiveIndividual(indi);
               setSearchDisplay(`${indi.firstName} ${indi.lastName}`);
             }
           } else {
             if (session.arrowIndex > 0) {
               session.arrowIndex -= 1;
               const indi = filteredSelection[session.arrowIndex];
-              setIndividualId(indi._id);
+              setActiveIndividual(indi);
               setSearchDisplay(`${indi.firstName} ${indi.lastName}`);
             }
           }

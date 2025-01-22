@@ -3,6 +3,7 @@ import { TransactionUpdate } from "../classes/transaction-update";
 import { Transaction } from "../classes/transaction";
 import React from "react";
 import { TrialBalanceLine } from "../classes/trial-balance-line";
+import { NewIndividual } from "../classes/new-individual";
 /*global Excel */
 
 export interface BaseCerysCodeObject {
@@ -386,6 +387,22 @@ export interface ExtendedIndividual extends BaseIndividual {
   isShareholder: boolean;
 }
 
+export interface NewDirectorship {
+  clientName: string;
+  clientCode: string;
+  dateAppointed: string;
+  dateCeased: string;
+}
+
+export interface NewShareholding {
+  clientName: string;
+  clientCode: string;
+  clientId: string;
+  shareClassName: string;
+  shareClassNumber: string;
+  interest: number;
+}
+
 export interface Directorship {
   clientId: string;
   clientName: string;
@@ -418,10 +435,10 @@ export interface NewPreliminaryClient {
   clientSoftware: string;
   _id?: string;
   shareClasses: ShareClass[];
-  directors: {}[];
-  shareholders: {}[];
-  newIndividuals: BaseIndividual[];
-  existingIndividuals: BaseIndividual[];
+  directors: NewIndividual[];
+  shareholders: NewIndividual[];
+  newIndividuals: NewIndividual[];
+  existingIndividuals: NewIndividual[];
 }
 
 export interface ShareClass {
@@ -430,6 +447,10 @@ export interface ShareClass {
   numberIssued: number;
   issuedNotAllocated: number;
   prelimAllocation: number;
+}
+
+export interface IndividualShareAllocation extends ShareClass {
+  indiAllocation: number;
 }
 
 export interface AddressObject {

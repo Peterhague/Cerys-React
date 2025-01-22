@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_INDIS_HOME, LANDING_PAGE } from "../../../static-values/views";
+import { NewIndividual } from "../../../classes/new-individual";
 interface addCorpClientIndiNewProps {
   handleView: (view: string) => void;
   session: Session;
@@ -88,7 +89,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
     };
     console.log(newIndi);
     processNewIndi(newIndi);
-    session.newClientPrelim.newIndividuals.push(newIndi);
+    session.newClientPrelim.newIndividuals.push(new NewIndividual(newIndi));
     session.newClientPrelim.shareClasses.forEach((item) => {
       item.issuedNotAllocated -= item.prelimAllocation;
       item.prelimAllocation = 0;
