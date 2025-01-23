@@ -394,12 +394,12 @@ export interface NewDirectorship {
   dateCeased: string;
 }
 
-export interface NewShareholding {
+export interface NewShareholdingProps {
   clientName: string;
   clientCode: string;
-  clientId: string;
+  clientId?: string;
   shareClassName: string;
-  shareClassNumber: string;
+  shareClassNumber: number;
   interest: number;
 }
 
@@ -447,10 +447,6 @@ export interface ShareClass {
   numberIssued: number;
   issuedNotAllocated: number;
   prelimAllocation: number;
-}
-
-export interface IndividualShareAllocation extends ShareClass {
-  indiAllocation: number;
 }
 
 export interface AddressObject {

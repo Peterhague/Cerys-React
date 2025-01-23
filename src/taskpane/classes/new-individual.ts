@@ -2,10 +2,10 @@ import {
   Directorship,
   ExtendedIndividual,
   NewDirectorship,
-  NewShareholding,
+  NewShareholdingProps,
   Shareholding,
 } from "../interfaces/interfaces";
-import { IndividualShareAllocation } from "./share-classes";
+import { IndividualShareAllocation, NewShareholding } from "./share-classes";
 
 export class NewIndividual {
   firstName: string;
@@ -19,9 +19,9 @@ export class NewIndividual {
   _clientShareholdings?: Shareholding[];
   otherDirectorships?: string[];
   otherShareholdings?: string[];
-  newClientDirectorships?: NewDirectorship[];
-  newClientShareholdings?: NewShareholding[];
-  shareholdings?: NewShareholding[];
+  newClientDirectorships: NewDirectorship[];
+  newClientShareholdings: NewShareholding[];
+  shareholdings?: NewShareholdingProps[];
   uTR: string;
   isDirector: boolean;
   dateAppointed?: string;
@@ -42,6 +42,8 @@ export class NewIndividual {
     this._clientShareholdings = individual._clientShareholdings;
     this.otherDirectorships = individual.otherDirectorships;
     this.otherShareholdings = individual.otherShareholdings;
+    this.newClientDirectorships = [];
+    this.newClientShareholdings = [];
     this.uTR = individual.uTR;
     this._id = individual._id;
     this.potentialShareAllocations = [];

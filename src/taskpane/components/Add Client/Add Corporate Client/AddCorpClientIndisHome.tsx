@@ -6,7 +6,7 @@ import { ADD_CORP_CLIENT_INDI_NEW, ADD_CORP_CLIENT_OPTIONS } from "../../../stat
 import IndividualInput from "../../Utils/IndividualInput";
 import { NewIndividual } from "../../../classes/new-individual";
 import { ExtendedIndividual } from "../../../interfaces/interfaces";
-import { IndividualShareAllocation } from "../../../classes/share-classes";
+import { IndividualShareAllocation, NewShareholding } from "../../../classes/share-classes";
 
 interface addCorpClientIndisHomeProps {
   handleView: (view) => void;
@@ -21,23 +21,19 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const [isCeased, setIsCeased] = useState(false);
   const [dateCeased, setDateCeased] = useState("");
   const [isShareholder, setIsShareholder] = useState(false);
-  //const [showShareClasses, setShowShareClasses] = useState(false);
-  const [shareAllocations, setShareAllocations] = useState([]);
   const [availableIndis] = useState([...session.customer.nonCorpClients, ...session.customer.individuals]);
   const [newClientIndis, setNewClientIndis] = useState(session.newClientPrelim.existingIndividuals);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDisplay, setSearchDisplay] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
-  console.log(activeIndi);
-
-  let newShareAllocations = [];
 
   const setActiveIndividual = (indi: ExtendedIndividual) => {
     if (indi) {
       const newIndi = new NewIndividual(indi);
-      newIndi.potentialShareAllocations = session.newClientPrelim.shareClasses.map(
+      const potentialShareAllocations = session.newClientPrelim.shareClasses.map(
         (i) => new IndividualShareAllocation(i)
       );
+      newIndi.potentialShareAllocations = potentialShareAllocations;
       console.log(newIndi);
       setActiveIndi(newIndi);
     } else setActiveIndi(null);
@@ -45,33 +41,22 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
 
   const handleShareAllocation = (value: string, shareClassNumber: number) => {
     const val = value ? parseInt(value) : 0;
-    setShareAllocations(newShareAllocations);
     let addBack = 0;
     const potentialAllocation = activeIndi.potentialShareAllocations.find(
       (sClass) => sClass.shareClassNumber === shareClassNumber
     );
     addBack = potentialAllocation.indiAllocationSubmitted;
     potentialAllocation.indiAllocationLive = val;
-    setActiveIndi(activeIndi);
+    setActiveIndi({
+      ...activeIndi,
+      potentialShareAllocations: [
+        ...activeIndi.potentialShareAllocations.filter((i) => i.shareClassNumber !== shareClassNumber),
+        potentialAllocation,
+      ],
+    });
     session.newClientPrelim.shareClasses.forEach((sClass) => {
       if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= val) {
         sClass.prelimAllocation = val - addBack;
-        const allocation = {
-          key: shareClassNumber,
-          clientName: session.newClientPrelim.clientName,
-          clientCode: session.newClientPrelim.clientCode,
-          clientId: session.newClientPrelim._id,
-          shareClassName: sClass.shareClassName,
-          shareClassNumber,
-          interest: val,
-        };
-        const updatedShareAllocations = [allocation];
-        newShareAllocations.forEach((item) => {
-          if (item.key !== shareClassNumber) {
-            updatedShareAllocations.push(item);
-          }
-        });
-        newShareAllocations = updatedShareAllocations;
       } else {
         console.log("There aren't enough shares available for this allocation");
       }
@@ -80,6 +65,21 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const existingIndis = session.newClientPrelim.existingIndividuals;
+    session.newClientPrelim.existingIndividuals = existingIndis.filter((i) => i._id !== activeIndi._id);
+    if (isDirector || isShareholder) {
+      processIndividual();
+    }
+    session.newClientPrelim.shareClasses.forEach((item) => {
+      item.issuedNotAllocated -= item.prelimAllocation;
+      item.prelimAllocation = 0;
+    });
+    activeIndi.potentialShareAllocations.forEach((i) => (i.indiAllocationSuspended = 0));
+    setNewClientIndis(session.newClientPrelim.existingIndividuals);
+    nullifyForm();
+  };
+
+  const processIndividual = () => {
     activeIndi.isDirector = isDirector;
     activeIndi.dateAppointed = dateAppointed;
     activeIndi.dateCeased = dateCeased;
@@ -88,6 +88,21 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     } else {
       removeDirectorship(activeIndi);
     }
+    activeIndi.newClientShareholdings = [];
+    activeIndi.potentialShareAllocations.forEach((allocation) => {
+      if (allocation.indiAllocationLive !== 0) {
+        activeIndi.newClientShareholdings.push(
+          new NewShareholding({
+            clientName: session.newClientPrelim.clientName,
+            clientCode: session.newClientPrelim.clientCode,
+            shareClassName: allocation.shareClassName,
+            shareClassNumber: allocation.shareClassNumber,
+            interest: allocation.indiAllocationLive,
+          })
+        );
+      }
+    });
+    activeIndi.shareholdings = activeIndi.newClientShareholdings;
     activeIndi.isShareholder = isShareholder;
     if (isShareholder) {
       addShareholding(activeIndi);
@@ -97,17 +112,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     activeIndi.potentialShareAllocations.forEach((allocation) => {
       allocation.indiAllocationSubmitted = allocation.indiAllocationLive;
     });
-    const existingIndis = session.newClientPrelim.existingIndividuals;
-    session.newClientPrelim.existingIndividuals = existingIndis.filter((i) => i._id !== activeIndi._id);
     session.newClientPrelim.existingIndividuals.push(activeIndi);
-    session.newClientPrelim.shareClasses.forEach((item) => {
-      console.log(item);
-      item.issuedNotAllocated -= item.prelimAllocation;
-      item.prelimAllocation = 0;
-    });
-    console.log(session.newClientPrelim.existingIndividuals);
-    setNewClientIndis(session.newClientPrelim.existingIndividuals);
-    nullifyForm();
   };
 
   const addDirectorship = (indi: NewIndividual) => {
@@ -117,7 +122,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       dateAppointed: indi.dateAppointed,
       dateCeased: indi.dateCeased,
     };
-    indi.newClientDirectorships = [directorship];
+    indi.newClientDirectorships.push(directorship);
     session.newClientPrelim.directors = session.newClientPrelim.directors.filter((dir) => dir._id !== indi._id);
     session.newClientPrelim.directors.push(indi);
   };
@@ -128,19 +133,16 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   };
 
   const addShareholding = (indi: NewIndividual) => {
-    indi.newClientShareholdings = shareAllocations;
-    indi.shareholdings = indi.newClientShareholdings; // isn't this going to overwrite existing shareholdings????
     session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter((sh) => sh._id !== indi._id);
     session.newClientPrelim.shareholders.push(indi);
   };
 
   const removeShareholding = (indi: NewIndividual) => {
-    indi.newClientShareholdings = shareAllocations;
-    indi.shareholdings = indi.newClientShareholdings; // isn't this going to overwrite existing shareholdings????
     session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter((sh) => sh._id !== indi._id);
   };
 
   const manageShareAllocation = () => {
+    console.log(activeIndi);
     activeIndi.potentialShareAllocations.forEach((allocation) => {
       const shareClass = session.newClientPrelim.shareClasses.find(
         (i) => i.shareClassNumber === allocation.shareClassNumber
@@ -176,7 +178,6 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     setIsCeased(false);
     setDateCeased("");
     setIsShareholder(false);
-    setShareAllocations([]);
     setSearchTerm("");
     setSearchDisplay("");
     setMode("search");
@@ -187,7 +188,6 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     setDateAppointed(indi.dateAppointed);
     setDateCeased(indi.dateCeased);
     setIsShareholder(indi.isShareholder);
-    setShareAllocations(indi.newClientShareholdings);
     console.log(indi);
     setActiveIndi(indi);
   };
