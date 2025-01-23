@@ -4,6 +4,7 @@ import { Transaction } from "../classes/transaction";
 import React from "react";
 import { TrialBalanceLine } from "../classes/trial-balance-line";
 import { NewIndividual } from "../classes/new-individual";
+import { PreliminaryShareClass } from "../classes/share-classes";
 /*global Excel */
 
 export interface BaseCerysCodeObject {
@@ -421,7 +422,7 @@ export interface Shareholding {
   interest: number;
 }
 
-export interface NewPreliminaryClient {
+export interface PreliminaryClientProps {
   clientCode: string;
   clientName: string;
   companyNumber: string;
@@ -434,11 +435,41 @@ export interface NewPreliminaryClient {
   _responsibleIndividual: string;
   clientSoftware: string;
   _id?: string;
-  shareClasses: ShareClass[];
+  shareClasses: PreliminaryShareClass[];
   directors: NewIndividual[];
   shareholders: NewIndividual[];
   newIndividuals: NewIndividual[];
   existingIndividuals: NewIndividual[];
+  amortBasisGwill?: string;
+  amortRateGwill?: string;
+  amortBasisPatsLics?: string;
+  amortRatePatsLics?: string;
+  amortBasisDevCosts?: string;
+  amortRateDevCosts?: string;
+  amortBasisCompSware?: string;
+  amortRateCompSware?: string;
+  depnBasisFholdProp?: string;
+  depnRateFholdProp?: string;
+  depnBasisShortLhold?: string;
+  depnRateShortLhold?: string;
+  depnBasisLongLhold?: string;
+  depnRateLongLhold?: string;
+  depnBasisImprovements?: string;
+  depnRateImprovements?: string;
+  depnBasisPlantMachinery?: string;
+  depnRatePlantMachinery?: string;
+  depnBasisFixFittings?: string;
+  depnRateFixFittings?: string;
+  depnBasisMotorVehicles?: string;
+  depnRateMotorVehicles?: string;
+  depnBasisCompEquip?: string;
+  depnRateCompEquip?: string;
+  depnBasisOfficeEquip?: string;
+  depnRateOfficeEquip?: string;
+  depnBasisIPOwned?: string;
+  depnRateIPOwned?: string;
+  depnBasisIPLeased?: string;
+  depnRateIPLeased?: string;
 }
 
 export interface ShareClass {

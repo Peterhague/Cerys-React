@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_SHARES, LANDING_PAGE } from "../../../static-values/views";
+import { PreliminaryClient } from "../../../classes/client";
 interface addCorpClientDtlsProps {
   handleView: (view: string) => void;
   session: Session;
@@ -41,7 +42,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
       newIndividuals: [],
       existingIndividuals: [],
     };
-    session.newClientPrelim = newClientDtls;
+    session.newClientPrelim = new PreliminaryClient(newClientDtls);
     handleView(ADD_CORP_CLIENT_SHARES);
   };
 

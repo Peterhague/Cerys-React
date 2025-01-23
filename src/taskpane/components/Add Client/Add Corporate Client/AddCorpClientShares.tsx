@@ -3,6 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
+import { PreliminaryShareClass } from "../../../classes/share-classes";
 
 interface addCorpClientSharesProps {
   handleView: (view) => void;
@@ -24,7 +25,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
       issuedNotAllocated: numberIssued,
       prelimAllocation: 0,
     };
-    session.newClientPrelim.shareClasses.push(newClientShares);
+    session.newClientPrelim.shareClasses.push(new PreliminaryShareClass(newClientShares));
     handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 

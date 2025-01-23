@@ -1,11 +1,6 @@
-import {
-  BaseIndividual,
-  ClientCerysCodeObject,
-  ClientCodeObject,
-  Customer,
-  NewPreliminaryClient,
-} from "../interfaces/interfaces";
+import { BaseIndividual, ClientCerysCodeObject, ClientCodeObject, Customer } from "../interfaces/interfaces";
 import { Assignment } from "./assignment";
+import { PreliminaryClient } from "./client";
 import { ControlledWorksheet } from "./controlled-worksheet";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
@@ -72,7 +67,7 @@ export class Session {
     listeningForDoubleClick: false,
   };
   worksheets: Worksheet[] = [];
-  newClientPrelim: NewPreliminaryClient;
+  newClientPrelim: PreliminaryClient;
   newCorpClientShareholders: BaseIndividual[] = [];
   newIndiPrelim: {
     firstName: string;

@@ -31,3 +31,18 @@ export class NewShareholding {
     this.interest = allocation.interest;
   }
 }
+
+export class PreliminaryShareClass {
+  shareClassNumber: number;
+  shareClassName: string;
+  numberIssued: number;
+  issuedNotAllocated: number;
+  prelimAllocation: number;
+  constructor(shareClass: ShareClass) {
+    this.shareClassNumber = shareClass.shareClassNumber;
+    this.shareClassName = shareClass.shareClassName;
+    this.numberIssued = shareClass.numberIssued;
+    this.issuedNotAllocated = shareClass.numberIssued;
+    this.prelimAllocation = 0;
+  }
+}

@@ -13,6 +13,7 @@ interface IndividualInputProps {
   setSearchTerm: (term: string) => void;
   searchDisplay: string;
   setSearchDisplay: (display: string) => void;
+  itemsToExclude: ExtendedIndividual[];
 }
 
 const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>(
@@ -26,6 +27,7 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
       setSearchTerm,
       searchDisplay,
       setSearchDisplay,
+      itemsToExclude,
     }: IndividualInputProps,
     ref
   ) => {
@@ -133,6 +135,7 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
             {showSuggestions &&
               selection
                 .filter((indi) => {
+                  if (itemsToExclude.find((i) => i._id === indi._id)) return false;
                   if (searchTerm.length === 0) return indi;
                   const fullName = `${indi.firstName} ${indi.lastName}`;
                   let check = true;

@@ -5,7 +5,7 @@ import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_INDI_NEW, ADD_CORP_CLIENT_OPTIONS } from "../../../static-values/views";
 import IndividualInput from "../../Utils/IndividualInput";
 import { NewIndividual } from "../../../classes/new-individual";
-import { ExtendedIndividual } from "../../../interfaces/interfaces";
+import { ExtendedIndividual, ShareClass } from "../../../interfaces/interfaces";
 import { IndividualShareAllocation, NewShareholding } from "../../../classes/share-classes";
 
 interface addCorpClientIndisHomeProps {
@@ -41,26 +41,32 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
 
   const handleShareAllocation = (value: string, shareClassNumber: number) => {
     const val = value ? parseInt(value) : 0;
+    const shareClass = session.newClientPrelim.shareClasses.find((i) => i.shareClassNumber === shareClassNumber);
     let addBack = 0;
     const potentialAllocation = activeIndi.potentialShareAllocations.find(
       (sClass) => sClass.shareClassNumber === shareClassNumber
     );
     addBack = potentialAllocation.indiAllocationSubmitted;
-    potentialAllocation.indiAllocationLive = val;
-    setActiveIndi({
-      ...activeIndi,
-      potentialShareAllocations: [
-        ...activeIndi.potentialShareAllocations.filter((i) => i.shareClassNumber !== shareClassNumber),
-        potentialAllocation,
-      ],
-    });
-    session.newClientPrelim.shareClasses.forEach((sClass) => {
-      if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= val) {
-        sClass.prelimAllocation = val - addBack;
-      } else {
-        console.log("There aren't enough shares available for this allocation");
-      }
-    });
+    if (shareClass.issuedNotAllocated + addBack >= val) {
+      potentialAllocation.indiAllocationLive = val;
+      setActiveIndi({
+        ...activeIndi,
+        potentialShareAllocations: [
+          ...activeIndi.potentialShareAllocations.filter((i) => i.shareClassNumber !== shareClassNumber),
+          potentialAllocation,
+        ],
+      });
+      shareClass.prelimAllocation = val - addBack;
+    } else {
+      console.log("There aren't enough shares available for this allocation");
+    }
+    // session.newClientPrelim.shareClasses.forEach((sClass) => {
+    //   if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= val) {
+    //     sClass.prelimAllocation = val - addBack;
+    //   } else {
+    //     console.log("There aren't enough shares available for this allocation");
+    //   }
+    // });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -197,194 +203,201 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     setActiveIndi(indi);
   };
 
+  const getPotentialAllocation = (shareClass: ShareClass) => {
+    const addBack = activeIndi.potentialShareAllocations.find(
+      (i) => i.shareClassNumber === shareClass.shareClassNumber
+    ).indiAllocationSubmitted;
+    return shareClass.issuedNotAllocated + addBack;
+  };
+
+  const getOtherAllocations = (shareClass: ShareClass) => {
+    const addBack = activeIndi.potentialShareAllocations.find(
+      (i) => i.shareClassNumber === shareClass.shareClassNumber
+    ).indiAllocationSubmitted;
+    return shareClass.numberIssued - (shareClass.issuedNotAllocated + addBack);
+  };
+
   return (
     <>
       {availableIndis.length > 0 && (
-        <>
-          <form onSubmit={handleSubmit} id="selectIndiForm" action="">
-            {mode === "search" && (
-              <IndividualInput
-                ref={inputRef}
-                session={session}
-                selection={availableIndis}
-                activeIndi={activeIndi}
-                setActiveIndividual={setActiveIndividual}
-                searchTerm={searchTerm}
-                setSearchTerm={setSearchTerm}
-                searchDisplay={searchDisplay}
-                setSearchDisplay={setSearchDisplay}
-              />
-            )}
-            {mode === "update" && (
-              <p>
-                {newClientIndis.find((indi) => indi._id === activeIndi._id).firstName}{" "}
-                {newClientIndis.find((indi) => indi._id === activeIndi._id).lastName}
-              </p>
-            )}
-            {activeIndi && (
-              <>
-                {!activeIndi.isDirector && (
-                  <div>
-                    <label htmlFor="isDirector"> Designate as a director?</label>
-                    <input
-                      type="checkbox"
-                      id="isDirector"
-                      name="isDirector"
-                      checked={isDirector}
-                      onChange={(e) => setIsDirector(e.target.checked)}
-                    ></input>
-                  </div>
-                )}
-                {activeIndi.isDirector && (
-                  <div>
-                    <label htmlFor="isNotDirector"> Remove as director?</label>
-                    <input
-                      type="checkbox"
-                      id="isNotDirector"
-                      name="isNotDirector"
-                      checked={!isDirector}
-                      onChange={(e) => setIsDirector(!e.target.checked)}
-                    ></input>
-                  </div>
-                )}
-                {isDirector && (
-                  <>
-                    <div>
-                      <label htmlFor="dateAppointed">Date appointed</label>
-                      <input
-                        type="date"
-                        id="dateAppointed"
-                        name="dateAppointed"
-                        value={dateAppointed}
-                        onChange={(e) => setDateAppointed(e.target.value)}
-                      ></input>
-                    </div>
-                    <div>
-                      <label htmlFor="isCeased">No longer in office?</label>
-                      <input
-                        type="checkbox"
-                        id="isCeased"
-                        name="isCeased"
-                        checked={isCeased}
-                        onChange={(e) => setIsCeased(e.target.checked)}
-                      ></input>
-                    </div>
-                    {isCeased && (
-                      <div>
-                        <label htmlFor="dateCeased">Date ceased</label>
-                        <input
-                          type="date"
-                          id="dateCeased"
-                          name="dateCeased"
-                          value={dateCeased}
-                          onChange={(e) => setDateCeased(e.target.value)}
-                        ></input>
-                      </div>
-                    )}
-                  </>
-                )}
-                {!activeIndi.isShareholder && (
-                  <div>
-                    <label htmlFor="isShareholder"> Designate as a shareholder?</label>
-                    <input
-                      type="checkbox"
-                      id="isShareholder"
-                      name="isShareholder"
-                      checked={isShareholder}
-                      onChange={manageShareAllocation}
-                    ></input>
-                  </div>
-                )}
-                {activeIndi.isShareholder && (
-                  <div>
-                    <label htmlFor="isNotShareholder"> Remove as shareholder?</label>
-                    <input
-                      type="checkbox"
-                      id="isNotShareholder"
-                      name="isNotShareholder"
-                      checked={!isShareholder}
-                      onChange={manageShareAllocation}
-                    ></input>
-                  </div>
-                )}
-                {isShareholder &&
-                  session.newClientPrelim.shareClasses.map((sC) => (
-                    <>
-                      <table key={sC.shareClassNumber}>
-                        <tbody>
-                          <tr>
-                            <td>Shares issued</td>
-                            <td>{sC.numberIssued}</td>
-                          </tr>
-                          <tr>
-                            <td>Already allocated</td>
-                            <td>{sC.numberIssued - sC.issuedNotAllocated}</td>
-                          </tr>
-                          <tr>
-                            <td>Available to allocate</td>
-                            <td>{sC.issuedNotAllocated}</td>
-                          </tr>
-                          <tr>
-                            <td>Allocate to</td>
-                            <td>
-                              <input
-                                type="number"
-                                value={
-                                  activeIndi.potentialShareAllocations.find(
-                                    (sClass: IndividualShareAllocation) =>
-                                      sClass.shareClassNumber === sC.shareClassNumber
-                                  ).indiAllocationLive === 0
-                                    ? ""
-                                    : activeIndi.potentialShareAllocations.find(
-                                        (sClass: IndividualShareAllocation) =>
-                                          sClass.shareClassNumber === sC.shareClassNumber
-                                      ).indiAllocationLive
-                                }
-                                onChange={(e) => handleShareAllocation(e.target.value, sC.shareClassNumber)}
-                              ></input>
-                            </td>
-                          </tr>
-                        </tbody>
-                      </table>
-                    </>
-                  ))}
-              </>
-            )}
+        <form onSubmit={handleSubmit} id="selectIndiForm" action="">
+          {mode === "search" && (
+            <IndividualInput
+              ref={inputRef}
+              session={session}
+              selection={availableIndis}
+              activeIndi={activeIndi}
+              setActiveIndividual={setActiveIndividual}
+              searchTerm={searchTerm}
+              setSearchTerm={setSearchTerm}
+              searchDisplay={searchDisplay}
+              setSearchDisplay={setSearchDisplay}
+              itemsToExclude={newClientIndis}
+            />
+          )}
+          {mode === "update" && (
+            <p>
+              {newClientIndis.find((indi) => indi._id === activeIndi._id).firstName}{" "}
+              {newClientIndis.find((indi) => indi._id === activeIndi._id).lastName}
+            </p>
+          )}
+          {activeIndi && !activeIndi.isDirector && (
             <div>
-              <button type="submit">GO</button>
+              <label htmlFor="isDirector"> Designate as a director?</label>
+              <input
+                type="checkbox"
+                id="isDirector"
+                name="isDirector"
+                checked={isDirector}
+                onChange={(e) => setIsDirector(e.target.checked)}
+              ></input>
             </div>
-          </form>
-          {newClientIndis.length > 0 && (
+          )}
+          {activeIndi && activeIndi.isDirector && (
+            <div>
+              <label htmlFor="isNotDirector"> Remove as director?</label>
+              <input
+                type="checkbox"
+                id="isNotDirector"
+                name="isNotDirector"
+                checked={!isDirector}
+                onChange={(e) => setIsDirector(!e.target.checked)}
+              ></input>
+            </div>
+          )}
+          {isDirector && (
             <>
-              <table>
-                <tbody>
-                  {newClientIndis.map((indi) => {
-                    const isDirector = session.newClientPrelim.directors.find((dir) => dir._id === indi._id);
-                    const isShareholder = session.newClientPrelim.shareholders.find((sh) => sh._id === indi._id);
-                    return (
-                      <>
-                        <tr>
-                          <td>{`${indi.firstName} ${indi.lastName}`}</td>
-                          <td>{isDirector ? "Yes" : "No"}</td>
-                          <td>{isShareholder ? "Yes" : "No"}</td>
-                          <td>
-                            {(!activeIndi || indi._id !== activeIndi._id) && (
-                              <button type="button" onClick={() => handleUpdateMode(indi)}>
-                                Update
-                              </button>
-                            )}
-                          </td>
-                        </tr>
-                      </>
-                    );
-                  })}
-                </tbody>
-              </table>
+              <div>
+                <label htmlFor="dateAppointed">Date appointed</label>
+                <input
+                  type="date"
+                  id="dateAppointed"
+                  name="dateAppointed"
+                  value={dateAppointed}
+                  onChange={(e) => setDateAppointed(e.target.value)}
+                ></input>
+              </div>
+              <div>
+                <label htmlFor="isCeased">No longer in office?</label>
+                <input
+                  type="checkbox"
+                  id="isCeased"
+                  name="isCeased"
+                  checked={isCeased}
+                  onChange={(e) => setIsCeased(e.target.checked)}
+                ></input>
+              </div>
+              {isCeased && (
+                <div>
+                  <label htmlFor="dateCeased">Date ceased</label>
+                  <input
+                    type="date"
+                    id="dateCeased"
+                    name="dateCeased"
+                    value={dateCeased}
+                    onChange={(e) => setDateCeased(e.target.value)}
+                  ></input>
+                </div>
+              )}
             </>
           )}
-        </>
+          {activeIndi && !activeIndi.isShareholder && (
+            <div>
+              <label htmlFor="isShareholder"> Designate as a shareholder?</label>
+              <input
+                type="checkbox"
+                id="isShareholder"
+                name="isShareholder"
+                checked={isShareholder}
+                onChange={manageShareAllocation}
+              ></input>
+            </div>
+          )}
+          {activeIndi && activeIndi.isShareholder && (
+            <div>
+              <label htmlFor="isNotShareholder"> Remove as shareholder?</label>
+              <input
+                type="checkbox"
+                id="isNotShareholder"
+                name="isNotShareholder"
+                checked={!isShareholder}
+                onChange={manageShareAllocation}
+              ></input>
+            </div>
+          )}
+          {isShareholder &&
+            session.newClientPrelim.shareClasses.map((sC) => {
+              return (
+                <div key={sC.shareClassNumber}>
+                  <table>
+                    <tbody>
+                      <tr>
+                        <td>Shares issued</td>
+                        <td>{sC.numberIssued}</td>
+                      </tr>
+                      <tr>
+                        <td>Allocated elsewhere</td>
+                        <td>{getOtherAllocations(sC)}</td>
+                      </tr>
+                      <tr>
+                        <td>Available to allocate</td>
+                        <td>{getPotentialAllocation(sC)}</td>
+                      </tr>
+                      <tr>
+                        <td>Allocate to</td>
+                        <td>
+                          <input
+                            type="number"
+                            value={
+                              activeIndi.potentialShareAllocations.find(
+                                (sClass: IndividualShareAllocation) => sClass.shareClassNumber === sC.shareClassNumber
+                              ).indiAllocationLive === 0
+                                ? ""
+                                : activeIndi.potentialShareAllocations.find(
+                                    (sClass: IndividualShareAllocation) =>
+                                      sClass.shareClassNumber === sC.shareClassNumber
+                                  ).indiAllocationLive
+                            }
+                            onChange={(e) => handleShareAllocation(e.target.value, sC.shareClassNumber)}
+                          ></input>
+                        </td>
+                      </tr>
+                    </tbody>
+                  </table>
+                </div>
+              );
+            })}
+          <div>
+            <button type="submit">GO</button>
+          </div>
+        </form>
       )}
-
+      {newClientIndis.length > 0 && (
+        <table>
+          <tbody>
+            {newClientIndis.map((indi) => {
+              const isDirector = session.newClientPrelim.directors.find((dir) => dir._id === indi._id);
+              const isShareholder = session.newClientPrelim.shareholders.find((sh) => sh._id === indi._id);
+              return (
+                <>
+                  <tr key={indi._id}>
+                    <td>{`${indi.firstName} ${indi.lastName}`}</td>
+                    <td>{isDirector ? "Yes" : "No"}</td>
+                    <td>{isShareholder ? "Yes" : "No"}</td>
+                    <td>
+                      {(!activeIndi || indi._id !== activeIndi._id) && (
+                        <button type="button" onClick={() => handleUpdateMode(indi)}>
+                          Update
+                        </button>
+                      )}
+                    </td>
+                  </tr>
+                </>
+              );
+            })}
+          </tbody>
+        </table>
+      )}
       <CerysButton buttonText={"Add new individual"} handleClick={() => handleView(ADD_CORP_CLIENT_INDI_NEW)} />
       <CerysButton buttonText={"Finish"} handleClick={() => handleView(ADD_CORP_CLIENT_OPTIONS)} />
     </>
