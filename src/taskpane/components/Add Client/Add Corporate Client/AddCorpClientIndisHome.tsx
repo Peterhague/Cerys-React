@@ -66,6 +66,8 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const existingIndis = session.newClientPrelim.existingIndividuals;
+    const order = {};
+    existingIndis.forEach((indi, index) => (order[indi._id] = index));
     session.newClientPrelim.existingIndividuals = existingIndis.filter((i) => i._id !== activeIndi._id);
     if (isDirector || isShareholder) {
       processIndividual();
@@ -75,6 +77,9 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       item.prelimAllocation = 0;
     });
     activeIndi.potentialShareAllocations.forEach((i) => (i.indiAllocationSuspended = 0));
+    session.newClientPrelim.existingIndividuals.sort((a, b) => {
+      return order[a._id] - order[b._id];
+    });
     setNewClientIndis(session.newClientPrelim.existingIndividuals);
     nullifyForm();
   };
