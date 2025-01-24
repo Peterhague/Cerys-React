@@ -7,6 +7,7 @@ import IndividualInput from "../../Utils/IndividualInput";
 import { NewIndividual } from "../../../classes/new-individual";
 import { ExtendedIndividual, ShareClass } from "../../../interfaces/interfaces";
 import { IndividualShareAllocation, NewShareholding } from "../../../classes/share-classes";
+import _ from "lodash";
 
 interface addCorpClientIndisHomeProps {
   handleView: (view) => void;
@@ -23,6 +24,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const [isShareholder, setIsShareholder] = useState(false);
   const [availableIndis] = useState([...session.customer.nonCorpClients, ...session.customer.individuals]);
   const [newClientIndis, setNewClientIndis] = useState(session.newClientPrelim.existingIndividuals);
+  const [backupNewClientIndis, setBackupNewClientIndis] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDisplay, setSearchDisplay] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
@@ -60,23 +62,23 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     } else {
       console.log("There aren't enough shares available for this allocation");
     }
-    // session.newClientPrelim.shareClasses.forEach((sClass) => {
-    //   if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= val) {
-    //     sClass.prelimAllocation = val - addBack;
-    //   } else {
-    //     console.log("There aren't enough shares available for this allocation");
-    //   }
-    // });
   };
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
+    const isAllocatedShares = activeIndi.potentialShareAllocations.find((i) => i.indiAllocationLive !== 0);
+    if (
+      (isShareholder && !isAllocatedShares) ||
+      (isDirector && !dateAppointed) ||
+      (!isShareholder && isAllocatedShares)
+    )
+      return;
     const existingIndis = session.newClientPrelim.existingIndividuals;
     const order = {};
     existingIndis.forEach((indi, index) => (order[indi._id] = index));
     session.newClientPrelim.existingIndividuals = existingIndis.filter((i) => i._id !== activeIndi._id);
     if (isDirector || isShareholder) {
-      processIndividual();
+      processIndividual(isAllocatedShares);
     }
     session.newClientPrelim.shareClasses.forEach((item) => {
       item.issuedNotAllocated -= item.prelimAllocation;
@@ -87,14 +89,15 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       return order[a._id] - order[b._id];
     });
     setNewClientIndis(session.newClientPrelim.existingIndividuals);
+    backupNewClientIndis && setBackupNewClientIndis(null);
     nullifyForm();
   };
 
-  const processIndividual = () => {
+  const processIndividual = (isAllocatedShares: IndividualShareAllocation) => {
     activeIndi.isDirector = isDirector;
     activeIndi.dateAppointed = dateAppointed;
     activeIndi.dateCeased = dateCeased;
-    if (isDirector) {
+    if (isDirector && dateAppointed) {
       addDirectorship(activeIndi);
     } else {
       removeDirectorship(activeIndi);
@@ -115,7 +118,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     });
     activeIndi.shareholdings = activeIndi.newClientShareholdings;
     activeIndi.isShareholder = isShareholder;
-    if (isShareholder) {
+    if (isShareholder && isAllocatedShares) {
       addShareholding(activeIndi);
     } else {
       removeShareholding(activeIndi);
@@ -153,21 +156,15 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   };
 
   const manageShareAllocation = () => {
-    console.log(activeIndi);
     activeIndi.potentialShareAllocations.forEach((allocation) => {
-      const shareClass = session.newClientPrelim.shareClasses.find(
-        (i) => i.shareClassNumber === allocation.shareClassNumber
-      );
       if (isShareholder) {
         if (mode === "update") {
-          shareClass.issuedNotAllocated += allocation.indiAllocationSubmitted;
           allocation.indiAllocationSuspended = allocation.indiAllocationSubmitted;
         }
         allocation.indiAllocationLive = 0;
         allocation.indiAllocationSubmitted = 0;
       } else if (!isShareholder) {
         if (mode === "update") {
-          shareClass.issuedNotAllocated -= allocation.indiAllocationSuspended;
           allocation.indiAllocationLive = allocation.indiAllocationSuspended;
           allocation.indiAllocationSubmitted = allocation.indiAllocationSuspended;
           allocation.indiAllocationSuspended = 0;
@@ -178,6 +175,8 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   };
 
   const handleUpdateMode = (indi: NewIndividual) => {
+    const copy = _.cloneDeep(newClientIndis);
+    setBackupNewClientIndis(copy);
     reinstateIndiDetails(indi);
     setMode("update");
   };
@@ -199,7 +198,6 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     setDateAppointed(indi.dateAppointed);
     setDateCeased(indi.dateCeased);
     setIsShareholder(indi.isShareholder);
-    console.log(indi);
     setActiveIndi(indi);
   };
 
@@ -215,6 +213,17 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       (i) => i.shareClassNumber === shareClass.shareClassNumber
     ).indiAllocationSubmitted;
     return shareClass.numberIssued - (shareClass.issuedNotAllocated + addBack);
+  };
+
+  const cancelFormInput = () => {
+    session.newClientPrelim.shareClasses.forEach((item) => {
+      item.prelimAllocation = 0;
+    });
+    console.log(backupNewClientIndis);
+    setNewClientIndis(backupNewClientIndis);
+    console.log(newClientIndis);
+    setBackupNewClientIndis(null);
+    nullifyForm();
   };
 
   return (
@@ -368,7 +377,10 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
               );
             })}
           <div>
-            <button type="submit">GO</button>
+            <button type="submit">Submit</button>
+            <button type="button" onClick={cancelFormInput}>
+              Cancel
+            </button>
           </div>
         </form>
       )}
@@ -379,20 +391,18 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
               const isDirector = session.newClientPrelim.directors.find((dir) => dir._id === indi._id);
               const isShareholder = session.newClientPrelim.shareholders.find((sh) => sh._id === indi._id);
               return (
-                <>
-                  <tr key={indi._id}>
-                    <td>{`${indi.firstName} ${indi.lastName}`}</td>
-                    <td>{isDirector ? "Yes" : "No"}</td>
-                    <td>{isShareholder ? "Yes" : "No"}</td>
-                    <td>
-                      {(!activeIndi || indi._id !== activeIndi._id) && (
-                        <button type="button" onClick={() => handleUpdateMode(indi)}>
-                          Update
-                        </button>
-                      )}
-                    </td>
-                  </tr>
-                </>
+                <tr key={indi._id}>
+                  <td>{`${indi.firstName} ${indi.lastName}`}</td>
+                  <td>{isDirector ? "Yes" : "No"}</td>
+                  <td>{isShareholder ? "Yes" : "No"}</td>
+                  <td>
+                    {(!activeIndi || indi._id !== activeIndi._id) && (
+                      <button type="button" onClick={() => handleUpdateMode(indi)}>
+                        Update
+                      </button>
+                    )}
+                  </td>
+                </tr>
               );
             })}
           </tbody>
