@@ -476,8 +476,6 @@ export interface ShareClass {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
-  issuedNotAllocated: number;
-  prelimAllocation: number;
 }
 
 export interface AddressObject {

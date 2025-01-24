@@ -9,6 +9,8 @@ interface IndividualInputProps {
   selection: ExtendedIndividual[];
   activeIndi: NewIndividual;
   setActiveIndividual: (indi: ExtendedIndividual) => void;
+  suggestedIndi: ExtendedIndividual;
+  setSuggestedIndi: (indi: ExtendedIndividual) => void;
   searchTerm: string;
   setSearchTerm: (term: string) => void;
   searchDisplay: string;
@@ -23,6 +25,8 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
       selection,
       activeIndi,
       setActiveIndividual,
+      suggestedIndi,
+      setSuggestedIndi,
       searchTerm,
       setSearchTerm,
       searchDisplay,
@@ -34,6 +38,7 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     const handleChange = (value: string) => {
+      console.log(value);
       if (activeIndi) {
         if (value.length > searchDisplay.length) {
           return;
@@ -42,11 +47,29 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
           setSearchTerm("");
           setSearchDisplay("");
           setActiveIndividual(null);
+          value = "";
         }
       } else {
         session.arrowIndex = -1;
         setSearchTerm(value);
         setSearchDisplay(value);
+      }
+      const filteredSelection = selection.filter((indi) => {
+        if (!value) return indi;
+        const fullName = `${indi.firstName} ${indi.lastName}`;
+        let check = true;
+        for (let i = 0; i < value.length; i++) {
+          if (fullName[i] !== value[i]) check = false;
+        }
+        if (fullName.toLowerCase().includes(value.toLowerCase())) check = true;
+        return value && check;
+      });
+      console.log(suggestedIndi);
+      console.log(filteredSelection.length);
+      if (!suggestedIndi && filteredSelection.length === 1) setSuggestedIndi(filteredSelection[0]);
+      if (suggestedIndi && filteredSelection.length !== 1) {
+        console.log(filteredSelection.length);
+        setSuggestedIndi(null);
       }
     };
 
@@ -58,7 +81,8 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
       session.arrowIndex = -1;
     };
 
-    const handleBlur = (e) => {
+    const handleBlur = (e: React.FocusEvent) => {
+      setActiveIndividual(suggestedIndi);
       if (e.currentTarget.contains(e.relatedTarget)) {
         return;
       } else {
@@ -85,11 +109,12 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
       }
     };
 
-    const handleKeyDown = (e) => {
+    const handleKeyDown = (e: React.KeyboardEvent) => {
       if (showSuggestions) {
         if (e.key === "ArrowDown" || e.key === "ArrowUp") {
           e.preventDefault();
           const filteredSelection = selection.filter((indi) => {
+            if (!searchTerm) return indi;
             const fullName = `${indi.firstName} ${indi.lastName}`;
             let check = true;
             for (let i = 0; i < searchTerm.length; i++) {
@@ -102,14 +127,14 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
             if (session.arrowIndex < filteredSelection.length - 1) {
               session.arrowIndex += 1;
               const indi = filteredSelection[session.arrowIndex];
-              setActiveIndividual(indi);
+              setSuggestedIndi(indi);
               setSearchDisplay(`${indi.firstName} ${indi.lastName}`);
             }
           } else {
             if (session.arrowIndex > 0) {
               session.arrowIndex -= 1;
               const indi = filteredSelection[session.arrowIndex];
-              setActiveIndividual(indi);
+              setSuggestedIndi(indi);
               setSearchDisplay(`${indi.firstName} ${indi.lastName}`);
             }
           }
@@ -135,7 +160,7 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
             {showSuggestions &&
               selection
                 .filter((indi) => {
-                  if (itemsToExclude.find((i) => i._id === indi._id)) return false;
+                  if (itemsToExclude && itemsToExclude.find((i) => i._id === indi._id)) return false;
                   if (searchTerm.length === 0) return indi;
                   const fullName = `${indi.firstName} ${indi.lastName}`;
                   let check = true;

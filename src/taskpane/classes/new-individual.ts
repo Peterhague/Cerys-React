@@ -45,7 +45,7 @@ export class NewIndividual {
     this.newClientDirectorships = [];
     this.newClientShareholdings = [];
     this.uTR = individual.uTR;
-    this._id = individual._id;
+    this._id = individual._id ? individual._id : Math.floor(Math.random() * 10000000).toString();
     this.potentialShareAllocations = [];
   }
 }

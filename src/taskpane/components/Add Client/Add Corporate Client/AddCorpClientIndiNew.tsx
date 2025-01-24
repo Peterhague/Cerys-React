@@ -36,8 +36,7 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
   const handleShareAllocation = (value: string, shareClassNumber: number) => {
     const numberValue: number = parseInt(value);
     session.newClientPrelim.shareClasses.forEach((sClass) => {
-      if (sClass.shareClassNumber === shareClassNumber && sClass.issuedNotAllocated >= numberValue) {
-        sClass.prelimAllocation = parseInt(value);
+      if (sClass.shareClassNumber === shareClassNumber && sClass.getAvailabletoAllocate(null) >= numberValue) {
         const allocation = {
           key: shareClassNumber,
           clientName: session.newClientPrelim.clientName,
@@ -90,10 +89,6 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
     console.log(newIndi);
     processNewIndi(newIndi);
     session.newClientPrelim.newIndividuals.push(new NewIndividual(newIndi));
-    session.newClientPrelim.shareClasses.forEach((item) => {
-      item.issuedNotAllocated -= item.prelimAllocation;
-      item.prelimAllocation = 0;
-    });
     handleView(ADD_CORP_CLIENT_INDIS_HOME);
   };
 
@@ -285,12 +280,12 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
                     <td>{sC.numberIssued}</td>
                   </tr>
                   <tr>
-                    <td>Already allocated</td>
-                    <td>{sC.numberIssued - sC.issuedNotAllocated}</td>
+                    <td>Allocated elsewhere</td>
+                    <td>{sC.getOtherAllocations(null)}</td>
                   </tr>
                   <tr>
                     <td>Available to allocate</td>
-                    <td>{sC.issuedNotAllocated}</td>
+                    <td>{sC.getAvailabletoAllocate(null)}</td>
                   </tr>
                   <tr>
                     <td>
