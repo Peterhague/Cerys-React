@@ -19,6 +19,7 @@ export const ADD_CORP_CLIENT_DETAILS = "addCorpClientDtls";
 export const ADD_CORP_CLIENT_SHARES = "addCorpClientShares";
 export const ADD_CORP_CLIENT_OPTIONS = "addCorpClientOptions";
 export const ADD_CORP_CLIENT_INDIS_HOME = "addCorpClientIndisHome";
+export const ADD_CORP_CLIENT_INDIS = "addCorpClientIndis";
 export const ADD_CORP_CLIENT_INDI_NEW = "addCorpClientIndiNew";
 export const ADD_CORP_CLIENT_DIRS_HOME = "addCorpClientDirsHome";
 export const ADD_CORP_CLIENT_DIR_NEW = "addCorpClientDirNew";

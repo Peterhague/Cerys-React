@@ -1,4 +1,4 @@
-import { BaseIndividual, ClientCerysCodeObject, ClientCodeObject, Customer } from "../interfaces/interfaces";
+import { BaseIndividualProps, ClientCerysCodeObject, ClientCodeObject, Customer } from "../interfaces/interfaces";
 import { Assignment } from "./assignment";
 import { PreliminaryClient } from "./client";
 import { ControlledWorksheet } from "./controlled-worksheet";
@@ -68,7 +68,7 @@ export class Session {
   };
   worksheets: Worksheet[] = [];
   newClientPrelim: PreliminaryClient;
-  newCorpClientShareholders: BaseIndividual[] = [];
+  newCorpClientShareholders: BaseIndividualProps[] = [];
   newIndiPrelim: {
     firstName: string;
     lastName: string;

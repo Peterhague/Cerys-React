@@ -8,7 +8,7 @@ import {
   ADD_CORP_CLIENT_AMORTISATION,
   ADD_CORP_CLIENT_DEPRECIATION,
   ADD_CORP_CLIENT_DEPRECIATION_INV_PROP,
-  ADD_CORP_CLIENT_INDIS_HOME,
+  ADD_CORP_CLIENT_INDIS,
   ADD_CORP_CLIENT_SHARES,
   CUSTOMER_DASH_HOME,
 } from "../../../static-values/views";
@@ -46,7 +46,7 @@ const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps
         handleClick={() => handleView(ADD_CORP_CLIENT_DEPRECIATION_INV_PROP)}
       />
       <CerysButton buttonText={"ENTER VAT DETAILS"} handleClick={() => handleView(ADD_CLIENT_HOME)} />
-      <CerysButton buttonText={"ADD INDIVIDUALS"} handleClick={() => handleView(ADD_CORP_CLIENT_INDIS_HOME)} />
+      <CerysButton buttonText={"ADD INDIVIDUALS"} handleClick={() => handleView(ADD_CORP_CLIENT_INDIS)} />
       <CerysButton buttonText={"Submit client now"} handleClick={() => handleSubmission()} />
     </>
   );

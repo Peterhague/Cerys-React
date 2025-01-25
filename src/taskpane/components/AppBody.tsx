@@ -58,6 +58,7 @@ import {
   ADD_CORP_CLIENT_DIR_NEW,
   ADD_CORP_CLIENT_DIRS_HOME,
   ADD_CORP_CLIENT_INDI_NEW,
+  ADD_CORP_CLIENT_INDIS,
   ADD_CORP_CLIENT_INDIS_HOME,
   ADD_CORP_CLIENT_OPTIONS,
   ADD_CORP_CLIENT_SHAREHOLDERS_HOME,
@@ -96,6 +97,7 @@ import {
   USER_DASH_HOME,
   USER_LOGIN,
 } from "../static-values/views";
+import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientIndis";
 
 interface AppBodyProps {
   session: Session;
@@ -209,6 +211,9 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case ADD_CORP_CLIENT_INDIS_HOME:
         body = <AddCorpClientIndisHome handleView={handleView} session={session} />;
+        break;
+      case ADD_CORP_CLIENT_INDIS:
+        body = <AddCorpClientIndis handleView={handleView} session={session} />;
         break;
       case ADD_CORP_CLIENT_INDI_NEW:
         body = <AddCorpClientIndiNew handleView={handleView} session={session} />;

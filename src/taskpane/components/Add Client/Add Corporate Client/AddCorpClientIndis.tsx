@@ -1,20 +1,21 @@
 import * as React from "react";
-import { useRef, useState } from "react";
+import { useRef, useState, Fragment } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { ADD_CORP_CLIENT_INDI_NEW, ADD_CORP_CLIENT_OPTIONS } from "../../../static-values/views";
+import { ADD_CORP_CLIENT_OPTIONS } from "../../../static-values/views";
 import IndividualInput from "../../Utils/IndividualInput";
 import { NewIndiAssociation } from "../../../classes/individuals";
 import { ExtendedIndividual } from "../../../interfaces/interfaces";
 import { IndividualShareAllocation, NewShareholding } from "../../../classes/share-classes";
 import _ from "lodash";
+import IndiFields from "../../Utils/IndiFields";
 
-interface addCorpClientIndisHomeProps {
+interface AddCorpClientIndisProps {
   handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeProps) => {
+const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) => {
   const [mode, setMode] = useState("search");
   const [activeIndi, setActiveIndi] = useState<NewIndiAssociation>(null);
   const [controlIndi, setControlIndi] = useState<NewIndiAssociation>(null);
@@ -25,7 +26,10 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
   const [dateCeased, setDateCeased] = useState("");
   const [isShareholder, setIsShareholder] = useState(false);
   const [availableIndis] = useState([...session.customer.nonCorpClients, ...session.customer.individuals]);
-  const [newClientIndis, setNewClientIndis] = useState(session.newClientPrelim.existingIndividuals);
+  const [newClientIndis, setNewClientIndis] = useState([
+    ...session.newClientPrelim.existingIndividuals,
+    ...session.newClientPrelim.newIndividuals,
+  ]);
   const [backupNewClientIndis, setBackupNewClientIndis] = useState(null);
   const [searchTerm, setSearchTerm] = useState("");
   const [searchDisplay, setSearchDisplay] = useState("");
@@ -33,18 +37,20 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
 
   const setActiveIndividual = (indi: ExtendedIndividual) => {
     if (indi) {
-      const newIndi = new NewIndiAssociation(indi);
-      const potentialShareAllocations = session.newClientPrelim.shareClasses.map(
-        (i) => new IndividualShareAllocation(i)
-      );
-      newIndi.potentialShareAllocations = potentialShareAllocations;
-      setActiveIndi(newIndi);
-      const copy = _.cloneDeep(newIndi);
-      setControlIndi(copy);
+      setActiveIndividualNext(indi);
     } else {
       setActiveIndi(null);
       setControlIndi(null);
     }
+  };
+
+  const setActiveIndividualNext = (indi: ExtendedIndividual | null) => {
+    const newIndi = new NewIndiAssociation(indi);
+    const potentialShareAllocations = session.newClientPrelim.shareClasses.map((i) => new IndividualShareAllocation(i));
+    newIndi.potentialShareAllocations = potentialShareAllocations;
+    setActiveIndi(newIndi);
+    const copy = _.cloneDeep(newIndi);
+    setControlIndi(copy);
   };
 
   const handleShareAllocation = (value: string, shareClassNumber: number) => {
@@ -62,7 +68,6 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
           potentialAllocation,
         ],
       });
-      //shareClass.prelimAllocation = val - addBack;
     } else {
       console.log("There aren't enough shares available for this allocation");
     }
@@ -78,17 +83,11 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
       (!isShareholder && isAllocatedShares)
     )
       return;
-    const existingIndis = session.newClientPrelim.existingIndividuals;
+    const relevantIndis = session.newClientPrelim[activeIndi.associationType];
     const order = {};
-    existingIndis.forEach((indi, index) => (order[indi._id] = index));
-    session.newClientPrelim.existingIndividuals = existingIndis.filter((i) => i._id !== activeIndi._id);
-    // if (isDirector || isShareholder) {
-    //   processIndividual(isAllocatedShares);
-    // }
+    relevantIndis.forEach((indi, index) => (order[indi._id] = index));
+    session.newClientPrelim[activeIndi.associationType] = relevantIndis.filter((i) => i._id !== activeIndi._id);
     processIndividual(isAllocatedShares);
-    console.log(_.isEqual(activeIndi, controlIndi));
-    console.log(activeIndi);
-    console.log(controlIndi);
     if (_.isEqual(activeIndi, controlIndi)) return;
     session.newClientPrelim.shareClasses.forEach((item) => {
       const indiShareholding = activeIndi.potentialShareAllocations.find(
@@ -111,7 +110,7 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     session.newClientPrelim.existingIndividuals.sort((a, b) => {
       return order[a._id] - order[b._id];
     });
-    setNewClientIndis(session.newClientPrelim.existingIndividuals);
+    setNewClientIndis([...session.newClientPrelim.existingIndividuals, ...session.newClientPrelim.newIndividuals]);
     backupNewClientIndis && setBackupNewClientIndis(null);
     nullifyForm();
   };
@@ -149,8 +148,9 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     activeIndi.potentialShareAllocations.forEach((allocation) => {
       allocation.indiAllocationSubmitted = allocation.indiAllocationLive;
     });
+    console.log(activeIndi);
     if (isDirector || isShareholder) {
-      session.newClientPrelim.existingIndividuals.push(activeIndi);
+      session.newClientPrelim[activeIndi.associationType].push(activeIndi);
     }
   };
 
@@ -243,6 +243,11 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
     setDateCeased("");
   };
 
+  const handleNewIndi = () => {
+    setActiveIndividualNext(null);
+    setMode("addIndi");
+  };
+
   return (
     <>
       {availableIndis.length > 0 && (
@@ -269,96 +274,125 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
               {newClientIndis.find((indi) => indi._id === activeIndi._id).lastName}
             </p>
           )}
-          {activeIndi && !activeIndi.isDirector && (
-            <div>
-              <label htmlFor="isDirector"> Designate as a director?</label>
-              <input
-                type="checkbox"
-                id="isDirector"
-                name="isDirector"
-                checked={isDirector}
-                onChange={(e) => setIsDirector(e.target.checked)}
-              ></input>
-            </div>
-          )}
-          {activeIndi && activeIndi.isDirector && (
-            <div>
-              <label htmlFor="isNotDirector"> Remove as director?</label>
-              <input
-                type="checkbox"
-                id="isNotDirector"
-                name="isNotDirector"
-                checked={!isDirector}
-                onChange={cancelDirectorship}
-              ></input>
-            </div>
-          )}
-          {isDirector && (
-            <>
-              <div>
-                <label htmlFor="dateAppointed">Date appointed</label>
-                <input
-                  type="date"
-                  id="dateAppointed"
-                  name="dateAppointed"
-                  value={dateAppointed}
-                  onChange={(e) => setDateAppointed(e.target.value)}
-                ></input>
-              </div>
-              <div>
-                <label htmlFor="isCeased">No longer in office?</label>
-                <input
-                  type="checkbox"
-                  id="isCeased"
-                  name="isCeased"
-                  checked={isCeased}
-                  onChange={(e) => setIsCeased(e.target.checked)}
-                ></input>
-              </div>
-              {isCeased && (
-                <div>
-                  <label htmlFor="dateCeased">Date ceased</label>
-                  <input
-                    type="date"
-                    id="dateCeased"
-                    name="dateCeased"
-                    value={dateCeased}
-                    onChange={(e) => setDateCeased(e.target.value)}
-                  ></input>
-                </div>
+          <table>
+            <tbody>
+              {mode === "addIndi" && <IndiFields activeIndi={activeIndi} setActiveIndi={setActiveIndi} />}
+              {activeIndi && !activeIndi.isDirector && (
+                <tr>
+                  <td>
+                    <label htmlFor="isDirector"> Designate as a director?</label>
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      id="isDirector"
+                      name="isDirector"
+                      checked={isDirector}
+                      onChange={(e) => setIsDirector(e.target.checked)}
+                    ></input>
+                  </td>
+                </tr>
               )}
-            </>
-          )}
-          {activeIndi && !activeIndi.isShareholder && (
-            <div>
-              <label htmlFor="isShareholder"> Designate as a shareholder?</label>
-              <input
-                type="checkbox"
-                id="isShareholder"
-                name="isShareholder"
-                checked={isShareholder}
-                onChange={manageShareAllocation}
-              ></input>
-            </div>
-          )}
-          {activeIndi && activeIndi.isShareholder && (
-            <div>
-              <label htmlFor="isNotShareholder"> Remove as shareholder?</label>
-              <input
-                type="checkbox"
-                id="isNotShareholder"
-                name="isNotShareholder"
-                checked={!isShareholder}
-                onChange={manageShareAllocation}
-              ></input>
-            </div>
-          )}
-          {isShareholder &&
-            session.newClientPrelim.shareClasses.map((sC) => {
-              return (
-                <div key={sC.shareClassNumber}>
-                  <table>
-                    <tbody>
+              {activeIndi && activeIndi.isDirector && (
+                <tr>
+                  <td>
+                    <label htmlFor="isNotDirector"> Remove as director?</label>
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      id="isNotDirector"
+                      name="isNotDirector"
+                      checked={!isDirector}
+                      onChange={cancelDirectorship}
+                    ></input>
+                  </td>
+                </tr>
+              )}
+              {isDirector && (
+                <>
+                  <tr>
+                    <td>
+                      <label htmlFor="dateAppointed">Date appointed</label>
+                    </td>
+                    <td>
+                      <input
+                        type="date"
+                        id="dateAppointed"
+                        name="dateAppointed"
+                        value={dateAppointed}
+                        onChange={(e) => setDateAppointed(e.target.value)}
+                      ></input>
+                    </td>
+                  </tr>
+                  <tr>
+                    <td>
+                      <label htmlFor="isCeased">No longer in office?</label>
+                    </td>
+                    <td>
+                      <input
+                        type="checkbox"
+                        id="isCeased"
+                        name="isCeased"
+                        checked={isCeased}
+                        onChange={(e) => setIsCeased(e.target.checked)}
+                      ></input>
+                    </td>
+                  </tr>
+                  {isCeased && (
+                    <tr>
+                      <td>
+                        <label htmlFor="dateCeased">Date ceased</label>
+                      </td>
+                      <td>
+                        <input
+                          type="date"
+                          id="dateCeased"
+                          name="dateCeased"
+                          value={dateCeased}
+                          onChange={(e) => setDateCeased(e.target.value)}
+                        ></input>
+                      </td>
+                    </tr>
+                  )}
+                </>
+              )}
+              {activeIndi && !activeIndi.isShareholder && (
+                <tr>
+                  <td>
+                    <label htmlFor="isShareholder"> Designate as a shareholder?</label>
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      id="isShareholder"
+                      name="isShareholder"
+                      checked={isShareholder}
+                      onChange={manageShareAllocation}
+                    ></input>
+                  </td>
+                </tr>
+              )}
+              {activeIndi && activeIndi.isShareholder && (
+                <tr>
+                  <td>
+                    <label htmlFor="isNotShareholder"> Remove as shareholder?</label>
+                  </td>
+                  <td>
+                    <input
+                      type="checkbox"
+                      id="isNotShareholder"
+                      name="isNotShareholder"
+                      checked={!isShareholder}
+                      onChange={manageShareAllocation}
+                    ></input>
+                  </td>
+                </tr>
+              )}
+              {isShareholder &&
+                session.newClientPrelim.shareClasses.map((sC) => {
+                  return (
+                    <Fragment key={sC.shareClassNumber}>
                       <tr>
                         <td>Shares issued</td>
                         <td>{sC.numberIssued}</td>
@@ -390,11 +424,12 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
                           ></input>
                         </td>
                       </tr>
-                    </tbody>
-                  </table>
-                </div>
-              );
-            })}
+                    </Fragment>
+                  );
+                })}
+            </tbody>
+          </table>
+
           {activeIndi && (
             <div>
               <button type="submit">Submit</button>
@@ -429,10 +464,10 @@ const AddCorpClientIndisHome = ({ session, handleView }: addCorpClientIndisHomeP
           </tbody>
         </table>
       )}
-      <CerysButton buttonText={"Add new individual"} handleClick={() => handleView(ADD_CORP_CLIENT_INDI_NEW)} />
+      <CerysButton buttonText={"Add new individual"} handleClick={handleNewIndi} />
       <CerysButton buttonText={"Finish"} handleClick={() => handleView(ADD_CORP_CLIENT_OPTIONS)} />
     </>
   );
 };
 
-export default AddCorpClientIndisHome;
+export default AddCorpClientIndis;

@@ -1,5 +1,5 @@
 import { PreliminaryClientProps } from "../interfaces/interfaces";
-import { NewIndividual } from "./new-individual";
+import { NewIndiAssociation } from "./individuals";
 import { PreliminaryShareClass } from "./share-classes";
 
 export class PreliminaryClient {
@@ -16,10 +16,10 @@ export class PreliminaryClient {
   clientSoftware: string;
   _id?: string;
   shareClasses: PreliminaryShareClass[];
-  directors: NewIndividual[];
-  shareholders: NewIndividual[];
-  newIndividuals: NewIndividual[];
-  existingIndividuals: NewIndividual[];
+  directors: NewIndiAssociation[];
+  shareholders: NewIndiAssociation[];
+  newIndividuals: NewIndiAssociation[];
+  existingIndividuals: NewIndiAssociation[];
   amortBasisGwill: string;
   amortRateGwill: string;
   amortBasisPatsLics: string;
@@ -63,10 +63,10 @@ export class PreliminaryClient {
     this.clientSoftware = prelimClient.clientSoftware;
     this._id = prelimClient._id;
     this.shareClasses = prelimClient.shareClasses.map((i) => new PreliminaryShareClass(i));
-    this.directors = prelimClient.directors.map((i) => new NewIndividual(i));
-    this.shareholders = prelimClient.shareholders.map((i) => new NewIndividual(i));
-    this.newIndividuals = prelimClient.newIndividuals.map((i) => new NewIndividual(i));
-    this.existingIndividuals = prelimClient.existingIndividuals.map((i) => new NewIndividual(i));
+    this.directors = prelimClient.directors.map((i) => new NewIndiAssociation(i));
+    this.shareholders = prelimClient.shareholders.map((i) => new NewIndiAssociation(i));
+    this.newIndividuals = prelimClient.newIndividuals.map((i) => new NewIndiAssociation(i));
+    this.existingIndividuals = prelimClient.existingIndividuals.map((i) => new NewIndiAssociation(i));
     this.amortBasisGwill = prelimClient.amortBasisGwill;
     this.amortRateGwill = prelimClient.amortRateGwill;
     this.amortBasisPatsLics = prelimClient.amortBasisPatsLics;

@@ -1,5 +1,5 @@
 import { NewShareholdingProps, ShareClass } from "../interfaces/interfaces";
-import { NewIndividual } from "./new-individual";
+import { NewIndiAssociation } from "./individuals";
 
 export class IndividualShareAllocation {
   shareClassNumber: number;
@@ -37,19 +37,15 @@ export class PreliminaryShareClass {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
-  //issuedNotAllocated: number;
   allocations: { individualId: string; numberSubscribed: number }[];
-  //prelimAllocation: number;
   constructor(shareClass: ShareClass) {
     this.shareClassNumber = shareClass.shareClassNumber;
     this.shareClassName = shareClass.shareClassName;
     this.numberIssued = shareClass.numberIssued;
-    //this.issuedNotAllocated = shareClass.numberIssued;
     this.allocations = [];
-    //this.prelimAllocation = 0;
   }
 
-  getAvailabletoAllocate(individual: NewIndividual) {
+  getAvailabletoAllocate(individual: NewIndiAssociation) {
     let total = 0;
     const allocatedToIndi = individual
       ? individual.potentialShareAllocations.find((i) => i.shareClassNumber === this.shareClassNumber)
@@ -59,7 +55,7 @@ export class PreliminaryShareClass {
     return this.numberIssued - total + allocatedToIndi;
   }
 
-  getOtherAllocations(individual: NewIndividual) {
+  getOtherAllocations(individual: NewIndiAssociation) {
     let total = 0;
     this.allocations.forEach((i) => {
       if (i.individualId !== individual._id || !individual) total += i.numberSubscribed;

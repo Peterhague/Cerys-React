@@ -3,7 +3,7 @@ import { TransactionUpdate } from "../classes/transaction-update";
 import { Transaction } from "../classes/transaction";
 import React from "react";
 import { TrialBalanceLine } from "../classes/trial-balance-line";
-import { NewIndividual } from "../classes/new-individual";
+import { NewIndiAssociation } from "../classes/individuals";
 import { PreliminaryShareClass } from "../classes/share-classes";
 /*global Excel */
 
@@ -365,7 +365,7 @@ export interface CerysCodeClientMapping {
   previousClientMappings: ClientMapping[];
 }
 
-export interface BaseIndividual {
+export interface BaseIndividualProps {
   firstName: string;
   lastName: string;
   email: string;
@@ -373,6 +373,7 @@ export interface BaseIndividual {
   address: string;
   isClient?: boolean;
   clientCode?: string;
+  uTR?: string;
   _clientDirectorships?: Directorship[];
   _clientShareholdings?: Shareholding[];
   otherDirectorships?: string[];
@@ -380,8 +381,7 @@ export interface BaseIndividual {
   _id?: string;
 }
 
-export interface ExtendedIndividual extends BaseIndividual {
-  uTR: string;
+export interface ExtendedIndividual extends BaseIndividualProps {
   isDirector: boolean;
   dateAppointed?: string;
   dateCeased?: string;
@@ -436,10 +436,10 @@ export interface PreliminaryClientProps {
   clientSoftware: string;
   _id?: string;
   shareClasses: PreliminaryShareClass[];
-  directors: NewIndividual[];
-  shareholders: NewIndividual[];
-  newIndividuals: NewIndividual[];
-  existingIndividuals: NewIndividual[];
+  directors: NewIndiAssociation[];
+  shareholders: NewIndiAssociation[];
+  newIndividuals: NewIndiAssociation[];
+  existingIndividuals: NewIndiAssociation[];
   amortBasisGwill?: string;
   amortRateGwill?: string;
   amortBasisPatsLics?: string;

@@ -2,8 +2,8 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { ADD_CORP_CLIENT_INDIS_HOME, LANDING_PAGE } from "../../../static-values/views";
-import { NewIndividual } from "../../../classes/new-individual";
+import { ADD_CORP_CLIENT_INDIS, LANDING_PAGE } from "../../../static-values/views";
+import { NewIndiAssociation } from "../../../classes/individuals";
 interface addCorpClientIndiNewProps {
   handleView: (view: string) => void;
   session: Session;
@@ -47,13 +47,6 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
           interest: numberValue,
         };
         const updatedShareAllocations = [allocation];
-        // newShareAllocations.forEach((item) => {
-        //   if (item.key !== shareClassNumber) {
-        //     updatedShareAllocations.push(item);
-        //   }
-        // });
-        // newShareAllocations = updatedShareAllocations;
-        // setShareAllocations(newShareAllocations);
         setShareAllocations(updatedShareAllocations);
       } else {
         console.log("There aren't enough shares available for this allocation");
@@ -88,8 +81,8 @@ const AddCorpClientIndiNew = ({ handleView, session }: addCorpClientIndiNewProps
     };
     console.log(newIndi);
     processNewIndi(newIndi);
-    session.newClientPrelim.newIndividuals.push(new NewIndividual(newIndi));
-    handleView(ADD_CORP_CLIENT_INDIS_HOME);
+    session.newClientPrelim.newIndividuals.push(new NewIndiAssociation(newIndi));
+    handleView(ADD_CORP_CLIENT_INDIS);
   };
 
   const processNewIndi = async (newIndi) => {

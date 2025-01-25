@@ -2,12 +2,12 @@ import * as React from "react";
 import { useState } from "react";
 import { Session } from "../../classes/session";
 import { ExtendedIndividual } from "../../interfaces/interfaces";
-import { NewIndividual } from "../../classes/new-individual";
+import { NewIndiAssociation } from "../../classes/individuals";
 
 interface IndividualInputProps {
   session: Session;
   selection: ExtendedIndividual[];
-  activeIndi: NewIndividual;
+  activeIndi: NewIndiAssociation;
   setActiveIndividual: (indi: ExtendedIndividual) => void;
   suggestedIndi: ExtendedIndividual;
   setSuggestedIndi: (indi: ExtendedIndividual) => void;
