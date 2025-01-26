@@ -1,18 +1,21 @@
+import { AssetRegister } from "../../classes/asset-register";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
+/* global Excel */
 
-export function populateAssetRegWs(activeCats, transToPost, ws, regType) {
-  const { activeSubCats, subCatNames } = populateActiveSubCats(transToPost);
+export function populateAssetRegWs(
+  activeCats: {
+    assetCategory: string;
+    assetCategoryNo: number;
+  }[],
+  register: AssetRegister,
+  ws: Excel.Worksheet,
+  regType: string
+) {
+  const { activeSubCats, subCatNames } = populateActiveSubCats(register);
   const { regColIndex, registerColNames } = buildRegColNames(activeSubCats, regType);
   const { numberCols, numberColsAsLetter } = populateRegisterColsIndex(regColIndex, registerColNames.namesOne);
-  transToPost.forEach((trans) => {
-    activeSubCats.forEach((subCat) => {
-      if (trans.assetSubCatCode === subCat.assetSubCatCode) {
-        trans.regCol = subCat.regCol;
-      }
-    });
-  });
-  transToPost.forEach((trans) => {
+  register.assets.forEach((trans) => {
     trans.subTransactions.forEach((sub) => {
       activeSubCats.forEach((subCat) => {
         if (sub.assetSubCatCode === subCat.assetSubCatCode) {
@@ -25,7 +28,7 @@ export function populateAssetRegWs(activeCats, transToPost, ws, regType) {
     activeCats,
     numberCols,
     registerColNames,
-    transToPost,
+    register,
     regColIndex,
     subCatNames
   );
@@ -142,7 +145,14 @@ const populateRegisterColsIndex = (regColIndex, registerColNamesOne) => {
   return { numberCols, numberColsAsLetter };
 };
 
-const buildRegPerCategory = (activeCats, numberCols, registerColNames, transToPost, regColIndex, subCatNames) => {
+const buildRegPerCategory = (
+  activeCats,
+  numberCols,
+  registerColNames,
+  register: AssetRegister,
+  regColIndex,
+  subCatNames
+) => {
   const formatTotal = [];
   const subTotalRows = [];
   let rowNumber = 10;
@@ -174,7 +184,7 @@ const buildRegPerCategory = (activeCats, numberCols, registerColNames, transToPo
     regBodyVals.push(blankLine);
     rowNumber++;
     const totalStartRowNumber = rowNumber;
-    transToPost.forEach((tran) => {
+    register.assets.forEach((tran) => {
       if (tran.assetCategory === cat.assetCategory) {
         const assetLine = [];
         assetLine.push(tran.transactionDateExcel);

@@ -1,11 +1,11 @@
+import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
-import { DetailedTransaction } from "../../interfaces/interfaces";
+import { AssetRegisterDb, DetailedTransaction } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
-import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
@@ -24,8 +24,9 @@ export async function postIFAtoDB(session: Session, relevantTrans: DetailedTrans
   const options = fetchOptionsIFA(session, relevantTrans);
   const endpoint = session.assignment.IFARegisterCreated ? updateIFARegister : createIFARegister;
   const iFARDb = await fetch(endpoint, options);
-  const iFAR = await iFARDb.json();
-  session.IFARegister = createCurrentPeriodRegister(iFAR, session);
+  const iFAR: AssetRegisterDb = await iFARDb.json();
+  //session.IFARegister = createCurrentPeriodRegister(iFAR, session);
+  session.IFARegister = new AssetRegister(session, iFAR, "Intangible");
   if (!session.assignment.IFARegisterCreated) {
     const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "IFARegisterCreated");
     const assignmentDb = await fetch(updateAssignmentUrl, options);
@@ -38,7 +39,7 @@ export async function createIFARWs(context: Excel.RequestContext, session: Sessi
   const transToPost = session.IFARegister;
   const activeCatsNames = [];
   const IFAActiveCats = [];
-  transToPost.forEach((i) => {
+  session.IFARegister.assets.forEach((i) => {
     if (!activeCatsNames.includes(i.assetCategory)) {
       activeCatsNames.push(i.assetCategory);
       IFAActiveCats.push({

@@ -204,6 +204,7 @@ export interface AssetSubTransaction {
   regColNameOne: string;
   regColNameTwo: string;
   value: number;
+  regCol?: number;
 }
 
 export interface TransactionUpdateProps {
@@ -513,4 +514,35 @@ export interface MapTrackingProps {
 export interface MappingObjectProps {
   columns: MapTrackingProps[];
   rows: MapTrackingProps[];
+}
+
+export interface AssetRegisterDb {
+  customerId: string;
+  clientId: string;
+  assets: AssetDb[];
+}
+
+export interface AssetDb {
+  transactionDate: string;
+  transactionDateUser: string;
+  transactionDateClt: number;
+  transactionDateExcel: number;
+  narrative: string;
+  assetNarrative: string;
+  assetCategory: string;
+  assetCategoryNo: number;
+  cerysCategory: string;
+  value: number;
+  amortBasis?: string;
+  amortRate?: string;
+  depnBasis?: string;
+  depnRate?: string;
+  disposedOf: boolean;
+  activePeriods: string;
+  periods: {
+    reportingPeriodNumber: number;
+    reportingPeriodId: string;
+    subTransactions: AssetSubTransaction[];
+  }[];
+  _id: string;
 }

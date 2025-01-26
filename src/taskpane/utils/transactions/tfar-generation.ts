@@ -1,11 +1,11 @@
+import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
-import { DetailedTransaction } from "../../interfaces/interfaces";
+import { AssetRegisterDb, DetailedTransaction } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
-import { createCurrentPeriodRegister } from "./asset-reg-generation";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
@@ -24,8 +24,8 @@ export async function postTFAtoDB(session: Session, relevantTrans: DetailedTrans
   const options = fetchOptionsTFA(session, relevantTrans);
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
   const tFARDb = await fetch(endpoint, options);
-  const tFAR = await tFARDb.json();
-  session.TFARegister = createCurrentPeriodRegister(tFAR, session);
+  const tFAR: AssetRegisterDb = await tFARDb.json();
+  session.TFARegister = new AssetRegister(session, tFAR, "Tangible");
   if (!session.assignment.TFARegisterCreated) {
     const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "TFARegisterCreated");
     const assignmentDb = await fetch(updateAssignmentUrl, options);
@@ -35,11 +35,11 @@ export async function postTFAtoDB(session: Session, relevantTrans: DetailedTrans
   return assignment;
 }
 
-export async function createTFARWs(context, session: Session) {
-  const transToPost = session.TFARegister;
+export async function createTFARWs(context: Excel.RequestContext, session: Session) {
+  const register = session.TFARegister;
   const activeCatsNames = [];
   const TFAActiveCats = [];
-  transToPost.forEach((i) => {
+  register.assets.forEach((i) => {
     if (!activeCatsNames.includes(i.assetCategory)) {
       activeCatsNames.push(i.assetCategory);
       TFAActiveCats.push({
@@ -55,7 +55,7 @@ export async function createTFARWs(context, session: Session) {
   const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
   const wsHeaders = worksheetHeader(session, "Tangible fixed assets register");
   applyWorkhseetHeader(ws, wsHeaders);
-  populateAssetRegWs(TFAActiveCats, transToPost, ws, "TFA");
+  populateAssetRegWs(TFAActiveCats, register, ws, "TFA");
   ws.activate();
   deleteManyWorksheets(context, ["TFA Transactions"]);
 }

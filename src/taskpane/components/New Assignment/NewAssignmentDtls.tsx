@@ -5,7 +5,6 @@ import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
 import { addPrimarySheets, postOpBalJnls } from "../../assignment/assignmentInit";
 import { calculateDiffInDays } from "../../utils/helperFunctions";
-import { createCurrentPeriodRegister } from "../../utils/transactions/asset-reg-generation";
 import { bFPrevPeriodMessage } from "../../utils/messages";
 import { Session } from "../../classes/session";
 import { Assignment, PreliminaryAssignment } from "../../classes/assignment";
@@ -15,6 +14,7 @@ import { Client } from "../../classes/client";
 import { ClientCodeObject } from "../../classes/client-codes";
 import { ClientCerysCodeObjectProps, ClientCodeObjectProps } from "../../interfaces/interfaces";
 import { ClientCerysCodeObject } from "../../classes/cerys-codes";
+import { AssetRegister } from "../../classes/asset-register";
 
 interface newAssignmentDtlsProps {
   handleView: (view: string) => void;
@@ -128,10 +128,8 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     session.customer = new Customer(customer);
     session.assignment = new Assignment(assignment);
     session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
-    session.IFARegister = IFARegister;
-    session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
-    session.TFARegister = TFARegister;
-    session.TFARegister = TFARegister ? createCurrentPeriodRegister(TFARegister, session) : [];
+    session.IFARegister = IFARegister && new AssetRegister(session, IFARegister, "Intangible");
+    session.TFARegister = TFARegister && new AssetRegister(session, TFARegister, "Tangible");
     addPrimarySheets(session);
     if (session.assignment.reportingPeriod.bFTB.length > 0) {
       const options = {

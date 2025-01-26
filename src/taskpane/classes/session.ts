@@ -1,4 +1,5 @@
 import { BaseIndividualProps } from "../interfaces/interfaces";
+import { AssetRegister } from "./asset-register";
 import { Assignment } from "./assignment";
 import { ClientCerysCodeObject } from "./cerys-codes";
 import { Client } from "./client";
@@ -37,9 +38,9 @@ export class Session {
   };
   editableSheets: EditableWorksheet[] = [];
   controlledSheets: ControlledWorksheet[] = [];
-  IFARegister: { assetCategory: string; assetCategoryNo: number }[];
-  IPRegister: { assetCategory: string; assetCategoryNo: number }[];
-  TFARegister: { assetCategory: string; assetCategoryNo: number }[];
+  IFARegister: AssetRegister;
+  IPRegister: AssetRegister;
+  TFARegister: AssetRegister;
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: { handleYes: () => void; handleNo: () => void }) => void;
   setEditButton: (editButtonStatus: string) => void;
