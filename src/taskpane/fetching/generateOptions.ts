@@ -1,9 +1,10 @@
 // takes a variable and returns it embedded in a valid fetch options
 
 import { Assignment } from "../classes/assignment";
+import { PreliminaryClient } from "../classes/client";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
-import { ClientCerysCodeObject, ClientTBLineProps, DetailedTransaction } from "../interfaces/interfaces";
+import { ClientCerysCodeObject, ClientTBLineProps, Customer, DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
@@ -131,7 +132,7 @@ export function fetchOptionsAddUser(newUser) {
   };
 }
 
-export function fetchOptionsAddClient(client, customer) {
+export function fetchOptionsAddClient(client: PreliminaryClient, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -139,7 +140,7 @@ export function fetchOptionsAddClient(client, customer) {
     },
     body: JSON.stringify({
       client,
-      customerId: customer,
+      customerId,
     }),
   };
 }

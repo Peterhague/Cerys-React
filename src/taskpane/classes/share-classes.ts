@@ -37,11 +37,13 @@ export class PreliminaryShareClass {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
+  valuePerShare: number;
   allocations: { individualId: string; numberSubscribed: number }[];
   constructor(shareClass: ShareClass) {
     this.shareClassNumber = shareClass.shareClassNumber;
     this.shareClassName = shareClass.shareClassName;
     this.numberIssued = shareClass.numberIssued;
+    this.valuePerShare = shareClass.valuePerShare;
     this.allocations = [];
   }
 

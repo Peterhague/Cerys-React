@@ -16,8 +16,6 @@ import AddCorpClientDtls from "./Add Client/Add Corporate Client/AddCorpClientDt
 import AddIndiClientDtls from "./Add Client/Add Individual Client/AddIndiClientDtls";
 import AddCorpClientShares from "./Add Client/Add Corporate Client/AddCorpClientShares";
 import AddCorpClientOptions from "./Add Client/Add Corporate Client/AddCorpClientOptions";
-import AddCorpClientIndisHome from "./Add Client/Add Corporate Client/AddCorpClientIndisHome";
-import AddCorpClientIndiNew from "./Add Client/Add Corporate Client/AddCorpClientIndiNew";
 import AddCorpClientDirsHome from "./Add Client/Add Corporate Client/AddCorpClientDirsHome";
 import AddCorpClientDirNew from "./Add Client/Add Corporate Client/AddCorpClientDirNew";
 import AddCorpClientSHHome from "./Add Client/Add Corporate Client/AddCorpClientSHHome";
@@ -57,9 +55,7 @@ import {
   ADD_CORP_CLIENT_DETAILS,
   ADD_CORP_CLIENT_DIR_NEW,
   ADD_CORP_CLIENT_DIRS_HOME,
-  ADD_CORP_CLIENT_INDI_NEW,
   ADD_CORP_CLIENT_INDIS,
-  ADD_CORP_CLIENT_INDIS_HOME,
   ADD_CORP_CLIENT_OPTIONS,
   ADD_CORP_CLIENT_SHAREHOLDERS_HOME,
   ADD_CORP_CLIENT_SHARES,
@@ -209,14 +205,8 @@ const AppBody = ({ session }: AppBodyProps) => {
       case ADD_CORP_CLIENT_OPTIONS:
         body = <AddCorpClientOptions handleView={handleView} session={session} />;
         break;
-      case ADD_CORP_CLIENT_INDIS_HOME:
-        body = <AddCorpClientIndisHome handleView={handleView} session={session} />;
-        break;
       case ADD_CORP_CLIENT_INDIS:
         body = <AddCorpClientIndis handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_INDI_NEW:
-        body = <AddCorpClientIndiNew handleView={handleView} session={session} />;
         break;
       case ADD_CORP_CLIENT_DIRS_HOME:
         body = <AddCorpClientDirsHome handleView={handleView} session={session} />;

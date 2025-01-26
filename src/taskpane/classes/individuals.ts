@@ -61,6 +61,7 @@ export class NewIndiAssociation {
   isShareholder: boolean;
   potentialShareAllocations: IndividualShareAllocation[];
   associationType: "existingIndividuals" | "newIndividuals";
+  preliminaryId?: string;
   _id?: string;
   constructor(individual: ExtendedIndividual) {
     console.log(individual);
@@ -81,6 +82,7 @@ export class NewIndiAssociation {
     this.uTR = individual ? individual.uTR : "";
     this.potentialShareAllocations = [];
     this.associationType = individual ? "existingIndividuals" : "newIndividuals";
+    this.preliminaryId = "";
     this._id = individual && individual._id ? individual._id : Math.floor(Math.random() * 10000000).toString();
   }
 }

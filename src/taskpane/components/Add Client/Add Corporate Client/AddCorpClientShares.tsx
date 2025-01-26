@@ -13,14 +13,14 @@ interface addCorpClientSharesProps {
 const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) => {
   const [shareClassName, setShareClassName] = useState("");
   const [numberIssued, setNumberIssued] = useState(0);
-  const [nomValue, setNomValue] = useState(0);
+  const [valuePerShare, setValuePerShare] = useState(0);
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     const newClientShares = {
       shareClassName,
       numberIssued,
-      nomValue,
+      valuePerShare,
       shareClassNumber: session.newClientPrelim.shareClasses.length + 1,
       issuedNotAllocated: numberIssued,
       prelimAllocation: 0,
@@ -64,8 +64,10 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
             id="nomValue"
             className="form-control"
             placeholder="Value per share"
-            value={nomValue !== 0 && nomValue}
-            onChange={(e) => (parseInt(e.target.value) ? setNomValue(parseInt(e.target.value)) : setNomValue(0))}
+            value={valuePerShare !== 0 && valuePerShare}
+            onChange={(e) =>
+              parseInt(e.target.value) ? setValuePerShare(parseInt(e.target.value)) : setValuePerShare(0)
+            }
           ></input>
         </div>
 

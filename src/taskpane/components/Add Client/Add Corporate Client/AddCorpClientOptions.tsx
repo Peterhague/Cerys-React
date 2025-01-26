@@ -21,6 +21,11 @@ interface addCorpClientOptionsProps {
 const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps) => {
   const handleSubmission = async () => {
     const client = session.newClientPrelim;
+    client.newIndividuals.forEach((i) => {
+      i.preliminaryId = i._id;
+      delete i._id;
+    });
+    console.log(client.newIndividuals);
     const customerId = session.customer._id;
     const options = fetchOptionsAddClient(client, customerId);
     const newCustAndClientDb = await fetch(addClientGlobalUrl, options);

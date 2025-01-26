@@ -476,6 +476,7 @@ export interface ShareClass {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
+  valuePerShare: number;
 }
 
 export interface AddressObject {
