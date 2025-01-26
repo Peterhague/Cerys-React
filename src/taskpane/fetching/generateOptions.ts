@@ -4,7 +4,7 @@ import { Assignment } from "../classes/assignment";
 import { PreliminaryClient } from "../classes/client";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
-import { ClientCerysCodeObject, ClientTBLineProps, Customer, DetailedTransaction } from "../interfaces/interfaces";
+import { ClientCerysCodeObject, ClientTBLineProps, DetailedTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helperFunctions";
 
 // object as the req.body.code value. Designed for looking up Cerys nominal codes.
