@@ -1,7 +1,9 @@
 import { Assignment } from "../../classes/assignment";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelDeletionObject } from "../../classes/excel-range-editing";
+import { Journal } from "../../classes/journal";
 import { Session } from "../../classes/session";
+import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
@@ -17,10 +19,10 @@ import { renewEdSheetsTransRefs } from "../worksheet-editing/ed-sheet-change-han
 
 export const processTransBatch = async (context: Excel.RequestContext, session: Session) => {
   const activeJournal = session.activeJournal;
-  const transactions = activeJournal.journals.map((jnl) => {
+  const journals: Journal[] = activeJournal.journals.map((jnl) => {
     return { ...jnl, ...jnl.cerysCodeObj };
   });
-  transactions.forEach((jnl) => {
+  journals.forEach((jnl) => {
     const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
     if (jnl.narrative === "") jnl.narrative = "No narrative";
     if (jnl.transactionDate === "") {
@@ -40,7 +42,7 @@ export const processTransBatch = async (context: Excel.RequestContext, session: 
     jnl.journal = activeJournal.journal;
   });
   const transDtls = { customerId: session.customer._id, assignmentId: session.assignment._id };
-  const { assignment } = await postTransactionsDb(session, transactions, transDtls);
+  const { assignment } = await postTransactionsDb(session, journals, transDtls);
   session.assignment = new Assignment(assignment);
   session.activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   await updateAssignmentFigures(context, session);
@@ -128,14 +130,18 @@ export const checkFATranUpdatesForAssets = (session: Session) => {
   });
 };
 
-const postTransactionsDb = async (session: Session, transactions, transDtls) => {
+const postTransactionsDb = async (
+  session: Session,
+  transactions: Journal[],
+  transDtls: { customerId: string; assignmentId: string }
+) => {
   const options = fetchOptionsTransBatch(session, transactions, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
   return objs;
 };
 
-export const checkTransForRecoding = (updatedTrans) => {
+export const checkTransForRecoding = (updatedTrans: Transaction[]) => {
   let isTBUpdated = false;
   updatedTrans.forEach((tran) => {
     tran.updates.forEach((update) => {

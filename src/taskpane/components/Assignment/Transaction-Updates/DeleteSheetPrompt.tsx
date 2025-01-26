@@ -8,17 +8,12 @@ import { Session } from "../../../classes/session";
 /* global Excel */
 
 interface deleteSheetPromptProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
 const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
-  const sheetsToDelete = [];
-  session.editableSheets.forEach((sheet) => {
-    if (sheet.promptDeletion) {
-      sheetsToDelete.push(sheet.name);
-    }
-  });
+  const sheetsToDelete = session.editableSheets.filter((i) => i.promptDeletion).map((i) => i.name);
   const [emptySheets, setEmptySheets] = useState(sheetsToDelete);
 
   clearNextViewButOne(session);
@@ -35,13 +30,13 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
     }
   };
 
-  const deleteSingleWorksheet = async (sheet) => {
+  const deleteSingleWorksheet = async (sheetName: string) => {
     try {
       await Excel.run(async (context) => {
-        await deleteManyWorksheets(context, [sheet]);
+        await deleteManyWorksheets(context, [sheetName]);
         const newArr = [];
         session.editableSheets.forEach((ws) => {
-          if (ws.name !== sheet) newArr.push(ws);
+          if (ws.name !== sheetName) newArr.push(ws);
         });
         setEmptySheets(newArr);
       });

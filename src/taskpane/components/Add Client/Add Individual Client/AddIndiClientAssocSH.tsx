@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 interface addIndiClientAssocSHProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -13,12 +13,12 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
   const [shareClasses, setShareClasses] = useState(null);
   const [showShareClasses, setShowShareClasses] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
   };
 
-  const handleClientSelection = (e) => {
+  const handleClientSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const activeClient = e.target.value;
     let sClasses;
     session.customer.clients.forEach((clt) => {
@@ -27,6 +27,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
         setClientId(clt);
       }
     });
+    const shareClasses = session.customer.clients.find((i) => i._id === activeClient).shareClasses;
     setShareClasses(sClasses);
     setShowShareClasses(true);
     return activeClient;

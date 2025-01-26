@@ -1,4 +1,4 @@
-import { NewShareholdingProps, ShareClass } from "../interfaces/interfaces";
+import { NewShareholdingProps, ShareClassProps } from "../interfaces/interfaces";
 import { NewIndiAssociation } from "./individuals";
 
 export class IndividualShareAllocation {
@@ -7,7 +7,7 @@ export class IndividualShareAllocation {
   indiAllocationLive: number;
   indiAllocationSubmitted: number;
   indiAllocationSuspended: number;
-  constructor(shareClass: ShareClass) {
+  constructor(shareClass: ShareClassProps) {
     this.shareClassNumber = shareClass.shareClassNumber;
     this.shareClassName = shareClass.shareClassName;
     this.indiAllocationLive = 0;
@@ -33,18 +33,18 @@ export class NewShareholding {
   }
 }
 
-export class PreliminaryShareClass {
+export class ShareClass {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
   valuePerShare: number;
   allocations: { individualId: string; numberSubscribed: number }[];
-  constructor(shareClass: ShareClass) {
+  constructor(shareClass: ShareClassProps) {
     this.shareClassNumber = shareClass.shareClassNumber;
     this.shareClassName = shareClass.shareClassName;
     this.numberIssued = shareClass.numberIssued;
     this.valuePerShare = shareClass.valuePerShare;
-    this.allocations = [];
+    this.allocations = shareClass.allocations ? shareClass.allocations : [];
   }
 
   getAvailabletoAllocate(individual: NewIndiAssociation) {

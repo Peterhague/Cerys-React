@@ -4,7 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_DIRS_HOME, LANDING_PAGE } from "../../../static-values/views";
 interface addCorpClientSHNewProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -17,7 +17,7 @@ const AddCorpClientSHNew = ({ handleView, session }: addCorpClientSHNewProps) =>
   const [uTR, setUTR] = useState("");
   const [isDirector, setIsDirector] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newClientShareholder = { firstName, lastName, email, phone, address, uTR, isDirector };
     session.newCorpClientShareholders.push(newClientShareholder);

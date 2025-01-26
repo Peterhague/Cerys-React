@@ -1,10 +1,11 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
 import { ASSIGNMENT_DASH_HOME, NEW_ASSIGNMENT_DETAILS } from "../static-values/views";
+import { Session } from "../classes/session";
 
 interface userAssignmentsHomeProps {
-  handleView: (view) => void;
-  session: {};
+  handleView: (view: string) => void;
+  session: Session;
 }
 
 const UserAssignmentsHome = (props: userAssignmentsHomeProps) => {

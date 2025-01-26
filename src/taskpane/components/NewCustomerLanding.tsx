@@ -4,7 +4,7 @@ import { Session } from "../classes/session";
 import { ADD_USER, CUSTOMER_DASH_HOME, USER_DASH_HOME } from "../static-values/views";
 
 interface newCustomerLandingProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

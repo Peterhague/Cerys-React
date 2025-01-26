@@ -8,7 +8,7 @@ import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME } from "../../../static-values/views";
 
 interface OpeningBalanceAdjustmentsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

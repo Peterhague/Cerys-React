@@ -6,7 +6,7 @@ import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
-import { TrialBalanceLine } from "../../classes/trial-balance-line";
+import { TrialBalanceLine } from "../../classes/client-codes";
 import { AddressObject, ClientTransaction } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";

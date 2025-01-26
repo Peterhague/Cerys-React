@@ -5,7 +5,7 @@ import { Session } from "../classes/session";
 import { CUSTOMER_SIGN_UP_PLAN, LANDING_PAGE } from "../static-values/views";
 
 interface customerSignUpDtlsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -14,7 +14,7 @@ const CustomerSignUpDtls = ({ handleView, session }: customerSignUpDtlsProps) =>
   const [orgAddress, setOrgAddress] = useState("");
   const [orgPhone, setOrgPhone] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newCustDtlsTwo = { orgName, orgAddress, orgPhone };
     session.newCustDtlsTwo = newCustDtlsTwo;

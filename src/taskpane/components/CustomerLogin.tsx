@@ -5,11 +5,13 @@ import { getCustomerUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
 import { Session } from "../classes/session";
 import { CUSTOMER_DASH_HOME, LANDING_PAGE } from "../static-values/views";
+import { Customer } from "../classes/customer";
+import { ViewOptions } from "../interfaces/interfaces";
 
 interface customerLoginProps {
-  handleView: (view) => void;
-  handleDynamicView: (view, options) => void;
-  setEditButton: (state) => void;
+  handleView: (view: string) => void;
+  handleDynamicView: (view: string, options: ViewOptions) => void;
+  setEditButton: (state: string) => void;
   session: Session;
 }
 
@@ -17,13 +19,13 @@ const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const customerDtls = { email, password };
     const options = fetchOptionsGetCustomer(customerDtls);
     const customerDb = await fetch(getCustomerUrl, options);
     const customer = await customerDb.json();
-    session.customer = customer;
+    session.customer = new Customer(customer);
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
     session.setEditButton = setEditButton;

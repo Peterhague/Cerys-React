@@ -2,12 +2,13 @@ import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
 import { Transaction } from "../classes/transaction";
 import React from "react";
-import { TrialBalanceLine } from "../classes/trial-balance-line";
-import { NewIndiAssociation } from "../classes/individuals";
-import { PreliminaryShareClass } from "../classes/share-classes";
+import { TrialBalanceLine } from "../classes/client-codes";
+import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
+import { ShareClass } from "../classes/share-classes";
+import { Client } from "../classes/client";
 /*global Excel */
 
-export interface BaseCerysCodeObject {
+export interface BaseCerysCodeObjectProps {
   cerysCode: number;
   cerysName: string;
   cerysShortName: string;
@@ -29,18 +30,18 @@ export interface BaseCerysCodeObject {
   _id: string;
 }
 
-export interface CerysCodeObject extends BaseCerysCodeObject {
+export interface CerysCodeObjectProps extends BaseCerysCodeObjectProps {
   sageLine50Code: number;
   sageOneCode: number;
   xeroCode: number;
 }
 
-export interface ClientCerysCodeObject extends BaseCerysCodeObject {
+export interface ClientCerysCodeObjectProps extends BaseCerysCodeObjectProps {
   currentClientMapping: ClientMapping;
   previousClientMappings: ClientMapping[];
 }
 
-export interface ClientCodeObject {
+export interface ClientCodeObjectProps {
   cerysCode: number;
   clientCode: number;
   clientCodeName: string;
@@ -89,6 +90,20 @@ export interface AssignmentProps {
   tbListenerAdded: boolean;
   pLListenerAdded: boolean;
   bSListenerAdded?: boolean;
+}
+
+export interface PreliminaryAssignmentProps {
+  clientId: string;
+  clientCode: string;
+  clientName: string;
+  assignmentType: string;
+  senior: ShortUser;
+  manager: ShortUser;
+  responsibleIndividual: ShortUser;
+  clientSoftware: string;
+  transactionsPosted: boolean;
+  reportingDate: string;
+  periodStart: string;
 }
 
 export interface ReportingPeriod {
@@ -198,10 +213,10 @@ export interface TransactionUpdateProps {
   value: string | number;
   mongoDate: string | null;
   reversion: string | number;
-  cerysCodeObject: BaseCerysCodeObject | null;
+  cerysCodeObject: BaseCerysCodeObjectProps | null;
 }
 
-export interface DetailedTransaction extends BaseCerysCodeObject, AssetTransactionProps, TransactionProps {}
+export interface DetailedTransaction extends BaseCerysCodeObjectProps, AssetTransactionProps, TransactionProps {}
 
 export interface FATransaction extends Transaction {
   depnRate: string;
@@ -209,7 +224,7 @@ export interface FATransaction extends Transaction {
 }
 
 export interface JournalProps {
-  cerysCodeObj: BaseCerysCodeObject;
+  cerysCodeObj: BaseCerysCodeObjectProps;
   transactionId?: string;
   value: number;
   narrative: string;
@@ -254,7 +269,7 @@ export interface ClientMapping {
   clientCodeName: string;
 }
 
-export interface Customer {
+export interface CustomerProps {
   name: string;
   address: string;
   phone: string;
@@ -268,94 +283,6 @@ export interface Customer {
   clients: Client[];
   nonCorpClients: ExtendedIndividual[];
   individuals: ExtendedIndividual[];
-  _id: string;
-}
-
-export interface Client {
-  clientCode: string;
-  clientName: string;
-  accRefDate: string;
-  incorpDate: string;
-  currentReportingPeriod: ReportingPeriod;
-  previousReportingPeriods: ReportingPeriod[];
-  companyNumber: string;
-  _senior: string;
-  _manager: string;
-  _responsibleIndividual: string;
-  clientSoftware: string;
-  amortBasisGwill: string;
-  amortBasisDevCosts: string;
-  amortBasisCompSware: string;
-  amortBasisPatsLics: string;
-  amortRateGwill: string;
-  amortRateDevCosts: string;
-  amortRateCompSware: string;
-  amortRatePatsLics: string;
-  depnBasisCompEquip: string;
-  depnBasisFholdProp: string;
-  depnBasisFixFittings: string;
-  depnBasisLongLhold: string;
-  depnBasisImprovements: string;
-  depnBasisMotorVehicles: string;
-  depnBasisOfficeEquip: string;
-  depnBasisPlantMachinery: string;
-  depnBasisShortLhold: string;
-  depnRateCompEquip: string;
-  depnRateFholdProp: string;
-  depnRateFixFittings: string;
-  depnRateLongLhold: string;
-  depnRateImprovements: string;
-  depnRateMotorVehicles: string;
-  depnRateOfficeEquip: string;
-  depnRatePlantMachinery: string;
-  depnRateShortLhold: string;
-  depnBasisIPOwned: string;
-  depnRateIPOwned: string;
-  depnBasisIPLeased: string;
-  depnRateIPLeased: string;
-  shareClasses: {
-    shareClassName: string;
-    numberIssued: number;
-    nomValue: number;
-    reference: string;
-    shareClassNumber: number;
-    issuedNotAllocated: number;
-  }[];
-  directors: {
-    firstName: string;
-    lastName: string;
-    email: string;
-    isClient: boolean;
-    dateAppointed: string;
-    dateCeased: string;
-    personId: string;
-  }[];
-  shareholders: [
-    {
-      firstName: string;
-      lastName: string;
-      personId: string;
-      email: string;
-      shareholdings: {
-        numberSubscribed: number;
-        shareClassId: string;
-        shareClassName: string;
-        shareClassNumber: number;
-      }[];
-    },
-  ];
-  IFARegisterCreated: {
-    type: boolean;
-  };
-  TFARegisterCreated: {
-    type: boolean;
-  };
-  clientChart: {
-    clientCode: number;
-    clientCodeName: string;
-    cerysCode: number;
-  }[];
-  cerysChart: CerysCodeClientMapping[];
   _id: string;
 }
 
@@ -404,25 +331,17 @@ export interface NewShareholdingProps {
   interest: number;
 }
 
-export interface Directorship {
-  clientId: string;
-  clientName: string;
-  clientCode: string;
-  dateAppointed: string;
-  dateCeased: string;
-}
+// export interface Shareholding {
+//   clientId: string;
+//   clientCode: string;
+//   clientName: string;
+//   shareClassId: string;
+//   shareClassName: string;
+//   shareClassNumber: number;
+//   interest: number;
+// }
 
-export interface Shareholding {
-  clientId: string;
-  clientCode: string;
-  clientName: string;
-  shareClassId: string;
-  shareClassName: string;
-  shareClassNumber: number;
-  interest: number;
-}
-
-export interface PreliminaryClientProps {
+export interface ClientProps {
   clientCode: string;
   clientName: string;
   companyNumber: string;
@@ -435,7 +354,7 @@ export interface PreliminaryClientProps {
   _responsibleIndividual: string;
   clientSoftware: string;
   _id?: string;
-  shareClasses: PreliminaryShareClass[];
+  shareClasses: ShareClass[];
   directors: NewIndiAssociation[];
   shareholders: NewIndiAssociation[];
   newIndividuals: NewIndiAssociation[];
@@ -472,11 +391,12 @@ export interface PreliminaryClientProps {
   depnRateIPLeased?: string;
 }
 
-export interface ShareClass {
+export interface ShareClassProps {
   shareClassNumber: number;
   shareClassName: string;
   numberIssued: number;
   valuePerShare: number;
+  allocations?: { individualId: string; numberSubscribed: number }[];
 }
 
 export interface AddressObject {

@@ -3,7 +3,7 @@ import CerysButton from "../CerysButton";
 import { ADD_CORP_CLIENT_DETAILS, ADD_INDI_CLIENT_DETAILS } from "../../static-values/views";
 
 interface addClientHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: {};
 }
 

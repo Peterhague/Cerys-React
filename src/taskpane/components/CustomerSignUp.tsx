@@ -5,7 +5,7 @@ import { Session } from "../classes/session";
 import { CUSTOMER_SIGN_UP_DETAILS, LANDING_PAGE } from "../static-values/views";
 
 interface customerSignUpProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -14,7 +14,7 @@ const CustomerSignUp = ({ handleView, session }: customerSignUpProps) => {
   const [password, setPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newCustDtlsOne = { email, password, confirmPassword };
     session.newCustDtlsOne = newCustDtlsOne;

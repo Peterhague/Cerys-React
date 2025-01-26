@@ -106,7 +106,7 @@ const AppBody = ({ session }: AppBodyProps) => {
 
   console.log(session);
 
-  const handleView = (view) => {
+  const handleView = (view: string) => {
     session.currentView = view;
     setView(view);
   };

@@ -3,12 +3,12 @@ import CerysButton from "./CerysButton";
 import { Session } from "../classes/session";
 
 interface LandingPageProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
 const LandingPage = ({ handleView }: LandingPageProps) => {
-  const handleClick = async (path) => {
+  const handleClick = async (path: string) => {
     handleView(path);
   };
 

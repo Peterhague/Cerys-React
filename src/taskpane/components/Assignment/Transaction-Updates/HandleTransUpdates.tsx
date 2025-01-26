@@ -8,7 +8,7 @@ import { ASSIGNMENT_DASH_HOME, REVIEW_TRANS_UPDATES } from "../../../static-valu
 /* global Excel */
 
 interface handleTransUpdatesProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

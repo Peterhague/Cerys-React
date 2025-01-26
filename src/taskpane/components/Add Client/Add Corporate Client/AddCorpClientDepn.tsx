@@ -3,7 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
-import { PreliminaryClient } from "../../../classes/client";
+import { Client } from "../../../classes/client";
 interface addCorpClientDepnProps {
   handleView: (view) => void;
   session: Session;
@@ -88,7 +88,7 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
       depnRateOfficeEquip,
     };
     const updatedObj = { ...session.newClientPrelim, ...depnPols };
-    session.newClientPrelim = new PreliminaryClient(updatedObj);
+    session.newClientPrelim = new Client(updatedObj);
     handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 

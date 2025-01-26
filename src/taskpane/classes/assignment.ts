@@ -5,6 +5,7 @@ import {
   ClientTransaction,
   FSCategoryBS,
   FSCategoryPL,
+  PreliminaryAssignmentProps,
   ReportingPeriod,
   ShortUser,
   TrialBalanceLineProps,
@@ -71,17 +72,47 @@ import { calculateDiffInDays } from "../utils/helperFunctions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
-import { TrialBalanceLine } from "./trial-balance-line";
+import { TrialBalanceLine } from "./client-codes";
 
-export class Assignment {
+class BaseAssignment {
   clientId: string;
   clientCode: string;
   clientName: string;
-  reportingPeriod: ReportingPeriod;
   assignmentType: string;
+  transactionsPosted: boolean;
   senior: ShortUser;
   manager: ShortUser;
   responsibleIndividual: ShortUser;
+  constructor(assignment: AssignmentProps | PreliminaryAssignmentProps) {
+    this.clientId = assignment.clientId;
+    this.clientCode = assignment.clientCode;
+    this.clientName = assignment.clientName;
+    this.assignmentType = assignment.assignmentType;
+    this.transactionsPosted = assignment.transactionsPosted;
+  }
+}
+
+export class PreliminaryAssignment extends BaseAssignment {
+  clientSoftware: string;
+  reportingDate: string;
+  periodStart: string;
+  constructor(assignment: PreliminaryAssignmentProps) {
+    super(assignment);
+    this.clientSoftware = assignment.clientSoftware;
+    this.reportingDate = assignment.reportingDate;
+    this.periodStart = assignment.periodStart;
+  }
+}
+
+export class Assignment extends BaseAssignment {
+  // clientId: string;
+  // clientCode: string;
+  // clientName: string;
+  reportingPeriod: ReportingPeriod;
+  // assignmentType: string;
+  // senior: ShortUser;
+  // manager: ShortUser;
+  // responsibleIndividual: ShortUser;
   clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
   transactions: Transaction[];
@@ -91,7 +122,7 @@ export class Assignment {
   dateFinished: string;
   TBInitiated: boolean;
   TBEntered: boolean;
-  transactionsPosted: boolean;
+  // transactionsPosted: boolean;
   NLEntered: boolean;
   templatesAmended: boolean;
   IFARegisterCreated: boolean;
@@ -114,11 +145,12 @@ export class Assignment {
   pLListenerAdded: boolean;
   bSListenerAdded?: boolean;
   constructor(assignment: AssignmentProps) {
-    this.clientId = assignment.clientId;
-    this.clientCode = assignment.clientCode;
-    this.clientName = assignment.clientName;
+    super(assignment);
+    // this.clientId = assignment.clientId;
+    // this.clientCode = assignment.clientCode;
+    // this.clientName = assignment.clientName;
     this.reportingPeriod = assignment.reportingPeriod;
-    this.assignmentType = assignment.assignmentType;
+    // this.assignmentType = assignment.assignmentType;
     this.senior = assignment.senior;
     this.manager = assignment.manager;
     this.responsibleIndividual = assignment.responsibleIndividual;
@@ -131,7 +163,7 @@ export class Assignment {
     this.dateFinished = assignment.dateFinished;
     this.TBInitiated = assignment.TBInitiated;
     this.TBEntered = assignment.TBEntered;
-    this.transactionsPosted = assignment.transactionsPosted;
+    // this.transactionsPosted = assignment.transactionsPosted;
     this.NLEntered = assignment.NLEntered;
     this.templatesAmended = assignment.templatesAmended;
     this.IFARegisterCreated = assignment.IFARegisterCreated;
@@ -210,7 +242,7 @@ export class Assignment {
       }
       return test > 0;
     });
-    return filteredArr;
+    return filteredArr.map((tran) => new AssetTransaction(session, tran));
   }
 
   calculateProfLossCategory(category: FSCategoryPL) {

@@ -1,7 +1,6 @@
 import {
   AssetSubTransaction,
-  AssetTransactionProps,
-  ClientCodeObject,
+  ClientCodeObjectProps,
   ClientMapping,
   ReportingPeriod,
   TransactionProps,
@@ -77,7 +76,7 @@ export class Transaction implements TransactionProps {
   }
 
   getClientMappingObj(session: Session) {
-    let clientCodeObj: ClientCodeObject;
+    let clientCodeObj: ClientCodeObjectProps;
     if (this.clientNominalCode > 0)
       clientCodeObj = session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
     let clientMappingObj: ClientMapping;
@@ -99,10 +98,7 @@ export class Transaction implements TransactionProps {
   }
 }
 
-export class AssetTransaction implements AssetTransactionProps {
-  cerysCode: number;
-  transactionDateUser?: string;
-  transactionDateClt?: number;
+export class AssetTransaction extends Transaction {
   assetNarrative?: string;
   assetSubCatCodes?: (number | null)[];
   amortBasis?: string;
@@ -118,11 +114,10 @@ export class AssetTransaction implements AssetTransactionProps {
     reportingPeriodId: ReportingPeriod["_id"];
     subTransactions: AssetSubTransaction[];
   }[];
-  _id: string;
 
   constructor(session: Session, transaction: Transaction) {
-    this.cerysCode = transaction.cerysCode;
-    const cerysCodeObj = transaction.getCerysCodeObj(session);
+    super(transaction);
+    const cerysCodeObj = this.getCerysCodeObj(session);
     this.assetSubCatCodes = [cerysCodeObj.assetSubCatCode];
     this.subTransactions = [
       {
@@ -133,7 +128,6 @@ export class AssetTransaction implements AssetTransactionProps {
         value: transaction.value,
       },
     ];
-    this._id = transaction._id;
   }
 
   getTransaction(session: Session) {

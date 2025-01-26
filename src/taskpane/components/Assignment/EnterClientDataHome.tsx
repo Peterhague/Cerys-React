@@ -4,15 +4,16 @@ import { checkTBMapping, enterTB } from "../../client-data-processing/trial-bala
 import { enterNL } from "../../client-data-processing/nominal-ledger";
 import { Session } from "../../classes/session";
 import { ASSIGNMENT_DASH_HOME, CUSTOMER_SIGN_UP, MAP_UNMAPPED_CODES, USER_LOGIN } from "../../static-values/views";
+import { ClientCodeObject } from "../../classes/client-codes";
 
 interface enterClientDataHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
 const EnterClientDataHome = ({ handleView, session }: enterClientDataHomeProps) => {
   const handleTBEntry = async () => {
-    const unmappedCodeObjects = await checkTBMapping(session);
+    const unmappedCodeObjects: ClientCodeObject[] = await checkTBMapping(session);
     if (unmappedCodeObjects.length > 0) {
       session.unmappedCodeObjects = unmappedCodeObjects;
       handleView(MAP_UNMAPPED_CODES);

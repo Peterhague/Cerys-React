@@ -4,8 +4,8 @@ import { handleEditButtonClick } from "../utils/helperFunctions";
 import { Session } from "../classes/session";
 
 interface footerProps {
-  handleView: (view) => void;
-  setEditButton: (state) => void;
+  handleView: (view: string) => void;
+  setEditButton: (state: string) => void;
   editButton: string;
   session: Session;
 }

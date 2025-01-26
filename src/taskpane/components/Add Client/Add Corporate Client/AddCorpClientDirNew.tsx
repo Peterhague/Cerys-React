@@ -5,7 +5,7 @@ import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_DIRS_HOME, LANDING_PAGE } from "../../../static-values/views";
 
 interface addCorpClientDirNewProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

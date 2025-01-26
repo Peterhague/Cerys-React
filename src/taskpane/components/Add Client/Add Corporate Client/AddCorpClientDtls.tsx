@@ -3,7 +3,7 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_SHARES, LANDING_PAGE } from "../../../static-values/views";
-import { PreliminaryClient } from "../../../classes/client";
+import { Client } from "../../../classes/client";
 interface addCorpClientDtlsProps {
   handleView: (view: string) => void;
   session: Session;
@@ -42,11 +42,11 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
       newIndividuals: [],
       existingIndividuals: [],
     };
-    session.newClientPrelim = new PreliminaryClient(newClientDtls);
+    session.newClientPrelim = new Client(newClientDtls);
     handleView(ADD_CORP_CLIENT_SHARES);
   };
 
-  const generateAccRefDate = (month, nominatedDay) => {
+  const generateAccRefDate = (month: string, nominatedDay: number) => {
     switch (month) {
       case "January":
         return nominatedDay > 0 ? `-01-${nominatedDay}` : "-01-31";

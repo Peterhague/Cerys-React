@@ -7,7 +7,7 @@ import {
 } from "../../../static-values/views";
 
 interface addCorpClientSHHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: {};
 }
 

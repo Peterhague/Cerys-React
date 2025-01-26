@@ -5,15 +5,15 @@ import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
-import { ClientCerysCodeObject } from "../../interfaces/interfaces";
+import { ClientCerysCodeObjectProps } from "../../interfaces/interfaces";
 import { Journal } from "../../classes/journal";
 import { LANDING_PAGE } from "../../static-values/views";
 /*global Excel */
 
 interface enterJournalProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
-  chart: ClientCerysCodeObject[];
+  chart: ClientCerysCodeObjectProps[];
 }
 
 const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
@@ -26,7 +26,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   const [transactionDate, setTransactionDate] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     try {
       await Excel.run(async (context) => {
         e.preventDefault();
@@ -38,7 +38,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     }
   };
 
-  const handleJournal = async (e) => {
+  const handleJournal = async (e: React.FormEvent) => {
     console.log(nominalCode);
     e.preventDefault();
     const journalDtls = {

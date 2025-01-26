@@ -8,9 +8,10 @@ import {
   ADD_INDI_CLIENT_ASSOC_SHAREHOLDER,
   CUSTOMER_DASH_HOME,
 } from "../../../static-values/views";
+import { Customer } from "../../../classes/customer";
 
 interface addIndiClientAssocOptionsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -22,8 +23,8 @@ const AddIndiClientAssocOptions = ({ handleView, session }: addIndiClientAssocOp
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
     const newIndiAndCustomerDb = await fetch(url, options);
-    const newIndiAndCustomerObj = await newIndiAndCustomerDb.json();
-    session.customer = newIndiAndCustomerObj.customer;
+    const { customer } = await newIndiAndCustomerDb.json();
+    session.customer = new Customer(customer);
     handleView(CUSTOMER_DASH_HOME);
   };
   return (

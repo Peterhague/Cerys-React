@@ -5,9 +5,11 @@ import { fetchOptionsNewIndi } from "../../../fetching/generateOptions";
 import { postNonCorpClientUrl } from "../../../fetching/apiEndpoints";
 import { Session } from "../../../classes/session";
 import { LANDING_PAGE } from "../../../static-values/views";
+import { Customer } from "../../../classes/customer";
+import { BaseIndividual } from "../../../classes/individuals";
 
 interface addIndiClientDtlsprops {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -20,9 +22,9 @@ const AddIndiClientDtls = ({ handleView, session }: addIndiClientDtlsprops) => {
   const [address, setAddress] = useState("");
   const [uTR, setUTR] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newIndi = {
+    const newIndi = new BaseIndividual({
       firstName,
       lastName,
       clientCode,
@@ -35,19 +37,19 @@ const AddIndiClientDtls = ({ handleView, session }: addIndiClientDtlsprops) => {
       _clientShareholdings: [],
       otherDirectorships: [],
       otherShareholdings: [],
-    };
+    });
     session.newIndiPrelim = newIndi;
     const route = session.customer.clients.length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
     session.customer.clients.length === 0 && processNewIndi(newIndi);
     handleView(route);
   };
 
-  const processNewIndi = async (newIndi) => {
+  const processNewIndi = async (newIndi: BaseIndividual) => {
     const customerId = session.customer._id;
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const newIndiAndCustomerDb = await fetch(postNonCorpClientUrl, options);
-    const newIndiAndCustomer = await newIndiAndCustomerDb.json();
-    session.customer = newIndiAndCustomer.customer;
+    const { customer } = await newIndiAndCustomerDb.json();
+    session.customer = new Customer(customer);
   };
 
   return (

@@ -2,7 +2,7 @@ import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { DrillableCollection } from "./drillable-collection";
 import { Transaction } from "./transaction";
-import { TrialBalanceLine } from "./trial-balance-line";
+import { TrialBalanceLine } from "./client-codes";
 
 export class TransactionMap {
   transactionId: string;

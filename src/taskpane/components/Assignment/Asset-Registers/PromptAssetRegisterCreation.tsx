@@ -20,7 +20,7 @@ import { DetailedTransaction, ViewOptions } from "../../../interfaces/interfaces
 /* global Excel */
 
 interface PromptAssetRegisterCreationProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
   options: ViewOptions;
 }
@@ -49,7 +49,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
     handleCreateRequest();
   };
 
-  const handleAbort = (view) => {
+  const handleAbort = (view: string) => {
     session.options[`${initials}RCreationSetting`] = "main";
     session.activeJournal.journals = [];
     handleView(view);

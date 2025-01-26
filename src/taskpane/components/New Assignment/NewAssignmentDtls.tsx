@@ -4,23 +4,27 @@ import CerysButton from "../CerysButton";
 import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
 import { addPrimarySheets, postOpBalJnls } from "../../assignment/assignmentInit";
-import { calculateDiffInDays, populateUser } from "../../utils/helperFunctions";
+import { calculateDiffInDays } from "../../utils/helperFunctions";
 import { createCurrentPeriodRegister } from "../../utils/transactions/asset-reg-generation";
 import { bFPrevPeriodMessage } from "../../utils/messages";
 import { Session } from "../../classes/session";
-import { Assignment } from "../../classes/assignment";
-import { Client } from "../../interfaces/interfaces";
+import { Assignment, PreliminaryAssignment } from "../../classes/assignment";
 import { ASSIGNMENT_DASH_HOME, LANDING_PAGE, USER_CONFIRM_PROMPT } from "../../static-values/views";
+import { Customer } from "../../classes/customer";
+import { Client } from "../../classes/client";
+import { ClientCodeObject } from "../../classes/client-codes";
+import { ClientCerysCodeObjectProps, ClientCodeObjectProps } from "../../interfaces/interfaces";
+import { ClientCerysCodeObject } from "../../classes/cerys-codes";
 
 interface newAssignmentDtlsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
 const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
-  const [clientObject, setClientObject] = useState({ _id: undefined, clientCode: undefined, clientName: undefined });
+  const [clientObject, setClientObject] = useState<Client>(null);
   const [assignmentType, setAssignmentType] = useState("");
   const [_senior, set_Senior] = useState("");
   const [_manager, set_Manager] = useState("");
@@ -33,14 +37,9 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   const date = new Date();
   const fullyear = date.getFullYear();
 
-  const handleClientSelection = (clientId) => {
+  const handleClientSelection = (clientId: string) => {
     setClientId(clientId);
-    let clientObj: Client;
-    session.customer.clients.forEach((client) => {
-      if (client._id === clientId) {
-        clientObj = client;
-      }
-    });
+    const clientObj = session.customer.clients.find((i) => i._id === clientId);
     setClientObject(clientObj);
     clientObj._senior ? set_Senior(clientObj._senior) : set_Senior("");
     clientObj._manager ? set_Manager(clientObj._manager) : set_Manager("");
@@ -69,7 +68,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     }
   };
 
-  const handleReportingDate = (date, clientObj) => {
+  const handleReportingDate = (date: string, clientObj: Client) => {
     setReportingDate(date);
     const dayOne = calculatePeriodStart(date, clientObj);
     const periodStartSplit = dayOne.split("/");
@@ -78,7 +77,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     setPeriodStart(periodStartJS);
   };
 
-  const calculatePeriodStart = (date, clientObj: Client) => {
+  const calculatePeriodStart = (date: string, clientObj: Client) => {
     const dateSplit = date.split("-");
     const month = calculateMonth(dateSplit[1]);
     let prelimPeriodStart;
@@ -96,37 +95,39 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     return test < 0 ? incDateConverted : prelimPeriodStart;
   };
 
-  const calculateMonth = (month) => {
+  const calculateMonth = (month: string) => {
     let rawMonth = parseInt(month) + 1;
     if (rawMonth > 12) rawMonth = 1;
     return rawMonth < 10 ? `0${rawMonth}` : rawMonth;
   };
 
-  const handleNext = (e) => {
+  const handleNext = (e: React.FormEvent) => {
     setView("confirm");
     e.preventDefault();
   };
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const prelimAssignment = {
+    const senior = session.customer.users.find((i) => i._id === _senior);
+    const manager = session.customer.users.find((i) => i._id === _manager);
+    const responsibleIndividual = session.customer.users.find((i) => i._id === _responsibleIndividual);
+    const prelimAssignment = new PreliminaryAssignment({
       clientId: clientObject._id,
       clientCode: clientObject.clientCode,
       clientName: clientObject.clientName,
       assignmentType,
-      _senior,
-      _manager,
-      _responsibleIndividual,
+      senior,
+      manager,
+      responsibleIndividual,
       clientSoftware,
       reportingDate,
       periodStart,
       transactionsPosted: false,
-    };
-    populateStaffObjs(prelimAssignment);
+    });
     const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
-    session.customer = customer;
+    session.customer = new Customer(customer);
     session.assignment = new Assignment(assignment);
-    session.clientChart = client.clientChart;
+    session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
     session.IFARegister = IFARegister;
     session.IFARegister = IFARegister ? createCurrentPeriodRegister(IFARegister, session) : [];
     session.TFARegister = TFARegister;
@@ -144,22 +145,13 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     }
   };
 
-  const processNewAssignment = async (prelimAssignment) => {
+  const processNewAssignment = async (prelimAssignment: PreliminaryAssignment) => {
     const customerId = session.customer._id;
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
-    session.chart = updatedCustAndNewAss.chart;
+    session.chart = updatedCustAndNewAss.chart.map((i: ClientCerysCodeObjectProps) => new ClientCerysCodeObject(i));
     return updatedCustAndNewAss;
-  };
-
-  const populateStaffObjs = (prelimAssignment) => {
-    const seniorObj = populateUser(session, prelimAssignment._senior);
-    prelimAssignment.senior = seniorObj;
-    const managerObj = populateUser(session, prelimAssignment._manager);
-    prelimAssignment.manager = managerObj;
-    const rIObj = populateUser(session, prelimAssignment._responsibleIndividual);
-    prelimAssignment.responsibleIndividual = rIObj;
   };
 
   return (

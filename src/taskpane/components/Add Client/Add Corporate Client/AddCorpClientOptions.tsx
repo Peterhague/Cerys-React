@@ -12,9 +12,10 @@ import {
   ADD_CORP_CLIENT_SHARES,
   CUSTOMER_DASH_HOME,
 } from "../../../static-values/views";
+import { Customer } from "../../../classes/customer";
 
 interface addCorpClientOptionsProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -29,8 +30,8 @@ const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps
     const customerId = session.customer._id;
     const options = fetchOptionsAddClient(client, customerId);
     const newCustAndClientDb = await fetch(addClientGlobalUrl, options);
-    const newCustAndClient = await newCustAndClientDb.json();
-    session.customer = newCustAndClient.customer;
+    const { customer } = await newCustAndClientDb.json();
+    session.customer = new Customer(customer);
     delete session.newClientPrelim;
     handleView(CUSTOMER_DASH_HOME);
   };

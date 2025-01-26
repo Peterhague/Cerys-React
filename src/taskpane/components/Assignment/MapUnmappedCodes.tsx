@@ -6,9 +6,11 @@ import { updateClientChartUrl } from "../../fetching/apiEndpoints";
 import { enterTB } from "../../client-data-processing/trial-balance";
 import { Session } from "../../classes/session";
 import { ASSIGNMENT_DASH_HOME } from "../../static-values/views";
+import { ClientCodeObject } from "../../classes/client-codes";
+import { ClientCodeObjectProps } from "../../interfaces/interfaces";
 
 interface mapUnmappedCodes {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -16,22 +18,10 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [codeObjects, setCodeObjects] = useState(session.unmappedCodeObjects);
 
-  const handleCodeMapping = (value, codeObject) => {
+  const handleCodeMapping = (value: string, codeObject) => {
     codeObject.cerysCode = parseInt(value);
     const newArr = [...codeObjects];
     setCodeObjects(newArr);
-    codeObjects.forEach((obj) => {
-      if (obj.clientCode === codeObject.clientCode) {
-        let matched = false;
-        session.chart.forEach((code) => {
-          if (code.cerysCode === parseInt(value)) {
-            obj.cerysShortName = code.cerysShortName;
-            matched = true;
-          }
-        });
-        if (!matched) obj.cerysShortName = "";
-      }
-    });
     const anotherNewArr = [...codeObjects];
     setCodeObjects(anotherNewArr);
   };
@@ -48,7 +38,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
     const options = fetchOptionsUpdateClientChart(codeObjects, session);
     const updatedCustAndClientDb = await fetch(updateClientChartUrl, options);
     const { client } = await updatedCustAndClientDb.json();
-    session.clientChart = client.clientChart;
+    session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
     enterTB(session);
   };
 
@@ -80,7 +70,11 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
           </tr>
           <tr>
             <td></td>
-            <td>{codeObjects[activeIndex].cerysShortName}</td>
+            <td>
+              {codeObjects[activeIndex].getCerysCodeObj(session).cerysShortName
+                ? codeObjects[activeIndex].getCerysCodeObj(session).cerysShortName
+                : ""}
+            </td>
           </tr>
         </tbody>
       </table>
@@ -111,7 +105,11 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
             </tr>
             <tr>
               <td></td>
-              <td>{codeObjects[activeIndex + 1].cerysShortName}</td>
+              <td>
+                {codeObjects[activeIndex + 1].getCerysCodeObj(session).cerysShortName
+                  ? codeObjects[activeIndex + 1].getCerysCodeObj(session).cerysShortName
+                  : ""}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -143,7 +141,11 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
             </tr>
             <tr>
               <td></td>
-              <td>{codeObjects[activeIndex + 2].cerysShortName}</td>
+              <td>
+                {codeObjects[activeIndex + 2].getCerysCodeObj(session).cerysShortName
+                  ? codeObjects[activeIndex + 2].getCerysCodeObj(session).cerysShortName
+                  : ""}
+              </td>
             </tr>
           </tbody>
         </table>
@@ -158,7 +160,11 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
       {(codeObjects.length > activeIndex + 3 || activeIndex > 0) && (
         <div>
           {activeIndex > 0 && <button onClick={() => handlePrevious()}>Previous</button>}
-          {codeObjects.length > activeIndex + 3 && <button onClick={() => handleNext()}>Next</button>}
+          {codeObjects.length > activeIndex + 3 && (
+            <button type="button" onClick={() => handleNext()}>
+              Next
+            </button>
+          )}
         </div>
       )}
       <div>

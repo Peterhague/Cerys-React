@@ -3,7 +3,7 @@ import CerysButton from "./CerysButton";
 import { CUSTOMER_SIGN_UP, USER_ASSIGNMENTS_HOME } from "../static-values/views";
 
 interface userDashHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
 }
 
 const UserDashHome = (props: userDashHomeProps) => {

@@ -1,4 +1,5 @@
 import { Assignment } from "../classes/assignment";
+import { ClientCodeObject } from "../classes/client-codes";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
@@ -40,7 +41,7 @@ export async function enterTB(session: Session) {
 
 export async function checkTBMapping(session: Session) {
   try {
-    const rtnVal = await Excel.run(async (context) => {
+    const rtnVal: ClientCodeObject[] = await Excel.run(async (context) => {
       const ws = context.workbook.worksheets.getItem("Client TB");
       const range = ws.getUsedRange();
       range.load("values");
@@ -57,13 +58,13 @@ export async function checkTBMapping(session: Session) {
         };
         nomCodeObjs.push(obj);
       });
-      const unmappedCodeObjects = [];
+      const unmappedCodeObjects: ClientCodeObject[] = [];
       nomCodeObjs.forEach((code) => {
         let matched = false;
         session.clientChart.forEach((i) => {
           if (code.clientCode === i.clientCode) matched = true;
         });
-        if (!matched) unmappedCodeObjects.push(code);
+        if (!matched) unmappedCodeObjects.push(new ClientCodeObject(code));
       });
       await context.sync();
       return unmappedCodeObjects;
@@ -101,7 +102,7 @@ export async function handleTBData(session: Session) {
   }
 }
 
-export function convertToCerysObject(session: Session, formattedTB: any[][]) {
+export function convertToCerysObject(session: Session, formattedTB: any[]) {
   const objForPosting = clientCodeToCerysObject(session, formattedTB[0]);
   const copy = { ...objForPosting };
   return copy;

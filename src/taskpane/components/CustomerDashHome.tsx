@@ -9,19 +9,19 @@ import {
 } from "../static-values/views";
 
 interface customerDashHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: {};
 }
 
-const CustomerDashHome = (props: customerDashHomeProps) => {
+const CustomerDashHome = ({ handleView }: customerDashHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"CLIENTS"} handleClick={() => props.handleView(CUSTOMER_CLIENTS_HOME)} />
-      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleClick={() => props.handleView(CUSTOMER_INDIS_HOME)} />
-      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleClick={() => props.handleView(LANDING_PAGE)} />
-      <CerysButton buttonText={"LICENCES"} handleClick={() => props.handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"STAFF"} handleClick={() => props.handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"SIGN IN AS USER"} handleClick={() => props.handleView(USER_LOGIN)} />
+      <CerysButton buttonText={"CLIENTS"} handleClick={() => handleView(CUSTOMER_CLIENTS_HOME)} />
+      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleClick={() => handleView(CUSTOMER_INDIS_HOME)} />
+      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"LICENCES"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"STAFF"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"SIGN IN AS USER"} handleClick={() => handleView(USER_LOGIN)} />
     </>
   );
 };

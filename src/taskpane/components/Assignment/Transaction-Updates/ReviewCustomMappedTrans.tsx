@@ -10,7 +10,7 @@ import {
 } from "../../../assignment/assignment-management/opening-balance-adjustments";
 
 interface ReviewCustomMappedTransProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
   options: ViewOptions;
 }

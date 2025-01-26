@@ -1,11 +1,10 @@
 import {
   BaseIndividualProps,
-  Directorship,
   ExtendedIndividual,
   NewDirectorship,
   NewShareholdingProps,
-  Shareholding,
 } from "../interfaces/interfaces";
+import { Session } from "./session";
 import { IndividualShareAllocation, NewShareholding } from "./share-classes";
 
 export class BaseIndividual {
@@ -85,4 +84,31 @@ export class NewIndiAssociation {
     this.preliminaryId = "";
     this._id = individual && individual._id ? individual._id : Math.floor(Math.random() * 10000000).toString();
   }
+}
+
+export class Directorship {
+  clientId: string;
+  clientName: string;
+  clientCode: string;
+  dateAppointed: string;
+  dateCeased: string;
+  constructor(clientId: string, dateAppointed: string, dateCeased: string, session: Session) {
+    const client = session.customer.clients.find((i) => i._id === clientId);
+    this.clientId = clientId;
+    this.clientName = client.clientName;
+    this.clientCode = client.clientCode;
+    this.dateAppointed = dateAppointed;
+    this.dateCeased = dateCeased;
+  }
+}
+
+export class Shareholding {
+  clientId: string;
+  clientCode: string;
+  clientName: string;
+  shareClassId: string;
+  shareClassName: string;
+  shareClassNumber: number;
+  interest: number;
+  constructor() {}
 }

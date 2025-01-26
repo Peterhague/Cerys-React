@@ -1,4 +1,4 @@
-import { BaseCerysCodeObject, TransactionUpdateProps } from "../interfaces/interfaces";
+import { BaseCerysCodeObjectProps, TransactionUpdateProps } from "../interfaces/interfaces";
 import { Session } from "./session";
 
 export class TransactionUpdate implements TransactionUpdateProps {
@@ -8,7 +8,7 @@ export class TransactionUpdate implements TransactionUpdateProps {
   value: string | number;
   mongoDate: string | null;
   reversion: string | number;
-  cerysCodeObject: BaseCerysCodeObject | null;
+  cerysCodeObject: BaseCerysCodeObjectProps | null;
 
   constructor(
     session: Session,

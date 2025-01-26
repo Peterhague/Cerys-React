@@ -1,26 +1,26 @@
 // takes a variable and returns it embedded in a valid fetch options
 
-import { Assignment } from "../classes/assignment";
-import { PreliminaryClient } from "../classes/client";
+import { Assignment, PreliminaryAssignment } from "../classes/assignment";
+import { Client } from "../classes/client";
+import { ClientCodeObject } from "../classes/client-codes";
+import { BaseIndividual } from "../classes/individuals";
+import { Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
-import { ClientCerysCodeObject, ClientTBLineProps, DetailedTransaction } from "../interfaces/interfaces";
+import {
+  ClientCerysCodeObjectProps,
+  ClientTBLineProps,
+  ClientTransaction,
+  DetailedTransaction,
+  ShortUser,
+} from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helperFunctions";
 
-// object as the req.body.code value. Designed for looking up Cerys nominal codes.
-export function fetchOptionsNC(nominalCode) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      code: nominalCode,
-    }),
-  };
-}
-
-export function fetchOptionsTransBatch(session: Session, journals, transDtls) {
+export function fetchOptionsTransBatch(
+  session: Session,
+  journals: Journal[],
+  transDtls: { customerId: string; assignmentId: string }
+) {
   return {
     method: "POST",
     headers: {
@@ -67,18 +67,6 @@ export function fetchOptionsTransBatchUpdate(session: Session) {
   };
 }
 
-export function fetchOptionsGetAssignmentId(workbookMeta) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      workbookMeta: workbookMeta,
-    }),
-  };
-}
-
 // called by the choosePlan fn in sign-up.js as one of the final steps in the customer registration
 // process. Returns an "options" object to be passed to a fetch fn to register the new customer in
 // mongoDB.
@@ -101,7 +89,14 @@ export function fetchOptionsSignUp(customerObject) {
 
 // called by registerUser fn in user-registration.js. Returns two objects; a post to be passed to the
 // fetch which registers a user with MongoDB, and a put to update the connected customer document.
-export function fetchOptionsAddUser(newUser) {
+export function fetchOptionsAddUser(newUser: {
+  firstName: string;
+  lastName: string;
+  email: string;
+  password: string;
+  isAdmin: boolean;
+  customerId: string;
+}) {
   return {
     post: {
       method: "POST",
@@ -132,7 +127,7 @@ export function fetchOptionsAddUser(newUser) {
   };
 }
 
-export function fetchOptionsAddClient(client: PreliminaryClient, customerId: string) {
+export function fetchOptionsAddClient(client: Client, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -145,7 +140,7 @@ export function fetchOptionsAddClient(client: PreliminaryClient, customerId: str
   };
 }
 
-export function fetchOptionsUpdateClientChart(newCodes, session: Session) {
+export function fetchOptionsUpdateClientChart(newCodes: ClientCodeObject[], session: Session) {
   return {
     method: "POST",
     headers: {
@@ -159,103 +154,9 @@ export function fetchOptionsUpdateClientChart(newCodes, session: Session) {
   };
 }
 
-export function fetchOptionsUpdateClientPrelim(update, customer) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      directors: update._clientDirectorships,
-      shareholders: update._clientShareholdings,
-      customerId: customer,
-      clientId: update.clientId,
-    }),
-  };
-}
-
-export function fetchOptionsUpdateClientAmort(amortPols, customer, client) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      amortBasisCompSware: amortPols.amortBasisCompSware,
-      amortBasisDevCosts: amortPols.amortBasisDevCosts,
-      amortBasisGwill: amortPols.amortBasisGwill,
-      amortBasisPatsLics: amortPols.amortBasisPatsLics,
-      amortRateCompSware: amortPols.amortRateCompSware,
-      amortRateDevCosts: amortPols.amortRateDevCosts,
-      amortRateGwill: amortPols.amortRateGwill,
-      amortRatePatsLics: amortPols.amortRatePatsLics,
-      customerId: customer,
-      clientId: client,
-    }),
-  };
-}
-
-export function fetchOptionsUpdateClientDepn(depnPols, customer, client) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      depnBasisCompEquip: depnPols.depnBasisCompEquip,
-      depnBasisFHProp: depnPols.depnBasisFHProp,
-      depnBasisFixFit: depnPols.depnBasisFixFit,
-      depnBasisLongLH: depnPols.depnBasisLongLH,
-      depnBasisMV: depnPols.depnBasisMV,
-      depnBasisOfficeEquip: depnPols.depnBasisOfficeEquip,
-      depnBasisPlant: depnPols.depnBasisPlant,
-      depnBasisShortLH: depnPols.depnBasisShortLH,
-      depnRateCompEquip: depnPols.depnRateCompEquip,
-      depnRateFHProp: depnPols.depnRateFHProp,
-      depnRateFixFit: depnPols.depnRateFixFit,
-      depnRateLongLH: depnPols.depnRateLongLH,
-      depnRateMV: depnPols.depnRateMV,
-      depnRateOfficeEquip: depnPols.depnRateOfficeEquip,
-      depnRatePlant: depnPols.depnRatePlant,
-      depnRateShortLH: depnPols.depnRateShortLH,
-      customerId: customer,
-      clientId: client,
-    }),
-  };
-}
-
-export function fetchOptionsUpdateClientForId(person, customerId, clientId) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      person,
-      customerId,
-      clientId,
-    }),
-  };
-}
-
-export function fetchOptionsClientAddPerson(fetcher) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      customerId: fetcher.customerId,
-      clientId: fetcher.clientId,
-      directors: fetcher.directors,
-      shareholders: fetcher.shareholders,
-    }),
-  };
-}
-
 // called by login fn (authentication.js) to get user from DB based on the email and password
 // supplied to the user login form.
-export function fetchOptionsGetUser(dataObject) {
+export function fetchOptionsGetUser(dataObject: { email: string; password: string }) {
   return {
     method: "POST",
     headers: {
@@ -268,19 +169,7 @@ export function fetchOptionsGetUser(dataObject) {
   };
 }
 
-export function fetchOptionsGetPerson(personId) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      personId,
-    }),
-  };
-}
-
-export function fetchOptionsGetCustomer(customer) {
+export function fetchOptionsGetCustomer(customer: { email: string; password: string }) {
   return {
     method: "POST",
     headers: {
@@ -289,36 +178,11 @@ export function fetchOptionsGetCustomer(customer) {
     body: JSON.stringify({
       email: customer.email,
       password: customer.password,
-      id: customer.id,
     }),
   };
 }
 
-export function fetchOptionsGetCustomerUsers(customer) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      customerId: customer,
-    }),
-  };
-}
-
-export function fetchOptionsGetCustomerClients(customer) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      customerId: customer,
-    }),
-  };
-}
-
-export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
+export function fetchOptionsNewAssignment(prelimAssignment: PreliminaryAssignment, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -331,40 +195,7 @@ export function fetchOptionsNewAssignment(prelimAssignment, customerId) {
   };
 }
 
-export function fetchOptionsIterateAssignment(actAss, customerId) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      actAss,
-      customerId,
-    }),
-  };
-}
-
-export function fetchOptionsNewPerson(person) {
-  return {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      firstName: person.firstName,
-      lastName: person.lastName,
-      email: person.email,
-      phone: person.phone,
-      address: person.address,
-      isClient: person.isClient,
-      _clientDirectorships: person.clientDirectorships,
-      _clientShareholdings: person.clientShareholdings,
-      uTR: person.uTR,
-    }),
-  };
-}
-
-export function fetchOptionsNewIndi(indi, customerId) {
+export function fetchOptionsNewIndi(indi: BaseIndividual, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -386,7 +217,7 @@ export function fetchOptionsNewIndi(indi, customerId) {
   };
 }
 
-export function fetchOptionsUpdateAssignment(customerId, workbookId, target) {
+export function fetchOptionsUpdateAssignment(customerId: string, workbookId: string, target: string) {
   return {
     method: "POST",
     headers: {
@@ -400,7 +231,7 @@ export function fetchOptionsUpdateAssignment(customerId, workbookId, target) {
   };
 }
 
-export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerId) {
+export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -415,20 +246,7 @@ export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerI
   };
 }
 
-export function fetchOptionsTBModify(cerysObject) {
-  return {
-    method: "PUT",
-    headers: {
-      "Content-Type": "application/json",
-    },
-    body: JSON.stringify({
-      code: cerysObject.cerysCode,
-      value: cerysObject.value,
-    }),
-  };
-}
-
-export function fetchOptionsPostClientNL(clientNL, workbookId, customerId) {
+export function fetchOptionsPostClientNL(clientNL: ClientTransaction[], workbookId: string, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -487,7 +305,7 @@ export function fetchOptionsIP(session: Session, relevantTrans: DetailedTransact
   };
 }
 
-export function fetchOptionsIFARStatusUpdate(workbookId) {
+export function fetchOptionsIFARStatusUpdate(workbookId: string) {
   return {
     method: "POST",
     headers: {
@@ -499,7 +317,7 @@ export function fetchOptionsIFARStatusUpdate(workbookId) {
   };
 }
 
-export function fetchOptionsTFARStatusUpdate(workbookId) {
+export function fetchOptionsTFARStatusUpdate(workbookId: string) {
   return {
     method: "POST",
     headers: {
@@ -511,7 +329,7 @@ export function fetchOptionsTFARStatusUpdate(workbookId) {
   };
 }
 
-export function fetchOptionsIPRStatusUpdate(workbookId) {
+export function fetchOptionsIPRStatusUpdate(workbookId: string) {
   return {
     method: "POST",
     headers: {
@@ -527,7 +345,7 @@ export function fetchOptionsUpdateCerysCodeMapping(
   session: Session,
   nominalCode: string | number,
   nominalCodeName: string,
-  cerysCodeObj: ClientCerysCodeObject
+  cerysCodeObj: ClientCerysCodeObjectProps
 ) {
   return {
     method: "POST",

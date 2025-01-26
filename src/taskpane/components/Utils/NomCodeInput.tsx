@@ -1,7 +1,8 @@
 import * as React from "react";
 import { useState } from "react";
 import { Session } from "../../classes/session";
-import { ClientCerysCodeObject, ClientCodeObject } from "../../interfaces/interfaces";
+import { ClientCodeObject } from "../../classes/client-codes";
+import { ClientCerysCodeObject } from "../../classes/cerys-codes";
 
 interface nomCodeInputProps {
   session: Session;
@@ -34,7 +35,7 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
   ) => {
     const [showSuggestions, setShowSuggestions] = useState(false);
 
-    const handleChange = (value) => {
+    const handleChange = (value: string) => {
       if (nominalCodeName) {
         if (value.length > searchDisplay.length) {
           return;
@@ -52,16 +53,18 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
       }
     };
 
-    const handleSelect = (codeObj) => {
-      setNominalCode(codeObj.clientCode ? codeObj.clientCode.toString() : codeObj.cerysCode.toString());
-      setNominalCodeName(codeObj.cerysExcelName ? codeObj.cerysExcelName : codeObj.clientCodeName);
+    const handleSelect = (codeObj: ClientCerysCodeObject | ClientCodeObject) => {
+      setNominalCode(
+        codeObj instanceof ClientCodeObject ? codeObj.clientCode.toString() : codeObj.cerysCode.toString()
+      );
+      setNominalCodeName(codeObj instanceof ClientCerysCodeObject ? codeObj.cerysExcelName : codeObj.clientCodeName);
       setSearchTerm(
-        codeObj.clientCode
+        codeObj instanceof ClientCodeObject
           ? `${codeObj.clientCode} ${codeObj.clientCodeName}`
           : `${codeObj.cerysCode} ${codeObj.cerysExcelName}`
       );
       setSearchDisplay(
-        codeObj.clientCode
+        codeObj instanceof ClientCodeObject
           ? `${codeObj.clientCode} ${codeObj.clientCodeName}`
           : `${codeObj.cerysCode} ${codeObj.cerysExcelName}`
       );

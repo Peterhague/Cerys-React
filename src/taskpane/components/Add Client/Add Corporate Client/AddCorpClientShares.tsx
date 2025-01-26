@@ -3,10 +3,10 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
-import { PreliminaryShareClass } from "../../../classes/share-classes";
+import { ShareClass } from "../../../classes/share-classes";
 
 interface addCorpClientSharesProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -15,7 +15,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
   const [numberIssued, setNumberIssued] = useState(0);
   const [valuePerShare, setValuePerShare] = useState(0);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newClientShares = {
       shareClassName,
@@ -25,7 +25,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
       issuedNotAllocated: numberIssued,
       prelimAllocation: 0,
     };
-    session.newClientPrelim.shareClasses.push(new PreliminaryShareClass(newClientShares));
+    session.newClientPrelim.shareClasses.push(new ShareClass(newClientShares));
     handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 

@@ -3,7 +3,7 @@ import { Button, tokens, makeStyles } from "@fluentui/react-components";
 
 interface CerysButtonProps {
   buttonText: string;
-  handleClick: (view) => void;
+  handleClick: (arg: any) => void;
 }
 
 const useStyles = makeStyles({

@@ -5,19 +5,21 @@ import { fetchOptionsSignUp } from "../fetching/generateOptions";
 import { customerUrl } from "../fetching/apiEndpoints";
 import { Session } from "../classes/session";
 import { LANDING_PAGE, NEW_CUSTOMER_LANDING } from "../static-values/views";
+import { Customer } from "../classes/customer";
 
 interface customerSignUpPlanProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
 const CustomerSignUpPlan = ({ handleView, session }: customerSignUpPlanProps) => {
   const [licences, setLicences] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newCustObj = { ...session.newCustDtlsOne, ...session.newCustDtlsTwo, licences };
-    session.customer = await processNewCustomer(newCustObj);
+    const customer = await processNewCustomer(newCustObj);
+    session.customer = new Customer(customer);
     delete session.newCustDtlsOne;
     delete session.newCustDtlsTwo;
     handleView(NEW_CUSTOMER_LANDING);

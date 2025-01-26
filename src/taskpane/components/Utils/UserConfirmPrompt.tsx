@@ -4,7 +4,7 @@ import Message from "../Message";
 import { ViewOptions } from "../../interfaces/interfaces";
 
 interface userConfirmPromptProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: {};
   options: ViewOptions;
 }

@@ -10,7 +10,7 @@ import {
 } from "../../static-values/views";
 
 interface assignmentDashHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: {};
 }
 

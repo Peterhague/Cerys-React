@@ -7,11 +7,12 @@ import { callNextView, getUpdatedTransactions } from "../../../utils/helperFunct
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { createEditableCell } from "../../../classes/editable-cell";
 import { Session } from "../../../classes/session";
-import { ClientCerysCodeObject, ClientCodeObject } from "../../../interfaces/interfaces";
 import { HANDLE_TRANS_UPDATES, LANDING_PAGE } from "../../../static-values/views";
+import { ClientCodeObject } from "../../../classes/client-codes";
+import { ClientCerysCodeObject } from "../../../classes/cerys-codes";
 
 interface nomCodeSelectionProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
   chart: ClientCerysCodeObject[] | ClientCodeObject[];
 }
@@ -24,7 +25,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
   const inputRef = useRef<HTMLInputElement>(null);
   /* global Excel */
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     try {
       await Excel.run(async (context) => {
         e.preventDefault();
@@ -44,7 +45,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     }
   };
 
-  const handleGoBack = (e) => {
+  const handleGoBack = (e: React.MouseEvent) => {
     e.preventDefault();
     session.activeEditableCell = createEditableCell(null, null, null);
     if (getUpdatedTransactions(session).length > 0) {

@@ -5,19 +5,21 @@ import { fetchOptionsGetUser } from "../fetching/generateOptions";
 import { registerWorksheetsCollectionHandler } from "../utils/helperFunctions";
 import { Session } from "../classes/session";
 import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
+import { Customer } from "../classes/customer";
+import { ViewOptions } from "../interfaces/interfaces";
 
 interface userLoginProps {
-  handleView: (view) => void;
-  handleDynamicView: (view, props) => void;
+  handleView: (view: string) => void;
+  handleDynamicView: (view: string, props: ViewOptions) => void;
   session: Session;
-  setEditButton: (state) => void;
+  setEditButton: (state: string) => void;
 }
 
 const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const userDetails = { email, password };
     const options = fetchOptionsGetUser(userDetails);
@@ -25,10 +27,10 @@ const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: us
     if (userAndCustomerFromDb) await processUser(userAndCustomerFromDb);
   };
 
-  const processUser = async (userAndCustomerFromDb) => {
-    const userAndCustomerObject = await userAndCustomerFromDb.json();
-    session.user = userAndCustomerObject.user;
-    session.customer = userAndCustomerObject.customer;
+  const processUser = async (userAndCustomerFromDb: Response) => {
+    const { user, customer } = await userAndCustomerFromDb.json();
+    session.user = user;
+    session.customer = new Customer(customer);
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
     session.setEditButton = setEditButton;

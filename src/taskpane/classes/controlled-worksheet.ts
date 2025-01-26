@@ -6,7 +6,7 @@ import { ExcelRangeObject, ProtectedRange } from "./range-objects";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
 import { ControlledInputMap } from "./transaction-map";
-import { TrialBalanceLine } from "./trial-balance-line";
+import { TrialBalanceLine } from "./client-codes";
 /* global Excel */
 
 export class ControlledWorksheet {

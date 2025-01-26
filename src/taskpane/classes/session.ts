@@ -1,9 +1,13 @@
-import { BaseIndividualProps, ClientCerysCodeObject, ClientCodeObject, Customer } from "../interfaces/interfaces";
+import { BaseIndividualProps } from "../interfaces/interfaces";
 import { Assignment } from "./assignment";
-import { PreliminaryClient } from "./client";
+import { ClientCerysCodeObject } from "./cerys-codes";
+import { Client } from "./client";
+import { ClientCodeObject } from "./client-codes";
 import { ControlledWorksheet } from "./controlled-worksheet";
+import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
+import { BaseIndividual } from "./individuals";
 import { Journal } from "./journal";
 import { Transaction } from "./transaction";
 import { Worksheet } from "./worksheet";
@@ -39,12 +43,7 @@ export class Session {
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: { handleYes: () => void; handleNo: () => void }) => void;
   setEditButton: (editButtonStatus: string) => void;
-  unmappedCodeObjects: {
-    clientCode: number;
-    clientCodeName: string;
-    cerysCode: number;
-    cerysShortName: string;
-  }[] = [];
+  unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;
   activeEditableCell: EditableCell;
   options: {
@@ -67,15 +66,9 @@ export class Session {
     listeningForDoubleClick: false,
   };
   worksheets: Worksheet[] = [];
-  newClientPrelim: PreliminaryClient;
+  newClientPrelim: Client;
   newCorpClientShareholders: BaseIndividualProps[] = [];
-  newIndiPrelim: {
-    firstName: string;
-    lastName: string;
-    isClient: Boolean;
-    _clientDirectorships: {}[];
-    _clientShareholdings: { shareClassId: string; interest: number }[];
-  };
+  newIndiPrelim: BaseIndividual;
   newCustDtlsOne: { email: string; password: string; confirmPassword: string };
   newCustDtlsTwo: {};
   newCorpClientDirectors: {

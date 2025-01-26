@@ -16,7 +16,7 @@ import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, HANDLE_TRANS_UPDATES } from "../../../static-values/views";
 
 interface reviewTransUpdatesProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

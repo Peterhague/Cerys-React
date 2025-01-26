@@ -7,7 +7,7 @@ import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, OPENING_BALANCE_ADJUSTMENTS, USER_CONFIRM_PROMPT } from "../../../static-values/views";
 
 interface manageAssignmentDashHomeProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 

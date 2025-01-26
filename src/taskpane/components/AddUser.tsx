@@ -5,9 +5,10 @@ import { fetchOptionsAddUser } from "../fetching/generateOptions";
 import { userUrl } from "../fetching/apiEndpoints";
 import { Session } from "../classes/session";
 import { LANDING_PAGE, NEW_CUSTOMER_LANDING } from "../static-values/views";
+import { Customer } from "../classes/customer";
 
 interface addUserProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -18,16 +19,23 @@ const AddUser = ({ handleView, session }: addUserProps) => {
   const [password, setPassword] = useState("");
   const [isAdmin, setIsAdmin] = useState(false);
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     const newUserDtls = { firstName, lastName, email, password, isAdmin, customerId: session.customer._id };
-    const updatedDbObjs = await processNewUser(newUserDtls);
-    session.newUserAccount = updatedDbObjs.user;
-    session.customer = updatedDbObjs.customer;
+    const { user, customer } = await processNewUser(newUserDtls);
+    session.newUserAccount = user;
+    session.customer = new Customer(customer);
     handleView(NEW_CUSTOMER_LANDING);
   };
 
-  const processNewUser = async (newUserDtls) => {
+  const processNewUser = async (newUserDtls: {
+    firstName: string;
+    lastName: string;
+    email: string;
+    password: string;
+    isAdmin: boolean;
+    customerId: string;
+  }) => {
     const options = fetchOptionsAddUser(newUserDtls);
     const newObjsFromDb = await fetch(userUrl, options.post);
     const newObjs = await newObjsFromDb.json();

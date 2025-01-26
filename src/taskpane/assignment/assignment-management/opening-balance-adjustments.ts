@@ -1,6 +1,7 @@
 import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
+import { Customer } from "../../classes/customer";
 import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
@@ -194,7 +195,7 @@ export const updateCerysCodeMapping = async (
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
-  session.customer = customer;
+  session.customer = new Customer(customer);
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
     if (code.cerysCode === newMapping.cerysCode) {
@@ -244,7 +245,7 @@ export const updateCerysCodeMappingIgnoreCustom = async (
   const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
-  session.customer = customer;
+  session.customer = new Customer(customer);
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
     if (code.cerysCode === newMapping.cerysCode) {
@@ -296,7 +297,7 @@ export const updateCerysCodeMappingIncludeCustom = async (
   const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
   const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
   const assignment = await updatedAssDb.json();
-  session.customer = customer;
+  session.customer = new Customer(customer);
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
     if (code.cerysCode === newMapping.cerysCode) {
@@ -353,7 +354,7 @@ export const updateCerysCodeMappingIncludeCustomAsSelected = async (
   const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
   const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
   const assignment = await updatedAssDb.json();
-  session.customer = customer;
+  session.customer = new Customer(customer);
   session.assignment = new Assignment(assignment);
   session.chart.forEach((code) => {
     if (code.cerysCode === newMapping.cerysCode) {

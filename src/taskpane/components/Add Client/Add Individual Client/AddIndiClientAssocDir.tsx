@@ -3,9 +3,10 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
+import { Directorship } from "../../../classes/individuals";
 
 interface addIndiClientAssocDirProps {
-  handleView: (view) => void;
+  handleView: (view: string) => void;
   session: Session;
 }
 
@@ -15,25 +16,11 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
   const [isCeased, setIsCeased] = useState(false);
   const [dateCeased, setDateCeased] = useState("");
 
-  const handleSubmit = async (e) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const directorship = {
-      clientId,
-      dateAppointed,
-      dateCeased,
-    };
-    populateNewDirectorship(directorship);
+    const directorship = new Directorship(clientId, dateAppointed, dateCeased, session);
     session.newIndiPrelim._clientDirectorships.push(directorship);
     handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
-  };
-
-  const populateNewDirectorship = (directorship) => {
-    session.customer.clients.forEach((client) => {
-      if (client._id === directorship.clientId) {
-        directorship.clientName = client.clientName;
-        directorship.clientCode = client.clientCode;
-      }
-    });
   };
 
   return (

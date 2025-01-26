@@ -1,3 +1,4 @@
+import { Client } from "../../classes/client";
 import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
 import { Journal } from "../../classes/journal";
 import { QuasiEventObject } from "../../classes/quasi-event-object";
@@ -7,8 +8,7 @@ import { AssetTransaction, Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import {
   AssetSubTransaction,
-  BaseCerysCodeObject,
-  Client,
+  BaseCerysCodeObjectProps,
   FATransaction,
   JournalDetailsProps,
 } from "../../interfaces/interfaces";
@@ -16,12 +16,17 @@ import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
+import * as React from "react";
 import _ from "lodash";
 /*global Excel */
 
-export const identifyLikelyAdditions = async (session: Session, registerType: string, setView) => {
+export const identifyLikelyAdditions = async (
+  session: Session,
+  registerType: string,
+  setView: React.Dispatch<string>
+) => {
   console.log("next step working");
-  const bFTransLikelyAddns: Transaction[] = session.assignment.getBFTransLikelyAdditions(session, registerType);
+  const bFTransLikelyAddns: AssetTransaction[] = session.assignment.getBFTransLikelyAdditions(session, registerType);
   console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
     await createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
@@ -32,7 +37,7 @@ export const identifyLikelyAdditions = async (session: Session, registerType: st
   }
 };
 
-export const previewRelTrans = (session: Session, registerType: string, setView) => {
+export const previewRelTrans = (session: Session, registerType: string, setView: React.Dispatch<string>) => {
   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
   setView("confirm");
@@ -211,7 +216,11 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
   }
 }
 
-export async function createLikelyAdditionsSumm(session: Session, transactions: Transaction[], registerType: string) {
+export async function createLikelyAdditionsSumm(
+  session: Session,
+  transactions: AssetTransaction[],
+  registerType: string
+) {
   try {
     await Excel.run(async (context) => {
       const name = `${registerType} Possible Additions`;
@@ -221,7 +230,6 @@ export async function createLikelyAdditionsSumm(session: Session, transactions: 
         ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
       ];
       transactions.forEach((transaction) => {
-        const assetTran = new AssetTransaction(session, transaction);
         const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
@@ -261,8 +269,8 @@ export async function createLikelyAdditionsSumm(session: Session, transactions: 
         } else {
           transVals.push("NA");
         }
-        if (assetTran.assetNarrative) {
-          transVals.push(assetTran.assetNarrative);
+        if (transaction.assetNarrative) {
+          transVals.push(transaction.assetNarrative);
         } else {
           transVals.push("NA");
         }
@@ -290,7 +298,7 @@ export async function createLikelyAdditionsSumm(session: Session, transactions: 
 export const populateDepnCols = (
   activeClient: Client,
   transVals: string[],
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObject },
+  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
   registerType: string
 ) => {
   const { assetTran, cerysCodeObj } = transactionDetails;
@@ -380,7 +388,7 @@ export const populateDepnCols = (
 
 export function calculateCharge(
   session: Session,
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObject },
+  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
   registerType: string
 ) {
   const { assetTran, transaction } = transactionDetails;
@@ -469,7 +477,12 @@ export const recalculateCharge = async (
   adjustAutoDepnJnls(session, tran, charge);
 };
 
-export const updateAssetNarrative = async (session: Session, sheet, tran, e) => {
+export const updateAssetNarrative = async (
+  session: Session,
+  sheet: EditableWorksheet,
+  tran: Transaction | FATransaction,
+  e: Excel.WorksheetChangedEventArgs | QuasiEventObject
+) => {
   let registerType;
   if (sheet.type === "IFARPreview") {
     registerType = "IFA";
@@ -487,7 +500,7 @@ export const updateAssetNarrative = async (session: Session, sheet, tran, e) => 
 
 export const buildAutoDepnJnls = (
   session: Session,
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObject },
+  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
   registerType: string
 ) => {
   const { assetTran, cerysCodeObj } = transactionDetails;
@@ -527,7 +540,7 @@ export const buildAutoDepnJnls = (
   return { debit, credit };
 };
 
-export const setAutoAmortNominals = (catNo) => {
+export const setAutoAmortNominals = (catNo: number) => {
   switch (catNo) {
     case 1:
       return { debit: 3891, credit: 5032 };
@@ -542,7 +555,7 @@ export const setAutoAmortNominals = (catNo) => {
   }
 };
 
-export const setAutoDepnNominals = (catNo) => {
+export const setAutoDepnNominals = (catNo: number) => {
   switch (catNo) {
     case 1:
       return { debit: 3901, credit: 5132 };
@@ -567,7 +580,7 @@ export const setAutoDepnNominals = (catNo) => {
   }
 };
 
-export const setAutoDepnIPNominals = (catNo) => {
+export const setAutoDepnIPNominals = (catNo: number) => {
   switch (catNo) {
     case 1:
       return { debit: 3974, credit: 5712 };
@@ -578,7 +591,7 @@ export const setAutoDepnIPNominals = (catNo) => {
   }
 };
 
-export const adjustAutoDepnJnls = (session: Session, tran, charge) => {
+export const adjustAutoDepnJnls = (session: Session, tran: FATransaction, charge: number) => {
   session.activeJournal.journals.forEach((jnl) => {
     if (jnl.transactionId === tran._id) {
       if (jnl.value > 0) jnl.value = charge;
@@ -587,7 +600,7 @@ export const adjustAutoDepnJnls = (session: Session, tran, charge) => {
   });
 };
 
-export const createTransactionUpdates = (session: Session, bFTransLikelyAddns) => {
+export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: AssetTransaction[]) => {
   bFTransLikelyAddns.forEach((tran) => {
     const chart = session.chart;
     let drJnl;
