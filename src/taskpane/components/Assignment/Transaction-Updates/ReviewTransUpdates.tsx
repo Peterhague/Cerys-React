@@ -10,7 +10,7 @@ import {
   getUpdatedDate,
   getUpdatedNarrative,
   getUpdatedTransactions,
-} from "../../../utils/helperFunctions";
+} from "../../../utils/helper-functions";
 import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, HANDLE_TRANS_UPDATES } from "../../../static-values/views";

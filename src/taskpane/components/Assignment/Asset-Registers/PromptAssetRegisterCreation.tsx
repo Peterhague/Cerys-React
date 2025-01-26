@@ -1,7 +1,7 @@
 import * as React from "react";
 import { useState } from "react";
 import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils/helperFunctions";
+import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils/helper-functions";
 import {
   convertNewFATrans,
   finaliseAssetObjects,

@@ -21,7 +21,7 @@ import {
   getUpdatedTransactions,
   interpretExcelAddress,
   setNextViewButOne,
-} from "../helperFunctions";
+} from "../helper-functions";
 import { recalculateCharge, updateAssetNarrative } from "../transactions/asset-reg-generation";
 import {
   getWorksheetRangeValues,

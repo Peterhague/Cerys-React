@@ -14,7 +14,7 @@ import {
 } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
-import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helperFunctions";
+import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helper-functions";
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import * as React from "react";
 import _ from "lodash";
@@ -637,24 +637,6 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
   }
   console.log(session.activeJournal);
 };
-
-// export const createCurrentPeriodRegister = (regsiter: AssetRegisterDb, session: Session) => {
-//   const periodId = session.assignment.reportingPeriod._id;
-//   const currentPeriodRegister = [];
-//   regsiter.assets.forEach((asset) => {
-//     if (asset.activePeriods.includes(periodId)) {
-//       const { periods, activePeriods, ...obj } = asset;
-//       let subTransactions;
-//       asset.periods.forEach((period) => {
-//         if (period.reportingPeriodId === periodId) subTransactions = period.subTransactions;
-//       });
-//       obj.subTransactions = subTransactions;
-//       currentPeriodRegister.push(obj);
-//     }
-//   });
-//   console.log(currentPeriodRegister);
-//   return currentPeriodRegister;
-// };
 
 export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {
   const reportingPeriod = session.assignment.reportingPeriod;

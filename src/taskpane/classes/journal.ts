@@ -1,5 +1,5 @@
 import { BaseCerysCodeObjectProps, JournalDetailsProps, JournalProps } from "../interfaces/interfaces";
-import { calculateExcelDate } from "../utils/helperFunctions";
+import { calculateExcelDate } from "../utils/helper-functions";
 import { Session } from "./session";
 
 export class Journal implements JournalProps {

@@ -4,7 +4,7 @@ import CerysButton from "../CerysButton";
 import { fetchOptionsNewAssignment } from "../../fetching/generateOptions";
 import { assignmentUrl } from "../../fetching/apiEndpoints";
 import { addPrimarySheets, postOpBalJnls } from "../../assignment/assignmentInit";
-import { calculateDiffInDays } from "../../utils/helperFunctions";
+import { calculateDiffInDays } from "../../utils/helper-functions";
 import { bFPrevPeriodMessage } from "../../utils/messages";
 import { Session } from "../../classes/session";
 import { Assignment, PreliminaryAssignment } from "../../classes/assignment";

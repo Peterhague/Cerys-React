@@ -68,7 +68,7 @@ import {
   TO_CAT,
   VAL_ADJ_CAT,
 } from "../static-values/accounts-categories-pl";
-import { calculateDiffInDays } from "../utils/helperFunctions";
+import { calculateDiffInDays } from "../utils/helper-functions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";

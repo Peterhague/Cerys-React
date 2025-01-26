@@ -84,7 +84,7 @@ export function populateUser(session: Session, userId: string) {
   return session.customer.users.find((user) => user._id === userId);
 }
 
-export async function updateAssignmentDb(session: Session, target: any) {
+export async function updateAssignmentDb(session: Session, target: string) {
   const workbookId = session.assignment._id;
   const customerId = session.customer._id;
   const options = fetchOptionsUpdateAssignment(customerId, workbookId, target);
@@ -121,7 +121,7 @@ export const convertMongoDate = (date: string) => {
   return convertedDate;
 };
 
-export const convertValueToString = (value) => {
+export const convertValueToString = (value: number) => {
   const valueChecked = value < 0 ? value * -1 : value;
   const string = valueChecked.toString();
   const insertionIndex = string.length - 2;
@@ -150,7 +150,7 @@ export const convertExcelDate = (excelDate: any) => {
   return mongoDate;
 };
 
-export const calculateDiffInDays = (inputDate1, inputDate2) => {
+export const calculateDiffInDays = (inputDate1: Date | string, inputDate2: Date | string) => {
   const date1 = new Date(inputDate1);
   const date2 = new Date(inputDate2);
   const utc1 = Date.UTC(date1.getFullYear(), date1.getMonth(), date1.getDate());
@@ -303,7 +303,9 @@ export const updateAssignmentFigures = async (context: Excel.RequestContext, ses
   await wsBalanceSheet(context, session);
 };
 
-export const interpretEventAddress = (e) => {
+export const interpretEventAddress = (
+  e: Excel.WorksheetChangedEventArgs | Excel.WorksheetSingleClickedEventArgs | QuasiEventObject
+) => {
   const address = e.address.includes(":") ? e.address : `${e.address}:${e.address}`;
   const addressSplit = address.split(":");
   const noCols = parseInt(addressSplit[0][0]) ? true : false;
@@ -314,35 +316,35 @@ export const interpretEventAddress = (e) => {
     : noCols
       ? parseInt(addressSplit[0])
       : parseInt(addressSplit[0][1])
-        ? parseInt(addressSplit[0].substr(1))
-        : parseInt(addressSplit[0].substr(2));
+        ? parseInt(addressSplit[0].substring(1))
+        : parseInt(addressSplit[0].substring(2));
 
   const lastRow = noRows
     ? null
     : noCols
       ? parseInt(addressSplit[1])
       : parseInt(addressSplit[1][1])
-        ? parseInt(addressSplit[1].substr(1))
-        : parseInt(addressSplit[1].substr(2));
+        ? parseInt(addressSplit[1].substring(1))
+        : parseInt(addressSplit[1].substring(2));
   const firstCol = noCols
     ? null
     : noRows
       ? colLetterToNum(addressSplit[0])
       : parseInt(addressSplit[0][1])
-        ? colLetterToNum(addressSplit[0].substr(0, 1))
-        : colLetterToNum(addressSplit[0].substr(0, 2));
+        ? colLetterToNum(addressSplit[0].substring(0, 1))
+        : colLetterToNum(addressSplit[0].substring(0, 2));
   const lastCol = noCols
     ? null
     : noRows
       ? colLetterToNum(addressSplit[1])
       : parseInt(addressSplit[1][1])
-        ? colLetterToNum(addressSplit[1].substr(0, 1))
-        : colLetterToNum(addressSplit[1].substr(0, 2));
+        ? colLetterToNum(addressSplit[1].substring(0, 1))
+        : colLetterToNum(addressSplit[1].substring(0, 2));
 
   return { firstRow, lastRow, firstCol, lastCol };
 };
 
-export const interpretExcelAddress = (excelAddress) => {
+export const interpretExcelAddress = (excelAddress: string) => {
   const address = excelAddress.includes(":") ? excelAddress : `${excelAddress}:${excelAddress}`;
   const addressSplit = address.split(":");
   const noCols = parseInt(addressSplit[0][0]) ? true : false;
@@ -353,30 +355,30 @@ export const interpretExcelAddress = (excelAddress) => {
     : noCols
       ? parseInt(addressSplit[0])
       : parseInt(addressSplit[0][1])
-        ? parseInt(addressSplit[0].substr(1))
-        : parseInt(addressSplit[0].substr(2));
+        ? parseInt(addressSplit[0].substring(1))
+        : parseInt(addressSplit[0].substring(2));
 
   const lastRow = noRows
     ? null
     : noCols
       ? parseInt(addressSplit[1])
       : parseInt(addressSplit[1][1])
-        ? parseInt(addressSplit[1].substr(1))
-        : parseInt(addressSplit[1].substr(2));
+        ? parseInt(addressSplit[1].substring(1))
+        : parseInt(addressSplit[1].substring(2));
   const firstCol = noCols
     ? null
     : noRows
       ? colLetterToNum(addressSplit[0])
       : parseInt(addressSplit[0][1])
-        ? colLetterToNum(addressSplit[0].substr(0, 1))
-        : colLetterToNum(addressSplit[0].substr(0, 2));
+        ? colLetterToNum(addressSplit[0].substring(0, 1))
+        : colLetterToNum(addressSplit[0].substring(0, 2));
   const lastCol = noCols
     ? null
     : noRows
       ? colLetterToNum(addressSplit[1])
       : parseInt(addressSplit[1][1])
-        ? colLetterToNum(addressSplit[1].substr(0, 1))
-        : colLetterToNum(addressSplit[1].substr(0, 2));
+        ? colLetterToNum(addressSplit[1].substring(0, 1))
+        : colLetterToNum(addressSplit[1].substring(0, 2));
 
   return { firstRow, lastRow, firstCol, lastCol };
 };

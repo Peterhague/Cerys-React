@@ -1,6 +1,6 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
-import { handleEditButtonClick } from "../utils/helperFunctions";
+import { handleEditButtonClick } from "../utils/helper-functions";
 import { Session } from "../classes/session";
 
 interface footerProps {

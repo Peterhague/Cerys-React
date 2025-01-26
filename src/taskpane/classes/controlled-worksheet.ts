@@ -1,5 +1,5 @@
 import { MappingObjectProps, MapTrackingProps } from "../interfaces/interfaces";
-import { addControlledSheetEventHandlers } from "../utils/helperFunctions";
+import { addControlledSheetEventHandlers } from "../utils/helper-functions";
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { ExcelRangeObject, ProtectedRange } from "./range-objects";

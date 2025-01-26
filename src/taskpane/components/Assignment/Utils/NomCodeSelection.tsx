@@ -3,7 +3,7 @@ import { useState, useRef } from "react";
 import CerysButton from "../../CerysButton";
 import NomCodeInput from "../../Utils/NomCodeInput";
 import { setExcelRangeValue } from "../../../utils/worksheet";
-import { callNextView, getUpdatedTransactions } from "../../../utils/helperFunctions";
+import { callNextView, getUpdatedTransactions } from "../../../utils/helper-functions";
 import { handleClientCodeMapping } from "../../../assignment/assignment-management/opening-balance-adjustments";
 import { createEditableCell } from "../../../classes/editable-cell";
 import { Session } from "../../../classes/session";

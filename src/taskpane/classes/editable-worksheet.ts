@@ -1,6 +1,6 @@
 import { FATransaction, MappingObjectProps } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils/excel-col-conversion";
-import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helperFunctions";
+import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helper-functions";
 import { createDeletionObject } from "../utils/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
 import { createMappingObject } from "./controlled-worksheet";

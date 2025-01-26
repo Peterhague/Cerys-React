@@ -14,7 +14,7 @@ import {
   DetailedTransaction,
   ShortUser,
 } from "../interfaces/interfaces";
-import { getUpdatedTransactions } from "../utils/helperFunctions";
+import { getUpdatedTransactions } from "../utils/helper-functions";
 
 export function fetchOptionsTransBatch(
   session: Session,

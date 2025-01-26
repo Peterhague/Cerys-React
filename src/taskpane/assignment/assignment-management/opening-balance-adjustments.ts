@@ -26,7 +26,7 @@ import {
   handleEditButtonClick,
   handleWorksheetDrill,
   interpretEventAddress,
-} from "../../utils/helperFunctions";
+} from "../../utils/helper-functions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
 import { cerysNomDetailView } from "../../utils/worksheet-drilling/cerys-drilling";

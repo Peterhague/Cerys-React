@@ -53,3 +53,56 @@ class AssetRegisterItem {
     this.subTransactions = asset.periods.find((period) => period.reportingPeriodId === periodId).subTransactions;
   }
 }
+
+export class ActiveSubCategory {
+  assetSubCategory: string;
+  assetSubCatCode: number;
+  regColNameOne: string;
+  regColNameTwo: string;
+  regCol?: number;
+  constructor(subTransaction: AssetSubTransaction) {
+    this.assetSubCategory = subTransaction.assetSubCategory;
+    this.assetSubCatCode = subTransaction.assetSubCatCode;
+    this.regColNameOne = subTransaction.regColNameOne;
+    this.regColNameTwo = subTransaction.regColNameTwo;
+  }
+}
+
+export class ColumnsIndex {
+  costCFNum: number;
+  costCFLetter: string;
+  depnBFNum: number;
+  depnBFLetter: string;
+  depnCFNum: number;
+  depnCFLetter: string;
+  nBVCFNum: number;
+  nBVCFLetter: string;
+  nBVBFNum: number;
+  nBVBFLetter: string;
+  costTotalEndLetter: string;
+  depnTotalEndLetter: string;
+  blankCellOneNum: number;
+  blankCellOneLetter: string;
+  blankCellTwoNum: number;
+  blankCellTwoLetter: string;
+  colsToTotal: { number: number; letter: string }[];
+  constructor() {
+    this.costCFNum = 0;
+    this.costCFLetter = "";
+    this.depnBFNum = 0;
+    this.depnBFLetter = "";
+    this.depnCFNum = 0;
+    this.depnCFLetter = "";
+    this.nBVCFNum = 0;
+    this.nBVCFLetter = "";
+    this.nBVBFNum = 0;
+    this.nBVBFLetter = "";
+    this.costTotalEndLetter = "";
+    this.depnTotalEndLetter = "";
+    this.blankCellOneNum = 0;
+    this.blankCellOneLetter = "";
+    this.blankCellTwoNum = 0;
+    this.blankCellTwoLetter = "";
+    this.colsToTotal = [{ number: 4, letter: "D" }];
+  }
+}

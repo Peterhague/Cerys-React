@@ -1,4 +1,4 @@
-import { AssetRegister } from "../../classes/asset-register";
+import { ActiveSubCategory, AssetRegister, ColumnsIndex } from "../../classes/asset-register";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
 /* global Excel */
@@ -39,40 +39,14 @@ export function populateAssetRegWs(
   formatRegister(ws, underlineA, underlineAO, formatTotal, finalTotalRow, numberColsAsLetter, regColIndex);
 }
 
-const columnsIndex = {
-  costCFNum: 0,
-  costCFLetter: "",
-  depnBFNum: 0,
-  depnBFLetter: "",
-  depnCFNum: 0,
-  depnCFLetter: "",
-  nBVCFNum: 0,
-  nBVCFLetter: "",
-  nBVBFNum: 0,
-  nBVBFLetter: "",
-  costTotalEndLetter: "",
-  depnTotalEndLetter: "",
-  blankCellOneNum: 0,
-  blankCellOneLetter: "",
-  blankCellTwoNum: 0,
-  blankCellTwoLetter: "",
-  colsToTotal: [{ number: 4, letter: "D" }],
-};
-
-const populateActiveSubCats = (transToPost) => {
-  const activeSubCats = [];
-  const subCatNames = [];
-  transToPost.forEach((i) => {
+const populateActiveSubCats = (register: AssetRegister) => {
+  const activeSubCats: ActiveSubCategory[] = [];
+  const subCatNames: string[] = [];
+  register.assets.forEach((i) => {
     i.subTransactions.forEach((sub) => {
       if (!subCatNames.includes(sub.assetSubCategory)) {
-        const obj = {
-          assetSubCategory: sub.assetSubCategory,
-          assetSubCatCode: sub.assetSubCatCode,
-          regColNameOne: sub.regColNameOne,
-          regColNameTwo: sub.regColNameTwo,
-        };
         subCatNames.push(sub.assetSubCategory);
-        activeSubCats.push(obj);
+        activeSubCats.push(new ActiveSubCategory(sub));
       }
     });
   });
@@ -82,8 +56,8 @@ const populateActiveSubCats = (transToPost) => {
   return { activeSubCats, subCatNames };
 };
 
-const buildRegColNames = (activeSubCats, regType) => {
-  const regColIndex = columnsIndex;
+const buildRegColNames = (activeSubCats: ActiveSubCategory[], regType: string) => {
+  const regColIndex = new ColumnsIndex();
   const registerColNames = { namesOne: ["Date", "Description", "Days of"], namesTwo: ["", "", "Year Held"] };
   const { namesOne, namesTwo } = registerColNames;
   const firstDepnCol = regType === "IP" ? 11 : 10;
@@ -112,7 +86,7 @@ const buildRegColNames = (activeSubCats, regType) => {
   return { regColIndex, registerColNames };
 };
 
-const populateRegisterColsIndex = (regColIndex, registerColNamesOne) => {
+const populateRegisterColsIndex = (regColIndex: ColumnsIndex, registerColNamesOne: string[]) => {
   regColIndex.nBVCFNum = registerColNamesOne.length - 1;
   regColIndex.nBVBFNum = registerColNamesOne.length;
   const numberCols = registerColNamesOne.length;
@@ -146,15 +120,18 @@ const populateRegisterColsIndex = (regColIndex, registerColNamesOne) => {
 };
 
 const buildRegPerCategory = (
-  activeCats,
-  numberCols,
-  registerColNames,
+  activeCats: {
+    assetCategory: string;
+    assetCategoryNo: number;
+  }[],
+  numberCols: number,
+  registerColNames: { namesOne: string[]; namesTwo: string[] },
   register: AssetRegister,
-  regColIndex,
-  subCatNames
+  regColIndex: ColumnsIndex,
+  subCatNames: string[]
 ) => {
   const formatTotal = [];
-  const subTotalRows = [];
+  const subTotalRows: number[] = [];
   let rowNumber = 10;
   const regBodyVals = [];
   const underlineA = [];
@@ -244,7 +221,12 @@ const buildRegPerCategory = (
   return { regBodyVals, rowNumber, subTotalRows, underlineA, underlineAO, formatTotal };
 };
 
-const buildFinalTotalRow = (rowNumber, numberCols, regColIndex, subTotalRows) => {
+const buildFinalTotalRow = (
+  rowNumber: number,
+  numberCols: number,
+  regColIndex: ColumnsIndex,
+  subTotalRows: number[]
+) => {
   const finalTotal = [];
   const finalTotalRow = rowNumber;
   for (let i = 0; i < numberCols; i++) {
@@ -260,20 +242,28 @@ const buildFinalTotalRow = (rowNumber, numberCols, regColIndex, subTotalRows) =>
   return { finalTotal, finalTotalRow };
 };
 
-const formatRegister = (ws, underlineA, underlineAO, formatTotal, finalTotalRow, numberColsAsLetter, regColIndex) => {
+const formatRegister = (
+  ws: Excel.Worksheet,
+  underlineA: number[],
+  underlineAO: number[],
+  formatTotal: number[],
+  finalTotalRow: number,
+  numberColsAsLetter: string,
+  regColIndex: ColumnsIndex
+) => {
   const rangeA = ws.getRange("A:A");
-  rangeA.numberFormat = "dd/mm/yyyy";
+  rangeA.numberFormat = [["dd/mm/yyyy"]];
   const rangeC = ws.getRange("C:C");
-  rangeC.numberFormat = "0";
+  rangeC.numberFormat = [["0"]];
   const numbersRange = ws.getRange(`D:${numberColsAsLetter}`);
   numbersRange.numberFormat = STANDARD_NUMBER_FORMAT;
   underlineA.forEach((row) => {
     const range = ws.getRange(`A${row}:A${row}`);
-    range.format.font.underline = "single";
+    range.format.font.underline = "Single";
   });
   underlineAO.forEach((row) => {
     const range = ws.getRange(`A${row}:${numberColsAsLetter}${row}`);
-    range.format.font.underline = "single";
+    range.format.font.underline = "Single";
   });
   formatTotal.forEach((row) => {
     //const range = ws.getRange(`A${row}:${numberColsAsLetter}${row}`);

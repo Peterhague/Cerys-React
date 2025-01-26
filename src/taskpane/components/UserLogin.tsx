@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "./CerysButton";
 import { fetchOptionsGetUser } from "../fetching/generateOptions";
-import { registerWorksheetsCollectionHandler } from "../utils/helperFunctions";
+import { registerWorksheetsCollectionHandler } from "../utils/helper-functions";
 import { Session } from "../classes/session";
 import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 import { Customer } from "../classes/customer";

@@ -22,7 +22,7 @@ import {
   getUpdatedNarrative,
   getCategoryShortName,
   handleWorksheetDrill,
-} from "../helperFunctions";
+} from "../helper-functions";
 import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
 import { addOneWorksheet } from "../worksheet";
 import { clientNomDetailView, showClientNominalDetail } from "./client-drilling";

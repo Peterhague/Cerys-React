@@ -1,4 +1,5 @@
 import { Session } from "../../classes/session";
+/* global Excel */
 
 export function worksheetHeader(session: Session, wsName) {
   const assignment = session.assignment;
@@ -13,7 +14,7 @@ export function worksheetHeader(session: Session, wsName) {
   return headerValues;
 }
 
-export function applyWorkhseetHeader(ws, headerValues) {
+export function applyWorkhseetHeader(ws: Excel.Worksheet, headerValues: any[][]) {
   const headerMainRange = ws.getRange("A1:B5");
   const mainValues = [];
   headerValues.forEach((arr, i) => {
@@ -29,5 +30,5 @@ export function applyWorkhseetHeader(ws, headerValues) {
   sheetNameRange.values = headerValues[6][0];
   sheetNameRange.format.font.italic = true;
   const dateRange = ws.getRange("B3:B3");
-  dateRange.numberFormat = "dd/mm/yyyy";
+  dateRange.numberFormat = [["dd/mm/yyyy"]];
 }

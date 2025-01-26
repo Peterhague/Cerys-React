@@ -10,7 +10,7 @@ import {
   getActiveEdSheet,
   getUpdatedDate,
   getUpdatedNarrative,
-} from "../helperFunctions";
+} from "../helper-functions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange } from "../worksheet";
 import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 /* global Excel */

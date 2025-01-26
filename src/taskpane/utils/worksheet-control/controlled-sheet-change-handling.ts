@@ -3,7 +3,7 @@ import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { Session } from "../../classes/session";
 import { AddressObject } from "../../interfaces/interfaces";
 import { colNumToLetter } from "../excel-col-conversion";
-import { accessExcelContext, interpretEventAddress, parseChangeEventObjectType } from "../helperFunctions";
+import { accessExcelContext, interpretEventAddress, parseChangeEventObjectType } from "../helper-functions";
 import { deleteWorksheetRangeDown, getWorksheetUsedRange, setExcelRangeValue } from "../worksheet";
 import { resetToPreviousValues } from "../worksheet-editing/ws-range-editing";
 /*global Excel */

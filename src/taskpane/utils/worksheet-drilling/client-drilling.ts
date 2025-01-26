@@ -1,4 +1,5 @@
 import { Session } from "../../classes/session";
+import { ClientTransaction } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { getClientNomDetail } from "../taskpane/client-system-access";
 import { addOneWorksheet } from "../worksheet";
@@ -7,7 +8,7 @@ import { addOneWorksheet } from "../worksheet";
 // Called by a click on the client code in the Cerys code analysis sheets.
 // Generates an array of client's relevant transactions and calls
 // clientNomDetailView to generate a worksheet-based view to display the data.
-export async function showClientNominalDetail(e, session: Session) {
+export async function showClientNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
   try {
     await Excel.run(async (context) => {
       console.log("next...");
@@ -29,7 +30,7 @@ export async function showClientNominalDetail(e, session: Session) {
 
 // called by showClientNominalDetail to generate a worksheet-based view of the client
 // nominal activity.
-export async function clientNomDetailView(session: Session, detail) {
+export async function clientNomDetailView(session: Session, detail: ClientTransaction[]) {
   try {
     await Excel.run(async (context) => {
       console.log("final destination...");

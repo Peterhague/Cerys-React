@@ -9,7 +9,7 @@ import {
   parseChangeEventObjectType,
   postEditableSheetEffects,
   simulateEditButtonClick,
-} from "../helperFunctions";
+} from "../helper-functions";
 import { getWorksheetUsedRange } from "../worksheet";
 import { colNumToLetter } from "../excel-col-conversion";
 import { handleOtherEdSheetChange } from "./ws-col-row-manipulation";
@@ -138,13 +138,6 @@ export const updateEdSheetClientCodeMapping = async (
 
 export const renewEdSheetsTransRefs = async (context: Excel.RequestContext, session: Session) => {
   let promptSheetDeletion = false;
-  // session.editableSheets.forEach((sheet) => {
-  //   await sheet.renewTransactions(context, session, session.assignment.transactions);
-  //   if (sheet.transactions.length === 0) {
-  //     sheet.promptDeletion = true;
-  //     promptSheetDeletion = true;
-  //   }
-  // });
   for (let i = 0; i < session.editableSheets.length; i++) {
     await session.editableSheets[i].renewTransactions(context, session, session.assignment.transactions);
     console.log("here???");
