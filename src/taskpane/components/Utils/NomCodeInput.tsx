@@ -72,29 +72,84 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
       session.arrowIndex = -1;
     };
 
-    const handleBlur = (e) => {
+    const handleBlur = (e: React.FocusEvent) => {
+      console.log(searchTerm.trim());
       if (e.currentTarget.contains(e.relatedTarget)) {
         return;
       } else {
+        const searchTermTrimmed = searchTerm.trim();
+        const searchTermTrimmedLower = searchTermTrimmed.toLowerCase();
         setShowSuggestions(false);
         session.arrowIndex = -1;
         if (searchDisplay !== searchTerm) {
           setSearchTerm(searchDisplay);
         } else {
           const filteredChart = chart.filter((code) => {
-            const codeStr = "clientCode" in code ? code.clientCode.toString() : code.cerysCode.toString();
-            const name = "cerysName" in code ? code.cerysName : code.clientCodeName;
+            const codeStr = code instanceof ClientCodeObject ? code.clientCode.toString() : code.cerysCode.toString();
+            const name = code instanceof ClientCerysCodeObject ? code.cerysName : code.clientCodeName;
             let check = true;
-            for (let i = 0; i < searchTerm.length; i++) {
-              if (codeStr[i] !== searchTerm[i]) check = false;
+            for (let i = 0; i < searchTermTrimmed.length; i++) {
+              if (codeStr[i] !== searchTermTrimmed[i]) check = false;
             }
-            if (name.toLowerCase().includes(searchTerm.toLowerCase())) check = true;
-            return searchTerm && check;
+            if (name.toLowerCase().includes(searchTermTrimmed.toLowerCase())) check = true;
+            return check;
           });
-          console.log(filteredChart);
           if (filteredChart.length === 1) {
             const codeObj = filteredChart[0];
             const codeStr = "clientCode" in codeObj ? codeObj.clientCode.toString() : codeObj.cerysCode.toString();
+            const shortName = "cerysExcelName" in codeObj ? codeObj.cerysExcelName : codeObj.clientCodeName;
+            setNominalCode(codeStr);
+            setNominalCodeName(shortName);
+            setSearchTerm(`${codeStr} ${shortName}`);
+            setSearchDisplay(`${codeStr} ${shortName}`);
+          } else if (
+            filteredChart.find(
+              (code) => code instanceof ClientCerysCodeObject && code.cerysCode === parseInt(searchTermTrimmed)
+            ) ||
+            filteredChart.find(
+              (code) => code instanceof ClientCodeObject && code.clientCode === parseInt(searchTermTrimmed)
+            )
+          ) {
+            let codeObj = filteredChart.find(
+              (code) => code instanceof ClientCerysCodeObject && code.cerysCode === parseInt(searchTermTrimmed)
+            );
+            if (!codeObj)
+              codeObj = filteredChart.find(
+                (code) => code instanceof ClientCodeObject && code.clientCode === parseInt(searchTermTrimmed)
+              );
+            const codeStr =
+              codeObj instanceof ClientCodeObject ? codeObj.clientCode.toString() : codeObj.cerysCode.toString();
+            const shortName = "cerysExcelName" in codeObj ? codeObj.cerysExcelName : codeObj.clientCodeName;
+            setNominalCode(codeStr);
+            setNominalCodeName(shortName);
+            setSearchTerm(`${codeStr} ${shortName}`);
+            setSearchDisplay(`${codeStr} ${shortName}`);
+          } else if (
+            filteredChart.find(
+              (code) =>
+                code instanceof ClientCerysCodeObject &&
+                (code.cerysName.toLocaleUpperCase() === searchTermTrimmedLower ||
+                  code.cerysShortName.toLowerCase() === searchTermTrimmedLower ||
+                  code.cerysExcelName.toLowerCase() === searchTermTrimmedLower)
+            ) ||
+            filteredChart.find(
+              (code) => code instanceof ClientCodeObject && code.clientCodeName.toLowerCase() === searchTermTrimmedLower
+            )
+          ) {
+            let codeObj = filteredChart.find(
+              (code) =>
+                code instanceof ClientCerysCodeObject &&
+                (code.cerysExcelName.toLowerCase() === searchTermTrimmedLower ||
+                  code.cerysShortName.toLowerCase() === searchTermTrimmedLower ||
+                  code.cerysName.toLowerCase() === searchTermTrimmedLower)
+            );
+            if (!codeObj)
+              codeObj = filteredChart.find(
+                (code) =>
+                  code instanceof ClientCodeObject && code.clientCodeName.toLowerCase() === searchTermTrimmedLower
+              );
+            const codeStr =
+              codeObj instanceof ClientCodeObject ? codeObj.clientCode.toString() : codeObj.cerysCode.toString();
             const shortName = "cerysExcelName" in codeObj ? codeObj.cerysExcelName : codeObj.clientCodeName;
             setNominalCode(codeStr);
             setNominalCodeName(shortName);

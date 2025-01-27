@@ -63,7 +63,6 @@ export class NewIndiAssociation {
   preliminaryId?: string;
   _id?: string;
   constructor(individual: ExtendedIndividual) {
-    console.log(individual);
     this.firstName = individual ? individual.firstName : "";
     this.lastName = individual ? individual.lastName : "";
     this.email = individual ? individual.email : "";

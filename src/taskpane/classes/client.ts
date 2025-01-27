@@ -64,11 +64,13 @@ export class Client {
     this._responsibleIndividual = client._responsibleIndividual;
     this.clientSoftware = client.clientSoftware;
     this._id = client._id;
-    this.shareClasses = client.shareClasses.map((i) => new ShareClass(i));
-    this.directors = client.directors.map((i) => new NewIndiAssociation(i));
-    this.shareholders = client.shareholders.map((i) => new NewIndiAssociation(i));
-    this.newIndividuals = client.newIndividuals.map((i) => new NewIndiAssociation(i));
-    this.existingIndividuals = client.existingIndividuals.map((i) => new NewIndiAssociation(i));
+    this.shareClasses = client.shareClasses ? client.shareClasses.map((i) => new ShareClass(i)) : [];
+    this.directors = client.directors ? client.directors.map((i) => new NewIndiAssociation(i)) : [];
+    this.shareholders = client.shareholders ? client.shareholders.map((i) => new NewIndiAssociation(i)) : [];
+    this.newIndividuals = client.newIndividuals ? client.newIndividuals.map((i) => new NewIndiAssociation(i)) : [];
+    this.existingIndividuals = client.existingIndividuals
+      ? client.existingIndividuals.map((i) => new NewIndiAssociation(i))
+      : [];
     this.amortBasisGwill = client.amortBasisGwill;
     this.amortRateGwill = client.amortRateGwill;
     this.amortBasisPatsLics = client.amortBasisPatsLics;

@@ -89,6 +89,9 @@ class BaseAssignment {
     this.clientName = assignment.clientName;
     this.assignmentType = assignment.assignmentType;
     this.transactionsPosted = assignment.transactionsPosted;
+    this.senior = assignment.senior;
+    this.manager = assignment.manager;
+    this.responsibleIndividual = assignment.responsibleIndividual;
   }
 }
 
@@ -105,14 +108,7 @@ export class PreliminaryAssignment extends BaseAssignment {
 }
 
 export class Assignment extends BaseAssignment {
-  // clientId: string;
-  // clientCode: string;
-  // clientName: string;
   reportingPeriod: ReportingPeriod;
-  // assignmentType: string;
-  // senior: ShortUser;
-  // manager: ShortUser;
-  // responsibleIndividual: ShortUser;
   clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
   transactions: Transaction[];
@@ -122,7 +118,6 @@ export class Assignment extends BaseAssignment {
   dateFinished: string;
   TBInitiated: boolean;
   TBEntered: boolean;
-  // transactionsPosted: boolean;
   NLEntered: boolean;
   templatesAmended: boolean;
   IFARegisterCreated: boolean;
@@ -146,11 +141,7 @@ export class Assignment extends BaseAssignment {
   bSListenerAdded?: boolean;
   constructor(assignment: AssignmentProps) {
     super(assignment);
-    // this.clientId = assignment.clientId;
-    // this.clientCode = assignment.clientCode;
-    // this.clientName = assignment.clientName;
     this.reportingPeriod = assignment.reportingPeriod;
-    // this.assignmentType = assignment.assignmentType;
     this.senior = assignment.senior;
     this.manager = assignment.manager;
     this.responsibleIndividual = assignment.responsibleIndividual;
@@ -163,7 +154,6 @@ export class Assignment extends BaseAssignment {
     this.dateFinished = assignment.dateFinished;
     this.TBInitiated = assignment.TBInitiated;
     this.TBEntered = assignment.TBEntered;
-    // this.transactionsPosted = assignment.transactionsPosted;
     this.NLEntered = assignment.NLEntered;
     this.templatesAmended = assignment.templatesAmended;
     this.IFARegisterCreated = assignment.IFARegisterCreated;
