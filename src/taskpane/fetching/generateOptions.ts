@@ -12,7 +12,6 @@ import {
   ClientTBLineProps,
   ClientTransaction,
   DetailedTransaction,
-  ShortUser,
 } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helper-functions";
 
@@ -231,7 +230,11 @@ export function fetchOptionsUpdateAssignment(customerId: string, workbookId: str
   };
 }
 
-export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerId: string) {
+export function fetchOptionsFinaliseAssignment(
+  assignment: Assignment,
+  customerId: string,
+  finalClientTB: ClientTBLineProps[]
+) {
   return {
     method: "POST",
     headers: {
@@ -242,6 +245,7 @@ export function fetchOptionsFinaliseAssignment(assignment: Assignment, customerI
       workbookId: assignment._id,
       customerId,
       clientId: assignment.clientId,
+      finalClientTB,
     }),
   };
 }

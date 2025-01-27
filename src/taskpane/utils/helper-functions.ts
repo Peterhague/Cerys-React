@@ -31,6 +31,7 @@ import {
 import { QuasiEventObject } from "../classes/quasi-event-object";
 import { accountsCategories } from "../static-values/accounts-categories-array";
 import { ControlledWorksheet } from "../classes/controlled-worksheet";
+import _ from "lodash";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -518,16 +519,25 @@ export const postEditableSheetEffects = async (
 
 export const buildClientTBBalSheetOnly = (session: Session) => {
   const bSTB: ClientTBLineProps[] = [];
-  let pLResLine: ClientTBLineProps = session.assignment.clientTB.find(
+  let pLResLineCode: number = session.assignment.clientTB.find(
     (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
-  );
+  ).clientCode;
+  let count = 0;
   session.assignment.clientTB.forEach((line) => {
-    if (line.statement === "BS") {
+    if (line.statement === "BS" && line.clientCode !== pLResLineCode) {
       bSTB.push(line);
-    } else {
-      pLResLine.value += line.value;
+    } else if (line.statement === "PL") {
+      count += line.value;
     }
   });
+  console.log(count);
+  const reserves: ClientTBLineProps = _.cloneDeep(
+    session.assignment.clientTB.find(
+      (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+    )
+  );
+  reserves.value += count;
+  bSTB.push(reserves);
   return bSTB;
 };
 

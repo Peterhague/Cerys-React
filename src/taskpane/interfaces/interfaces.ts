@@ -260,6 +260,7 @@ export interface ClientTransaction {
 export interface ClientTBLineProps {
   clientCode: number;
   clientCodeName: string;
+  cerysCode?: number;
   value: number;
   statement: string;
 }
