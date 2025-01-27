@@ -2,10 +2,12 @@ import { Assignment } from "../classes/assignment";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
+import { ClientTBLineProps } from "../interfaces/interfaces";
 /* global Excel */
 
 export async function enterNL(session: Session) {
-  const clientNL = await createClientNLObject();
+  const { clientNL, openingBalances } = await createClientNLObject();
+  console.log(openingBalances);
   session.assignment.clientNL = clientNL;
   const assignment = await postCltNLToDb(session);
   console.log(assignment);
@@ -16,6 +18,7 @@ export async function createClientNLObject() {
   try {
     const rtnVal = await Excel.run(async (context) => {
       const clientNL = [];
+      const openingBalances: ClientTBLineProps[] = [];
       const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
       await context.sync();
       if (ws.isNullObject) {
@@ -44,10 +47,20 @@ export async function createClientNLObject() {
               };
             clientNL.push(transObj);
           }
+          if (line[6] === "Opening Balance:") {
+            const opBal: ClientTBLineProps = {
+              clientCode: operativeCode,
+              clientCodeName: nominal,
+              value:
+                line[7] || line[7] === 0 ? Math.round(line[7] * 100) : line[8] === 0 ? 0 : Math.round(line[8] * -100),
+              statement: "NA",
+            };
+            openingBalances.push(opBal);
+          }
         });
       }
       await context.sync();
-      return clientNL;
+      return { clientNL, openingBalances };
     });
     return rtnVal;
   } catch (e) {

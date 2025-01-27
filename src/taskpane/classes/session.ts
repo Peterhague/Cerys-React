@@ -1,4 +1,4 @@
-import { BaseIndividualProps } from "../interfaces/interfaces";
+import { BaseIndividualProps, ClientTBLineProps } from "../interfaces/interfaces";
 import { AssetRegister } from "./asset-register";
 import { Assignment } from "./assignment";
 import { ClientCerysCodeObject } from "./cerys-codes";
@@ -17,6 +17,7 @@ export class Session {
   assignment: Assignment;
   chart: ClientCerysCodeObject[];
   clientChart: ClientCodeObject[];
+  clientBFwdTB: ClientTBLineProps[];
   currentView: string = "";
   nextView: string = "";
   nextViewButOne: string = "";

@@ -124,12 +124,14 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
       periodStart,
       transactionsPosted: false,
     });
-    const { customer, assignment, IFARegister, TFARegister, client } = await processNewAssignment(prelimAssignment);
+    const { customer, assignment, IFARegister, TFARegister, client, clientBFwdTB } =
+      await processNewAssignment(prelimAssignment);
     session.customer = new Customer(customer);
     session.assignment = new Assignment(assignment);
     session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
     session.IFARegister = IFARegister && new AssetRegister(session, IFARegister, "Intangible");
     session.TFARegister = TFARegister && new AssetRegister(session, TFARegister, "Tangible");
+    session.clientBFwdTB = clientBFwdTB;
     addPrimarySheets(session);
     if (session.assignment.reportingPeriod.bFTB.length > 0) {
       const options = {
@@ -148,6 +150,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
+    console.log(updatedCustAndNewAss);
     session.chart = updatedCustAndNewAss.chart.map((i: ClientCerysCodeObjectProps) => new ClientCerysCodeObject(i));
     return updatedCustAndNewAss;
   };
