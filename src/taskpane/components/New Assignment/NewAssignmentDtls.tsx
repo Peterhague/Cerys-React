@@ -15,6 +15,7 @@ import { ClientCodeObject } from "../../classes/client-codes";
 import { ClientCerysCodeObjectProps, ClientCodeObjectProps } from "../../interfaces/interfaces";
 import { ClientCerysCodeObject } from "../../classes/cerys-codes";
 import { AssetRegister } from "../../classes/asset-register";
+import { ViewOptions } from "../../classes/view-options";
 
 interface newAssignmentDtlsProps {
   handleView: (view: string) => void;
@@ -139,7 +140,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
         handleNo: () => session.handleView(ASSIGNMENT_DASH_HOME),
         message: bFPrevPeriodMessage,
       };
-      session.handleDynamicView(USER_CONFIRM_PROMPT, options);
+      session.handleDynamicView(USER_CONFIRM_PROMPT, new ViewOptions(options));
     } else {
       handleView(ASSIGNMENT_DASH_HOME);
     }

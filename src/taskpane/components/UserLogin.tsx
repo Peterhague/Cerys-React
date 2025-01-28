@@ -6,11 +6,12 @@ import { registerWorksheetsCollectionHandler } from "../utils/helper-functions";
 import { Session } from "../classes/session";
 import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 import { Customer } from "../classes/customer";
-import { ViewOptions } from "../interfaces/interfaces";
+import { ViewOptions } from "../classes/view-options";
+import { Intray } from "../classes/in-trays/nominal-ledger";
 
 interface userLoginProps {
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, props: ViewOptions) => void;
+  handleDynamicView: (view: string, options: ViewOptions | Intray) => void;
   session: Session;
   setEditButton: (state: string) => void;
 }

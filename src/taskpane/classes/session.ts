@@ -8,9 +8,11 @@ import { ControlledWorksheet } from "./controlled-worksheet";
 import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
+import { Intray } from "./in-trays/nominal-ledger";
 import { BaseIndividual } from "./individuals";
 import { Journal } from "./journal";
 import { Transaction } from "./transaction";
+import { ViewOptions } from "./view-options";
 import { Worksheet } from "./worksheet";
 
 export class Session {
@@ -43,7 +45,7 @@ export class Session {
   IPRegister: AssetRegister;
   TFARegister: AssetRegister;
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: { handleYes: () => void; handleNo: () => void }) => void;
+  handleDynamicView: (view: string, options: ViewOptions | Intray) => void;
   setEditButton: (editButtonStatus: string) => void;
   unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;

@@ -78,6 +78,8 @@ import {
   ENTER_CLIENT_DATA_HOME,
   ENTER_JOURNAL,
   HANDLE_TRANS_UPDATES,
+  INTRAY_DETAILS,
+  INTRAY_SUMMARY,
   LANDING_PAGE,
   MANAGE_ASSIGNMENT_DASH_HOME,
   MAP_UNMAPPED_CODES,
@@ -94,6 +96,11 @@ import {
   USER_LOGIN,
 } from "../static-values/views";
 import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientIndis";
+import IntraySummary from "./Assignment/Intray/IntraySummary";
+import { ViewOptionsProps } from "../interfaces/interfaces";
+import { Intray } from "../classes/in-trays/nominal-ledger";
+import { ViewOptions } from "../classes/view-options";
+import IntrayDetails from "./Assignment/Intray/IntrayDetails";
 
 interface AppBodyProps {
   session: Session;
@@ -102,7 +109,7 @@ interface AppBodyProps {
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState(BLANK_VIEW_OPTIONS);
+  const [options, setOptions] = useState<ViewOptionsProps | Intray>(BLANK_VIEW_OPTIONS);
 
   console.log(session);
 
@@ -111,7 +118,7 @@ const AppBody = ({ session }: AppBodyProps) => {
     setView(view);
   };
 
-  const handleDynamicView = (view, options) => {
+  const handleDynamicView = (view: string, options: ViewOptionsProps | Intray) => {
     setOptions(options);
     session.currentView = view;
     setView(view);
@@ -177,6 +184,14 @@ const AppBody = ({ session }: AppBodyProps) => {
         body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
         session.nextView = view;
         break;
+      case INTRAY_SUMMARY:
+        if (options instanceof Intray)
+          body = <IntraySummary handleView={handleView} session={session} intray={options} />;
+        break;
+      case INTRAY_DETAILS:
+        if (options instanceof Intray)
+          body = <IntrayDetails handleView={handleView} session={session} intray={options} />;
+        break;
       case OPENING_BALANCE_ADJUSTMENTS:
         body = <OpeningBalanceAdjustments handleView={handleView} session={session} />;
         session.nextView = view;
@@ -188,7 +203,8 @@ const AppBody = ({ session }: AppBodyProps) => {
         body = <NomCodeSelection handleView={handleView} session={session} chart={session.clientChart} />;
         break;
       case USER_CONFIRM_PROMPT:
-        body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
+        if (options instanceof ViewOptions)
+          body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
         break;
       case CUSTOMER_CLIENTS_HOME:
         body = <CustomerClientsHome handleView={handleView} session={session} />;
@@ -265,7 +281,8 @@ const AppBody = ({ session }: AppBodyProps) => {
         body = <EnterJournal handleView={handleView} session={session} chart={session.chart} />;
         break;
       case PROMPT_ASSET_REGISTER_CREATION:
-        body = <PromptAssetRegisterCreation handleView={handleView} session={session} options={options} />;
+        if (options instanceof ViewOptions)
+          body = <PromptAssetRegisterCreation handleView={handleView} session={session} options={options} />;
         break;
       case HANDLE_TRANS_UPDATES:
         body = <HandleTransUpdates handleView={handleView} session={session} />;
@@ -274,7 +291,8 @@ const AppBody = ({ session }: AppBodyProps) => {
         body = <ReviewTransUpdates handleView={handleView} session={session} />;
         break;
       case REVIEW_CUSTOM_MAPPED_TRANS:
-        body = <ReviewCustomMappedTrans handleView={handleView} session={session} options={options} />;
+        if (options instanceof ViewOptions)
+          body = <ReviewCustomMappedTrans handleView={handleView} session={session} options={options} />;
         break;
       case DELETE_SHEET_PROMPT:
         body = <DeleteSheetPrompt handleView={handleView} session={session} />;

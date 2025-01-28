@@ -5,6 +5,7 @@ import { bFPrevPeriodMessage } from "../../../utils/messages";
 import { trialBalanceUrl } from "../../../fetching/apiEndpoints";
 import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, OPENING_BALANCE_ADJUSTMENTS, USER_CONFIRM_PROMPT } from "../../../static-values/views";
+import { ViewOptions } from "../../../classes/view-options";
 
 interface manageAssignmentDashHomeProps {
   handleView: (view: string) => void;
@@ -18,7 +19,7 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
       handleNo: () => console.log("no"),
       message: bFPrevPeriodMessage,
     };
-    session.handleDynamicView(USER_CONFIRM_PROMPT, options);
+    session.handleDynamicView(USER_CONFIRM_PROMPT, new ViewOptions(options));
   };
 
   const updateChart = async () => {

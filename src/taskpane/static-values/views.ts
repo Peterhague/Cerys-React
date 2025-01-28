@@ -43,3 +43,5 @@ export const REVIEW_TRANS_UPDATES = "reviewTransUpdates";
 export const REVIEW_CUSTOM_MAPPED_TRANS = "reviewCustomMappedTrans";
 export const DELETE_SHEET_PROMPT = "deleteSheetPrompt";
 export const MAP_UNMAPPED_CODES = "mapUnmappedCodes";
+export const INTRAY_SUMMARY = "inTraySummary";
+export const INTRAY_DETAILS = "inTrayDetails";

@@ -61,6 +61,7 @@ export class Client {
     this.accRefDate = client.accRefDate;
     this.nominatedDay = client.nominatedDay;
     this._senior = client._senior;
+    this._manager = client._manager;
     this._responsibleIndividual = client._responsibleIndividual;
     this.clientSoftware = client.clientSoftware;
     this._id = client._id;
@@ -71,6 +72,8 @@ export class Client {
     this.existingIndividuals = client.existingIndividuals
       ? client.existingIndividuals.map((i) => new NewIndiAssociation(i))
       : [];
+    this.currentReportingPeriod = client.currentReportingPeriod;
+    this.previousReportingPeriods = client.previousReportingPeriods;
     this.amortBasisGwill = client.amortBasisGwill;
     this.amortRateGwill = client.amortRateGwill;
     this.amortBasisPatsLics = client.amortBasisPatsLics;

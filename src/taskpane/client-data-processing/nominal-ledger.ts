@@ -1,17 +1,22 @@
 import { Assignment } from "../classes/assignment";
+import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
+import { Intray, InTrayNominalLedgerEntry } from "../classes/in-trays/nominal-ledger";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
 import { ClientTBLineProps } from "../interfaces/interfaces";
+import { INTRAY_SUMMARY } from "../static-values/views";
 /* global Excel */
 
 export async function enterNL(session: Session) {
   const { clientNL, openingBalances } = await createClientNLObject();
-  console.log(openingBalances);
   session.assignment.clientNL = clientNL;
   const assignment = await postCltNLToDb(session);
   console.log(assignment);
   session.assignment = new Assignment(assignment);
+  const nLIntray = createNLEntryInTray(session, openingBalances);
+  const intray = new Intray(nLIntray);
+  intray && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 
 export async function createClientNLObject() {
@@ -48,14 +53,15 @@ export async function createClientNLObject() {
             clientNL.push(transObj);
           }
           if (line[6] === "Opening Balance:") {
-            const opBal: ClientTBLineProps = {
-              clientCode: operativeCode,
-              clientCodeName: nominal,
-              value:
-                line[7] || line[7] === 0 ? Math.round(line[7] * 100) : line[8] === 0 ? 0 : Math.round(line[8] * -100),
-              statement: "NA",
-            };
-            openingBalances.push(opBal);
+            if (line[7] || line[8]) {
+              const opBal: ClientTBLineProps = {
+                clientCode: operativeCode,
+                clientCodeName: nominal,
+                value: line[7] ? Math.round(line[7] * 100) : Math.round(line[8] * -100),
+                statement: "NA",
+              };
+              openingBalances.push(opBal);
+            }
           }
         });
       }
@@ -77,4 +83,26 @@ export const postCltNLToDb = async (session: Session) => {
   const updatedAssignmentDb = await fetch(postClientNLUrl, options);
   const updatedAssignment = await updatedAssignmentDb.json();
   return updatedAssignment;
+};
+
+export const createNLEntryInTray = (session: Session, openingBalances: ClientTBLineProps[]) => {
+  const reconcilationObj = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
+  console.log(reconcilationObj);
+  const inTray = reconcilationObj && new InTrayNominalLedgerEntry(reconcilationObj);
+  console.log(inTray);
+  return inTray;
+};
+
+export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBLineProps[]) => {
+  const comparisonArray = session.clientBFwdTB.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
+  openingBalances.forEach((opBal) => {
+    const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);
+    existingItem
+      ? (existingItem.clientValue = opBal.value)
+      : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
+  });
+  const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances);
+  console.log(reconcilationObj);
+  console.log(reconcilationObj.getAllDifferences());
+  return reconcilationObj;
 };

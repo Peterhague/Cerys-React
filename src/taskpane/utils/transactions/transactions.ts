@@ -5,6 +5,7 @@ import { Journal } from "../../classes/journal";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
+import { ViewOptions } from "../../classes/view-options";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
 import { RegisterType } from "../../interfaces/interfaces";
@@ -114,7 +115,7 @@ export const checkNewTransForAssets = (session: Session) => {
     register = getAssetRegisterType(nextRegisterPrompt);
   }
   const options = getViewOptions([{ key: "registerType", value: register }]);
-  session.handleDynamicView(PROMPT_ASSET_REGISTER_CREATION, options);
+  session.handleDynamicView(PROMPT_ASSET_REGISTER_CREATION, new ViewOptions(options));
 };
 
 export const checkFATranUpdatesForAssets = (session: Session) => {

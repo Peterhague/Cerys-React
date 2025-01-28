@@ -2,12 +2,12 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { ViewOptions } from "../../../interfaces/interfaces";
 import {
   updateCerysCodeMappingIgnoreCustom,
   updateCerysCodeMappingIncludeCustom,
   updateCerysCodeMappingIncludeCustomAsSelected,
 } from "../../../assignment/assignment-management/opening-balance-adjustments";
+import { ViewOptions } from "../../../classes/view-options";
 
 interface ReviewCustomMappedTransProps {
   handleView: (view: string) => void;

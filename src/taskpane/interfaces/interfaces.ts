@@ -361,6 +361,8 @@ export interface ClientProps {
   shareholders: NewIndiAssociation[];
   newIndividuals: NewIndiAssociation[];
   existingIndividuals: NewIndiAssociation[];
+  currentReportingPeriod?: ReportingPeriod;
+  previousReportingPeriods?: ReportingPeriod[];
   amortBasisGwill?: string;
   amortRateGwill?: string;
   amortBasisPatsLics?: string;
@@ -454,17 +456,17 @@ export interface WorksheetDefaults {
   addListeners: [(context: Excel.RequestContext, session: Session) => void];
 }
 
-export interface ViewOptions {
-  handleYes: () => void;
-  handleNo: () => void;
-  message: React.ReactNode;
-  yesButtonText: string;
-  noButtonText: string;
-  registerType: RegisterType;
-  nominalCode: string | number;
-  nominalCodeName: string;
-  wsName: string;
-  cerysCode: number;
+export interface ViewOptionsProps {
+  handleYes?: () => void;
+  handleNo?: () => void;
+  message?: React.ReactNode;
+  yesButtonText?: string;
+  noButtonText?: string;
+  registerType?: RegisterType;
+  nominalCode?: string | number;
+  nominalCodeName?: string;
+  wsName?: string;
+  cerysCode?: number;
 }
 
 export interface RegisterType {
@@ -546,4 +548,12 @@ export interface AssetDb {
     subTransactions: AssetSubTransaction[];
   }[];
   _id: string;
+}
+
+export interface InTrayItemProps {
+  title: string;
+  subtitle: string;
+  summary: string;
+  detailsAction: () => void;
+  affirmativeAction: () => void;
 }

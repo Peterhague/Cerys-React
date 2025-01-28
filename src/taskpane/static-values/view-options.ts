@@ -1,8 +1,8 @@
 /*global Excel */
 import { Session } from "../classes/session";
-import { ViewOptions } from "../interfaces/interfaces";
+import { ViewOptionsProps } from "../interfaces/interfaces";
 
-export const BLANK_VIEW_OPTIONS: ViewOptions = {
+export const BLANK_VIEW_OPTIONS: ViewOptionsProps = {
   handleYes: () => console.log("yes"),
   handleNo: () => console.log("no"),
   message: undefined,

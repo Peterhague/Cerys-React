@@ -9,6 +9,7 @@ import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { ControlledInputMap, TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
+import { ViewOptions } from "../../classes/view-options";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
 import { ClientTransaction } from "../../interfaces/interfaces";
@@ -134,7 +135,7 @@ export const handleClientCodeMapping = (session: Session, nominalCode: number | 
     yesButtonText: "All transactions",
     noButtonText: "This transaction only",
   };
-  session.handleDynamicView(USER_CONFIRM_PROMPT, options);
+  session.handleDynamicView(USER_CONFIRM_PROMPT, new ViewOptions(options));
 };
 
 export const checkTransForCustomMapping = (
@@ -154,7 +155,7 @@ export const checkTransForCustomMapping = (
     options.nominalCodeName = nominalCodeName;
     options.cerysCode = cerysCode;
     options.wsName = wsName;
-    session.handleDynamicView(REVIEW_CUSTOM_MAPPED_TRANS, options);
+    session.handleDynamicView(REVIEW_CUSTOM_MAPPED_TRANS, new ViewOptions(options));
   }
 };
 

@@ -16,7 +16,8 @@ import {
 } from "../../../utils/transactions/transactions";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { DetailedTransaction, ViewOptions } from "../../../interfaces/interfaces";
+import { DetailedTransaction } from "../../../interfaces/interfaces";
+import { ViewOptions } from "../../../classes/view-options";
 /* global Excel */
 
 interface PromptAssetRegisterCreationProps {
