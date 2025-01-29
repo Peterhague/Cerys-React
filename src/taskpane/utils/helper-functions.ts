@@ -31,7 +31,6 @@ import {
 import { QuasiEventObject } from "../classes/quasi-event-object";
 import { accountsCategories } from "../static-values/accounts-categories-array";
 import { ControlledWorksheet } from "../classes/controlled-worksheet";
-import _ from "lodash";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 /* global Excel */
 

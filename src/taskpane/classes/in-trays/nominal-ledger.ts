@@ -6,6 +6,10 @@ export class InTray {
   constructor(intray: InTrayNominalLedgerEntry) {
     this.content = intray;
   }
+  deleteThisItem(inTrayItem: InTrayItem) {
+    const items = this.content.items.filter((i) => i.id !== inTrayItem.id);
+    this.content = { items };
+  }
 }
 
 export class InTrayNominalLedgerEntry {

@@ -14,12 +14,17 @@ interface IntrayDetailsProps {
 
 const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => {
   const { inTrayItem, inTray } = options;
+
+  const handleIgnore = () => {
+    inTray.deleteThisItem(inTrayItem);
+    session.handleDynamicView(INTRAY_SUMMARY, inTray);
+  };
   return (
     <>
       <p>{options.inTrayItem.getSummaryText()}</p>
       <CerysButton buttonText={"Yes"} handleClick={async () => await inTrayItem.affirmativeAction(session)} />
       <CerysButton buttonText={"Add to intray"} handleClick={() => inTrayItem.affirmativeAction(session)} />
-      <CerysButton buttonText={"Ignore"} handleClick={() => inTrayItem.affirmativeAction(session)} />
+      <CerysButton buttonText={"Ignore"} handleClick={() => handleIgnore()} />
       <CerysButton
         buttonText={"Return to In-tray"}
         handleClick={() => session.handleDynamicView(INTRAY_SUMMARY, inTray)}
