@@ -32,6 +32,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
             <select
               name="client"
               id="client"
+              title="client"
               className="form-control"
               value={clientId}
               onChange={(e) => setClientId(e.target.value)}
@@ -71,6 +72,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
                 name="dateCeased"
                 type="date"
                 id="dateCeased"
+                title="date ceased"
                 className="form-control"
                 value={dateCeased}
                 onChange={(e) => setDateCeased(e.target.value)}

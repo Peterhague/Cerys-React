@@ -67,51 +67,75 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     <>
       <form onSubmit={handleSubmit} id="journalForm" action="">
         <h3>Enter journal</h3>
-        <NomCodeInput
-          ref={inputRef}
-          session={session}
-          chart={chart}
-          nominalCode={nominalCode}
-          setNominalCode={setNominalCode}
-          nominalCodeName={nominalCodeName}
-          setNominalCodeName={setNominalCodeName}
-          searchTerm={searchTerm}
-          setSearchTerm={setSearchTerm}
-          searchDisplay={searchDisplay}
-          setSearchDisplay={setSearchDisplay}
-        />
-        <div>
-          <input
-            name="value"
-            type="number"
-            id="value"
-            className="form-control"
-            placeholder="Enter journal value"
-            value={value}
-            onChange={(e) => setValue(e.target.value)}
-          ></input>
-        </div>
-        <div>
-          <input
-            name="narrative"
-            type="text"
-            id="narrative"
-            className="form-control"
-            placeholder="Enter journal narrative"
-            value={narrative}
-            onChange={(e) => setNarrative(e.target.value)}
-          ></input>
-        </div>
-        <div>
-          <input
-            name="transactionDate"
-            type="date"
-            id="transactionDate"
-            className="form-control"
-            value={transactionDate}
-            onChange={(e) => setTransactionDate(e.target.value)}
-          ></input>
-        </div>
+        <table>
+          <tbody>
+            <tr>
+              <td>Nominal code</td>
+              <td>
+                <NomCodeInput
+                  ref={inputRef}
+                  session={session}
+                  chart={chart}
+                  nominalCode={nominalCode}
+                  setNominalCode={setNominalCode}
+                  nominalCodeName={nominalCodeName}
+                  setNominalCodeName={setNominalCodeName}
+                  searchTerm={searchTerm}
+                  setSearchTerm={setSearchTerm}
+                  searchDisplay={searchDisplay}
+                  setSearchDisplay={setSearchDisplay}
+                />
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="value">Journal value</label>
+              </td>
+              <td>
+                <input
+                  name="value"
+                  type="number"
+                  id="value"
+                  className="form-control"
+                  placeholder="Enter journal value"
+                  value={value}
+                  onChange={(e) => setValue(e.target.value)}
+                ></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="narrative">Journal narrative</label>
+              </td>
+              <td>
+                <input
+                  name="narrative"
+                  type="text"
+                  id="narrative"
+                  className="form-control"
+                  placeholder="Enter journal narrative"
+                  value={narrative}
+                  onChange={(e) => setNarrative(e.target.value)}
+                ></input>
+              </td>
+            </tr>
+            <tr>
+              <td>
+                <label htmlFor="transactionDate">Enter transaction date</label>
+              </td>
+              <td>
+                <input
+                  name="transactionDate"
+                  type="date"
+                  id="transactionDate"
+                  className="form-control"
+                  value={transactionDate}
+                  onChange={(e) => setTransactionDate(e.target.value)}
+                ></input>
+              </td>
+            </tr>
+          </tbody>
+        </table>
         {session.activeJournal.netValue !== 0 && (
           <p>Your journals are out of balance by {session.activeJournal.netValue / 100}</p>
         )}

@@ -131,6 +131,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             name="accRefMonth"
             id="accRefMonth"
             className="form-control"
+            title="accounting reference month"
             value={accRefMonth}
             onChange={(e) => setAccRefMonth(e.target.value)}
           >
@@ -187,6 +188,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
           <select
             name="nominatedDay"
             id="nominatedDay"
+            title="nominated day"
             className="form-control"
             value={nominatedDay}
             onChange={(e) => setNominatedDay(parseInt(e.target.value))}
@@ -295,6 +297,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             <select
               name="senior"
               id="senior"
+              title="senior"
               className="form-control"
               value={_senior}
               onChange={(e) => set_Senior(e.target.value)}
@@ -313,6 +316,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             <select
               name="manager"
               id="manager"
+              title="manager"
               className="form-control"
               value={_manager}
               onChange={(e) => set_Manager(e.target.value)}
@@ -331,6 +335,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
             <select
               name="RI"
               id="RI"
+              title="responsible individual"
               className="form-control"
               value={_responsibleIndividual}
               onChange={(e) => set_ResponsibleIndividual(e.target.value)}

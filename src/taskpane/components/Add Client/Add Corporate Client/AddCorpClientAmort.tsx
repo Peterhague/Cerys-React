@@ -66,7 +66,9 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
           </thead>
           <tbody>
             <tr>
-              <td>Goodwill</td>
+              <td>
+                <label htmlFor="amort-rate-gwill">Goodwill</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-gwill-SL">SL</label>
                 <input
@@ -102,7 +104,9 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
               </td>
             </tr>
             <tr>
-              <td>Patents & licences</td>
+              <td>
+                <label htmlFor="amort-rate-pats-lics">Patents & licences</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-pats-lics-SL">SL</label>
                 <input
@@ -138,7 +142,9 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
               </td>
             </tr>
             <tr>
-              <td>Development costs</td>
+              <td>
+                <label htmlFor="amort-rate-dev-costs">Development costs</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-dev-costs-SL">SL</label>
                 <input
@@ -174,7 +180,9 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
               </td>
             </tr>
             <tr>
-              <td>Computer software</td>
+              <td>
+                <label htmlFor="amort-rate-comp-sware">Computer software</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-comp-sware-SL">SL</label>
                 <input

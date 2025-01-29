@@ -406,10 +406,14 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
                         <td>{sC.getAvailabletoAllocate(activeIndi)}</td>
                       </tr>
                       <tr>
-                        <td>Allocate to</td>
+                        <td>
+                          <label htmlFor="allocation">Allocate to</label>
+                        </td>
                         <td>
                           <input
                             type="number"
+                            id="allocation"
+                            name="allocation"
                             value={
                               activeIndi.potentialShareAllocations.find(
                                 (sClass: IndividualShareAllocation) => sClass.shareClassNumber === sC.shareClassNumber

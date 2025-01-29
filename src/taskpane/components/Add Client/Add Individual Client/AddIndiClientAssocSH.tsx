@@ -20,15 +20,9 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
 
   const handleClientSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const activeClient = e.target.value;
-    let sClasses;
-    session.customer.clients.forEach((clt) => {
-      if (clt._id === activeClient) {
-        sClasses = clt.shareClasses;
-        setClientId(clt);
-      }
-    });
-    const shareClasses = session.customer.clients.find((i) => i._id === activeClient).shareClasses;
-    setShareClasses(sClasses);
+    const client = session.customer.clients.find((i) => i._id === activeClient);
+    setClientId(client);
+    setShareClasses(client.shareClasses);
     setShowShareClasses(true);
     return activeClient;
   };
@@ -71,7 +65,13 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
         <h3>Add New Individual</h3>
         <>
           <div>
-            <select name="client" id="client" className="form-control" onChange={(e) => handleClientSelection(e)}>
+            <select
+              name="client"
+              id="client"
+              title="client"
+              className="form-control"
+              onChange={(e) => handleClientSelection(e)}
+            >
               <option>Please select</option>
               {session.customer.clients.map((client) => (
                 <option key={client._id} value={client._id}>
@@ -99,10 +99,17 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
                     </tr>
                     <tr>
                       <td>
-                        Allocate to {session.newIndiPrelim.firstName} {session.newIndiPrelim.lastName}
+                        <label htmlFor="allocateTo">
+                          Allocate to {session.newIndiPrelim.firstName} {session.newIndiPrelim.lastName}
+                        </label>
                       </td>
                       <td>
-                        <input type="number" onChange={(e) => handleShareAllocation(e.target.value, sC._id)}></input>
+                        <input
+                          id="allocateTo"
+                          name="allocateTo"
+                          type="number"
+                          onChange={(e) => handleShareAllocation(e.target.value, sC._id)}
+                        ></input>
                       </td>
                     </tr>
                   </tbody>

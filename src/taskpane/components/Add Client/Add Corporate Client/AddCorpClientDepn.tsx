@@ -105,7 +105,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
           </thead>
           <tbody>
             <tr>
-              <td>Freehold property</td>
+              <td>
+                <label htmlFor="depn-rate-fhprop">Freehold property</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-fhprop-SL">SL</label>
                 <input
@@ -141,7 +143,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Short leasehold</td>
+              <td>
+                <label htmlFor="depn-rate-shortlh">Short leasehold</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-shortlh-SL">SL</label>
                 <input
@@ -177,7 +181,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Long leasehold</td>
+              <td>
+                <label htmlFor="depn-rate-longlh">Long leasehold</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-longlh-SL">SL</label>
                 <input
@@ -213,7 +219,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Property improvements</td>
+              <td>
+                <label htmlFor="depn-rate-improvements">Property improvements</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-improvements-SL">SL</label>
                 <input
@@ -249,7 +257,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Plant and machinery</td>
+              <td>
+                <label htmlFor="depn-rate-plant">Plant and machinery</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-plant-SL">SL</label>
                 <input
@@ -285,7 +295,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Fixtures and fittings</td>
+              <td>
+                <label htmlFor="depn-rate-fixfit">Fixtures and fittings</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-fixfit-SL">SL</label>
                 <input
@@ -321,7 +333,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Motor vehicles</td>
+              <td>
+                <label htmlFor="depn-rate-mv">Motor vehicles</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-mv-SL">SL</label>
                 <input
@@ -357,7 +371,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Computer equipment</td>
+              <td>
+                <label htmlFor="depn-rate-comp-equip">Computer equipment</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-comp-equip-SL">SL</label>
                 <input
@@ -393,7 +409,9 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
               </td>
             </tr>
             <tr>
-              <td>Office equipment</td>
+              <td>
+                <label htmlFor="depn-rate-office-equip">Office equipment</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-office-equip-SL">SL</label>
                 <input

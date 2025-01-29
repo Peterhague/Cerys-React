@@ -50,7 +50,9 @@ const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) 
           </thead>
           <tbody>
             <tr>
-              <td>Investment property - owned</td>
+              <td>
+                <label htmlFor="depn-rate-ipo">Investment property - owned</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-ipo-SL">SL</label>
                 <input
@@ -85,7 +87,9 @@ const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) 
               </td>
             </tr>
             <tr>
-              <td>Investment property - leased</td>
+              <td>
+                <label htmlFor="depn-rate-ipl">Investment property - leased</label>
+              </td>
               <td>
                 <label htmlFor="calc-basis-ipl-SL">SL</label>
                 <input

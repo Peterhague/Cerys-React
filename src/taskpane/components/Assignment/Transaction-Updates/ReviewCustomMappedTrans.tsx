@@ -94,7 +94,9 @@ const ReviewCustomMappedTrans = ({ session, options }: ReviewCustomMappedTransPr
             <tbody>
               {proxyTranObjs.map((tran, activeIndex) => (
                 <tr key={tran.transactionId}>
-                  <td>{tran.narrative}</td>
+                  <td>
+                    <label htmlFor={`transaction${activeIndex}`}>{tran.narrative}</label>
+                  </td>
                   <td>
                     <input
                       name={`transaction${activeIndex}`}

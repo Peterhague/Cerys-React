@@ -306,7 +306,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
         {view === "nominate" && (
           <>
             <div>
-              <p>Please nominate the first day of the accounting period</p>
+              <label htmlFor="nominatedDay">Please nominate the first day of the accounting period</label>
             </div>
             <div>
               <input
