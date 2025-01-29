@@ -1,11 +1,11 @@
 import * as React from "react";
 import { Session } from "../../../classes/session";
-import { Intray } from "../../../classes/in-trays/nominal-ledger";
+import { InTray } from "../../../classes/in-trays/nominal-ledger";
 
 interface IntraySummaryProps {
   handleView: (view: string) => void;
   session: Session;
-  intray: Intray;
+  intray: InTray;
 }
 
 const IntraySummary = ({ session, intray }: IntraySummaryProps) => {
@@ -19,7 +19,7 @@ const IntraySummary = ({ session, intray }: IntraySummaryProps) => {
               {item.getSubtitle() && item.getSubtitle()}
             </td>
             <td>
-              <button type="button" onClick={() => item.showDetails(session)}>
+              <button type="button" onClick={() => item.showDetails(session, intray)}>
                 Details
               </button>
             </td>

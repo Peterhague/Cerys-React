@@ -1,6 +1,6 @@
 import { Assignment } from "../classes/assignment";
 import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
-import { Intray, InTrayNominalLedgerEntry } from "../classes/in-trays/nominal-ledger";
+import { InTray, InTrayNominalLedgerEntry } from "../classes/in-trays/nominal-ledger";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
@@ -15,7 +15,7 @@ export async function enterNL(session: Session) {
   console.log(assignment);
   session.assignment = new Assignment(assignment);
   const nLIntray = createNLEntryInTray(session, openingBalances);
-  const intray = new Intray(nLIntray);
+  const intray = new InTray(nLIntray);
   intray && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 

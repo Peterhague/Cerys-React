@@ -6,7 +6,6 @@ import { buildClientTBBalSheetOnly } from "../../utils/helper-functions";
 
 export const finaliseAssignment = async (session: Session) => {
   const assignment = session.assignment;
-  console.log("here");
   const finalClientTB = assignment.TBEntered && getFinalClientTB(session);
   console.log(finalClientTB);
   const customerId = session.customer._id;
@@ -20,7 +19,6 @@ export const getFinalClientTB = (session: Session) => {
   const tb = buildClientTBBalSheetOnly(session);
   const mappedTB: ClientTBLineProps[] = tb.map((line) => {
     const clientCodeObj = line.getClientCodeObject(session);
-    console.log(clientCodeObj);
     const obj: ClientTBLineProps = {
       clientCode: line.clientNominalCode,
       clientCodeName: clientCodeObj.clientCodeName,

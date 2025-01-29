@@ -98,7 +98,7 @@ import {
 import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientIndis";
 import IntraySummary from "./Assignment/Intray/IntraySummary";
 import { ViewOptionsProps } from "../interfaces/interfaces";
-import { Intray } from "../classes/in-trays/nominal-ledger";
+import { InTray, InTrayAndItem } from "../classes/in-trays/nominal-ledger";
 import { ViewOptions } from "../classes/view-options";
 import IntrayDetails from "./Assignment/Intray/IntrayDetails";
 import { InTrayItem } from "../classes/in-trays/global";
@@ -110,7 +110,7 @@ interface AppBodyProps {
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState<ViewOptionsProps | Intray | InTrayItem>(BLANK_VIEW_OPTIONS);
+  const [options, setOptions] = useState<ViewOptionsProps | InTray | InTrayItem | InTrayAndItem>(BLANK_VIEW_OPTIONS);
 
   console.log(session);
 
@@ -119,7 +119,7 @@ const AppBody = ({ session }: AppBodyProps) => {
     setView(view);
   };
 
-  const handleDynamicView = (view: string, options: ViewOptionsProps | Intray | InTrayItem) => {
+  const handleDynamicView = (view: string, options: ViewOptionsProps | InTray | InTrayItem) => {
     setOptions(options);
     session.currentView = view;
     setView(view);
@@ -186,12 +186,12 @@ const AppBody = ({ session }: AppBodyProps) => {
         session.nextView = view;
         break;
       case INTRAY_SUMMARY:
-        if (options instanceof Intray)
+        if (options instanceof InTray)
           body = <IntraySummary handleView={handleView} session={session} intray={options} />;
         break;
       case INTRAY_DETAILS:
-        if (options instanceof InTrayItem)
-          body = <IntrayDetails handleView={handleView} session={session} intrayItem={options} />;
+        if (options instanceof InTrayAndItem)
+          body = <IntrayDetails handleView={handleView} session={session} options={options} />;
         break;
       case OPENING_BALANCE_ADJUSTMENTS:
         body = <OpeningBalanceAdjustments handleView={handleView} session={session} />;

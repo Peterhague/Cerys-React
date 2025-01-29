@@ -1,6 +1,7 @@
 import { InTrayItemProps } from "../../interfaces/interfaces";
 import { INTRAY_DETAILS } from "../../static-values/views";
 import { Session } from "../session";
+import { InTray, InTrayAndItem } from "./nominal-ledger";
 
 export class InTrayItem {
   title: string;
@@ -18,8 +19,9 @@ export class InTrayItem {
     this.id = Math.round(Math.random() * 10000000).toString();
   }
 
-  showDetails(session: Session) {
+  showDetails(session: Session, inTray: InTray) {
     this.detailsAction && this.detailsAction();
-    session.handleDynamicView(INTRAY_DETAILS, this);
+    const options = new InTrayAndItem(inTray, this);
+    session.handleDynamicView(INTRAY_DETAILS, options);
   }
 }

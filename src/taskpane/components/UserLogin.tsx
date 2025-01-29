@@ -7,12 +7,12 @@ import { Session } from "../classes/session";
 import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 import { Customer } from "../classes/customer";
 import { ViewOptions } from "../classes/view-options";
-import { Intray } from "../classes/in-trays/nominal-ledger";
+import { InTray } from "../classes/in-trays/nominal-ledger";
 import { InTrayItem } from "../classes/in-trays/global";
 
 interface userLoginProps {
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptions | Intray | InTrayItem) => void;
+  handleDynamicView: (view: string, options: ViewOptions | InTray | InTrayItem) => void;
   session: Session;
   setEditButton: (state: string) => void;
 }
