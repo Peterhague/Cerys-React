@@ -1,6 +1,7 @@
 import { Assignment } from "../classes/assignment";
 import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
-import { InTray, InTrayNominalLedgerEntry } from "../classes/in-trays/nominal-ledger";
+import { InTray } from "../classes/in-trays/global";
+import { InTrayNominalLedgerEntry } from "../classes/in-trays/templates";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";

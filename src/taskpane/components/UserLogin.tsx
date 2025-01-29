@@ -7,8 +7,7 @@ import { Session } from "../classes/session";
 import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 import { Customer } from "../classes/customer";
 import { ViewOptions } from "../classes/view-options";
-import { InTray } from "../classes/in-trays/nominal-ledger";
-import { InTrayItem } from "../classes/in-trays/global";
+import { InTray, InTrayItem } from "../classes/in-trays/global";
 
 interface userLoginProps {
   handleView: (view: string) => void;

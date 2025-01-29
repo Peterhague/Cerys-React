@@ -2,9 +2,8 @@ import * as React from "react";
 //import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { InTrayItem } from "../../../classes/in-trays/global";
+import { InTray, InTrayItem } from "../../../classes/in-trays/global";
 import { ASSIGNMENT_DASH_HOME, INTRAY_SUMMARY } from "../../../static-values/views";
-import { InTray } from "../../../classes/in-trays/nominal-ledger";
 
 interface IntrayDetailsProps {
   handleView: (view: string) => void;
@@ -19,12 +18,21 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
     inTray.deleteThisItem(inTrayItem);
     session.handleDynamicView(INTRAY_SUMMARY, inTray);
   };
+
+  const handleAddToAssignmentInTray = () => {
+    inTray.deleteThisItem(inTrayItem);
+    session.assignment.inTray.addItem(inTrayItem);
+    session.handleDynamicView(INTRAY_SUMMARY, inTray);
+  };
+
   return (
     <>
       <p>{options.inTrayItem.getSummaryText()}</p>
       <CerysButton buttonText={"Yes"} handleClick={async () => await inTrayItem.affirmativeAction(session)} />
-      <CerysButton buttonText={"Add to intray"} handleClick={() => inTrayItem.affirmativeAction(session)} />
-      <CerysButton buttonText={"Ignore"} handleClick={() => handleIgnore()} />
+      {inTray.type !== "Assignment" && (
+        <CerysButton buttonText={"Add to assignment intray"} handleClick={handleAddToAssignmentInTray} />
+      )}
+      <CerysButton buttonText={"Ignore"} handleClick={handleIgnore} />
       <CerysButton
         buttonText={"Return to In-tray"}
         handleClick={() => session.handleDynamicView(INTRAY_SUMMARY, inTray)}

@@ -5,16 +5,18 @@ import {
   CUSTOMER_SIGN_UP,
   ENTER_CLIENT_DATA_HOME,
   ENTER_JOURNAL,
+  INTRAY_SUMMARY,
   MANAGE_ASSIGNMENT_DASH_HOME,
   USER_LOGIN,
 } from "../../static-values/views";
+import { Session } from "../../classes/session";
 
 interface assignmentDashHomeProps {
   handleView: (view: string) => void;
-  session: {};
+  session: Session;
 }
 
-const AssignmentDashHome = ({ handleView }: assignmentDashHomeProps) => {
+const AssignmentDashHome = ({ session, handleView }: assignmentDashHomeProps) => {
   return (
     <>
       <CerysButton buttonText={"ENTER CLIENT DATA"} handleClick={() => handleView(ENTER_CLIENT_DATA_HOME)} />
@@ -26,6 +28,10 @@ const AssignmentDashHome = ({ handleView }: assignmentDashHomeProps) => {
       <CerysButton buttonText={"FIXED ASSET REGISTER"} handleClick={() => handleView(USER_LOGIN)} />
       <CerysButton buttonText={"STATUTORY DATABASE"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
       <CerysButton buttonText={"INDEX"} handleClick={() => handleView(USER_LOGIN)} />
+      <CerysButton
+        buttonText={"INTRAY"}
+        handleClick={() => session.handleDynamicView(INTRAY_SUMMARY, session.assignment.inTray)}
+      />
     </>
   );
 };

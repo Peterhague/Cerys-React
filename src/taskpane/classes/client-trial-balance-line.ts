@@ -66,7 +66,6 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
   }
 
   getAllDifferences() {
-    console.log(this.items);
     const filter = this.items.filter((i) => i.cerysValue !== i.clientValue);
     return filter.map((obj) => {
       return { ...obj, difference: obj.getDifference() };
