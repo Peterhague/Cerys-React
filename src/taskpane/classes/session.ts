@@ -8,6 +8,7 @@ import { ControlledWorksheet } from "./controlled-worksheet";
 import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
+import { InTrayItem } from "./in-trays/global";
 import { Intray } from "./in-trays/nominal-ledger";
 import { BaseIndividual } from "./individuals";
 import { Journal } from "./journal";
@@ -45,7 +46,7 @@ export class Session {
   IPRegister: AssetRegister;
   TFARegister: AssetRegister;
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptions | Intray) => void;
+  handleDynamicView: (view: string, options: ViewOptions | Intray | InTrayItem) => void;
   setEditButton: (editButtonStatus: string) => void;
   unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;

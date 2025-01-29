@@ -2,18 +2,23 @@ import * as React from "react";
 import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { Intray } from "../../../classes/in-trays/nominal-ledger";
+import { InTrayItem } from "../../../classes/in-trays/global";
 
 interface IntrayDetailsProps {
   handleView: (view: string) => void;
   session: Session;
-  intray: Intray;
+  intrayItem: InTrayItem;
 }
 
-const IntrayDetails = ({ session, intray }: IntrayDetailsProps) => {
-  console.log(session);
-  console.log(intray);
-  return <></>;
+const IntrayDetails = ({ session, intrayItem }: IntrayDetailsProps) => {
+  return (
+    <>
+      <p>{intrayItem.summary}</p>
+      <CerysButton buttonText={"Yes"} handleClick={async () => await intrayItem.affirmativeAction(session)} />
+      <CerysButton buttonText={"Add to intray"} handleClick={() => intrayItem.affirmativeAction(session)} />
+      <CerysButton buttonText={"Ignore"} handleClick={() => intrayItem.affirmativeAction(session)} />
+    </>
+  );
 };
 
 export default IntrayDetails;

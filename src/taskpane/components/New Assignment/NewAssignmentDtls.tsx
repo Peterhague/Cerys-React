@@ -128,6 +128,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const { customer, assignment, IFARegister, TFARegister, client, clientBFwdTB } =
       await processNewAssignment(prelimAssignment);
     session.customer = new Customer(customer);
+    console.log(assignment);
     session.assignment = new Assignment(assignment);
     session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
     session.IFARegister = IFARegister && new AssetRegister(session, IFARegister, "Intangible");

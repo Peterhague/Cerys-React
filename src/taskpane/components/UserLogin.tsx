@@ -8,10 +8,11 @@ import { LANDING_PAGE, USER_DASH_HOME } from "../static-values/views";
 import { Customer } from "../classes/customer";
 import { ViewOptions } from "../classes/view-options";
 import { Intray } from "../classes/in-trays/nominal-ledger";
+import { InTrayItem } from "../classes/in-trays/global";
 
 interface userLoginProps {
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptions | Intray) => void;
+  handleDynamicView: (view: string, options: ViewOptions | Intray | InTrayItem) => void;
   session: Session;
   setEditButton: (state: string) => void;
 }

@@ -555,5 +555,5 @@ export interface InTrayItemProps {
   subtitle: string;
   summary: string;
   detailsAction: () => void;
-  affirmativeAction: () => void;
+  affirmativeAction: (param1: Session) => void | Promise<void>;
 }

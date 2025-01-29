@@ -1,5 +1,9 @@
-import { ClientCerysCodeObjectProps, ClientTBLineProps, InTrayItemProps } from "../interfaces/interfaces";
+import { ClientCerysCodeObjectProps, ClientTBLineProps } from "../interfaces/interfaces";
+import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
+import { Journal } from "./journal";
+import { Session } from "./session";
+/* global Excel */
 
 export class ClientTrialBalanceLine {
   cerysCodeObj: ClientCerysCodeObjectProps;
@@ -30,9 +34,16 @@ export class ClientTBBFwdComparison {
   }
 }
 
-export class ClientTBBFwdReconciliation {
+export class ClientTBBFwdReconciliation extends InTrayItem {
   items: ClientTBBFwdComparison[];
   constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[]) {
+    super({
+      title: "Opening balances",
+      subtitle: "",
+      summary: "",
+      detailsAction: null,
+      affirmativeAction: null,
+    });
     const comparisonArray = bFPerCerys.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
     bfPerClient.forEach((opBal) => {
       const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);
@@ -41,6 +52,9 @@ export class ClientTBBFwdReconciliation {
         : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
     });
     this.items = comparisonArray;
+    this.subtitle = this.getIntraySubtitle();
+    this.summary = this.getIntraySummaryText();
+    this.affirmativeAction = this.postUnpostedAdjustments;
   }
 
   getAllDifferences() {
@@ -63,7 +77,7 @@ export class ClientTBBFwdReconciliation {
 
   getIntraySubtitle() {
     const postedStatus = this.getPostedStatus();
-    return postedStatus === "all" ? null : postedStatus === "none" ? "not posted" : "incomplete";
+    return postedStatus === "all" ? null : postedStatus === "none" ? " - not posted" : " - incomplete";
   }
 
   getIntraySummaryText() {
@@ -79,15 +93,31 @@ export class ClientTBBFwdReconciliation {
     return text;
   }
 
-  getNLEntryIntrayItem() {
-    if (this.getPostedStatus() === "all") return null;
-    const inTrayItem: InTrayItemProps = {
-      title: "Opening balances",
-      subtitle: this.getIntraySubtitle(),
-      summary: this.getIntraySummaryText(),
-      detailsAction: null,
-      affirmativeAction: null,
-    };
-    return new InTrayItem(inTrayItem);
+  async postUnpostedAdjustments(session: Session) {
+    try {
+      await Excel.run(async (context) => {
+        const diffs = this.getAllDifferences();
+        const jnl = session.activeJournal;
+        jnl.journalType = "OBA auto-entry";
+        jnl.journal = false;
+        diffs.forEach((i) => {
+          const cerysCode = session.clientChart.find((code) => code.clientCode === i.clientCode).cerysCode;
+          jnl.journals.push(
+            new Journal(session, {
+              cerysCode,
+              value: i.difference / 100,
+              narrative: "OBA auto-entry",
+              transactionDate: session.assignment.reportingPeriod.reportingDate,
+              transactionType: "OBA auto-entry",
+              clientTB: false,
+              journal: false,
+            })
+          );
+        });
+        await processTransBatch(context, session);
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 }

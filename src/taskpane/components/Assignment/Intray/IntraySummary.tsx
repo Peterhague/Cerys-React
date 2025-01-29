@@ -8,13 +8,21 @@ interface IntraySummaryProps {
   intray: Intray;
 }
 
-const IntraySummary = ({ intray }: IntraySummaryProps) => {
+const IntraySummary = ({ session, intray }: IntraySummaryProps) => {
   return (
     <table>
       <tbody>
         {intray.content.items.map((item) => (
           <tr key={item.id}>
-            <td>{item.title}</td>
+            <td>
+              {item.title}
+              {item.subtitle && item.subtitle}
+            </td>
+            <td>
+              <button type="button" onClick={() => item.showDetails(session)}>
+                Details
+              </button>
+            </td>
           </tr>
         ))}
       </tbody>

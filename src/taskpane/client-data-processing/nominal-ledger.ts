@@ -89,7 +89,6 @@ export const createNLEntryInTray = (session: Session, openingBalances: ClientTBL
   const reconcilationObj = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
   console.log(reconcilationObj);
   const inTray = reconcilationObj && new InTrayNominalLedgerEntry(reconcilationObj);
-  console.log(inTray);
   return inTray;
 };
 
