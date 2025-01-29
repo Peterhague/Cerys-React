@@ -8,7 +8,6 @@ import {
   PreliminaryAssignmentProps,
   ReportingPeriod,
   ShortUser,
-  TrialBalanceLineProps,
 } from "../interfaces/interfaces";
 import {
   CAP_RED_RES_CAT,
@@ -123,7 +122,7 @@ export class Assignment extends BaseAssignment {
   IFARegisterCreated: boolean;
   TFARegisterCreated: boolean;
   IPRegisterCreated: boolean;
-  tb: TrialBalanceLineProps[];
+  tb: TrialBalanceLine[];
   clientTB: ClientTBLineProps[];
   activeCategories: string[];
   activeCategoriesDetails: {

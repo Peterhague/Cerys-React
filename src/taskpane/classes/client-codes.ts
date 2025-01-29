@@ -20,6 +20,14 @@ export class TrialBalanceLine implements TrialBalanceLineProps {
     this.identifier = line._id;
     this._id = line._id;
   }
+
+  getCorrespondingClientCode(session: Session) {
+    return session.chart.find((code) => code.cerysCode === this.cerysCode).currentClientMapping.clientCode;
+  }
+
+  getCerysCodeObj(session: Session) {
+    return session.chart.find((codeObj) => codeObj.cerysCode === this.cerysCode);
+  }
 }
 
 export class ClientCodeObject {

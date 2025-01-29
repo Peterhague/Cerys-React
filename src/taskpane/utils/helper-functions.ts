@@ -32,6 +32,7 @@ import { QuasiEventObject } from "../classes/quasi-event-object";
 import { accountsCategories } from "../static-values/accounts-categories-array";
 import { ControlledWorksheet } from "../classes/controlled-worksheet";
 import _ from "lodash";
+import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -518,26 +519,36 @@ export const postEditableSheetEffects = async (
 };
 
 export const buildClientTBBalSheetOnly = (session: Session) => {
-  const bSTB: ClientTBLineProps[] = [];
+  const bSTB: ClientTrialBalanceLine[] = [];
+  const pLReservesLineCodeObject = session.clientChart.find(
+    (code) => code.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+  );
   let pLResLineCode: number = session.assignment.clientTB.find(
     (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
   ).clientCode;
   let count = 0;
-  session.assignment.clientTB.forEach((line) => {
-    if (line.statement === "BS" && line.clientCode !== pLResLineCode) {
-      bSTB.push(line);
-    } else if (line.statement === "PL") {
+  session.assignment.tb.forEach((line) => {
+    const cerysCodeObj = line.getCerysCodeObj(session);
+    const clientCode = cerysCodeObj.currentClientMapping.clientCode;
+    const clientTBObj = session.clientChart.find((code) => code.clientCode === clientCode);
+    if (clientTBObj.statement === "BS" && clientCode !== pLResLineCode) {
+      bSTB.push(new ClientTrialBalanceLine(cerysCodeObj, clientCode, line.value, ""));
+    } else {
       count += line.value;
     }
   });
-  console.log(count);
-  const reserves: ClientTBLineProps = _.cloneDeep(
-    session.assignment.clientTB.find(
-      (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+  const reserves: ClientTBLineProps = session.assignment.clientTB.find(
+    (line) => line.clientCode === session.assignment.clientSoftwareDefaults.PLReservesNominalCode
+  );
+  count += reserves.value;
+  bSTB.push(
+    new ClientTrialBalanceLine(
+      pLReservesLineCodeObject.getCerysCodeObj(session),
+      pLReservesLineCodeObject.clientCode,
+      count,
+      ""
     )
   );
-  reserves.value += count;
-  bSTB.push(reserves);
   return bSTB;
 };
 
@@ -564,16 +575,17 @@ export const convertAssignmentTBForOBAs = (session: Session) => {
 
 export const combineClientTrialBalances = (
   session: Session,
-  clientTB: ClientTBLineProps[],
+  clientTB: ClientTrialBalanceLine[],
   assignmentTBObjects: AssignmentClientTBObject[]
 ) => {
   clientTB.forEach((line) => {
-    const assLine = (assignmentTBObjects.find((obj) => obj.clientCode === line.clientCode).clientValue += line.value);
+    const assLine = (assignmentTBObjects.find((obj) => obj.clientCode === line.clientNominalCode).clientValue +=
+      line.value);
     !assLine &&
       assignmentTBObjects.push(
         new AssignmentClientTBObject(session, {
-          clientCode: line.clientCode,
-          clientCodeName: line.clientCodeName,
+          clientCode: line.clientNominalCode,
+          clientCodeName: line.getClientCodeName(session),
           value: line.value,
         })
       );

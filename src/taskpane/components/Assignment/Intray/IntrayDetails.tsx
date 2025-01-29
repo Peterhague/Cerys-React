@@ -13,7 +13,7 @@ interface IntrayDetailsProps {
 const IntrayDetails = ({ session, intrayItem }: IntrayDetailsProps) => {
   return (
     <>
-      <p>{intrayItem.summary}</p>
+      <p>{intrayItem.getSummaryText()}</p>
       <CerysButton buttonText={"Yes"} handleClick={async () => await intrayItem.affirmativeAction(session)} />
       <CerysButton buttonText={"Add to intray"} handleClick={() => intrayItem.affirmativeAction(session)} />
       <CerysButton buttonText={"Ignore"} handleClick={() => intrayItem.affirmativeAction(session)} />

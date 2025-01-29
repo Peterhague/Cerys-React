@@ -16,6 +16,14 @@ export class ClientTrialBalanceLine {
     this.value = value;
     this.narrative = narrative;
   }
+
+  getClientCodeName(session: Session) {
+    return session.clientChart.find((code) => code.clientCode === this.clientNominalCode).clientCodeName;
+  }
+
+  getClientCodeObject(session: Session) {
+    return session.clientChart.find((i) => i.clientCode === this.clientNominalCode);
+  }
 }
 
 export class ClientTBBFwdComparison {
@@ -39,8 +47,8 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
   constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[]) {
     super({
       title: "Opening balances",
-      subtitle: "",
-      summary: "",
+      getSubtitle: null,
+      getSummaryText: null,
       detailsAction: null,
       affirmativeAction: null,
     });
@@ -52,12 +60,13 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
         : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
     });
     this.items = comparisonArray;
-    this.subtitle = this.getIntraySubtitle();
-    this.summary = this.getIntraySummaryText();
+    this.getSubtitle = this.getIntraySubtitle;
+    this.getSummaryText = this.getIntraySummaryText;
     this.affirmativeAction = this.postUnpostedAdjustments;
   }
 
   getAllDifferences() {
+    console.log(this.items);
     const filter = this.items.filter((i) => i.cerysValue !== i.clientValue);
     return filter.map((obj) => {
       return { ...obj, difference: obj.getDifference() };

@@ -86,6 +86,7 @@ export const postCltNLToDb = async (session: Session) => {
 };
 
 export const createNLEntryInTray = (session: Session, openingBalances: ClientTBLineProps[]) => {
+  console.log(openingBalances);
   const reconcilationObj = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
   console.log(reconcilationObj);
   const inTray = reconcilationObj && new InTrayNominalLedgerEntry(reconcilationObj);

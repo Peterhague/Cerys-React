@@ -552,8 +552,8 @@ export interface AssetDb {
 
 export interface InTrayItemProps {
   title: string;
-  subtitle: string;
-  summary: string;
+  getSubtitle: () => string;
+  getSummaryText: () => string;
   detailsAction: () => void;
   affirmativeAction: (param1: Session) => void | Promise<void>;
 }

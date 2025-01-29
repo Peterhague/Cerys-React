@@ -16,7 +16,7 @@ const IntraySummary = ({ session, intray }: IntraySummaryProps) => {
           <tr key={item.id}>
             <td>
               {item.title}
-              {item.subtitle && item.subtitle}
+              {item.getSubtitle() && item.getSubtitle()}
             </td>
             <td>
               <button type="button" onClick={() => item.showDetails(session)}>
