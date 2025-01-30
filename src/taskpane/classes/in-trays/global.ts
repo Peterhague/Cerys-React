@@ -4,7 +4,7 @@ import { Session } from "../session";
 import { InTrayTemplate } from "./templates";
 
 export class InTray {
-  type: "NominalLedgerEntry" | "Assignment";
+  type: InTrayTemplate["type"];
   items: InTrayItem[];
   constructor(intray: InTrayTemplate) {
     this.type = intray.type;

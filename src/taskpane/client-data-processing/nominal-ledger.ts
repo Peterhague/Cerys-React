@@ -15,9 +15,9 @@ export async function enterNL(session: Session) {
   const assignment = await postCltNLToDb(session);
   console.log(assignment);
   session.assignment = new Assignment(assignment);
-  const nLIntray = createNLEntryInTray(session, openingBalances);
-  const intray = new InTray(nLIntray);
-  intray && session.handleDynamicView(INTRAY_SUMMARY, intray);
+  const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
+  const intray = new InTray(nLIntrayTemplate);
+  intray.items.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 
 export async function createClientNLObject() {
@@ -87,11 +87,8 @@ export const postCltNLToDb = async (session: Session) => {
 };
 
 export const createNLEntryInTray = (session: Session, openingBalances: ClientTBLineProps[]) => {
-  console.log(openingBalances);
-  const reconcilationObj = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
-  console.log(reconcilationObj);
-  const inTray = reconcilationObj && new InTrayNominalLedgerEntry(reconcilationObj);
-  return inTray;
+  const inTrayTemplate = new InTrayNominalLedgerEntry(session, openingBalances);
+  return inTrayTemplate;
 };
 
 export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBLineProps[]) => {
@@ -103,7 +100,5 @@ export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBL
       : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
   });
   const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances);
-  console.log(reconcilationObj);
-  console.log(reconcilationObj.getAllDifferences());
   return reconcilationObj;
 };

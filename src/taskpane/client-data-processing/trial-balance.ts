@@ -1,12 +1,15 @@
 import { Assignment } from "../classes/assignment";
 import { ClientCodeObject } from "../classes/client-codes";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
+import { InTray } from "../classes/in-trays/global";
+import { InTrayTrialBalanceEntry } from "../classes/in-trays/templates";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
 import { ClientTBLineProps } from "../interfaces/interfaces";
+import { INTRAY_SUMMARY } from "../static-values/views";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
-import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
+import { processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
 
 export async function enterTB(session: Session) {
@@ -30,9 +33,12 @@ export async function enterTB(session: Session) {
       session.activeJournal.journal = false;
       session.activeJournal.clientTB = true;
       await processTransBatch(context, session);
-      checkNewTransForAssets(session);
+      //checkNewTransForAssets(session);
       const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
       postClientTB(session, clientTB);
+      const tBIntrayTemplate = createTBEntryInTray(session);
+      const intray = new InTray(tBIntrayTemplate);
+      intray && session.handleDynamicView(INTRAY_SUMMARY, intray);
     });
   } catch (e) {
     console.error(e);
@@ -127,4 +133,9 @@ export const postClientTB = async (session: Session, clientTB: ClientTBLineProps
   const assingmentDb = await fetch(postClientTBUrl, options);
   const assignment = await assingmentDb.json();
   session.assignment = new Assignment(assignment);
+};
+
+export const createTBEntryInTray = (session: Session) => {
+  const inTrayTemplate = new InTrayTrialBalanceEntry(session);
+  return inTrayTemplate;
 };
