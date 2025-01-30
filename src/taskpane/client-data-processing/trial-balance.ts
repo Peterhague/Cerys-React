@@ -9,7 +9,7 @@ import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
 import { ClientTBLineProps } from "../interfaces/interfaces";
 import { INTRAY_SUMMARY } from "../static-values/views";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
-import { processTransBatch } from "../utils/transactions/transactions";
+import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
 
 export async function enterTB(session: Session) {
@@ -33,7 +33,7 @@ export async function enterTB(session: Session) {
       session.activeJournal.journal = false;
       session.activeJournal.clientTB = true;
       await processTransBatch(context, session);
-      //checkNewTransForAssets(session);
+      checkNewTransForAssets(session);
       const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
       postClientTB(session, clientTB);
       const tBIntrayTemplate = createTBEntryInTray(session);

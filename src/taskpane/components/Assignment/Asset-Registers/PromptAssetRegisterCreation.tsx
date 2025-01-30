@@ -4,7 +4,6 @@ import { enterNL } from "../../../client-data-processing/nominal-ledger";
 import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils/helper-functions";
 import {
   convertNewFATrans,
-  finaliseAssetObjects,
   identifyLikelyAdditions,
   previewRelTrans,
 } from "../../../utils/transactions/asset-reg-generation";
@@ -61,12 +60,12 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
       await Excel.run(async (context) => {
         session.options[`${initials}RCreationSetting`] = "main";
         const relevantAssetTrans = session.assignment.getUnprocessedFATransByType(session, initials);
-        finaliseAssetObjects(session, relevantAssetTrans);
+        //finaliseAssetObjects(session, relevantAssetTrans);
         const relevantTrans: DetailedTransaction[] = relevantAssetTrans.map((assetTran) => {
           const { transaction, cerysCodeObj } = assetTran.getTranAndCerysCodeObj(session);
           return { ...cerysCodeObj, ...transaction, ...assetTran };
         });
-        await createRegister(context, session, relevantTrans);
+        await createRegister(session, relevantTrans);
         session[`${initials}Transactions`] = [];
         session.activeJournal.clientTB = false;
         session.activeJournal.journal = false;

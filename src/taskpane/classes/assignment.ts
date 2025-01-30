@@ -214,6 +214,22 @@ export class Assignment extends BaseAssignment {
     return nextRegisterPrompt;
   }
 
+  getRegisterPrompts(session: Session) {
+    const relevantTrans = this.transactions.filter((tran) => !tran.processedAsAsset);
+    const prompts: ("IFA" | "TFA" | "IP")[] = [];
+    relevantTrans.forEach((tran) => {
+      const cerysCodeObj = tran.getCerysCodeObj(session);
+      if (cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF") {
+        prompts.push("IFA");
+      } else if (cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF") {
+        prompts.push("TFA");
+      } else if (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF") {
+        prompts.push("IP");
+      }
+    });
+    return prompts;
+  }
+
   getBFTransLikelyAdditions(session: Session, registerType: string) {
     const filteredArr = this.transactions.filter((tran) => {
       let test: number;

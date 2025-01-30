@@ -473,11 +473,7 @@ export interface RegisterType {
   initials: string;
   longLower: string;
   longCap: string;
-  createRegister: (
-    context: Excel.RequestContext,
-    session: Session,
-    relevantTrans: DetailedTransaction[]
-  ) => Promise<void>;
+  createRegister: (session: Session, relevantTrans: DetailedTransaction[]) => Promise<void>;
 }
 
 export interface ClientSoftwareDefaultsProps {

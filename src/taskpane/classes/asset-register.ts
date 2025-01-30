@@ -1,4 +1,12 @@
-import { AssetDb, AssetRegisterDb, AssetSubTransaction } from "../interfaces/interfaces";
+import {
+  AssetDb,
+  AssetRegisterDb,
+  AssetSubTransaction,
+  DetailedTransaction,
+  RegisterType,
+} from "../interfaces/interfaces";
+import { registerTypes } from "../static-values/register-types";
+import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 
 export class AssetRegister {
@@ -104,5 +112,68 @@ export class ColumnsIndex {
     this.blankCellTwoNum = 0;
     this.blankCellTwoLetter = "";
     this.colsToTotal = [{ number: 4, letter: "D" }];
+  }
+}
+
+export class RegisterCreationTemplate {
+  registerType: "IFA" | "TFA" | "IP";
+  register: RegisterType;
+  transactions: DetailedTransaction[];
+  constructor(session: Session, registerType: "IFA" | "TFA" | "IP") {
+    this.registerType = registerType;
+    this.register = registerTypes[registerType];
+    const relevantTransactions = session.assignment.getUnprocessedFATransByType(session, registerType);
+    this.finaliseAssetObjects(session, relevantTransactions);
+    this.transactions = relevantTransactions.map((assetTran) => {
+      const { transaction, cerysCodeObj } = assetTran.getTranAndCerysCodeObj(session);
+      return { ...cerysCodeObj, ...transaction, ...assetTran };
+    });
+  }
+
+  finaliseAssetObjects(session: Session, relevantTransactions) {
+    const reportingPeriod = session.assignment.reportingPeriod;
+    relevantTransactions.forEach((asset) => {
+      asset.activePeriods = [reportingPeriod._id];
+      asset.periods = [
+        {
+          reportingPeriodNumber: reportingPeriod.periodNumber,
+          reportingPeriodId: reportingPeriod._id,
+          subTransactions: asset.subTransactions,
+        },
+      ];
+    });
+  }
+}
+
+export class AssetRegCreationPrompt extends InTrayItem {
+  register: RegisterType;
+  transactions: DetailedTransaction[];
+  constructor(registerTemplate: RegisterCreationTemplate) {
+    super({
+      title: `Create ${registerTemplate.registerType} register?`,
+      getSubtitle: null,
+      getSummaryText: null,
+      detailsAction: null,
+      affirmativeAction: null,
+    });
+    this.register = registerTemplate.register;
+    this.transactions = registerTemplate.transactions;
+    this.getSubtitle = this.getIntraySubtitle;
+    this.getSummaryText = this.getIntraySummaryText;
+    this.affirmativeAction = this.createRegister;
+  }
+
+  getIntraySubtitle() {
+    return null;
+  }
+
+  getIntraySummaryText() {
+    return `Your data suggests this client owns ${this.register.longLower}.
+          You have not set up a relevant asset register.
+          Would you like to create one automatically?`;
+  }
+
+  createRegister(session: Session) {
+    this.register.createRegister(session, this.transactions);
   }
 }

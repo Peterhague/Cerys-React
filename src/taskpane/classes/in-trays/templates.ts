@@ -1,5 +1,7 @@
 import { reconcileClientBFTB } from "../../client-data-processing/nominal-ledger";
 import { ClientTBLineProps } from "../../interfaces/interfaces";
+import { checkTransUnregisteredAssets } from "../../utils/transactions/asset-reg-generation";
+import { AssetRegCreationPrompt } from "../asset-register";
 import { Session } from "../session";
 import { NominalLedgerEntryPrompt } from "../trial-balance";
 import { InTrayItem } from "./global";
@@ -33,6 +35,8 @@ export class InTrayNominalLedgerEntry extends InTrayTemplate {
     const items = [];
     const openingBalancesRec = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
     openingBalancesRec && items.push(openingBalancesRec);
+    const registerPrompts = checkTransUnregisteredAssets(session);
+    registerPrompts.forEach((i) => items.push(new AssetRegCreationPrompt(i)));
     super("NominalLedgerEntry", items);
   }
 }

@@ -9,10 +9,10 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createIPR(context: Excel.RequestContext, session: Session, relevantTrans: DetailedTransaction[]) {
+export async function createIPR(session: Session, relevantTrans: DetailedTransaction[]) {
   const assignment = await postIPtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
-  createIPRWs(context, session);
+  createIPRWs(session);
 }
 
 export async function postIPtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
@@ -30,28 +30,34 @@ export async function postIPtoDB(session: Session, relevantTrans: DetailedTransa
   return assignment;
 }
 
-export async function createIPRWs(context: Excel.RequestContext, session: Session) {
-  const activeCatsNames = [];
-  const IPActiveCats = [];
-  const IPRegister = session.IPRegister;
-  IPRegister.assets.forEach((i) => {
-    if (!activeCatsNames.includes(i.assetCategory)) {
-      activeCatsNames.push(i.assetCategory);
-      IPActiveCats.push({
-        assetCategory: i.assetCategory,
-        assetCategoryNo: i.assetCategoryNo,
+export async function createIPRWs(session: Session) {
+  try {
+    await Excel.run(async (context) => {
+      const activeCatsNames = [];
+      const IPActiveCats = [];
+      const IPRegister = session.IPRegister;
+      IPRegister.assets.forEach((i) => {
+        if (!activeCatsNames.includes(i.assetCategory)) {
+          activeCatsNames.push(i.assetCategory);
+          IPActiveCats.push({
+            assetCategory: i.assetCategory,
+            assetCategoryNo: i.assetCategoryNo,
+          });
+        }
       });
-    }
-  });
-  IPActiveCats.sort((a, b) => {
-    return a.assetCategoryNo - b.assetCategoryNo;
-  });
-  const wsName = "IP Register";
-  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
-  console.log(ws);
-  const wsHeaders = worksheetHeader(session, "Investment property register");
-  applyWorkhseetHeader(ws, wsHeaders);
-  populateAssetRegWs(IPActiveCats, IPRegister, ws, "IP");
-  ws.activate();
-  deleteManyWorksheets(context, ["IP Transactions"]);
+      IPActiveCats.sort((a, b) => {
+        return a.assetCategoryNo - b.assetCategoryNo;
+      });
+      const wsName = "IP Register";
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      console.log(ws);
+      const wsHeaders = worksheetHeader(session, "Investment property register");
+      applyWorkhseetHeader(ws, wsHeaders);
+      populateAssetRegWs(IPActiveCats, IPRegister, ws, "IP");
+      ws.activate();
+      deleteManyWorksheets(context, ["IP Transactions"]);
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }

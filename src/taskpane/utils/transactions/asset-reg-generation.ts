@@ -18,7 +18,13 @@ import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowN
 import { addOneWorksheet, deleteManyWorksheets, setExcelRangeValue } from "../worksheet";
 import * as React from "react";
 import _ from "lodash";
+import { RegisterCreationTemplate } from "../../classes/asset-register";
 /*global Excel */
+
+export const checkTransUnregisteredAssets = (session: Session) => {
+  const registersToPrompt = session.assignment.getRegisterPrompts(session);
+  return registersToPrompt.map((reg) => new RegisterCreationTemplate(session, reg));
+};
 
 export const identifyLikelyAdditions = async (
   session: Session,
@@ -638,16 +644,16 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
   console.log(session.activeJournal);
 };
 
-export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {
-  const reportingPeriod = session.assignment.reportingPeriod;
-  relevantTrans.forEach((asset) => {
-    asset.activePeriods = [reportingPeriod._id];
-    asset.periods = [
-      {
-        reportingPeriodNumber: reportingPeriod.periodNumber,
-        reportingPeriodId: reportingPeriod._id,
-        subTransactions: asset.subTransactions,
-      },
-    ];
-  });
-};
+// export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {
+//   const reportingPeriod = session.assignment.reportingPeriod;
+//   relevantTrans.forEach((asset) => {
+//     asset.activePeriods = [reportingPeriod._id];
+//     asset.periods = [
+//       {
+//         reportingPeriodNumber: reportingPeriod.periodNumber,
+//         reportingPeriodId: reportingPeriod._id,
+//         subTransactions: asset.subTransactions,
+//       },
+//     ];
+//   });
+// };

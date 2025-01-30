@@ -9,14 +9,10 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createIFAR(
-  context: Excel.RequestContext,
-  session: Session,
-  relevantTrans: DetailedTransaction[]
-) {
+export async function createIFAR(session: Session, relevantTrans: DetailedTransaction[]) {
   const assignment = await postIFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
-  createIFARWs(context, session);
+  createIFARWs(session);
 }
 
 export async function postIFAtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
@@ -35,27 +31,33 @@ export async function postIFAtoDB(session: Session, relevantTrans: DetailedTrans
   return assignment;
 }
 
-export async function createIFARWs(context: Excel.RequestContext, session: Session) {
-  const transToPost = session.IFARegister;
-  const activeCatsNames = [];
-  const IFAActiveCats = [];
-  session.IFARegister.assets.forEach((i) => {
-    if (!activeCatsNames.includes(i.assetCategory)) {
-      activeCatsNames.push(i.assetCategory);
-      IFAActiveCats.push({
-        assetCategory: i.assetCategory,
-        assetCategoryNo: i.assetCategoryNo,
+export async function createIFARWs(session: Session) {
+  try {
+    await Excel.run(async (context) => {
+      const transToPost = session.IFARegister;
+      const activeCatsNames = [];
+      const IFAActiveCats = [];
+      session.IFARegister.assets.forEach((i) => {
+        if (!activeCatsNames.includes(i.assetCategory)) {
+          activeCatsNames.push(i.assetCategory);
+          IFAActiveCats.push({
+            assetCategory: i.assetCategory,
+            assetCategoryNo: i.assetCategoryNo,
+          });
+        }
       });
-    }
-  });
-  IFAActiveCats.sort((a, b) => {
-    return a.assetCategoryNo - b.assetCategoryNo;
-  });
-  const wsName = "IFA Register";
-  const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
-  const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
-  applyWorkhseetHeader(ws, wsHeaders);
-  populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");
-  ws.activate();
-  deleteManyWorksheets(context, ["IFA Transactions"]);
+      IFAActiveCats.sort((a, b) => {
+        return a.assetCategoryNo - b.assetCategoryNo;
+      });
+      const wsName = "IFA Register";
+      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const wsHeaders = worksheetHeader(session, "Intangible fixed assets register");
+      applyWorkhseetHeader(ws, wsHeaders);
+      populateAssetRegWs(IFAActiveCats, transToPost, ws, "IFA");
+      ws.activate();
+      deleteManyWorksheets(context, ["IFA Transactions"]);
+    });
+  } catch (e) {
+    console.error(e);
+  }
 }
