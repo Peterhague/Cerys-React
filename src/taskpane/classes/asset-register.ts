@@ -6,8 +6,10 @@ import {
   RegisterType,
 } from "../interfaces/interfaces";
 import { registerTypes } from "../static-values/register-types";
+import { INTRAY_DETAILS } from "../static-values/views";
 import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
+import { AssetTransaction } from "./transaction";
 
 export class AssetRegister {
   registerType: "Tangible" | "Intangible" | "Investment property";
@@ -123,6 +125,7 @@ export class RegisterCreationTemplate {
     this.registerType = registerType;
     this.register = registerTypes[registerType];
     const relevantTransactions = session.assignment.getUnprocessedFATransByType(session, registerType);
+    console.log(relevantTransactions);
     this.finaliseAssetObjects(session, relevantTransactions);
     this.transactions = relevantTransactions.map((assetTran) => {
       const { transaction, cerysCodeObj } = assetTran.getTranAndCerysCodeObj(session);
@@ -130,7 +133,7 @@ export class RegisterCreationTemplate {
     });
   }
 
-  finaliseAssetObjects(session: Session, relevantTransactions) {
+  finaliseAssetObjects(session: Session, relevantTransactions: AssetTransaction[]) {
     const reportingPeriod = session.assignment.reportingPeriod;
     relevantTransactions.forEach((asset) => {
       asset.activePeriods = [reportingPeriod._id];
@@ -154,8 +157,10 @@ export class AssetRegCreationPrompt extends InTrayItem {
       getSubtitle: null,
       getSummaryText: null,
       detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
       affirmativeAction: null,
     });
+    console.log(registerTemplate.transactions);
     this.register = registerTemplate.register;
     this.transactions = registerTemplate.transactions;
     this.getSubtitle = this.getIntraySubtitle;
@@ -173,7 +178,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
           Would you like to create one automatically?`;
   }
 
-  createRegister(session: Session) {
-    this.register.createRegister(session, this.transactions);
+  async createRegister(session: Session) {
+    await this.register.createRegister(session, this.transactions);
   }
 }

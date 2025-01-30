@@ -29,9 +29,7 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
     <>
       <p>{options.inTrayItem.getSummaryText()}</p>
       <CerysButton buttonText={"Yes"} handleClick={async () => await inTrayItem.affirmativeAction(session)} />
-      {inTray.type !== "Assignment" && (
-        <CerysButton buttonText={"Add to assignment intray"} handleClick={handleAddToAssignmentInTray} />
-      )}
+      <CerysButton buttonText={"Add to assignment intray"} handleClick={handleAddToAssignmentInTray} />
       <CerysButton buttonText={"Ignore"} handleClick={handleIgnore} />
       <CerysButton
         buttonText={"Return to In-tray"}

@@ -8,7 +8,7 @@ import { ControlledWorksheet } from "./controlled-worksheet";
 import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
-import { InTray, InTrayAndItem, InTrayItem } from "./in-trays/global";
+import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "./in-trays/global";
 import { BaseIndividual } from "./individuals";
 import { Journal } from "./journal";
 import { Transaction } from "./transaction";
@@ -45,7 +45,7 @@ export class Session {
   IPRegister: AssetRegister;
   TFARegister: AssetRegister;
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptions | InTray | InTrayItem | InTrayAndItem) => void;
+  handleDynamicView: (view: string, options: ViewOptions | InTray | InTrayItem | InTrayAndItem | InTrayRouting) => void;
   setEditButton: (editButtonStatus: string) => void;
   unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;

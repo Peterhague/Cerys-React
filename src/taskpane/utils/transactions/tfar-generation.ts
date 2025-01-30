@@ -9,11 +9,12 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createTFAR(session: Session, relevantTrans: DetailedTransaction[]) {
+export const createTFAR = async (session: Session, relevantTrans: DetailedTransaction[]) => {
+  console.log(relevantTrans);
   const assignment = await postTFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createTFARWs(session);
-}
+};
 
 export async function postTFAtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
   let assignment = session.assignment;
@@ -21,6 +22,7 @@ export async function postTFAtoDB(session: Session, relevantTrans: DetailedTrans
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
   const tFARDb = await fetch(endpoint, options);
   const tFAR: AssetRegisterDb = await tFARDb.json();
+  console.log(tFAR);
   session.TFARegister = new AssetRegister(session, tFAR, "Tangible");
   if (!session.assignment.TFARegisterCreated) {
     const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "TFARegisterCreated");

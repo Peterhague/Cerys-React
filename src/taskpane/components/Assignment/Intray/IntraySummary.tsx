@@ -1,8 +1,8 @@
 import * as React from "react";
 import { Session } from "../../../classes/session";
-import { ASSIGNMENT_DASH_HOME } from "../../../static-values/views";
+import { ASSIGNMENT_DASH_HOME, INTRAY_SUMMARY } from "../../../static-values/views";
 import CerysButton from "../../CerysButton";
-import { InTray } from "../../../classes/in-trays/global";
+import { InTray, InTrayItem } from "../../../classes/in-trays/global";
 
 interface IntraySummaryProps {
   handleView: (view: string) => void;
@@ -11,6 +11,7 @@ interface IntraySummaryProps {
 }
 
 const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
+  console.log(intray);
   return (
     <>
       {" "}
@@ -20,17 +21,25 @@ const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
             <tr key={item.id}>
               <td>
                 {item.title}
-                {item.getSubtitle() && item.getSubtitle()}
+                {item instanceof InTrayItem && item.getSubtitle() && item.getSubtitle()}
               </td>
               <td>
-                <button type="button" onClick={() => item.showDetails(session, intray)}>
-                  Details
-                </button>
+                {item instanceof InTrayItem && (
+                  <button type="button" onClick={() => item.handleClick(session, intray)}>
+                    Details
+                  </button>
+                )}
+                {item instanceof InTray && (
+                  <button type="button" onClick={() => session.handleDynamicView(INTRAY_SUMMARY, item)}>
+                    See more
+                  </button>
+                )}
               </td>
             </tr>
           ))}
         </tbody>
       </table>
+      <CerysButton buttonText={"Go back"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
       <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );

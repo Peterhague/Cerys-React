@@ -1,4 +1,5 @@
 import { enterNL } from "../client-data-processing/nominal-ledger";
+import { INTRAY_DETAILS } from "../static-values/views";
 import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 
@@ -9,6 +10,7 @@ export class NominalLedgerEntryPrompt extends InTrayItem {
       getSubtitle: null,
       getSummaryText: null,
       detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
       affirmativeAction: null,
     });
     this.getSubtitle = this.getIntraySubtitle;

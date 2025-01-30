@@ -1,4 +1,5 @@
 import { ClientCerysCodeObjectProps, ClientTBLineProps } from "../interfaces/interfaces";
+import { INTRAY_DETAILS } from "../static-values/views";
 import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
 import { Journal } from "./journal";
@@ -50,6 +51,7 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
       getSubtitle: null,
       getSummaryText: null,
       detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
       affirmativeAction: null,
     });
     const comparisonArray = bFPerCerys.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));

@@ -551,5 +551,6 @@ export interface InTrayItemProps {
   getSubtitle: () => string;
   getSummaryText: () => string;
   detailsAction: () => void;
+  detailsPath: "inTrayDetails" | "inTrayDetails";
   affirmativeAction: (param1: Session) => void | Promise<void>;
 }

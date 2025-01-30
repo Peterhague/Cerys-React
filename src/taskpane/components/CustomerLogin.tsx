@@ -7,11 +7,14 @@ import { Session } from "../classes/session";
 import { CUSTOMER_DASH_HOME, LANDING_PAGE } from "../static-values/views";
 import { Customer } from "../classes/customer";
 import { ViewOptionsProps } from "../interfaces/interfaces";
-import { InTray, InTrayAndItem, InTrayItem } from "../classes/in-trays/global";
+import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "../classes/in-trays/global";
 
 interface customerLoginProps {
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem) => void;
+  handleDynamicView: (
+    view: string,
+    options: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayRouting
+  ) => void;
   setEditButton: (state: string) => void;
   session: Session;
 }

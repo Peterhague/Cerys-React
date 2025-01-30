@@ -100,7 +100,7 @@ import IntraySummary from "./Assignment/Intray/IntraySummary";
 import { ViewOptionsProps } from "../interfaces/interfaces";
 import { ViewOptions } from "../classes/view-options";
 import IntrayDetails from "./Assignment/Intray/IntrayDetails";
-import { InTray, InTrayAndItem, InTrayItem } from "../classes/in-trays/global";
+import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "../classes/in-trays/global";
 
 interface AppBodyProps {
   session: Session;
@@ -109,7 +109,7 @@ interface AppBodyProps {
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState<ViewOptionsProps | InTray | InTrayItem | InTrayAndItem>(BLANK_VIEW_OPTIONS);
+  const [options, setOptions] = useState<ViewOptionsProps | InTray | InTrayItem | InTrayRouting>(BLANK_VIEW_OPTIONS);
 
   console.log(session);
 
@@ -118,7 +118,7 @@ const AppBody = ({ session }: AppBodyProps) => {
     setView(view);
   };
 
-  const handleDynamicView = (view: string, options: ViewOptionsProps | InTray | InTrayItem) => {
+  const handleDynamicView = (view: string, options: ViewOptionsProps | InTray | InTrayItem | InTrayRouting) => {
     setOptions(options);
     session.currentView = view;
     setView(view);

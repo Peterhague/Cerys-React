@@ -176,10 +176,13 @@ export class Assignment extends BaseAssignment {
   }
 
   getUnprocessedFATransByType(session: Session, registerType: string) {
+    console.log(registerType);
     const relevantTrans: AssetTransaction[] = [];
     this.transactions.forEach((tran) => {
       if (!tran.processedAsAsset) {
+        console.log(tran);
         const cerysCodeObj = tran.getCerysCodeObj(session);
+        console.log(cerysCodeObj);
         if (
           (registerType === "IFA" &&
             cerysCodeObj.cerysCategory === "Intangible assets" &&
@@ -217,16 +220,21 @@ export class Assignment extends BaseAssignment {
   getRegisterPrompts(session: Session) {
     const relevantTrans = this.transactions.filter((tran) => !tran.processedAsAsset);
     const prompts: ("IFA" | "TFA" | "IP")[] = [];
-    relevantTrans.forEach((tran) => {
+    const ifa = relevantTrans.find((tran) => {
       const cerysCodeObj = tran.getCerysCodeObj(session);
-      if (cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF") {
-        prompts.push("IFA");
-      } else if (cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF") {
-        prompts.push("TFA");
-      } else if (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF") {
-        prompts.push("IP");
-      }
+      return cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF";
     });
+    ifa && prompts.push("IFA");
+    const tfa = relevantTrans.find((tran) => {
+      const cerysCodeObj = tran.getCerysCodeObj(session);
+      return cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF";
+    });
+    tfa && prompts.push("TFA");
+    const ip = relevantTrans.find((tran) => {
+      const cerysCodeObj = tran.getCerysCodeObj(session);
+      return cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF";
+    });
+    ip && prompts.push("IP");
     return prompts;
   }
 
