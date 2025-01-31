@@ -32,7 +32,7 @@ export const identifyLikelyAdditions = async (
   setView: React.Dispatch<string>
 ) => {
   console.log("next step working");
-  const bFTransLikelyAddns: AssetTransaction[] = session.assignment.getBFTransLikelyAdditions(session, registerType);
+  const bFTransLikelyAddns: AssetTransaction[] = session.assignment.getTransLikelyAdditions(session, registerType);
   console.log(bFTransLikelyAddns);
   if (bFTransLikelyAddns.length > 0) {
     await createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);

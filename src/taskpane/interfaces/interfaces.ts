@@ -6,6 +6,7 @@ import { TrialBalanceLine } from "../classes/client-codes";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
 import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
+import { InTray, InTrayItem } from "../classes/in-trays/global";
 /*global Excel */
 
 export interface BaseCerysCodeObjectProps {
@@ -553,4 +554,10 @@ export interface InTrayItemProps {
   detailsAction: () => void;
   detailsPath: "inTrayDetails" | "inTrayDetails";
   affirmativeAction: (param1: Session) => void | Promise<void>;
+}
+
+export interface InTrayCollectionProps {
+  title: string;
+  items: (InTrayItem | InTray)[];
+  id: string;
 }

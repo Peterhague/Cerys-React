@@ -1,18 +1,21 @@
 import { enterNL } from "../client-data-processing/nominal-ledger";
 import { INTRAY_DETAILS } from "../static-values/views";
-import { InTrayItem } from "./in-trays/global";
+import { InTrayCollection, InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 
 export class NominalLedgerEntryPrompt extends InTrayItem {
-  constructor() {
-    super({
-      title: "Nominal ledger not imported",
-      getSubtitle: null,
-      getSummaryText: null,
-      detailsAction: null,
-      detailsPath: INTRAY_DETAILS,
-      affirmativeAction: null,
-    });
+  constructor(inTrayCollection: InTrayCollection) {
+    super(
+      {
+        title: "Nominal ledger not imported",
+        getSubtitle: null,
+        getSummaryText: null,
+        detailsAction: null,
+        detailsPath: INTRAY_DETAILS,
+        affirmativeAction: null,
+      },
+      inTrayCollection
+    );
     this.getSubtitle = this.getIntraySubtitle;
     this.getSummaryText = this.getIntraySummaryText;
     this.affirmativeAction = this.enterNL;

@@ -176,23 +176,20 @@ export class Assignment extends BaseAssignment {
   }
 
   getUnprocessedFATransByType(session: Session, registerType: string) {
-    console.log(registerType);
     const relevantTrans: AssetTransaction[] = [];
     this.transactions.forEach((tran) => {
       if (!tran.processedAsAsset) {
-        console.log(tran);
         const cerysCodeObj = tran.getCerysCodeObj(session);
-        console.log(cerysCodeObj);
         if (
           (registerType === "IFA" &&
             cerysCodeObj.cerysCategory === "Intangible assets" &&
-            cerysCodeObj.assetCodeType === "iFACostAddns") ||
+            (cerysCodeObj.assetCodeType === "iFACostAddns" || cerysCodeObj.assetCodeType === "iFACostBF")) ||
           (registerType === "TFA" &&
             cerysCodeObj.cerysCategory === "Tangible assets" &&
-            cerysCodeObj.assetCodeType === "tFACostAddns") ||
+            (cerysCodeObj.assetCodeType === "tFACostAddns" || cerysCodeObj.assetCodeType === "tFACostBF")) ||
           (registerType === "IP" &&
             cerysCodeObj.cerysCategory === "Investment property" &&
-            cerysCodeObj.assetCodeType === "iPCostAddns")
+            (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF"))
         ) {
           relevantTrans.push(new AssetTransaction(session, tran));
         }
@@ -238,7 +235,7 @@ export class Assignment extends BaseAssignment {
     return prompts;
   }
 
-  getBFTransLikelyAdditions(session: Session, registerType: string) {
+  getTransLikelyAdditions(session: Session, registerType: string) {
     const filteredArr = this.transactions.filter((tran) => {
       let test: number;
       if (!tran.processedAsAsset) {

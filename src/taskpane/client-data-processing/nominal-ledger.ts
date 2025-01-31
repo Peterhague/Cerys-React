@@ -1,6 +1,6 @@
 import { Assignment } from "../classes/assignment";
 import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
-import { InTray } from "../classes/in-trays/global";
+import { InTray, InTrayCollection } from "../classes/in-trays/global";
 import { InTrayNominalLedgerEntry } from "../classes/in-trays/templates";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
@@ -17,7 +17,7 @@ export async function enterNL(session: Session) {
   session.assignment = new Assignment(assignment);
   const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
   const intray = new InTray(nLIntrayTemplate);
-  intray.items.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
+  intray.collections.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 
 export async function createClientNLObject() {
@@ -91,7 +91,11 @@ export const createNLEntryInTray = (session: Session, openingBalances: ClientTBL
   return inTrayTemplate;
 };
 
-export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBLineProps[]) => {
+export const reconcileClientBFTB = (
+  session: Session,
+  openingBalances: ClientTBLineProps[],
+  opBalCollection: InTrayCollection
+) => {
   const comparisonArray = session.clientBFwdTB.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
   openingBalances.forEach((opBal) => {
     const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);
@@ -99,6 +103,6 @@ export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBL
       ? (existingItem.clientValue = opBal.value)
       : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
   });
-  const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances);
+  const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances, opBalCollection);
   return reconcilationObj;
 };

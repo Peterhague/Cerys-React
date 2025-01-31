@@ -1,25 +1,42 @@
 import { InTrayItemProps } from "../../interfaces/interfaces";
+import { getRandomString } from "../../utils/helper-functions";
 import { Session } from "../session";
 import { InTrayTemplate } from "./templates";
 
 export class InTray {
   type: InTrayTemplate["type"];
   title: string;
-  items: (InTrayItem | InTray)[];
+  collections: InTrayCollection[];
   id: string;
+  parentInTray: InTray;
   constructor(intray: InTrayTemplate) {
     this.type = intray.type;
     this.title = intray.title;
-    this.items = intray.items;
-    this.id = Math.round(Math.random() * 10000000).toString();
+    intray.collections.forEach((coll) => {
+      coll.items.forEach((item) => {
+        if (item instanceof InTray) item.parentInTray = this;
+      });
+    });
+    this.collections = intray.collections;
+    this.id = getRandomString();
   }
   deleteThisItem(inTrayItem: InTrayItem) {
-    const items = this.items.filter((i) => i.id !== inTrayItem.id);
-    this.items = items;
+    this.collections.find((coll) => coll.id === inTrayItem.collectionId).items.filter((i) => i.id !== inTrayItem.id);
   }
 
   addItem(inTrayItem: InTrayItem) {
-    this.items.push(inTrayItem);
+    this.collections.find((coll) => coll.id === inTrayItem.collectionId).items.push(inTrayItem);
+  }
+}
+
+export class InTrayCollection {
+  title: string;
+  items: (InTrayItem | InTray)[];
+  id: string;
+  constructor(title: string = null) {
+    this.title = title;
+    this.items = [];
+    this.id = getRandomString();
   }
 }
 
@@ -31,14 +48,16 @@ export class InTrayItem {
   detailsPath: "inTrayDetails" | "inTraySummary";
   affirmativeAction: (session: Session) => void | Promise<void>;
   id: string;
-  constructor(inTrayItem: InTrayItemProps) {
+  collectionId: string;
+  constructor(inTrayItem: InTrayItemProps, inTrayCollection: InTrayCollection) {
     this.title = inTrayItem.title;
     this.getSubtitle = inTrayItem.getSubtitle;
     this.getSummaryText = inTrayItem.getSummaryText;
     this.detailsAction = inTrayItem.detailsAction;
     this.detailsPath = inTrayItem.detailsPath;
     this.affirmativeAction = inTrayItem.affirmativeAction;
-    this.id = Math.round(Math.random() * 10000000).toString();
+    this.id = getRandomString();
+    this.collectionId = inTrayCollection.id;
   }
 
   handleClick(session: Session, inTray: InTray) {

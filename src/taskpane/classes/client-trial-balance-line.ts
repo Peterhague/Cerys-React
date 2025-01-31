@@ -1,7 +1,7 @@
 import { ClientCerysCodeObjectProps, ClientTBLineProps } from "../interfaces/interfaces";
 import { INTRAY_DETAILS } from "../static-values/views";
 import { processTransBatch } from "../utils/transactions/transactions";
-import { InTrayItem } from "./in-trays/global";
+import { InTrayCollection, InTrayItem } from "./in-trays/global";
 import { Journal } from "./journal";
 import { Session } from "./session";
 /* global Excel */
@@ -45,15 +45,18 @@ export class ClientTBBFwdComparison {
 
 export class ClientTBBFwdReconciliation extends InTrayItem {
   items: ClientTBBFwdComparison[];
-  constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[]) {
-    super({
-      title: "Opening balances",
-      getSubtitle: null,
-      getSummaryText: null,
-      detailsAction: null,
-      detailsPath: INTRAY_DETAILS,
-      affirmativeAction: null,
-    });
+  constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[], inTrayCollection: InTrayCollection) {
+    super(
+      {
+        title: "Opening balances",
+        getSubtitle: null,
+        getSummaryText: null,
+        detailsAction: null,
+        detailsPath: INTRAY_DETAILS,
+        affirmativeAction: null,
+      },
+      inTrayCollection
+    );
     const comparisonArray = bFPerCerys.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
     bfPerClient.forEach((opBal) => {
       const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);

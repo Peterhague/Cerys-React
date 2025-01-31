@@ -7,7 +7,7 @@ import {
 } from "../interfaces/interfaces";
 import { registerTypes } from "../static-values/register-types";
 import { INTRAY_DETAILS } from "../static-values/views";
-import { InTrayItem } from "./in-trays/global";
+import { InTrayCollection, InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 import { AssetTransaction } from "./transaction";
 
@@ -151,15 +151,18 @@ export class RegisterCreationTemplate {
 export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
   transactions: DetailedTransaction[];
-  constructor(registerTemplate: RegisterCreationTemplate) {
-    super({
-      title: `Create ${registerTemplate.registerType} register?`,
-      getSubtitle: null,
-      getSummaryText: null,
-      detailsAction: null,
-      detailsPath: INTRAY_DETAILS,
-      affirmativeAction: null,
-    });
+  constructor(registerTemplate: RegisterCreationTemplate, inTrayCollection: InTrayCollection) {
+    super(
+      {
+        title: `Create ${registerTemplate.registerType} register?`,
+        getSubtitle: null,
+        getSummaryText: null,
+        detailsAction: null,
+        detailsPath: INTRAY_DETAILS,
+        affirmativeAction: null,
+      },
+      inTrayCollection
+    );
     console.log(registerTemplate.transactions);
     this.register = registerTemplate.register;
     this.transactions = registerTemplate.transactions;

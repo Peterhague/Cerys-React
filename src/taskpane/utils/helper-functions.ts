@@ -617,3 +617,7 @@ export const handleWorksheetDrill = async (
     if (valid) collection.drillInto(session);
   });
 };
+
+export const getRandomString = () => {
+  return Math.round(Math.random() * 10000000).toString();
+};
