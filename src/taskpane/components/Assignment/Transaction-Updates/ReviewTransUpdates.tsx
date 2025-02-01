@@ -45,7 +45,7 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
         <tbody>
           <tr>
             <td>Date</td>
-            <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].transactionDateExcel))}</td>
+            <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex].getExcelDate()))}</td>
           </tr>
           {getUpdatedDate(updatedTransactions[activeIndex]) && (
             <tr>
@@ -102,7 +102,7 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
           <tbody>
             <tr>
               <td>Date</td>
-              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].transactionDateExcel))}</td>
+              <td>{convertMongoDate(convertExcelDate(updatedTransactions[activeIndex + 1].getExcelDate()))}</td>
             </tr>
             {getUpdatedDate(updatedTransactions[activeIndex + 1]) && (
               <tr>

@@ -23,7 +23,10 @@ import { RegisterCreationTemplate } from "../../classes/asset-register";
 
 export const checkTransUnregisteredAssets = (session: Session) => {
   const registersToPrompt = session.assignment.getRegisterPrompts(session);
-  return registersToPrompt.map((reg) => new RegisterCreationTemplate(session, reg));
+  console.log(registersToPrompt);
+  const mapped = registersToPrompt.map((reg) => new RegisterCreationTemplate(session, reg));
+  console.log(mapped);
+  return mapped;
 };
 
 export const identifyLikelyAdditions = async (
@@ -39,14 +42,14 @@ export const identifyLikelyAdditions = async (
     setView("confirmBFAreAddns");
     createTransactionUpdates(session, bFTransLikelyAddns);
   } else {
-    previewRelTrans(session, registerType, setView);
+    previewRelTrans(session, registerType);
   }
 };
 
-export const previewRelTrans = (session: Session, registerType: string, setView: React.Dispatch<string>) => {
+export const previewRelTrans = (session: Session, registerType: string) => {
   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
   createRelTrans(session, registerType);
-  setView("confirm");
+  //setView("confirm");
   session.options[`${registerType}RCreationSetting`] = "confirm";
 };
 
@@ -141,18 +144,19 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
         const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
-        if (transaction.transactionDate) {
-          const dateString =
-            typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
-          const dateStringSplit = dateString.split("-");
-          const dateConverted = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
-          transVals.push(dateConverted);
-          transaction.transactionDateUser = dateConverted;
-        } else if (transaction.transactionDateClt) {
-          transVals.push(transaction.transactionDateClt);
-        } else {
-          transVals.push("Not provided");
-        }
+        // if (transaction.transactionDate) {
+        //   const dateString =
+        //     typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
+        //   const dateStringSplit = dateString.split("-");
+        //   const dateConverted = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
+        //   transVals.push(dateConverted);
+        //   transaction.transactionDateUser = dateConverted;
+        // } else if (transaction.transactionDateClt) {
+        //   transVals.push(transaction.transactionDateClt);
+        // } else {
+        //   transVals.push("Not provided");
+        // }
+        transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
         if (transaction.journal) {
           transVals.push("Journal");
@@ -239,18 +243,19 @@ export async function createLikelyAdditionsSumm(
         const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
-        if (transaction.transactionDate) {
-          const dateString =
-            typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
-          const dateStringSplit = dateString.split("-");
-          const dateConverted: string = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
-          transVals.push(dateConverted);
-          transaction.transactionDateUser = dateConverted;
-        } else if (transaction.transactionDateClt) {
-          transVals.push(transaction.transactionDateClt);
-        } else {
-          transVals.push("Not provided");
-        }
+        // if (transaction.transactionDate) {
+        //   const dateString =
+        //     typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
+        //   const dateStringSplit = dateString.split("-");
+        //   const dateConverted: string = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
+        //   transVals.push(dateConverted);
+        //   transaction.transactionDateUser = dateConverted;
+        // } else if (transaction.transactionDateClt) {
+        //   transVals.push(transaction.transactionDateClt);
+        // } else {
+        //   transVals.push("Not provided");
+        // }
+        transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
         if (transaction.journal) {
           transVals.push("Journal");

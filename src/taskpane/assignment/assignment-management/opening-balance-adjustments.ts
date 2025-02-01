@@ -79,7 +79,7 @@ export async function oBARelevantTransView(session: Session) {
       const sheetMapping: TransactionMap[] = [];
       relTrans.forEach((line) => {
         const cerysCodeObj = line.getCerysCodeObj(session);
-        const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
+        const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.getExcelDate();
         const hasUpdatedCerysCode = line.updates.find((update) => update.type === "cerysCode");
         const cerysCode = hasUpdatedCerysCode ? hasUpdatedCerysCode.value : line.cerysCode;
         const shortName = hasUpdatedCerysCode

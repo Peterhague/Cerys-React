@@ -251,7 +251,7 @@ export const validateTransactionDate = (
   finalValidationObj: TranUpdateFinalValidation
 ) => {
   if (typeof e.details.valueAfter !== "number") finalValidationObj.isInvalid = true;
-  if (e.details.valueAfter === tran.transactionDateExcel) finalValidationObj.isNegation = true;
+  if (e.details.valueAfter === tran.getExcelDate()) finalValidationObj.isNegation = true;
   if (e.details.valueAfter > session.assignment.reportingPeriod.reportingDateExcel) {
     finalValidationObj.isInvalid = true;
   } else if (
@@ -298,7 +298,7 @@ export const createNewTransactionUpdate = (
 ) => {
   let reversion;
   if (definedCol.type === "date") {
-    reversion = tran.transactionDateExcel;
+    reversion = tran.getExcelDate();
   } else if (definedCol.type === "cerysCode") {
     reversion = tran.cerysCode;
   } else if (definedCol.type === "cerysNarrative") {

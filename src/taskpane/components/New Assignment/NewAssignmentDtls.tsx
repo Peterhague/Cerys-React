@@ -125,16 +125,25 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
       periodStart,
       transactionsPosted: false,
     });
+    console.log("working here...");
     const { customer, assignment, IFARegister, TFARegister, client, clientBFwdTB } =
       await processNewAssignment(prelimAssignment);
     session.customer = new Customer(customer);
+    console.log("working here...");
     console.log(assignment);
+    console.log("working here...");
     session.assignment = new Assignment(assignment);
+    console.log("working here...");
     session.clientChart = client.clientChart.map((i: ClientCodeObjectProps) => new ClientCodeObject(i));
+    console.log("working here...");
     session.IFARegister = IFARegister && new AssetRegister(session, IFARegister, "Intangible");
+    console.log("working here...");
     session.TFARegister = TFARegister && new AssetRegister(session, TFARegister, "Tangible");
+    console.log("working here...");
     session.clientBFwdTB = clientBFwdTB;
+    console.log("working here...");
     addPrimarySheets(session);
+    console.log("working here...");
     if (session.assignment.reportingPeriod.bFTB.length > 0) {
       const options = {
         handleYes: () => postOpBalJnls(session),

@@ -146,10 +146,7 @@ export interface TransactionProps {
   cerysCode: number;
   value: number;
   transactionType: string;
-  transactionDate: Date | string;
-  transactionDateExcel: number;
-  transactionDateUser?: string;
-  transactionDateClt?: number;
+  transactionDate: string;
   transactionNumber: number;
   transactionBatchNumber: number;
   iteration: number;
@@ -256,6 +253,7 @@ export interface ClientTransaction {
   date: number;
   value: number;
   cerysCode?: number;
+  _id: string;
 }
 
 export interface ClientTBLineProps {

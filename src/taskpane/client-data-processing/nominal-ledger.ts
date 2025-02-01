@@ -16,7 +16,9 @@ export async function enterNL(session: Session) {
   console.log(assignment);
   session.assignment = new Assignment(assignment);
   const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
+  console.log(nLIntrayTemplate);
   const intray = new InTray(nLIntrayTemplate);
+  console.log(intray);
   intray.collections.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 

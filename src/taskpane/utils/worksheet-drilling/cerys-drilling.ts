@@ -108,7 +108,7 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
       let rowNumber = 3;
       const sheetMapping = [];
       transactions.forEach((line) => {
-        const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.transactionDateExcel;
+        const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.getExcelDate();
         const cerysCode = getUpdatedCerysCode(line) ? getUpdatedCerysCode(line) : line.cerysCode;
         const narrative = getUpdatedNarrative(line) ? getUpdatedNarrative(line) : line.narrative;
         let arr = [];
@@ -216,7 +216,6 @@ export const handleOtherCellClick = (
     session.activeEditableCell = createEditableCell(null, null, null);
   }
   if (withinEditableRange && clientCodeCol === addressObj.firstCol) {
-    console.log("here???");
     showClientNominalDetail(e, session);
   }
 };

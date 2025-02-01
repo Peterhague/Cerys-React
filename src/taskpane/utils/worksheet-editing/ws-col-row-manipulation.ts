@@ -117,7 +117,6 @@ export const handleRowInsertion = async (
 export const handleRowDeletion = async (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
-  console.log("here");
   if (session.activeEditableCell.wsName === sheet.name) {
     if (
       firstRow <= sheet.getCurrentRow(session.activeEditableCell.addressObj.firstRowOrig) &&
@@ -383,7 +382,7 @@ export const validateOtherValues = (session: Session, sheet: EditableWorksheet, 
 };
 
 export const validateCerysTransaction = (session: Session, sheet: EditableWorksheet, tran: Transaction, row: any[]) => {
-  const date = getUpdatedDate(tran) ? getUpdatedDate(tran).value : tran.transactionDateExcel;
+  const date = getUpdatedDate(tran) ? getUpdatedDate(tran).value : tran.getExcelDate();
   const narrative = getUpdatedNarrative(tran) ? getUpdatedNarrative(tran) : tran.narrative;
   const value = tran.getCerysCodeObj(session).defaultSign === "credit" ? tran.value * -1 : tran.value;
   let transDateCol: number;

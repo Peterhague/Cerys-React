@@ -10,6 +10,7 @@ export class InTray {
   id: string;
   parentInTray: InTray;
   constructor(intray: InTrayTemplate) {
+    console.log(intray);
     this.type = intray.type;
     this.title = intray.title;
     intray.collections.forEach((coll) => {
@@ -46,7 +47,7 @@ export class InTrayItem {
   getSummaryText: () => string;
   detailsAction: () => void;
   detailsPath: "inTrayDetails" | "inTraySummary";
-  affirmativeAction: (session: Session) => void | Promise<void>;
+  affirmativeAction: (param: Session | null) => void | Promise<void>;
   id: string;
   collectionId: string;
   constructor(inTrayItem: InTrayItemProps, inTrayCollection: InTrayCollection) {

@@ -91,7 +91,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
           await processTransBatch(context, session);
           checkFATranUpdatesForAssets(session);
         }
-        previewRelTrans(session, initials, setView);
+        previewRelTrans(session, initials);
       });
     } catch (e) {
       console.error(e);
@@ -128,7 +128,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
           <p>These transactions were posted as b/fwd balances but from their dates would appear to be additions.</p>
           <p>Would you like to repost them as additions?</p>
           <CerysButton buttonText={"REPOST AS ADDITIONS"} handleClick={() => handleReanalysis()} />
-          <CerysButton buttonText={"NO THANKS"} handleClick={() => previewRelTrans(session, initials, setView)} />
+          <CerysButton buttonText={"NO THANKS"} handleClick={() => previewRelTrans(session, initials)} />
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
