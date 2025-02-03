@@ -142,14 +142,12 @@ export class Assignment extends BaseAssignment {
   bSListenerAdded?: boolean;
   inTray: InTray;
   constructor(assignment: AssignmentProps) {
-    console.log("here");
     super(assignment);
     this.reportingPeriod = assignment.reportingPeriod;
     this.senior = assignment.senior;
     this.manager = assignment.manager;
     this.responsibleIndividual = assignment.responsibleIndividual;
     this.clientSoftwareDefaults = assignment.clientSoftwareDefaults;
-    console.log("here");
     this.workbookId = assignment.workbookId;
     this.transactions = assignment.transactions.map((tran) => new Transaction(tran));
     this.clientNL = assignment.clientNL;
@@ -158,7 +156,6 @@ export class Assignment extends BaseAssignment {
     this.dateFinished = assignment.dateFinished;
     this.TBInitiated = assignment.TBInitiated;
     this.TBEntered = assignment.TBEntered;
-    console.log("here");
     this.NLEntered = assignment.NLEntered;
     this.templatesAmended = assignment.templatesAmended;
     this.IFARegisterCreated = assignment.IFARegisterCreated;
@@ -168,18 +165,14 @@ export class Assignment extends BaseAssignment {
     this.clientTB = assignment.clientTB;
     this.activeCategories = assignment.activeCategories;
     this.activeCategoriesDetails = assignment.activeCategoriesDetails;
-    console.log("here");
     this.activeAssetCodeTypes = assignment.activeAssetCodeTypes;
     this.transactionBatches = assignment.transactionBatches;
     this.finalised = assignment.finalised;
     this._id = assignment._id;
-    console.log("here");
     this.tbListenerAdded = assignment.tbListenerAdded;
     this.pLListenerAdded = assignment.pLListenerAdded;
     this.bSListenerAdded = assignment.bSListenerAdded;
-    console.log("here");
     this.inTray = new InTray(new InTrayAssignment());
-    console.log("here");
   }
 
   getUnprocessedFATransByType(session: Session, registerType: string) {

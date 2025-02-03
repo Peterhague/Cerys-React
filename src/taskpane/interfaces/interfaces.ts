@@ -146,7 +146,17 @@ export interface ShortUser {
 export interface TransactionProps {
   cerysCode: number;
   value: number;
-  transactionType: string;
+  transactionType:
+    | "journal"
+    | "review journal"
+    | "final journal"
+    | "client adjustment"
+    | "opening balance"
+    | "OBA auto-entry"
+    | "client trial balance"
+    | "auto-journal"
+    | "auto-addition"
+    | "auto-depreciation";
   transactionDate: string;
   transactionNumber: number;
   transactionBatchNumber: number;
@@ -159,13 +169,7 @@ export interface TransactionProps {
   }[];
   narrative: string;
   user: string;
-  clientTB: boolean;
   clientNominalCode: number;
-  clientNominalName: string;
-  clientAdjustment: boolean;
-  journal: boolean;
-  reviewJournal: boolean;
-  finalJournal: boolean;
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
@@ -229,8 +233,6 @@ export interface JournalProps {
   value: number;
   narrative: string;
   transactionType: string;
-  clientTB: boolean;
-  journal: boolean;
   transactionDate: string | Date;
   transactionDateExcel: number;
   processedAsAsset: boolean;
@@ -239,15 +241,14 @@ export interface JournalProps {
 export interface JournalDetailsProps {
   cerysCode: number;
   value: number | string;
+  transactionType: TransactionProps["transactionType"];
   narrative: string;
   transactionDate: Date | string;
-  transactionType: string;
-  clientTB: boolean;
-  journal: boolean;
+  clientNominalCode?: number;
 }
 
 export interface ActiveJournalProps {
-  type: "journal" | "opening balance" | "OBA auto-entry" | "clientTB" | "auto-journal" | "autoAddition";
+  type: TransactionProps["transactionType"];
   journals: Journal[];
 }
 

@@ -3,11 +3,11 @@ import { ClientCodeObject } from "../classes/client-codes";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 import { InTray } from "../classes/in-trays/global";
 import { InTrayTrialBalanceEntry } from "../classes/in-trays/templates";
-import { ActiveJournal } from "../classes/journal";
+import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
-import { ClientTBLineProps } from "../interfaces/interfaces";
+import { ClientTBLineProps, JournalDetailsProps } from "../interfaces/interfaces";
 import { INTRAY_SUMMARY } from "../static-values/views";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
 import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
@@ -18,22 +18,22 @@ export async function enterTB(session: Session) {
     await Excel.run(async (context) => {
       const clientTBObjs: ClientTrialBalanceLine[] = await handleTBData(session);
       let check = 0;
-      const transactions = [];
+      const transactions: JournalDetailsProps[] = [];
       clientTBObjs.forEach((jnl) => {
-        const obj = {
-          ...jnl,
-          ...jnl.cerysCodeObj,
+        const obj: JournalDetailsProps = {
+          cerysCode: jnl.cerysCodeObj.cerysCode,
+          value: jnl.value,
+          transactionType: "client trial balance",
           transactionDate: "",
+          narrative: jnl.narrative,
+          clientNominalCode: jnl.getClientCodeObject(session).clientCode,
         };
         check += jnl.value;
         transactions.push(obj);
       });
       if (check !== 0) return;
-      // session.activeJournal.journals = transactions;
-      // session.activeJournal.journalType = "clientTB";
-      // session.activeJournal.journal = false;
-      // session.activeJournal.clientTB = true;
-      const activeJournal = new ActiveJournal({ type: "clientTB", journals: transactions });
+      const journals = transactions.map((tran) => new Journal(session, tran));
+      const activeJournal = new ActiveJournal({ type: "client trial balance", journals });
       await processTransBatch(context, session, activeJournal);
       checkNewTransForAssets(session);
       const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);

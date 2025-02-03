@@ -25,10 +25,16 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
     session.handleDynamicView(INTRAY_SUMMARY, inTray);
   };
 
+  const handleAffirmative = async () => {
+    await inTrayItem.affirmativeAction(session);
+    inTray.deleteThisItem(inTrayItem);
+    session.handleDynamicView(INTRAY_SUMMARY, inTray);
+  };
+
   return (
     <>
       <p>{options.inTrayItem.getSummaryText()}</p>
-      <CerysButton buttonText={"Yes"} handleClick={async () => await inTrayItem.affirmativeAction(session)} />
+      <CerysButton buttonText={"Yes"} handleClick={handleAffirmative} />
       <CerysButton buttonText={"Add to assignment intray"} handleClick={handleAddToAssignmentInTray} />
       <CerysButton buttonText={"Ignore"} handleClick={handleIgnore} />
       <CerysButton

@@ -79,14 +79,19 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   };
 
   const calculatePeriodStart = (date: string, clientObj: Client) => {
+    console.log(date);
+    console.log(clientObj);
     const dateSplit = date.split("-");
+    console.log(dateSplit);
     const month = calculateMonth(dateSplit[1]);
+    console.log(month);
     let prelimPeriodStart;
     if (month === "01") {
       prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0])}`;
     } else {
       prelimPeriodStart = `01/${month}/${parseInt(dateSplit[0]) - 1}`;
     }
+    console.log(prelimPeriodStart);
     const splitPeriodStart = prelimPeriodStart.split("/");
     const convertedPeriodStart = `${splitPeriodStart[2]}-${splitPeriodStart[1]}-${splitPeriodStart[0]}`;
     const test = calculateDiffInDays(clientObj.incorpDate, convertedPeriodStart);
@@ -97,7 +102,9 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   };
 
   const calculateMonth = (month: string) => {
+    console.log(month);
     let rawMonth = parseInt(month) + 1;
+    console.log(rawMonth);
     if (rawMonth > 12) rawMonth = 1;
     return rawMonth < 10 ? `0${rawMonth}` : rawMonth;
   };

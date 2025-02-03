@@ -52,8 +52,6 @@ export const postOpBalJnls = async (session: Session) => {
       session.assignment.reportingPeriod.bFTB.forEach((line) => {
         const journalDetails: JournalDetailsProps = {
           cerysCode: line.cerysCode,
-          journal: false,
-          clientTB: false,
           narrative: "automatic opening balance",
           transactionType: "opening balance",
           value: line.value,

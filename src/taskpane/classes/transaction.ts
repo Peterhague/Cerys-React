@@ -13,7 +13,7 @@ import { TransactionUpdate } from "./transaction-update";
 
 export class Transaction {
   value: number;
-  transactionType: string;
+  transactionType: TransactionProps["transactionType"];
   transactionDate: string;
   transactionNumber: number;
   transactionBatchNumber: number;
@@ -26,13 +26,7 @@ export class Transaction {
   }[];
   narrative: string;
   user: string;
-  clientTB: boolean;
   clientNominalCode: number;
-  clientNominalName: string;
-  clientAdjustment: boolean;
-  journal: boolean;
-  reviewJournal: boolean;
-  finalJournal: boolean;
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
@@ -53,13 +47,7 @@ export class Transaction {
     this.iterations = transaction.iterations;
     this.narrative = transaction.narrative;
     this.user = transaction.user;
-    this.clientTB = transaction.clientTB;
     this.clientNominalCode = transaction.clientNominalCode;
-    this.clientNominalName = transaction.clientNominalName;
-    this.clientAdjustment = transaction.clientAdjustment;
-    this.journal = transaction.journal;
-    this.reviewJournal = transaction.reviewJournal;
-    this.finalJournal = transaction.finalJournal;
     this.workbookRef = transaction.workbookRef;
     this.worksheetRef = transaction.worksheetRef;
     this.dateCreated = transaction.dateCreated;
@@ -69,6 +57,30 @@ export class Transaction {
     this.clientMappingOverridden = transaction.clientMappingOverridden;
     this.clientMappingOverride = transaction.clientMappingOverride;
     this._id = transaction._id;
+  }
+
+  getTransactionProps() {
+    return {
+      cerysCode: this.cerysCode,
+      value: this.value,
+      transactionType: this.transactionType,
+      transactionDate: this.transactionDate,
+      transactionNumber: this.transactionNumber,
+      transactionBatchNumber: this.transactionBatchNumber,
+      iteration: this.iteration,
+      iterations: this.iterations,
+      narrative: this.narrative,
+      user: this.user,
+      clientNominalCode: this.clientNominalCode,
+      workbookRef: this.workbookRef,
+      worksheetRef: this.worksheetRef,
+      dateCreated: this.dateCreated,
+      updates: this.updates,
+      processedAsAsset: this.processedAsAsset,
+      clientMappingOverridden: this.clientMappingOverridden,
+      clientMappingOverride: this.clientMappingOverride,
+      _id: this._id,
+    };
   }
 
   getCerysCodeObj(session: Session) {
@@ -111,6 +123,10 @@ export class Transaction {
     return session.assignment.clientNL.filter((tran) => tran.code === this.clientNominalCode);
   }
 
+  getClientNominalCodeObj(session: Session) {
+    return session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
+  }
+
   getClientTransAsCerysTrans(session: Session) {
     const trans = this.getClientTransactions(session);
     return trans
@@ -126,66 +142,15 @@ export class Transaction {
   }
 }
 
-export class ClientTransactionConversion {
-  cerysCode: number;
-  value: number;
-  transactionType: string;
-  transactionDate: string;
-  transactionNumber: number;
-  transactionBatchNumber: number;
-  iteration: number;
-  iterations: {
-    iteration: number;
-    transactionDate: string;
-    cerysCode: number;
-    narrative: string;
-  }[];
-  narrative: string;
-  user: string;
-  clientTB: boolean;
-  clientNominalCode: number;
-  clientNominalName: string;
+export class ClientTransactionConversion extends Transaction {
   clientNarrative: string;
-  clientAdjustment: boolean;
-  journal: boolean;
-  reviewJournal: boolean;
-  finalJournal: boolean;
-  workbookRef: string;
-  worksheetRef: string;
-  dateCreated: string;
-  updates: TransactionUpdate[];
-  processedAsAsset: boolean;
-  clientMappingOverridden: boolean;
-  clientMappingOverride: ClientMapping;
   clientTransactionId: string;
   _id: string;
   constructor(clientTransaction: ClientTransaction, cerysTransaction: Transaction) {
-    this.value = clientTransaction.value;
-    this.transactionType = cerysTransaction.transactionType;
-    this.transactionDate = convertExcelDate(clientTransaction.date);
-    this.transactionNumber = clientTransaction.number;
-    this.transactionBatchNumber = cerysTransaction.transactionBatchNumber;
-    this.iteration = null;
-    this.iterations = null;
-    this.narrative = cerysTransaction.narrative;
-    this.user = cerysTransaction.user;
-    this.clientTB = cerysTransaction.clientTB;
-    this.clientNominalCode = clientTransaction.code;
-    this.clientNominalName = clientTransaction.name;
+    super(cerysTransaction);
     this.clientNarrative = clientTransaction.detail;
-    this.clientAdjustment = cerysTransaction.clientAdjustment;
-    this.journal = cerysTransaction.journal;
-    this.reviewJournal = cerysTransaction.reviewJournal;
-    this.finalJournal = cerysTransaction.finalJournal;
-    this.workbookRef = cerysTransaction.workbookRef;
-    this.worksheetRef = cerysTransaction.worksheetRef;
-    this.dateCreated = cerysTransaction.dateCreated;
-    this.updates = null;
-    this.cerysCode = cerysTransaction.cerysCode;
-    this.processedAsAsset = false;
-    this.clientMappingOverridden = null;
-    this.clientMappingOverride = null;
-    this._id = clientTransaction._id;
+    this.transactionDate = convertExcelDate(clientTransaction.date);
+    this.clientTransactionId = clientTransaction._id;
   }
 }
 
@@ -208,9 +173,11 @@ export class AssetTransaction extends Transaction {
   isClientTransaction: boolean;
 
   constructor(session: Session, transaction: Transaction | ClientTransactionConversion) {
-    super(transaction);
+    const transactionProps = transaction.getTransactionProps();
+    super(transactionProps);
     const cerysCodeObj = this.getCerysCodeObj(session);
-    this.assetNarrative = transaction instanceof Transaction ? transaction.narrative : transaction.clientNarrative;
+    this.assetNarrative =
+      transaction instanceof ClientTransactionConversion ? transaction.clientNarrative : transaction.narrative;
     this.assetSubCatCodes = [cerysCodeObj.assetSubCatCode];
     this.subTransactions = [
       {
@@ -221,7 +188,7 @@ export class AssetTransaction extends Transaction {
         value: transaction.value,
       },
     ];
-    this.isClientTransaction = transaction instanceof Transaction ? false : true;
+    this.isClientTransaction = transaction instanceof ClientTransactionConversion ? true : false;
   }
   //why would you need this method? This is an extension of that transaction...
   getTransaction(session: Session) {

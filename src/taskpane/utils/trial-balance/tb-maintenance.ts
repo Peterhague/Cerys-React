@@ -24,7 +24,6 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   const trialBalance = session.assignment.tb;
   const tBValues = [];
   const sheetMapping = [];
-  console.log(trialBalance);
   trialBalance.forEach((line) => {
     tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
     sheetMapping.push(new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], null));

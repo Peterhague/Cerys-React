@@ -5,7 +5,7 @@ import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
-import { ClientCerysCodeObjectProps } from "../../interfaces/interfaces";
+import { ClientCerysCodeObjectProps, JournalDetailsProps } from "../../interfaces/interfaces";
 import { ActiveJournal, Journal } from "../../classes/journal";
 import { LANDING_PAGE } from "../../static-values/views";
 /*global Excel */
@@ -41,14 +41,12 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
 
   const handleJournal = async (e: React.FormEvent) => {
     e.preventDefault();
-    const journalDtls = {
+    const journalDtls: JournalDetailsProps = {
       cerysCode: parseInt(nominalCode),
       value,
       narrative,
       transactionDate,
       transactionType: "journal",
-      clientTB: false,
-      journal: true,
     };
     const journals = activeJournal.journals;
     journals.push(new Journal(session, journalDtls));

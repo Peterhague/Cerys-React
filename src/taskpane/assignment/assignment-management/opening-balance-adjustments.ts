@@ -404,7 +404,7 @@ export const createOBAWorksheet = async (session: Session) => {
         );
         const adjustmentsDrillableCollection = new DrillableCollection(
           obj.assignmentTransactions,
-          (tran: Transaction) => !tran.clientTB,
+          (tran: Transaction) => !(tran.transactionType === "client trial balance"),
           [7],
           cerysNomDetailView
         );

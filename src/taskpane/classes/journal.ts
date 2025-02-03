@@ -3,6 +3,7 @@ import {
   BaseCerysCodeObjectProps,
   JournalDetailsProps,
   JournalProps,
+  TransactionProps,
 } from "../interfaces/interfaces";
 import { calculateExcelDate } from "../utils/helper-functions";
 import { Session } from "./session";
@@ -11,7 +12,7 @@ import { BaseCerysCodeObject } from "./cerys-codes";
 export class ActiveJournal {
   journals: Journal[];
   journalsForDb: JournalForDatabase[];
-  type: "journal" | "opening balance" | "OBA auto-entry" | "clientTB" | "auto-journal" | "autoAddition";
+  type: TransactionProps["transactionType"];
   constructor(activeJournal: ActiveJournalProps) {
     this.journals = activeJournal ? activeJournal.journals : [];
     this.journalsForDb = [];
@@ -53,22 +54,20 @@ class BaseJournal {
   transactionId?: string;
   value: number;
   narrative: string;
-  transactionType: string;
-  clientTB: boolean;
-  journal: boolean;
+  transactionType: TransactionProps["transactionType"];
   transactionDate: string | Date;
   transactionDateExcel: number;
   processedAsAsset: boolean;
+  clientNominalCode: number;
   constructor(journalDetails: JournalDetailsProps) {
     const value = journalDetails.value;
     const numberValue = typeof value === "string" ? parseFloat(value) : value;
     this.value = numberValue * 100;
     this.narrative = journalDetails.narrative;
     this.transactionType = journalDetails.transactionType;
-    this.clientTB = journalDetails.clientTB;
-    this.journal = journalDetails.journal;
     this.transactionDate = journalDetails.transactionDate;
     this.transactionDateExcel = calculateExcelDate(this.transactionDate);
+    this.clientNominalCode = journalDetails.clientNominalCode;
   }
 }
 
@@ -103,7 +102,14 @@ export class JournalForDatabase extends BaseJournal {
   closeOffCode: number;
   _id?: string;
   constructor(journal: Journal) {
-    const journDtlsProps = { ...journal, cerysCode: journal.cerysCodeObj.cerysCode };
+    const journDtlsProps: JournalDetailsProps = {
+      cerysCode: journal.cerysCodeObj.cerysCode,
+      value: journal.value,
+      narrative: journal.narrative,
+      transactionType: journal.transactionType,
+      transactionDate: journal.transactionDate,
+      clientNominalCode: journal.clientNominalCode,
+    };
     super(journDtlsProps);
     this.cerysCode = journal.cerysCodeObj.cerysCode;
     this.cerysName = journal.cerysCodeObj.cerysName;

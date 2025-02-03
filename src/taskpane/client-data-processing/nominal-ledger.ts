@@ -13,7 +13,6 @@ export async function enterNL(session: Session) {
   const { clientNL, openingBalances } = await createClientNLObject();
   session.assignment.clientNL = clientNL;
   const assignment = await postCltNLToDb(session);
-  console.log(assignment);
   session.assignment = new Assignment(assignment);
   const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
   console.log(nLIntrayTemplate);

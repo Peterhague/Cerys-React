@@ -120,8 +120,6 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
               narrative: "OBA auto-entry",
               transactionDate: session.assignment.reportingPeriod.reportingDate,
               transactionType: "OBA auto-entry",
-              clientTB: false,
-              journal: false,
             })
           );
         });

@@ -158,15 +158,15 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
         // }
         transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
-        if (transaction.journal) {
+        if (transaction.transactionType === "journal") {
           transVals.push("Journal");
-        } else if (transaction.finalJournal) {
+        } else if (transaction.transactionType === "final journal") {
           transVals.push("Final journal");
-        } else if (transaction.reviewJournal) {
+        } else if (transaction.transactionType === "review journal") {
           transVals.push("Review journal");
-        } else if (transaction.clientTB) {
+        } else if (transaction.transactionType === "client trial balance") {
           transVals.push("Client TB");
-        } else if (transaction.clientAdjustment) {
+        } else if (transaction.transactionType === "client adjustment") {
           transVals.push("Client adjustment");
         } else {
           transVals.push("Sticking plaster");
@@ -178,8 +178,8 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
         } else {
           transVals.push("NA");
         }
-        if (transaction.clientNominalName) {
-          transVals.push(transaction.clientNominalName);
+        if (transaction.clientNominalCode >= 0) {
+          transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
         } else {
           transVals.push("NA");
         }
@@ -245,15 +245,15 @@ export async function createLikelyAdditionsSumm(
         transVals.push(transaction.transactionNumber);
         transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
-        if (transaction.journal) {
+        if (transaction.transactionType === "journal") {
           transVals.push("Journal");
-        } else if (transaction.finalJournal) {
+        } else if (transaction.transactionType === "final journal") {
           transVals.push("Final journal");
-        } else if (transaction.reviewJournal) {
+        } else if (transaction.transactionType === "review journal") {
           transVals.push("Review journal");
-        } else if (transaction.clientTB) {
+        } else if (transaction.transactionType === "client trial balance") {
           transVals.push("Client TB");
-        } else if (transaction.clientAdjustment) {
+        } else if (transaction.transactionType === "client adjustment") {
           transVals.push("Client adjustment");
         }
         transVals.push(transaction.cerysCode);
@@ -263,8 +263,8 @@ export async function createLikelyAdditionsSumm(
         } else {
           transVals.push("NA");
         }
-        if (transaction.clientNominalName) {
-          transVals.push(transaction.clientNominalName);
+        if (transaction.clientNominalCode >= 0) {
+          transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
         } else {
           transVals.push("NA");
         }
@@ -518,15 +518,13 @@ export const buildAutoDepnJnls = (
   }
   const narrative = `${amortOrDepn} charged automatically`;
   const transactionDate = session.assignment.reportingPeriod.reportingDateOrig;
-  const transactionType = "auto depreciation";
+  const transactionType = "auto-depreciation";
   const debit: JournalDetailsProps = {
     cerysCode: jnls.debit,
     value: assetTran.amortChg ? assetTran.amortChg : assetTran.depnChg,
     narrative,
     transactionDate,
     transactionType,
-    clientTB: false,
-    journal: false,
   };
   const credit: JournalDetailsProps = {
     cerysCode: jnls.debit,
@@ -534,8 +532,6 @@ export const buildAutoDepnJnls = (
     narrative,
     transactionDate,
     transactionType,
-    clientTB: false,
-    journal: false,
   };
   return { debit, credit };
 };
@@ -605,51 +601,40 @@ export const adjustAutoDepnJnls = (session: Session, tran: FATransaction, charge
 };
 
 export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: AssetTransaction[]) => {
-  const journals = [];
+  const journals: Journal[] = [];
   bFTransLikelyAddns.forEach((tran) => {
     const chart = session.chart;
-    let drJnl;
-    let crJnl;
     for (let i = 0; i < chart.length; i++) {
       if (chart[i].cerysCode === tran.cerysCode + 1) {
-        drJnl = { cerysCodeObj: chart[i] };
+        const drJnl: JournalDetailsProps = {
+          cerysCode: chart[i].cerysCode,
+          value: tran.value,
+          transactionDate: tran.transactionDate,
+          transactionType: "auto-addition",
+          narrative: `${tran.assetNarrative} reanalysed as addition`,
+          clientNominalCode: tran.clientNominalCode,
+        };
         drJnl.value = tran.value;
         drJnl.transactionDate = tran.transactionDate;
-        drJnl.journal = false;
-        drJnl.clientTB = false;
-        drJnl.transactionType = "autoAddition";
+        drJnl.transactionType = "auto-addition";
         drJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-        drJnl.assetNarrative = tran.assetNarrative;
         drJnl.clientNominalCode = tran.clientNominalCode;
-        drJnl.clientNominalName = tran.clientNominalName;
-        //session.activeJournal.journals.push(drJnl);
-        journals.push(drJnl);
+        journals.push(new Journal(session, drJnl));
       }
       if (chart[i].cerysCode === tran.cerysCode) {
-        crJnl = { cerysCodeObj: chart[i] };
-        crJnl.value = tran.value * -1;
-        crJnl.transactionDate = tran.transactionDate;
-        crJnl.journal = false;
-        crJnl.clientTB = false;
-        crJnl.transactionType = "autoAddition";
-        crJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-        //session.activeJournal.journals.push(crJnl);
-        journals.push(crJnl);
+        const crJnl: JournalDetailsProps = {
+          cerysCode: chart[i].cerysCode,
+          value: tran.value * -1,
+          transactionDate: tran.transactionDate,
+          transactionType: "auto-addition",
+          narrative: `${tran.assetNarrative} reanalysed as addition`,
+          clientNominalCode: tran.clientNominalCode,
+        };
+        journals.push(new Journal(session, crJnl));
       }
     }
   });
-  // troble - is this adequately replacing old system?
-  // if (session.activeJournal.journals.length > 0) {
-  //   session.activeJournal.journal = false;
-  //   session.activeJournal.journalType = "autoAddition";
-  // }
-  if (journals.length > 0) {
-    // session.activeJournal.journal = false;
-    // session.activeJournal.journalType = "autoAddition";
-    return new ActiveJournal({ type: "autoAddition", journals });
-  } else {
-    return false;
-  }
+  return new ActiveJournal({ type: "auto-addition", journals });
 };
 
 // export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {

@@ -3,18 +3,19 @@ import {
   AssetRegisterDb,
   AssetSubTransaction,
   DetailedTransaction,
+  JournalDetailsProps,
   RegisterType,
 } from "../interfaces/interfaces";
 import { registerTypes } from "../static-values/register-types";
 import { INTRAY_DETAILS } from "../static-values/views";
-import { calculateDiffInDays, getUpdatedTransactions, updateAssignmentFigures } from "../utils/helper-functions";
-import { previewRelTrans } from "../utils/transactions/asset-reg-generation";
-import { checkFATranUpdatesForAssets, processTransBatch, processUpdateBatch } from "../utils/transactions/transactions";
+import { calculateDiffInDays } from "../utils/helper-functions";
+import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayCollection, InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
 import { addOneWorksheet } from "../utils/worksheet";
 import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
+import { ActiveJournal, Journal } from "./journal";
 /* global Excel */
 
 export class AssetRegister {
@@ -135,12 +136,11 @@ export class RegisterCreationTemplate {
     const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
     const convertedTrans: AssetTransaction[] = [];
     relevantTrans.forEach((tran) => {
-      if (tran.clientTB) {
+      if (tran.transactionType === "client trial balance") {
         const clientTrans = tran.getClientTransAsAssetTrans(session);
         convertedTrans.push(...clientTrans);
       } else convertedTrans.push(tran);
     });
-    console.log(convertedTrans);
     this.finaliseAssetObjects(session, convertedTrans);
     this.allTransactions = convertedTrans.map((assetTran) => {
       const cerysCodeObj = assetTran.getCerysCodeObj(session);
@@ -184,11 +184,7 @@ export class RegisterCreationTemplate {
             cerysCodeObj.cerysCategory === "Investment property" &&
             cerysCodeObj.assetCodeType === "iPCostBF")
         ) {
-          console.log(session.assignment.reportingPeriod.periodStart);
-          console.log(tran.transactionDate);
-          console.log(typeof tran.transactionDate);
           test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
-          console.log(test);
         }
       }
       return test > 0;
@@ -232,21 +228,46 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
   handleReanalysis = async (session: Session) => {
     try {
       await Excel.run(async (context) => {
-        if (getUpdatedTransactions(session).length > 0) {
-          await processUpdateBatch(session);
-          updateAssignmentFigures(context, session);
-          checkFATranUpdatesForAssets(session);
-        }
-        // if (session.activeJournal.journals.length > 0) {
-        //   await processTransBatch(context, session);
-        //   checkFATranUpdatesForAssets(session);
-        // }
-        previewRelTrans(session, this.register.initials);
+        const activeJournal = this.createTransactionUpdates(session);
+        await processTransBatch(context, session, activeJournal);
       });
     } catch (e) {
       console.error(e);
     }
   };
+
+  createTransactionUpdates(session: Session) {
+    const journals: Journal[] = [];
+    this.transactions.forEach((tran) => {
+      const chart = session.chart;
+      for (let i = 0; i < chart.length; i++) {
+        if (chart[i].cerysCode === tran.cerysCode + 1) {
+          const drJnl: JournalDetailsProps = {
+            cerysCode: chart[i].cerysCode,
+            value: tran.value,
+            transactionDate: tran.transactionDate,
+            transactionType: "auto-addition",
+            narrative: `${tran.assetNarrative} reanalysed as addition`,
+            clientNominalCode: tran.clientNominalCode,
+          };
+
+          journals.push(new Journal(session, drJnl));
+        }
+        if (chart[i].cerysCode === tran.cerysCode) {
+          const crJnl: JournalDetailsProps = {
+            cerysCode: chart[i].cerysCode,
+            value: tran.value * -1,
+            transactionDate: tran.transactionDate,
+            transactionType: "auto-addition",
+            narrative: `${tran.assetNarrative} reanalysed as addition`,
+            clientNominalCode: tran.clientNominalCode,
+          };
+          journals.push(new Journal(session, crJnl));
+        }
+      }
+    });
+    return new ActiveJournal({ type: "auto-addition", journals });
+  }
 
   async createLikelyAdditionsSumm(session: Session, transactions: AssetTransaction[], registerType: string) {
     try {
@@ -264,17 +285,17 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
           transVals.push(transaction.getExcelDate());
           transVals.push(transaction.assetNarrative);
           transVals.push(transaction.clientNominalCode);
-          transVals.push(transaction.clientNominalName);
+          transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
           transVals.push(transaction.value / 100);
-          if (transaction.journal) {
+          if (transaction.transactionType === "journal") {
             transVals.push("Journal");
-          } else if (transaction.finalJournal) {
+          } else if (transaction.transactionType === "final journal") {
             transVals.push("Final journal");
-          } else if (transaction.reviewJournal) {
+          } else if (transaction.transactionType === "review journal") {
             transVals.push("Review journal");
-          } else if (transaction.clientTB) {
+          } else if (transaction.transactionType === "client trial balance") {
             transVals.push("Client TB");
-          } else if (transaction.clientAdjustment) {
+          } else if (transaction.transactionType === "client adjustment") {
             transVals.push("Client adjustment");
           }
           transVals.push(transaction.cerysCode);
