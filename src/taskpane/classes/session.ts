@@ -26,19 +26,19 @@ export class Session {
   user: {};
   newUserAccount: {};
   customer: Customer;
-  activeJournal: {
-    journals: Journal[];
-    netValue: number;
-    journalType: string;
-    journal: boolean;
-    clientTB: boolean;
-  } = {
-    journals: [],
-    netValue: 0,
-    journalType: "journal",
-    journal: true,
-    clientTB: false,
-  };
+  // activeJournal: {
+  //   journals: Journal[];
+  //   netValue: number;
+  //   journalType: string;
+  //   journal: boolean;
+  //   clientTB: boolean;
+  // } = {
+  //   journals: [],
+  //   netValue: 0,
+  //   journalType: "journal",
+  //   journal: true,
+  //   clientTB: false,
+  // };
   editableSheets: EditableWorksheet[] = [];
   controlledSheets: ControlledWorksheet[] = [];
   IFARegister: AssetRegister;

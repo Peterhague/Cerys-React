@@ -45,7 +45,8 @@ export class InTrayItem {
   title: string;
   getSubtitle: () => string;
   getSummaryText: () => string;
-  detailsAction: () => void;
+  detailsAction: (session: Session, ...args: unknown[]) => void | Promise<void>;
+  detailsActionParams: unknown[];
   detailsPath: "inTrayDetails" | "inTraySummary";
   affirmativeAction: (param: Session | null) => void | Promise<void>;
   id: string;
@@ -55,14 +56,15 @@ export class InTrayItem {
     this.getSubtitle = inTrayItem.getSubtitle;
     this.getSummaryText = inTrayItem.getSummaryText;
     this.detailsAction = inTrayItem.detailsAction;
+    this.detailsActionParams = [];
     this.detailsPath = inTrayItem.detailsPath;
     this.affirmativeAction = inTrayItem.affirmativeAction;
     this.id = getRandomString();
     this.collectionId = inTrayCollection.id;
   }
 
-  handleClick(session: Session, inTray: InTray) {
-    this.detailsAction && this.detailsAction();
+  async handleClick(session: Session, inTray: InTray) {
+    this.detailsAction && (await this.detailsAction(session, ...this.detailsActionParams));
     const options = new InTrayAndItem(inTray, this);
     session.handleDynamicView(this.detailsPath, options);
   }

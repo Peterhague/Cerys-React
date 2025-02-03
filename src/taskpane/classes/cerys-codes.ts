@@ -1,6 +1,6 @@
-import { ClientCerysCodeObjectProps, ClientMapping } from "../interfaces/interfaces";
+import { BaseCerysCodeObjectProps, ClientCerysCodeObjectProps, ClientMapping } from "../interfaces/interfaces";
 
-export class ClientCerysCodeObject {
+export class BaseCerysCodeObject implements BaseCerysCodeObjectProps {
   cerysCode: number;
   cerysName: string;
   cerysShortName: string;
@@ -19,30 +19,36 @@ export class ClientCerysCodeObject {
   defaultSign: string | null;
   clientAdj: boolean;
   closeOffCode: number;
+  _id: string;
+  constructor(cerysCodeObj: BaseCerysCodeObjectProps) {
+    this.cerysCode = cerysCodeObj.cerysCode;
+    this.cerysName = cerysCodeObj.cerysName;
+    this.cerysShortName = cerysCodeObj.cerysShortName;
+    this.cerysExcelName = cerysCodeObj.cerysExcelName;
+    this.cerysCategory = cerysCodeObj.cerysCategory;
+    this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
+    this.isFixedAsset = cerysCodeObj.isFixedAsset;
+    this.assetCategory = cerysCodeObj.assetCategory;
+    this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
+    this.assetSubCategory = cerysCodeObj.assetSubCategory;
+    this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
+    this.assetCodeType = cerysCodeObj.assetCodeType;
+    this.regColNameOne = cerysCodeObj.regColNameOne;
+    this.regColNameTwo = cerysCodeObj.regColNameTwo;
+    this.altCategory = cerysCodeObj.altCategory;
+    this.defaultSign = cerysCodeObj.defaultSign;
+    this.clientAdj = cerysCodeObj.clientAdj;
+    this.closeOffCode = cerysCodeObj.closeOffCode;
+    this._id = cerysCodeObj._id;
+  }
+}
+
+export class ClientCerysCodeObject extends BaseCerysCodeObject {
   currentClientMapping: ClientMapping;
   previousClientMappings: ClientMapping[];
-  _id: string;
   constructor(codeObj: ClientCerysCodeObjectProps) {
-    this.cerysCode = codeObj.cerysCode;
-    this.cerysName = codeObj.cerysName;
-    this.cerysShortName = codeObj.cerysShortName;
-    this.cerysExcelName = codeObj.cerysExcelName;
-    this.cerysCategory = codeObj.cerysCategory;
-    this.cerysSubCategory = codeObj.cerysSubCategory;
-    this.isFixedAsset = codeObj.isFixedAsset;
-    this.assetCategory = codeObj.assetCategory;
-    this.assetCategoryNo = codeObj.assetCategoryNo;
-    this.assetSubCategory = codeObj.assetSubCategory;
-    this.assetSubCatCode = codeObj.assetSubCatCode;
-    this.assetCodeType = codeObj.assetCodeType;
-    this.regColNameOne = codeObj.regColNameOne;
-    this.regColNameTwo = codeObj.regColNameTwo;
-    this.altCategory = codeObj.altCategory;
-    this.defaultSign = codeObj.defaultSign;
-    this.clientAdj = codeObj.clientAdj;
-    this.closeOffCode = codeObj.closeOffCode;
+    super(codeObj);
     this.currentClientMapping = codeObj.currentClientMapping;
     this.previousClientMappings = codeObj.previousClientMappings;
-    this._id = codeObj._id;
   }
 }

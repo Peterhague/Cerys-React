@@ -1,7 +1,7 @@
 import { Assignment } from "../../classes/assignment";
 import { EditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelDeletionObject } from "../../classes/excel-range-editing";
-import { Journal } from "../../classes/journal";
+import { ActiveJournal, Journal } from "../../classes/journal";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
@@ -18,34 +18,38 @@ import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs } from "../worksheet-editing/ed-sheet-change-handling";
 /* global Excel */
 
-export const processTransBatch = async (context: Excel.RequestContext, session: Session) => {
-  const activeJournal = session.activeJournal;
-  const journals: Journal[] = activeJournal.journals.map((jnl) => {
-    return { ...jnl, ...jnl.cerysCodeObj };
-  });
-  journals.forEach((jnl) => {
-    const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
-    if (jnl.narrative === "") jnl.narrative = "No narrative";
-    if (jnl.transactionDate === "") {
-      if (
-        jnl.cerysCodeObj.assetSubCategory === "Cost bfwd" ||
-        jnl.cerysCodeObj.assetSubCategory === "Amort bfwd" ||
-        jnl.cerysCodeObj.assetSubCategory === "Depn bfwd"
-      ) {
-        jnl.transactionDate = periodStartDate;
-      } else {
-        jnl.transactionDate = session.assignment.reportingPeriod.reportingDateOrig;
-      }
-    }
-    jnl.transactionDateExcel = calculateExcelDate(jnl.transactionDate);
-    jnl.transactionType = activeJournal.journalType;
-    jnl.clientTB = activeJournal.clientTB;
-    jnl.journal = activeJournal.journal;
-  });
+export const processTransBatch = async (
+  context: Excel.RequestContext,
+  session: Session,
+  activeJournal: ActiveJournal
+) => {
+  // const journals: Journal[] = activeJournal.journals.map((jnl) => {
+  //   return { ...jnl, ...jnl.cerysCodeObj };
+  // });
+  // journals.forEach((jnl) => {
+  //   const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
+  //   if (jnl.narrative === "") jnl.narrative = "No narrative";
+  //   if (jnl.transactionDate === "") {
+  //     if (
+  //       jnl.cerysCodeObj.assetSubCategory === "Cost bfwd" ||
+  //       jnl.cerysCodeObj.assetSubCategory === "Amort bfwd" ||
+  //       jnl.cerysCodeObj.assetSubCategory === "Depn bfwd"
+  //     ) {
+  //       jnl.transactionDate = periodStartDate;
+  //     } else {
+  //       jnl.transactionDate = session.assignment.reportingPeriod.reportingDateOrig;
+  //     }
+  //   }
+  //   jnl.transactionDateExcel = calculateExcelDate(jnl.transactionDate);
+  //   jnl.transactionType = activeJournal.type;
+  //   // jnl.clientTB = activeJournal.clientTB;
+  //   // jnl.journal = activeJournal.journal;
+  //   // trouble
+  // });
+  activeJournal.finaliseJournalsForDb(session);
   const transDtls = { customerId: session.customer._id, assignmentId: session.assignment._id };
-  const { assignment } = await postTransactionsDb(session, journals, transDtls);
+  const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
   session.assignment = new Assignment(assignment);
-  session.activeJournal = { journals: [], netValue: 0, journalType: "journal", journal: true, clientTB: false };
   await updateAssignmentFigures(context, session);
 };
 
@@ -133,10 +137,10 @@ export const checkFATranUpdatesForAssets = (session: Session) => {
 
 const postTransactionsDb = async (
   session: Session,
-  transactions: Journal[],
+  activeJournal: ActiveJournal,
   transDtls: { customerId: string; assignmentId: string }
 ) => {
-  const options = fetchOptionsTransBatch(session, transactions, transDtls);
+  const options = fetchOptionsTransBatch(session, activeJournal, transDtls);
   const objsDb = await fetch(postJournalBatch, options);
   const objs = await objsDb.json();
   return objs;

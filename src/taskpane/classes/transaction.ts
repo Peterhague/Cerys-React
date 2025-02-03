@@ -1,3 +1,4 @@
+import { title1ClassNames } from "@fluentui/react-components";
 import {
   AssetSubTransaction,
   ClientCodeObjectProps,
@@ -54,6 +55,7 @@ export class Transaction {
     this.user = transaction.user;
     this.clientTB = transaction.clientTB;
     this.clientNominalCode = transaction.clientNominalCode;
+    this.clientNominalName = transaction.clientNominalName;
     this.clientAdjustment = transaction.clientAdjustment;
     this.journal = transaction.journal;
     this.reviewJournal = transaction.reviewJournal;
@@ -115,6 +117,13 @@ export class Transaction {
       .map((tran) => new ClientTransactionConversion(tran, this))
       .map((conversion) => new Transaction(conversion));
   }
+
+  getClientTransAsAssetTrans(session: Session) {
+    const trans = this.getClientTransactions(session);
+    return trans
+      .map((tran) => new ClientTransactionConversion(tran, this))
+      .map((item) => new AssetTransaction(session, item));
+  }
 }
 
 export class ClientTransactionConversion {
@@ -136,6 +145,7 @@ export class ClientTransactionConversion {
   clientTB: boolean;
   clientNominalCode: number;
   clientNominalName: string;
+  clientNarrative: string;
   clientAdjustment: boolean;
   journal: boolean;
   reviewJournal: boolean;
@@ -147,6 +157,7 @@ export class ClientTransactionConversion {
   processedAsAsset: boolean;
   clientMappingOverridden: boolean;
   clientMappingOverride: ClientMapping;
+  clientTransactionId: string;
   _id: string;
   constructor(clientTransaction: ClientTransaction, cerysTransaction: Transaction) {
     this.value = clientTransaction.value;
@@ -156,10 +167,12 @@ export class ClientTransactionConversion {
     this.transactionBatchNumber = cerysTransaction.transactionBatchNumber;
     this.iteration = null;
     this.iterations = null;
-    this.narrative = clientTransaction.detail;
+    this.narrative = cerysTransaction.narrative;
     this.user = cerysTransaction.user;
     this.clientTB = cerysTransaction.clientTB;
-    this.clientNominalCode = cerysTransaction.clientNominalCode;
+    this.clientNominalCode = clientTransaction.code;
+    this.clientNominalName = clientTransaction.name;
+    this.clientNarrative = clientTransaction.detail;
     this.clientAdjustment = cerysTransaction.clientAdjustment;
     this.journal = cerysTransaction.journal;
     this.reviewJournal = cerysTransaction.reviewJournal;
@@ -177,7 +190,7 @@ export class ClientTransactionConversion {
 }
 
 export class AssetTransaction extends Transaction {
-  assetNarrative?: string;
+  assetNarrative: string;
   assetSubCatCodes?: (number | null)[];
   amortBasis?: string;
   amortRate?: string;
@@ -192,10 +205,12 @@ export class AssetTransaction extends Transaction {
     reportingPeriodId: ReportingPeriod["_id"];
     subTransactions: AssetSubTransaction[];
   }[];
+  isClientTransaction: boolean;
 
-  constructor(session: Session, transaction: Transaction) {
+  constructor(session: Session, transaction: Transaction | ClientTransactionConversion) {
     super(transaction);
     const cerysCodeObj = this.getCerysCodeObj(session);
+    this.assetNarrative = transaction instanceof Transaction ? transaction.narrative : transaction.clientNarrative;
     this.assetSubCatCodes = [cerysCodeObj.assetSubCatCode];
     this.subTransactions = [
       {
@@ -206,6 +221,7 @@ export class AssetTransaction extends Transaction {
         value: transaction.value,
       },
     ];
+    this.isClientTransaction = transaction instanceof Transaction ? false : true;
   }
   //why would you need this method? This is an extension of that transaction...
   getTransaction(session: Session) {
@@ -216,9 +232,5 @@ export class AssetTransaction extends Transaction {
     const transaction = session.assignment.transactions.find((tran) => tran._id === this._id);
     const cerysCodeObj = transaction.getCerysCodeObj(session);
     return { transaction, cerysCodeObj };
-  }
-
-  getClientTransAsAssetTrans(session: Session) {
-    return this.getClientTransAsCerysTrans(session).map((tran) => new AssetTransaction(session, tran));
   }
 }

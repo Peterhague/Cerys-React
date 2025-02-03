@@ -13,6 +13,8 @@ import { checkFATranUpdatesForAssets, processTransBatch, processUpdateBatch } fr
 import { InTrayCollection, InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
+import { addOneWorksheet } from "../utils/worksheet";
+import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
 /* global Excel */
 
 export class AssetRegister {
@@ -131,10 +133,10 @@ export class RegisterCreationTemplate {
     this.registerType = registerType;
     this.register = registerTypes[registerType];
     const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
-    const convertedTrans = [];
+    const convertedTrans: AssetTransaction[] = [];
     relevantTrans.forEach((tran) => {
       if (tran.clientTB) {
-        const clientTrans = tran.getClientTransAsCerysTrans(session);
+        const clientTrans = tran.getClientTransAsAssetTrans(session);
         convertedTrans.push(...clientTrans);
       } else convertedTrans.push(tran);
     });
@@ -200,7 +202,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
   constructor(registerTemplate: RegisterCreationTemplate, inTrayCollection: InTrayCollection) {
     super(
       {
-        title: `Identify possible ${registerTemplate.registerType}`,
+        title: `Identify possible ${registerTemplate.registerType} additions`,
         getSubtitle: null,
         getSummaryText: null,
         detailsAction: null,
@@ -213,6 +215,8 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
     this.transactions = registerTemplate.possibleAdditions;
     this.getSubtitle = this.getIntraySubtitle;
     this.getSummaryText = this.getIntraySummaryText;
+    this.detailsAction = this.createLikelyAdditionsSumm;
+    this.detailsActionParams = [this.transactions, this.register.initials];
     this.affirmativeAction = this.handleReanalysis;
   }
 
@@ -233,16 +237,68 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
           updateAssignmentFigures(context, session);
           checkFATranUpdatesForAssets(session);
         }
-        if (session.activeJournal.journals.length > 0) {
-          await processTransBatch(context, session);
-          checkFATranUpdatesForAssets(session);
-        }
+        // if (session.activeJournal.journals.length > 0) {
+        //   await processTransBatch(context, session);
+        //   checkFATranUpdatesForAssets(session);
+        // }
         previewRelTrans(session, this.register.initials);
       });
     } catch (e) {
       console.error(e);
     }
   };
+
+  async createLikelyAdditionsSumm(session: Session, transactions: AssetTransaction[], registerType: string) {
+    try {
+      await Excel.run(async (context) => {
+        const name = `${registerType} Possible Additions`;
+        const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
+        const valuesToPost = [
+          ["TRANSACTION", "CLIENT", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "POSTING", "CERYS", "CERYS", "CERYS"],
+          ["NUMBER", "DATE", "NARRATIVE", "NC", "NOMINAL", "(CREDIT)", "SOURCE", "CODE", "NOMINAL", "NARRATIVE"],
+        ];
+        transactions.forEach((transaction) => {
+          const cerysCodeObj = transaction.getCerysCodeObj(session);
+          const transVals = [];
+          transVals.push(transaction.transactionNumber);
+          transVals.push(transaction.getExcelDate());
+          transVals.push(transaction.assetNarrative);
+          transVals.push(transaction.clientNominalCode);
+          transVals.push(transaction.clientNominalName);
+          transVals.push(transaction.value / 100);
+          if (transaction.journal) {
+            transVals.push("Journal");
+          } else if (transaction.finalJournal) {
+            transVals.push("Final journal");
+          } else if (transaction.reviewJournal) {
+            transVals.push("Review journal");
+          } else if (transaction.clientTB) {
+            transVals.push("Client TB");
+          } else if (transaction.clientAdjustment) {
+            transVals.push("Client adjustment");
+          }
+          transVals.push(transaction.cerysCode);
+          transVals.push(cerysCodeObj.cerysShortName);
+          transVals.push(transaction.narrative);
+          valuesToPost.push(transVals);
+        });
+        const headerRange = ws.getRange("A1:J2");
+        headerRange.format.font.bold = true;
+        const range = ws.getRange(`A1:J${valuesToPost.length}`);
+        range.values = valuesToPost;
+        const rangeB = ws.getRange("B:B");
+        rangeB.numberFormat = [["dd/mm/yyyy"]];
+        const rangeF = ws.getRange("F:F");
+        rangeF.numberFormat = STANDARD_NUMBER_FORMAT;
+        const rangeAJ = ws.getRange("A:J");
+        rangeAJ.format.autofitColumns();
+        await context.sync();
+        ws.activate();
+      });
+    } catch (e) {
+      console.error(e);
+    }
+  }
 }
 
 export class AssetRegCreationPrompt extends InTrayItem {

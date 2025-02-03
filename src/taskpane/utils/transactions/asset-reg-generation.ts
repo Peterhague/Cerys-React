@@ -1,6 +1,6 @@
 import { Client } from "../../classes/client";
 import { createEditableWorksheet, EditableWorksheet } from "../../classes/editable-worksheet";
-import { Journal } from "../../classes/journal";
+import { ActiveJournal, Journal } from "../../classes/journal";
 import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
@@ -243,18 +243,6 @@ export async function createLikelyAdditionsSumm(
         const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
-        // if (transaction.transactionDate) {
-        //   const dateString =
-        //     typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
-        //   const dateStringSplit = dateString.split("-");
-        //   const dateConverted: string = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
-        //   transVals.push(dateConverted);
-        //   transaction.transactionDateUser = dateConverted;
-        // } else if (transaction.transactionDateClt) {
-        //   transVals.push(transaction.transactionDateClt);
-        // } else {
-        //   transVals.push("Not provided");
-        // }
         transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
         if (transaction.journal) {
@@ -427,12 +415,13 @@ export function calculateCharge(
   };
   assetTran.subTransactions.push(subTran);
   const jnls = buildAutoDepnJnls(session, transactionDetails, registerType);
-  session.activeJournal.journals.push(new Journal(session, jnls.debit));
-  const debitNumberValue = typeof jnls.debit.value === "string" ? parseInt(jnls.debit.value) : jnls.debit.value;
-  session.activeJournal.netValue += debitNumberValue;
-  session.activeJournal.journals.push(new Journal(session, jnls.credit));
-  const creditNumberValue = typeof jnls.credit.value === "string" ? parseInt(jnls.credit.value) : jnls.credit.value;
-  session.activeJournal.netValue += creditNumberValue;
+  // trouble - need to figure out when these journals actually get posted and build them at that point instead
+  // session.activeJournal.journals.push(new Journal(session, jnls.debit));
+  // const debitNumberValue = typeof jnls.debit.value === "string" ? parseInt(jnls.debit.value) : jnls.debit.value;
+  // session.activeJournal.netValue += debitNumberValue;
+  // session.activeJournal.journals.push(new Journal(session, jnls.credit));
+  // const creditNumberValue = typeof jnls.credit.value === "string" ? parseInt(jnls.credit.value) : jnls.credit.value;
+  // session.activeJournal.netValue += creditNumberValue;
 }
 
 export const recalculateCharge = async (
@@ -603,15 +592,20 @@ export const setAutoDepnIPNominals = (catNo: number) => {
 };
 
 export const adjustAutoDepnJnls = (session: Session, tran: FATransaction, charge: number) => {
-  session.activeJournal.journals.forEach((jnl) => {
-    if (jnl.transactionId === tran._id) {
-      if (jnl.value > 0) jnl.value = charge;
-      if (jnl.value < 0) jnl.value = charge * -1;
-    }
-  });
+  console.log(session);
+  console.log(tran);
+  console.log(charge);
+  //trouble - need to reinstate or replace at some point
+  // session.activeJournal.journals.forEach((jnl) => {
+  //   if (jnl.transactionId === tran._id) {
+  //     if (jnl.value > 0) jnl.value = charge;
+  //     if (jnl.value < 0) jnl.value = charge * -1;
+  //   }
+  // });
 };
 
 export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: AssetTransaction[]) => {
+  const journals = [];
   bFTransLikelyAddns.forEach((tran) => {
     const chart = session.chart;
     let drJnl;
@@ -628,7 +622,8 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
         drJnl.assetNarrative = tran.assetNarrative;
         drJnl.clientNominalCode = tran.clientNominalCode;
         drJnl.clientNominalName = tran.clientNominalName;
-        session.activeJournal.journals.push(drJnl);
+        //session.activeJournal.journals.push(drJnl);
+        journals.push(drJnl);
       }
       if (chart[i].cerysCode === tran.cerysCode) {
         crJnl = { cerysCodeObj: chart[i] };
@@ -638,15 +633,23 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
         crJnl.clientTB = false;
         crJnl.transactionType = "autoAddition";
         crJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-        session.activeJournal.journals.push(crJnl);
+        //session.activeJournal.journals.push(crJnl);
+        journals.push(crJnl);
       }
     }
   });
-  if (session.activeJournal.journals.length > 0) {
-    session.activeJournal.journal = false;
-    session.activeJournal.journalType = "autoAddition";
+  // troble - is this adequately replacing old system?
+  // if (session.activeJournal.journals.length > 0) {
+  //   session.activeJournal.journal = false;
+  //   session.activeJournal.journalType = "autoAddition";
+  // }
+  if (journals.length > 0) {
+    // session.activeJournal.journal = false;
+    // session.activeJournal.journalType = "autoAddition";
+    return new ActiveJournal({ type: "autoAddition", journals });
+  } else {
+    return false;
   }
-  console.log(session.activeJournal);
 };
 
 // export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {

@@ -94,10 +94,10 @@ export async function updateAssignmentDb(session: Session, target: string) {
   return updatedCustAndAss;
 }
 
-export const resetActiveJournal = (session: Session) => {
-  const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
-  session.activeJournal = activeJournal;
-};
+// export const resetActiveJournal = (session: Session) => {
+//   const activeJournal = { clientTB: false, journal: true, journalType: "journal", netValue: 0, journals: [] };
+//   session.activeJournal = activeJournal;
+// };
 
 export const callNextView = (session: Session) => {
   session.handleView(session.nextView);

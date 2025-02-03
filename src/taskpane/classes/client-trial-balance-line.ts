@@ -2,7 +2,7 @@ import { ClientCerysCodeObjectProps, ClientTBLineProps } from "../interfaces/int
 import { INTRAY_DETAILS } from "../static-values/views";
 import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayCollection, InTrayItem } from "./in-trays/global";
-import { Journal } from "./journal";
+import { ActiveJournal, Journal } from "./journal";
 import { Session } from "./session";
 /* global Excel */
 
@@ -110,12 +110,10 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
     try {
       await Excel.run(async (context) => {
         const diffs = this.getAllDifferences();
-        const jnl = session.activeJournal;
-        jnl.journalType = "OBA auto-entry";
-        jnl.journal = false;
+        const activeJournal = new ActiveJournal({ type: "OBA auto-entry", journals: [] });
         diffs.forEach((i) => {
           const cerysCode = session.clientChart.find((code) => code.clientCode === i.clientCode).cerysCode;
-          jnl.journals.push(
+          activeJournal.journals.push(
             new Journal(session, {
               cerysCode,
               value: i.difference / 100,
@@ -127,7 +125,7 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
             })
           );
         });
-        await processTransBatch(context, session);
+        await processTransBatch(context, session, activeJournal);
       });
     } catch (e) {
       console.error(e);

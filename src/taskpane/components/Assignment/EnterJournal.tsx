@@ -6,7 +6,7 @@ import { checkNewTransForAssets, processTransBatch } from "../../utils/transacti
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
 import { ClientCerysCodeObjectProps } from "../../interfaces/interfaces";
-import { Journal } from "../../classes/journal";
+import { ActiveJournal, Journal } from "../../classes/journal";
 import { LANDING_PAGE } from "../../static-values/views";
 /*global Excel */
 
@@ -17,6 +17,7 @@ interface enterJournalProps {
 }
 
 const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
+  const [activeJournal, setActiveJournal] = useState(new ActiveJournal({ type: "journal", journals: [] }));
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -30,7 +31,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     try {
       await Excel.run(async (context) => {
         e.preventDefault();
-        await processTransBatch(context, session);
+        await processTransBatch(context, session, activeJournal);
         checkNewTransForAssets(session);
       });
     } catch (e) {
@@ -49,8 +50,13 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
       clientTB: false,
       journal: true,
     };
-    session.activeJournal.journals.push(new Journal(session, journalDtls));
-    session.activeJournal.netValue += parseFloat(journalDtls.value) * 100;
+    const journals = activeJournal.journals;
+    journals.push(new Journal(session, journalDtls));
+    setActiveJournal(new ActiveJournal({ type: "journal", journals }));
+    // newActiveJnl.journals.push(new Journal(session, journalDtls));
+    // setActiveJournal(newActiveJnl);
+    // session.activeJournal.journals.push(new Journal(session, journalDtls));
+    // session.activeJournal.netValue += parseFloat(journalDtls.value) * 100;
     setNominalCode("");
     setNominalCodeName("");
     setSearchTerm("");
@@ -134,13 +140,13 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
             </tr>
           </tbody>
         </table>
-        {session.activeJournal.netValue !== 0 && (
-          <p>Your journals are out of balance by {session.activeJournal.netValue / 100}</p>
+        {activeJournal.getNetValue() !== 0 && (
+          <p>Your journals are out of balance by {activeJournal.getNetValue() / 100}</p>
         )}
         <div>
           <button onClick={handleJournal}>Next</button>
         </div>
-        {session.activeJournal.netValue === 0 && session.activeJournal.journals.length > 0 && (
+        {activeJournal.getNetValue() === 0 && activeJournal.journals.length > 0 && (
           <div>
             <button type="submit">Post</button>
           </div>

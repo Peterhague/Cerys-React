@@ -17,6 +17,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { DetailedTransaction } from "../../../interfaces/interfaces";
 import { ViewOptions } from "../../../classes/view-options";
+import { ActiveJournal } from "../../../classes/journal";
 /* global Excel */
 
 interface PromptAssetRegisterCreationProps {
@@ -31,7 +32,8 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
   let nLEntered = session.assignment.NLEntered;
   const tBEntered = session.assignment.TBEntered;
   const [view, setView] = useState(session.options[`${initials}RCreationSetting`]);
-  const journal = session.activeJournal.journal;
+  //const journal = session.activeJournal.journal;
+  // trouble
   const registerCreated = session.assignment[`${initials}RegisterCreated`];
 
   const handleCreateRequest = () => {
@@ -51,7 +53,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
 
   const handleAbort = (view: string) => {
     session.options[`${initials}RCreationSetting`] = "main";
-    session.activeJournal.journals = [];
+    //session.activeJournal.journals = [];
     handleView(view);
   };
 
@@ -67,10 +69,11 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
         });
         await createRegister(session, relevantTrans);
         session[`${initials}Transactions`] = [];
-        session.activeJournal.clientTB = false;
-        session.activeJournal.journal = false;
-        session.activeJournal.journalType = "auto-journal";
-        await processTransBatch(context, session);
+        // session.activeJournal.clientTB = false;
+        // session.activeJournal.journal = false;
+        // session.activeJournal.journalType = "auto-journal";
+        // trouble
+        //await processTransBatch(context, session, activeJournal);
         checkNewTransForAssets(session);
         await context.sync();
       });
@@ -87,10 +90,10 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
           updateAssignmentFigures(context, session);
           checkFATranUpdatesForAssets(session);
         }
-        if (session.activeJournal.journals.length > 0) {
-          await processTransBatch(context, session);
-          checkFATranUpdatesForAssets(session);
-        }
+        // if (session.activeJournal.journals.length > 0) {
+        //   //await processTransBatch(context, session, activeJournal);
+        //   checkFATranUpdatesForAssets(session);
+        // }
         previewRelTrans(session, initials);
       });
     } catch (e) {
@@ -132,9 +135,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
-      {journal && (
-        <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />
-      )}
+      {true && <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />}
 
       <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleAbort("assignmentDashHome")} />
     </>

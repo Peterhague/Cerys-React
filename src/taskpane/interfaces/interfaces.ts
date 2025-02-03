@@ -7,6 +7,7 @@ import { Directorship, NewIndiAssociation, Shareholding } from "../classes/indiv
 import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
 import { InTray, InTrayItem } from "../classes/in-trays/global";
+import { Journal } from "../classes/journal";
 /*global Excel */
 
 export interface BaseCerysCodeObjectProps {
@@ -243,6 +244,11 @@ export interface JournalDetailsProps {
   transactionType: string;
   clientTB: boolean;
   journal: boolean;
+}
+
+export interface ActiveJournalProps {
+  type: "journal" | "opening balance" | "OBA auto-entry" | "clientTB" | "auto-journal" | "autoAddition";
+  journals: Journal[];
 }
 
 export interface ClientTransaction {

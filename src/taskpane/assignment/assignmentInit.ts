@@ -1,4 +1,4 @@
-import { Journal } from "../classes/journal";
+import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { JournalDetailsProps } from "../interfaces/interfaces";
 import { ASSIGNMENT_DASH_HOME } from "../static-values/views";
@@ -48,8 +48,7 @@ export const postOpBalJnls = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const transactionDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
-      session.activeJournal.journalType = "opening balance";
-      session.activeJournal.journal = false;
+      const journals: Journal[] = [];
       session.assignment.reportingPeriod.bFTB.forEach((line) => {
         const journalDetails: JournalDetailsProps = {
           cerysCode: line.cerysCode,
@@ -60,9 +59,10 @@ export const postOpBalJnls = async (session: Session) => {
           value: line.value,
           transactionDate,
         };
-        session.activeJournal.journals.push(new Journal(session, journalDetails));
+        journals.push(new Journal(session, journalDetails));
       });
-      await processTransBatch(context, session);
+      const activeJournal = new ActiveJournal({ type: "opening balance", journals });
+      await processTransBatch(context, session, activeJournal);
       await context.sync();
       session.handleView(ASSIGNMENT_DASH_HOME);
     });

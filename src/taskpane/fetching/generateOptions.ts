@@ -4,7 +4,7 @@ import { Assignment, PreliminaryAssignment } from "../classes/assignment";
 import { Client } from "../classes/client";
 import { ClientCodeObject } from "../classes/client-codes";
 import { BaseIndividual } from "../classes/individuals";
-import { Journal } from "../classes/journal";
+import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
 import {
@@ -17,7 +17,8 @@ import { getUpdatedTransactions } from "../utils/helper-functions";
 
 export function fetchOptionsTransBatch(
   session: Session,
-  journals: Journal[],
+  //journals: Journal[],
+  activeJournal: ActiveJournal,
   transDtls: { customerId: string; assignmentId: string }
 ) {
   return {
@@ -26,10 +27,10 @@ export function fetchOptionsTransBatch(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      journals,
+      journals: activeJournal.journalsForDb,
       customerId: transDtls.customerId,
       assignmentId: transDtls.assignmentId,
-      transactionType: session.activeJournal.journalType,
+      transactionType: activeJournal.type,
       chart: session.chart,
       clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
     }),
