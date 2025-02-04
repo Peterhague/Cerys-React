@@ -563,6 +563,11 @@ export interface InTrayItemProps {
 
 export interface InTrayCollectionProps {
   title: string;
-  items: (InTrayItem | InTray)[];
-  id: string;
+  itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[];
+  itemsActionParams: unknown[];
+}
+
+export interface InTrayProps {
+  type: "Assignment" | "AssetRegister";
+  title: string;
 }

@@ -45,18 +45,15 @@ export class ClientTBBFwdComparison {
 
 export class ClientTBBFwdReconciliation extends InTrayItem {
   items: ClientTBBFwdComparison[];
-  constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[], inTrayCollection: InTrayCollection) {
-    super(
-      {
-        title: "Opening balances",
-        getSubtitle: null,
-        getSummaryText: null,
-        detailsAction: null,
-        detailsPath: INTRAY_DETAILS,
-        affirmativeAction: null,
-      },
-      inTrayCollection
-    );
+  constructor(bFPerCerys: ClientTBLineProps[], bfPerClient: ClientTBLineProps[]) {
+    super({
+      title: "Opening balances",
+      getSubtitle: null,
+      getSummaryText: null,
+      detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
+      affirmativeAction: null,
+    });
     const comparisonArray = bFPerCerys.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
     bfPerClient.forEach((opBal) => {
       const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);

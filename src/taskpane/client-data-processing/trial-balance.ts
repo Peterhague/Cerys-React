@@ -2,7 +2,7 @@ import { Assignment } from "../classes/assignment";
 import { ClientCodeObject } from "../classes/client-codes";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
 import { InTray } from "../classes/in-trays/global";
-import { InTrayTrialBalanceEntry } from "../classes/in-trays/templates";
+import { createTBEntryCollections } from "../classes/in-trays/templates";
 import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
@@ -35,12 +35,18 @@ export async function enterTB(session: Session) {
       const journals = transactions.map((tran) => new Journal(session, tran));
       const activeJournal = new ActiveJournal({ type: "client trial balance", journals });
       await processTransBatch(context, session, activeJournal);
-      checkNewTransForAssets(session);
+      //checkNewTransForAssets(session);
       const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
       postClientTB(session, clientTB);
-      const tBIntrayTemplate = createTBEntryInTray(session);
-      const intray = new InTray(tBIntrayTemplate);
-      intray && session.handleDynamicView(INTRAY_SUMMARY, intray);
+      const tbEntryCollections = createTBEntryCollections(session);
+      const inTray = session.assignment.inTray;
+      console.log(inTray);
+      tbEntryCollections.forEach((collection) => {
+        if (collection.getItems(session).length > 0) {
+          inTray.collections.push(collection);
+        }
+      });
+      session.handleDynamicView(INTRAY_SUMMARY, inTray);
     });
   } catch (e) {
     console.error(e);
@@ -137,7 +143,7 @@ export const postClientTB = async (session: Session, clientTB: ClientTBLineProps
   session.assignment = new Assignment(assignment);
 };
 
-export const createTBEntryInTray = (session: Session) => {
-  const inTrayTemplate = new InTrayTrialBalanceEntry(session);
-  return inTrayTemplate;
-};
+// export const createTBEntryInTray = (session: Session) => {
+//   const inTrayTemplate = new InTrayTrialBalanceEntry(session);
+//   return inTrayTemplate;
+// };

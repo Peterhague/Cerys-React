@@ -1,7 +1,7 @@
 import { Assignment } from "../classes/assignment";
 import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
 import { InTray, InTrayCollection } from "../classes/in-trays/global";
-import { InTrayNominalLedgerEntry } from "../classes/in-trays/templates";
+import { createNLEntryCollections } from "../classes/in-trays/templates";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientNL } from "../fetching/generateOptions";
@@ -14,11 +14,19 @@ export async function enterNL(session: Session) {
   session.assignment.clientNL = clientNL;
   const assignment = await postCltNLToDb(session);
   session.assignment = new Assignment(assignment);
-  const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
-  console.log(nLIntrayTemplate);
-  const intray = new InTray(nLIntrayTemplate);
-  console.log(intray);
-  intray.collections.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
+  const inTrayCollections: InTrayCollection[] = createNLEntryCollections(session, openingBalances);
+  const inTray = session.assignment.inTray;
+  inTrayCollections.forEach((collection) => {
+    if (collection.getItems(session).length > 0) {
+      inTray.collections.push(collection);
+    }
+  });
+  inTrayCollections.find((i) => i.getItems(session).length > 0) && session.handleDynamicView(INTRAY_SUMMARY, inTray);
+  // const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
+  // console.log(nLIntrayTemplate);
+  // const intray = new InTray(nLIntrayTemplate);
+  // console.log(intray);
+  // intray.collections.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 
 export async function createClientNLObject() {
@@ -87,16 +95,12 @@ export const postCltNLToDb = async (session: Session) => {
   return updatedAssignment;
 };
 
-export const createNLEntryInTray = (session: Session, openingBalances: ClientTBLineProps[]) => {
-  const inTrayTemplate = new InTrayNominalLedgerEntry(session, openingBalances);
-  return inTrayTemplate;
-};
+// export const createNLEntryInTray = (session: Session, openingBalances: ClientTBLineProps[]) => {
+//   const inTrayTemplate = new InTrayNominalLedgerEntry(session, openingBalances);
+//   return inTrayTemplate;
+// };
 
-export const reconcileClientBFTB = (
-  session: Session,
-  openingBalances: ClientTBLineProps[],
-  opBalCollection: InTrayCollection
-) => {
+export const reconcileClientBFTB = (session: Session, openingBalances: ClientTBLineProps[]) => {
   const comparisonArray = session.clientBFwdTB.map((cerysItem) => new ClientTBBFwdComparison(cerysItem, "Cerys"));
   openingBalances.forEach((opBal) => {
     const existingItem = comparisonArray.find((i) => i.clientCode === opBal.clientCode);
@@ -104,6 +108,6 @@ export const reconcileClientBFTB = (
       ? (existingItem.clientValue = opBal.value)
       : comparisonArray.push(new ClientTBBFwdComparison(opBal, "Client"));
   });
-  const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances, opBalCollection);
+  const reconcilationObj = new ClientTBBFwdReconciliation(session.clientBFwdTB, openingBalances);
   return reconcilationObj;
 };

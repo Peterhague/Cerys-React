@@ -195,18 +195,15 @@ export class RegisterCreationTemplate {
 export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
   register: RegisterType;
   transactions: AssetTransaction[];
-  constructor(registerTemplate: RegisterCreationTemplate, inTrayCollection: InTrayCollection) {
-    super(
-      {
-        title: `Identify possible ${registerTemplate.registerType} additions`,
-        getSubtitle: null,
-        getSummaryText: null,
-        detailsAction: null,
-        detailsPath: INTRAY_DETAILS,
-        affirmativeAction: null,
-      },
-      inTrayCollection
-    );
+  constructor(registerTemplate: RegisterCreationTemplate) {
+    super({
+      title: `Identify possible ${registerTemplate.registerType} additions`,
+      getSubtitle: null,
+      getSummaryText: null,
+      detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
+      affirmativeAction: null,
+    });
     this.register = registerTemplate.register;
     this.transactions = registerTemplate.possibleAdditions;
     this.getSubtitle = this.getIntraySubtitle;
@@ -325,18 +322,15 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
 export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
   transactions: DetailedTransaction[];
-  constructor(registerTemplate: RegisterCreationTemplate, inTrayCollection: InTrayCollection) {
-    super(
-      {
-        title: `Create ${registerTemplate.registerType} register?`,
-        getSubtitle: null,
-        getSummaryText: null,
-        detailsAction: null,
-        detailsPath: INTRAY_DETAILS,
-        affirmativeAction: null,
-      },
-      inTrayCollection
-    );
+  constructor(registerTemplate: RegisterCreationTemplate) {
+    super({
+      title: `Create ${registerTemplate.registerType} register?`,
+      getSubtitle: null,
+      getSummaryText: null,
+      detailsAction: null,
+      detailsPath: INTRAY_DETAILS,
+      affirmativeAction: null,
+    });
     this.register = registerTemplate.register;
     this.transactions = registerTemplate.refinedTransactions;
     this.getSubtitle = this.getIntraySubtitle;

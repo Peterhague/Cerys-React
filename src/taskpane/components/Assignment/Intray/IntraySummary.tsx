@@ -18,10 +18,10 @@ const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
       {" "}
       {intray.collections.map((coll) => (
         <Fragment key={coll.id}>
-          {coll.title && coll.items.length > 0 && <p>{coll.title}</p>}
+          {coll.title && coll.getItems(session).length > 0 && <p>{coll.title}</p>}
           <table>
             <tbody>
-              {coll.items.map((item) => (
+              {coll.getItems(session).map((item) => (
                 <tr key={item.id}>
                   <td>
                     {item.title}
