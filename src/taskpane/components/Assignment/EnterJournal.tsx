@@ -50,6 +50,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     };
     const journals = activeJournal.journals;
     journals.push(new Journal(session, journalDtls));
+    console.log(journals);
     setActiveJournal(new ActiveJournal({ type: "journal", journals }));
     // newActiveJnl.journals.push(new Journal(session, journalDtls));
     // setActiveJournal(newActiveJnl);

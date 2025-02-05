@@ -6,9 +6,13 @@ import { TrialBalanceLine } from "../classes/client-codes";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
 import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
-import { InTray, InTrayItem } from "../classes/in-trays/global";
+import { InTray, InTrayAndItem, InTrayAndParentInTray, InTrayItem, InTrayRouting } from "../classes/in-trays/global";
 import { Journal } from "../classes/journal";
 /*global Excel */
+
+export interface GlobalInterfaces {
+  viewOptions: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayAndParentInTray | InTrayRouting;
+}
 
 export interface BaseCerysCodeObjectProps {
   cerysCode: number;

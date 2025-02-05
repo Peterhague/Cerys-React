@@ -81,7 +81,15 @@ export class Journal extends BaseJournal implements JournalProps {
   }
 }
 
-export class JournalForDatabase extends BaseJournal {
+export class JournalForDatabase {
+  transactionId?: string;
+  value: number;
+  narrative: string;
+  transactionType: TransactionProps["transactionType"];
+  transactionDate: string | Date;
+  transactionDateExcel: number;
+  processedAsAsset: boolean;
+  clientNominalCode: number;
   cerysCode: number;
   cerysName: string;
   cerysShortName: string;
@@ -102,15 +110,14 @@ export class JournalForDatabase extends BaseJournal {
   closeOffCode: number;
   _id?: string;
   constructor(journal: Journal) {
-    const journDtlsProps: JournalDetailsProps = {
-      cerysCode: journal.cerysCodeObj.cerysCode,
-      value: journal.value,
-      narrative: journal.narrative,
-      transactionType: journal.transactionType,
-      transactionDate: journal.transactionDate,
-      clientNominalCode: journal.clientNominalCode,
-    };
-    super(journDtlsProps);
+    this.transactionId = journal.transactionId;
+    this.value = journal.value;
+    this.narrative = journal.narrative;
+    this.transactionType = journal.transactionType;
+    this.transactionDate = journal.transactionDate;
+    this.transactionDateExcel = journal.transactionDateExcel;
+    this.processedAsAsset = journal.processedAsAsset;
+    this.clientNominalCode = journal.clientNominalCode;
     this.cerysCode = journal.cerysCodeObj.cerysCode;
     this.cerysName = journal.cerysCodeObj.cerysName;
     this.cerysShortName = journal.cerysCodeObj.cerysShortName;

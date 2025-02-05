@@ -1,7 +1,6 @@
 import { Assignment } from "../classes/assignment";
 import { ClientCodeObject } from "../classes/client-codes";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
-import { InTray } from "../classes/in-trays/global";
 import { createTBEntryCollections } from "../classes/in-trays/templates";
 import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
@@ -10,7 +9,7 @@ import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
 import { ClientTBLineProps, JournalDetailsProps } from "../interfaces/interfaces";
 import { INTRAY_SUMMARY } from "../static-values/views";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
-import { checkNewTransForAssets, processTransBatch } from "../utils/transactions/transactions";
+import { processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
 
 export async function enterTB(session: Session) {
@@ -43,7 +42,7 @@ export async function enterTB(session: Session) {
       console.log(inTray);
       tbEntryCollections.forEach((collection) => {
         if (collection.getItems(session).length > 0) {
-          inTray.collections.push(collection);
+          inTray.addCollection(collection);
         }
       });
       session.handleDynamicView(INTRAY_SUMMARY, inTray);

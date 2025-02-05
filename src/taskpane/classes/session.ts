@@ -1,4 +1,4 @@
-import { BaseIndividualProps, ClientTBLineProps } from "../interfaces/interfaces";
+import { BaseIndividualProps, ClientTBLineProps, GlobalInterfaces } from "../interfaces/interfaces";
 import { AssetRegister } from "./asset-register";
 import { Assignment } from "./assignment";
 import { ClientCerysCodeObject } from "./cerys-codes";
@@ -8,11 +8,8 @@ import { ControlledWorksheet } from "./controlled-worksheet";
 import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
-import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "./in-trays/global";
 import { BaseIndividual } from "./individuals";
-import { Journal } from "./journal";
 import { Transaction } from "./transaction";
-import { ViewOptions } from "./view-options";
 import { Worksheet } from "./worksheet";
 
 export class Session {
@@ -26,26 +23,13 @@ export class Session {
   user: {};
   newUserAccount: {};
   customer: Customer;
-  // activeJournal: {
-  //   journals: Journal[];
-  //   netValue: number;
-  //   journalType: string;
-  //   journal: boolean;
-  //   clientTB: boolean;
-  // } = {
-  //   journals: [],
-  //   netValue: 0,
-  //   journalType: "journal",
-  //   journal: true,
-  //   clientTB: false,
-  // };
   editableSheets: EditableWorksheet[] = [];
   controlledSheets: ControlledWorksheet[] = [];
   IFARegister: AssetRegister;
   IPRegister: AssetRegister;
   TFARegister: AssetRegister;
   handleView: (view: string) => void;
-  handleDynamicView: (view: string, options: ViewOptions | InTray | InTrayItem | InTrayAndItem | InTrayRouting) => void;
+  handleDynamicView: (view: string, options: GlobalInterfaces["viewOptions"]) => void;
   setEditButton: (editButtonStatus: string) => void;
   unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;

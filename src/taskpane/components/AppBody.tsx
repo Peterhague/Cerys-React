@@ -79,6 +79,7 @@ import {
   ENTER_JOURNAL,
   HANDLE_TRANS_UPDATES,
   INTRAY_DETAILS,
+  INTRAY_NESTED_SUMMARY,
   INTRAY_SUMMARY,
   LANDING_PAGE,
   MANAGE_ASSIGNMENT_DASH_HOME,
@@ -96,11 +97,12 @@ import {
   USER_LOGIN,
 } from "../static-values/views";
 import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientIndis";
-import IntraySummary from "./Assignment/Intray/IntraySummary";
-import { ViewOptionsProps } from "../interfaces/interfaces";
+import { GlobalInterfaces } from "../interfaces/interfaces";
 import { ViewOptions } from "../classes/view-options";
-import IntrayDetails from "./Assignment/Intray/IntrayDetails";
-import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "../classes/in-trays/global";
+import { InTray, InTrayAndItem, InTrayAndParentInTray } from "../classes/in-trays/global";
+import IntrayNestedSummary from "./Assignment/Intray/InTrayNestedSummary";
+import IntraySummary from "./Assignment/Intray/InTraySummary";
+import IntrayDetails from "./Assignment/Intray/InTrayDetails";
 
 interface AppBodyProps {
   session: Session;
@@ -109,7 +111,7 @@ interface AppBodyProps {
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
   const [editButton, setEditButton] = useState("off");
-  const [options, setOptions] = useState<ViewOptionsProps | InTray | InTrayItem | InTrayRouting>(BLANK_VIEW_OPTIONS);
+  const [options, setOptions] = useState<GlobalInterfaces["viewOptions"]>(BLANK_VIEW_OPTIONS);
 
   console.log(session);
 
@@ -118,7 +120,7 @@ const AppBody = ({ session }: AppBodyProps) => {
     setView(view);
   };
 
-  const handleDynamicView = (view: string, options: ViewOptionsProps | InTray | InTrayItem | InTrayRouting) => {
+  const handleDynamicView = (view: string, options: GlobalInterfaces["viewOptions"]) => {
     setOptions(options);
     session.currentView = view;
     setView(view);
@@ -187,6 +189,10 @@ const AppBody = ({ session }: AppBodyProps) => {
       case INTRAY_SUMMARY:
         if (options instanceof InTray)
           body = <IntraySummary handleView={handleView} session={session} intray={options} />;
+        break;
+      case INTRAY_NESTED_SUMMARY:
+        if (options instanceof InTrayAndParentInTray)
+          body = <IntrayNestedSummary handleView={handleView} session={session} inTrayAndParentInTray={options} />;
         break;
       case INTRAY_DETAILS:
         if (options instanceof InTrayAndItem)

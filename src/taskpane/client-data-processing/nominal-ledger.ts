@@ -18,7 +18,7 @@ export async function enterNL(session: Session) {
   const inTray = session.assignment.inTray;
   inTrayCollections.forEach((collection) => {
     if (collection.getItems(session).length > 0) {
-      inTray.collections.push(collection);
+      inTray.addCollection(collection);
     }
   });
   inTrayCollections.find((i) => i.getItems(session).length > 0) && session.handleDynamicView(INTRAY_SUMMARY, inTray);

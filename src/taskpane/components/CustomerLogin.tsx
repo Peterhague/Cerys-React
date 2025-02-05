@@ -6,15 +6,11 @@ import { fetchOptionsGetCustomer } from "../fetching/generateOptions";
 import { Session } from "../classes/session";
 import { CUSTOMER_DASH_HOME, LANDING_PAGE } from "../static-values/views";
 import { Customer } from "../classes/customer";
-import { ViewOptionsProps } from "../interfaces/interfaces";
-import { InTray, InTrayRouting, InTrayItem, InTrayAndItem } from "../classes/in-trays/global";
+import { GlobalInterfaces } from "../interfaces/interfaces";
 
 interface customerLoginProps {
   handleView: (view: string) => void;
-  handleDynamicView: (
-    view: string,
-    options: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayRouting
-  ) => void;
+  handleDynamicView: (view: string, options: GlobalInterfaces["viewOptions"]) => void;
   setEditButton: (state: string) => void;
   session: Session;
 }

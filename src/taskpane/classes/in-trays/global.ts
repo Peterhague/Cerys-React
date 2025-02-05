@@ -1,4 +1,4 @@
-import { InTrayCollectionProps, InTrayItemProps, InTrayProps } from "../../interfaces/interfaces";
+import { InTrayCollectionProps, InTrayItemProps } from "../../interfaces/interfaces";
 import { getRandomString } from "../../utils/helper-functions";
 import { Session } from "../session";
 import { InTrayTemplate } from "./templates";
@@ -15,16 +15,24 @@ export class InTray {
     console.log(intray);
     this.type = intray.type;
     this.title = intray.title;
-    // this.collectionsAction = intray.collectionsAction;
-    // this.collectionsActionParams = intray.collectionsActionParams;
     // intray.collections.forEach((coll) => {
     //   const items = coll.getItems(session);
+    //   console.log(items);
     //   items.forEach((item) => {
     //     if (item instanceof InTray) item.parentInTray = this;
     //   });
     // });
     this.collections = intray.collections;
     this.id = getRandomString();
+  }
+
+  addCollection(collection: InTrayCollection) {
+    // const items = collection.getItems(session);
+    // console.log(items);
+    // items.forEach((item) => {
+    //   if (item instanceof InTray) item.parentInTray = this;
+    // });
+    this.collections.push(collection);
   }
   // deleteThisItem(inTrayItem: InTrayItem) {
   //   this.collections.find((coll) => coll.id === inTrayItem.collectionId).deleteItem(inTrayItem);
@@ -108,5 +116,14 @@ export class InTrayAndItem {
   constructor(inTray: InTray, inTrayItem: InTrayItem) {
     this.inTray = inTray;
     this.inTrayItem = inTrayItem;
+  }
+}
+
+export class InTrayAndParentInTray {
+  inTray: InTray;
+  parentInTray: InTray;
+  constructor(inTray: InTray, parentInTray: InTray) {
+    this.inTray = inTray;
+    this.parentInTray = parentInTray;
   }
 }
