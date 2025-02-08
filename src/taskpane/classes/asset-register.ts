@@ -10,12 +10,12 @@ import { registerTypes } from "../static-values/register-types";
 import { INTRAY_DETAILS } from "../static-values/views";
 import { calculateDiffInDays } from "../utils/helper-functions";
 import { processTransBatch } from "../utils/transactions/transactions";
-import { InTrayCollection, InTrayItem } from "./in-trays/global";
+import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
-import { AssetTransaction, Transaction } from "./transaction";
+import { AssetTransaction } from "./transaction";
 import { addOneWorksheet } from "../utils/worksheet";
 import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
-import { ActiveJournal, Journal } from "./journal";
+import { ActiveJournal, Journal, TransactionAttachmentProps } from "./journal";
 /* global Excel */
 
 export class AssetRegister {
@@ -136,8 +136,8 @@ export class RegisterCreationTemplate {
     const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
     const convertedTrans: AssetTransaction[] = [];
     relevantTrans.forEach((tran) => {
-      if (tran.transactionType === "client trial balance") {
-        const clientTrans = tran.getClientTransAsAssetTrans(session);
+      if (tran.getActiveClientTransactions(session).length > 0 && !tran.representsClientTransaction(session)) {
+        const clientTrans = tran.getClientTransAsAssetTrans(session, true);
         convertedTrans.push(...clientTrans);
       } else convertedTrans.push(tran);
     });
@@ -146,8 +146,15 @@ export class RegisterCreationTemplate {
       const cerysCodeObj = assetTran.getCerysCodeObj(session);
       return { ...cerysCodeObj, ...assetTran };
     });
-    this.possibleAdditions = this.identifyPossibleAdditions(session, convertedTrans, registerType);
-    this.refinedTransactions = [];
+    // this.possibleAdditions = this.identifyPossibleAdditions(session, convertedTrans, registerType);
+    // this.refinedTransactions = [];
+    const { refined, possible } = this.refineTransactions(session, convertedTrans, registerType);
+    console.log(refined);
+    console.log(possible);
+    this.possibleAdditions = possible;
+    this.refinedTransactions = refined;
+    console.log(this.possibleAdditions);
+    console.log(this.refinedTransactions);
   }
 
   finaliseAssetObjects(session: Session, relevantTransactions: AssetTransaction[]) {
@@ -164,14 +171,39 @@ export class RegisterCreationTemplate {
     });
   }
 
-  identifyPossibleAdditions(
-    session: Session,
-    relevantTransactions: AssetTransaction[],
-    registerType: "IFA" | "TFA" | "IP"
-  ) {
-    return relevantTransactions.filter((tran) => {
+  // identifyPossibleAdditions(
+  //   session: Session,
+  //   relevantTransactions: AssetTransaction[],
+  //   registerType: "IFA" | "TFA" | "IP"
+  // ) {
+  //   return relevantTransactions.filter((tran) => {
+  //     let test: number;
+  //     if (!tran.processedAsAsset && !tran.clientTransactionAttachment) {
+  //       const cerysCodeObj = tran.getCerysCodeObj(session);
+  //       if (
+  //         (registerType === "IFA" &&
+  //           cerysCodeObj.cerysCategory === "Intangible assets" &&
+  //           cerysCodeObj.assetCodeType === "iFACostBF") ||
+  //         (registerType === "TFA" &&
+  //           cerysCodeObj.cerysCategory === "Tangible assets" &&
+  //           cerysCodeObj.assetCodeType === "tFACostBF") ||
+  //         (registerType === "IP" &&
+  //           cerysCodeObj.cerysCategory === "Investment property" &&
+  //           cerysCodeObj.assetCodeType === "iPCostBF")
+  //       ) {
+  //         test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
+  //       }
+  //     }
+  //     return test > 0;
+  //   });
+  // }
+
+  refineTransactions(session: Session, relevantTransactions: AssetTransaction[], registerType: "IFA" | "TFA" | "IP") {
+    const refined = [];
+    const possible = [];
+    relevantTransactions.forEach((tran) => {
       let test: number;
-      if (!tran.processedAsAsset) {
+      if (!tran.processedAsAsset && (!tran.clientTransactionAttachment || tran.representsClientTransaction(session))) {
         const cerysCodeObj = tran.getCerysCodeObj(session);
         if (
           (registerType === "IFA" &&
@@ -187,8 +219,9 @@ export class RegisterCreationTemplate {
           test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
         }
       }
-      return test > 0;
+      test > 0 ? possible.push(tran) : refined.push(tran);
     });
+    return { refined, possible };
   }
 }
 
@@ -247,9 +280,13 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
             narrative: `${tran.assetNarrative} reanalysed as addition`,
             clientNominalCode: tran.clientNominalCode,
           };
-
-          journals.push(new Journal(session, drJnl));
+          const transactionAttachment: TransactionAttachmentProps = {
+            type: "client",
+            transactionId: tran.clientTransactionId,
+          };
+          journals.push(new Journal(session, drJnl, transactionAttachment));
         }
+        // back to here please
         if (chart[i].cerysCode === tran.cerysCode) {
           const crJnl: JournalDetailsProps = {
             cerysCode: chart[i].cerysCode,
@@ -259,23 +296,28 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
             narrative: `${tran.assetNarrative} reanalysed as addition`,
             clientNominalCode: tran.clientNominalCode,
           };
-          journals.push(new Journal(session, crJnl));
+          const transactionAttachment: TransactionAttachmentProps = {
+            type: "client",
+            transactionId: tran.clientTransactionId,
+          };
+          journals.push(new Journal(session, crJnl, transactionAttachment));
         }
       }
     });
     return new ActiveJournal({ type: "auto-addition", journals });
   }
 
-  async createLikelyAdditionsSumm(session: Session, transactions: AssetTransaction[], registerType: string) {
+  async createLikelyAdditionsSumm(session: Session) {
     try {
       await Excel.run(async (context) => {
+        const registerType = this.register.initials;
         const name = `${registerType} Possible Additions`;
         const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
         const valuesToPost = [
           ["TRANSACTION", "CLIENT", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "POSTING", "CERYS", "CERYS", "CERYS"],
           ["NUMBER", "DATE", "NARRATIVE", "NC", "NOMINAL", "(CREDIT)", "SOURCE", "CODE", "NOMINAL", "NARRATIVE"],
         ];
-        transactions.forEach((transaction) => {
+        this.transactions.forEach((transaction) => {
           const cerysCodeObj = transaction.getCerysCodeObj(session);
           const transVals = [];
           transVals.push(transaction.transactionNumber);

@@ -4,7 +4,7 @@ import { Assignment, PreliminaryAssignment } from "../classes/assignment";
 import { Client } from "../classes/client";
 import { ClientCodeObject } from "../classes/client-codes";
 import { BaseIndividual } from "../classes/individuals";
-import { ActiveJournal, Journal } from "../classes/journal";
+import { ActiveJournal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
 import {
@@ -17,7 +17,6 @@ import { getUpdatedTransactions } from "../utils/helper-functions";
 
 export function fetchOptionsTransBatch(
   session: Session,
-  //journals: Journal[],
   activeJournal: ActiveJournal,
   transDtls: { customerId: string; assignmentId: string }
 ) {

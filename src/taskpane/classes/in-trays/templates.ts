@@ -57,42 +57,37 @@ export const getItemsNLPromptCollection = (session: Session) => {
 
 export const createNLEntryCollections = (session: Session, openingBalances: ClientTBLineProps[]) => {
   const collections: InTrayCollection[] = [];
-  const opBalCollection: InTrayCollection = createOpeningBalancesCollection(openingBalances);
-  opBalCollection.getItems(session).length > 0 && collections.push(opBalCollection);
-  const assetRegCollections: InTrayCollection = createAssetRegistersInTray();
-  assetRegCollections.getItems(session).length > 0 && collections.push(assetRegCollections);
-  return collections;
-};
-
-export const createOpeningBalancesCollection = (openingBalances: ClientTBLineProps[]) => {
-  const inTrayCollectionProps: InTrayCollectionProps = {
+  const opBalsCollectionProps: InTrayCollectionProps = {
     title: "Opening Balances Not Reconciled",
     itemsAction: getItemsOpBalsNotReconciledCollection,
     itemsActionParams: [openingBalances],
   };
-  const opBalCollection = new InTrayCollection(inTrayCollectionProps);
-  return opBalCollection;
+  collections.push(new InTrayCollection(opBalsCollectionProps));
+  const parentInTray = session.assignment.inTray;
+  const assetRegCollections: InTrayCollection = createAssetRegistersInTray(parentInTray);
+  collections.push(assetRegCollections);
+  return collections;
 };
 
 const getItemsOpBalsNotReconciledCollection = (session: Session, openingBalances: ClientTBLineProps[]) => {
   const openingBalancesRec = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
-  return [openingBalancesRec];
+  return openingBalancesRec ? [openingBalancesRec] : [];
 };
 
-export const createAssetRegistersInTray = () => {
+export const createAssetRegistersInTray = (parentInTray: InTray) => {
   const inTrayCollectionProps: InTrayCollectionProps = {
     title: "Fixed Asset Registers",
     itemsAction: createAssetRegistersInTrayCollections,
-    itemsActionParams: [],
+    itemsActionParams: [parentInTray],
   };
   const assRegCollection = new InTrayCollection(inTrayCollectionProps);
   return assRegCollection;
 };
 
-export const createAssetRegistersInTrayCollections = (session: Session) => {
+export const createAssetRegistersInTrayCollections = (session: Session, parentInTray: InTray) => {
   const registerPrompts = checkTransUnregisteredAssets(session);
   const assRegTemplate = registerPrompts.length > 0 && new InTrayAssetRegister(registerPrompts);
-  const inTray = new InTray(assRegTemplate);
+  const inTray = new InTray(assRegTemplate, parentInTray);
   return [inTray];
 };
 
@@ -142,6 +137,7 @@ export class InTrayAssetRegister extends InTrayTemplate {
 }
 
 export const createAssetRegisterInTrayCollections = (session: Session, registerType: "IFA" | "TFA" | "IP") => {
+  console.log("creating register intray items...");
   const items: InTrayItem[] = [];
   const prompts = checkTransUnregisteredAssets(session);
   const prompt = prompts.find((i) => (i.registerType = registerType));

@@ -1,7 +1,7 @@
 import { ClientCerysCodeObjectProps, ClientTBLineProps } from "../interfaces/interfaces";
 import { INTRAY_DETAILS } from "../static-values/views";
 import { processTransBatch } from "../utils/transactions/transactions";
-import { InTrayCollection, InTrayItem } from "./in-trays/global";
+import { InTrayItem } from "./in-trays/global";
 import { ActiveJournal, Journal } from "./journal";
 import { Session } from "./session";
 /* global Excel */

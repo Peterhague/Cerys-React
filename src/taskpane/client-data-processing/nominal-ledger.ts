@@ -1,6 +1,6 @@
 import { Assignment } from "../classes/assignment";
 import { ClientTBBFwdComparison, ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
-import { InTray, InTrayCollection } from "../classes/in-trays/global";
+import { InTrayCollection } from "../classes/in-trays/global";
 import { createNLEntryCollections } from "../classes/in-trays/templates";
 import { Session } from "../classes/session";
 import { postClientNLUrl } from "../fetching/apiEndpoints";
@@ -22,11 +22,6 @@ export async function enterNL(session: Session) {
     }
   });
   inTrayCollections.find((i) => i.getItems(session).length > 0) && session.handleDynamicView(INTRAY_SUMMARY, inTray);
-  // const nLIntrayTemplate = createNLEntryInTray(session, openingBalances);
-  // console.log(nLIntrayTemplate);
-  // const intray = new InTray(nLIntrayTemplate);
-  // console.log(intray);
-  // intray.collections.length > 0 && session.handleDynamicView(INTRAY_SUMMARY, intray);
 }
 
 export async function createClientNLObject() {
@@ -34,7 +29,7 @@ export async function createClientNLObject() {
     const rtnVal = await Excel.run(async (context) => {
       const clientNL = [];
       const openingBalances: ClientTBLineProps[] = [];
-      const ws = context.workbook.worksheets.getItemOrNullObject("Client NL");
+      const ws = context.workbook.worksheets.getItemOrNullObject("Sheet2");
       await context.sync();
       if (ws.isNullObject) {
         return "";

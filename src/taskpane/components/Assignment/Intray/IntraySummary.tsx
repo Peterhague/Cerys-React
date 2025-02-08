@@ -1,9 +1,9 @@
 import * as React from "react";
 import { Fragment } from "react";
 import { Session } from "../../../classes/session";
-import { ASSIGNMENT_DASH_HOME, INTRAY_SUMMARY } from "../../../static-values/views";
+import { ASSIGNMENT_DASH_HOME, INTRAY_NESTED_SUMMARY, INTRAY_SUMMARY } from "../../../static-values/views";
 import CerysButton from "../../CerysButton";
-import { InTray, InTrayItem } from "../../../classes/in-trays/global";
+import { InTray, InTrayAndParentInTray, InTrayItem } from "../../../classes/in-trays/global";
 
 interface IntraySummaryProps {
   handleView: (view: string) => void;
@@ -12,7 +12,15 @@ interface IntraySummaryProps {
 }
 
 const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
-  console.log(intray);
+  const handleNestedInTray = (childInTray: InTray) => {
+    const options = new InTrayAndParentInTray(childInTray, intray);
+    session.handleDynamicView(INTRAY_NESTED_SUMMARY, options);
+  };
+  console.log(intray.collections[0]);
+  console.log(intray.collections[0].getItems(session));
+  intray.collections.length > 1 && console.log(intray.collections[1]);
+  intray.collections.length > 1 && console.log(intray.collections[1].getItems(session));
+
   return (
     <>
       {" "}
@@ -34,7 +42,7 @@ const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
                       </button>
                     )}
                     {item instanceof InTray && (
-                      <button type="button" onClick={() => session.handleDynamicView(INTRAY_SUMMARY, item)}>
+                      <button type="button" onClick={() => handleNestedInTray(item)}>
                         See more
                       </button>
                     )}

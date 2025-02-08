@@ -9,10 +9,9 @@ export class InTray {
   collections: InTrayCollection[];
   // collectionsAction: (...args: unknown[]) => InTrayCollection[] | Promise<InTrayCollection[]>;
   // collectionsActionParams: unknown[];
-  id: string;
   parentInTray: InTray;
-  constructor(intray: InTrayTemplate) {
-    console.log(intray);
+  id: string;
+  constructor(intray: InTrayTemplate, parentInTray: InTray = null) {
     this.type = intray.type;
     this.title = intray.title;
     // intray.collections.forEach((coll) => {
@@ -23,6 +22,7 @@ export class InTray {
     //   });
     // });
     this.collections = intray.collections;
+    this.parentInTray = parentInTray;
     this.id = getRandomString();
   }
 
@@ -51,7 +51,6 @@ export class InTray {
 
 export class InTrayCollection {
   title: string;
-  //items: (InTrayItem | InTray)[];
   itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[];
   itemsActionParams: unknown[];
   id: string;

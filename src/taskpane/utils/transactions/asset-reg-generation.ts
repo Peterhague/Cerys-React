@@ -23,9 +23,7 @@ import { RegisterCreationTemplate } from "../../classes/asset-register";
 
 export const checkTransUnregisteredAssets = (session: Session) => {
   const registersToPrompt = session.assignment.getRegisterPrompts(session);
-  console.log(registersToPrompt);
   const mapped = registersToPrompt.map((reg) => new RegisterCreationTemplate(session, reg));
-  console.log(mapped);
   return mapped;
 };
 

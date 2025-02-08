@@ -43,7 +43,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
     e.preventDefault();
     const journalDtls: JournalDetailsProps = {
       cerysCode: parseInt(nominalCode),
-      value,
+      value: parseFloat(value) * 100,
       narrative,
       transactionDate,
       transactionType: "journal",

@@ -1,4 +1,3 @@
-import { title1ClassNames } from "@fluentui/react-components";
 import {
   AssetSubTransaction,
   ClientCodeObjectProps,
@@ -35,6 +34,9 @@ export class Transaction {
   processedAsAsset: boolean;
   clientMappingOverridden: boolean;
   clientMappingOverride: ClientMapping;
+  clientTransactionId: string;
+  clientTransactionAttachment: string;
+  cerysTransactionAttachment: string;
   _id: string;
 
   constructor(transaction: TransactionProps) {
@@ -56,6 +58,9 @@ export class Transaction {
     this.processedAsAsset = transaction.processedAsAsset;
     this.clientMappingOverridden = transaction.clientMappingOverridden;
     this.clientMappingOverride = transaction.clientMappingOverride;
+    this.clientTransactionId = transaction.clientTransactionId;
+    this.clientTransactionAttachment = transaction.clientTransactionAttachment;
+    this.cerysTransactionAttachment = transaction.cerysTransactionAttachment;
     this._id = transaction._id;
   }
 
@@ -79,6 +84,9 @@ export class Transaction {
       processedAsAsset: this.processedAsAsset,
       clientMappingOverridden: this.clientMappingOverridden,
       clientMappingOverride: this.clientMappingOverride,
+      clientTransactionId: this.clientTransactionId,
+      clientTransactionAttachment: this.clientTransactionAttachment,
+      cerysTransactionAttachment: this.cerysTransactionAttachment,
       _id: this._id,
     };
   }
@@ -123,31 +131,48 @@ export class Transaction {
     return session.assignment.clientNL.filter((tran) => tran.code === this.clientNominalCode);
   }
 
+  getActiveClientTransactions(session: Session) {
+    const transToExclude = session.assignment.transactions
+      .filter((tran) => tran.cerysCode === this.cerysCode && tran.clientTransactionAttachment)
+      .map((tran) => tran.clientTransactionAttachment);
+    const activeTrans = this.getClientTransactions(session).filter(
+      (tran) => !this.clientTransactionAttachment && !transToExclude.includes(tran._id)
+    );
+    return activeTrans;
+  }
+
   getClientNominalCodeObj(session: Session) {
     return session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
   }
 
-  getClientTransAsCerysTrans(session: Session) {
-    const trans = this.getClientTransactions(session);
+  getClientTransAsCerysTrans(session: Session, excludeNullified: boolean) {
+    const trans = excludeNullified ? this.getActiveClientTransactions(session) : this.getClientTransactions(session);
     return trans
       .map((tran) => new ClientTransactionConversion(tran, this))
       .map((conversion) => new Transaction(conversion));
   }
 
-  getClientTransAsAssetTrans(session: Session) {
-    const trans = this.getClientTransactions(session);
+  getClientTransAsAssetTrans(session: Session, excludeNullified: boolean) {
+    const trans = excludeNullified ? this.getActiveClientTransactions(session) : this.getClientTransactions(session);
     return trans
       .map((tran) => new ClientTransactionConversion(tran, this))
       .map((item) => new AssetTransaction(session, item));
+  }
+
+  representsClientTransaction(session: Session) {
+    const matchingTransaction = session.assignment.clientNL.find(
+      (tran) => tran._id === this.clientTransactionAttachment && tran.value === this.value
+    );
+    return matchingTransaction ? true : false;
   }
 }
 
 export class ClientTransactionConversion extends Transaction {
   clientNarrative: string;
-  clientTransactionId: string;
-  _id: string;
   constructor(clientTransaction: ClientTransaction, cerysTransaction: Transaction) {
     super(cerysTransaction);
+    this.transactionNumber = clientTransaction.number;
+    this.value = clientTransaction.value;
     this.clientNarrative = clientTransaction.detail;
     this.transactionDate = convertExcelDate(clientTransaction.date);
     this.clientTransactionId = clientTransaction._id;
@@ -170,7 +195,6 @@ export class AssetTransaction extends Transaction {
     reportingPeriodId: ReportingPeriod["_id"];
     subTransactions: AssetSubTransaction[];
   }[];
-  isClientTransaction: boolean;
 
   constructor(session: Session, transaction: Transaction | ClientTransactionConversion) {
     const transactionProps = transaction.getTransactionProps();
@@ -188,7 +212,6 @@ export class AssetTransaction extends Transaction {
         value: transaction.value,
       },
     ];
-    this.isClientTransaction = transaction instanceof ClientTransactionConversion ? true : false;
   }
   //why would you need this method? This is an extension of that transaction...
   getTransaction(session: Session) {

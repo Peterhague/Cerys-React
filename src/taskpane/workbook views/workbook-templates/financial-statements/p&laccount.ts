@@ -18,7 +18,6 @@ export async function wsPLAccount(context: Excel.RequestContext, session: Sessio
   const pLValues = [];
   const sheetMapping = [];
   pLValues.push(["", "", "", "", "", "£"]);
-  console.log(pLoss);
   pLoss.forEach((item) => {
     pLValues.push(["", "", "", "", "", ""]);
     item.total && pLValues.push(["", "", "", "", "", ""]);

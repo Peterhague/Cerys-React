@@ -7,7 +7,6 @@ import {
 } from "../interfaces/interfaces";
 import { calculateExcelDate } from "../utils/helper-functions";
 import { Session } from "./session";
-import { BaseCerysCodeObject } from "./cerys-codes";
 
 export class ActiveJournal {
   journals: Journal[];
@@ -60,9 +59,7 @@ class BaseJournal {
   processedAsAsset: boolean;
   clientNominalCode: number;
   constructor(journalDetails: JournalDetailsProps) {
-    const value = journalDetails.value;
-    const numberValue = typeof value === "string" ? parseFloat(value) : value;
-    this.value = numberValue * 100;
+    this.value = journalDetails.value;
     this.narrative = journalDetails.narrative;
     this.transactionType = journalDetails.transactionType;
     this.transactionDate = journalDetails.transactionDate;
@@ -71,13 +68,24 @@ class BaseJournal {
   }
 }
 
+export interface TransactionAttachmentProps {
+  type: "cerys" | "client";
+  transactionId: string;
+}
+
 export class Journal extends BaseJournal implements JournalProps {
   cerysCodeObj: BaseCerysCodeObjectProps;
+  transactionAttachment: TransactionAttachmentProps;
 
-  constructor(session: Session, journalDetails: JournalDetailsProps) {
+  constructor(
+    session: Session,
+    journalDetails: JournalDetailsProps,
+    transactionAttachment: TransactionAttachmentProps = null
+  ) {
     super(journalDetails);
     this.cerysCodeObj = session.chart.find((code) => code.cerysCode === journalDetails.cerysCode);
     this.processedAsAsset = !this.cerysCodeObj.isFixedAsset;
+    this.transactionAttachment = transactionAttachment;
   }
 }
 
@@ -108,6 +116,7 @@ export class JournalForDatabase {
   defaultSign: string | null;
   clientAdj: boolean;
   closeOffCode: number;
+  transactionAttachment: TransactionAttachmentProps;
   _id?: string;
   constructor(journal: Journal) {
     this.transactionId = journal.transactionId;
@@ -136,6 +145,7 @@ export class JournalForDatabase {
     this.defaultSign = journal.cerysCodeObj.defaultSign;
     this.clientAdj = journal.cerysCodeObj.clientAdj;
     this.closeOffCode = journal.cerysCodeObj.closeOffCode;
+    this.transactionAttachment = journal.transactionAttachment;
     this._id = journal.cerysCodeObj._id;
   }
 }

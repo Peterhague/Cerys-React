@@ -181,6 +181,9 @@ export interface TransactionProps {
   processedAsAsset: boolean;
   clientMappingOverridden: boolean;
   clientMappingOverride: ClientMapping;
+  clientTransactionId: string;
+  clientTransactionAttachment: string;
+  cerysTransactionAttachment: string;
   _id: string;
 }
 
@@ -244,7 +247,7 @@ export interface JournalProps {
 
 export interface JournalDetailsProps {
   cerysCode: number;
-  value: number | string;
+  value: number;
   transactionType: TransactionProps["transactionType"];
   narrative: string;
   transactionDate: Date | string;

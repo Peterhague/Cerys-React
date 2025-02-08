@@ -39,7 +39,6 @@ export async function enterTB(session: Session) {
       postClientTB(session, clientTB);
       const tbEntryCollections = createTBEntryCollections(session);
       const inTray = session.assignment.inTray;
-      console.log(inTray);
       tbEntryCollections.forEach((collection) => {
         if (collection.getItems(session).length > 0) {
           inTray.addCollection(collection);
@@ -92,7 +91,8 @@ export async function checkTBMapping(session: Session) {
 export async function handleTBData(session: Session) {
   try {
     const rtnVal = await Excel.run(async (context) => {
-      const ws = context.workbook.worksheets.getItem("Client TB");
+      // const ws = context.workbook.worksheets.getItem("Client TB");
+      const ws = context.workbook.worksheets.getItem("Sheet1");
       const range = ws.getUsedRange();
       range.load("values");
       await context.sync();

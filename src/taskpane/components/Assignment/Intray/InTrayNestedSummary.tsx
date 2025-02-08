@@ -13,6 +13,10 @@ interface InTrayNestedSummaryProps {
 
 const IntrayNestedSummary = ({ session, inTrayAndParentInTray, handleView }: InTrayNestedSummaryProps) => {
   const { inTray, parentInTray } = inTrayAndParentInTray;
+  console.log(inTray);
+  inTray.collections.forEach((i) => {
+    console.log(i.getItems(session));
+  });
 
   const handleGoBack = () => {
     const options = new InTrayAndParentInTray(inTray, parentInTray);
