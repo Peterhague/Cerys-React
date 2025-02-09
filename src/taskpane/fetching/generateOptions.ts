@@ -6,13 +6,8 @@ import { ClientCodeObject } from "../classes/client-codes";
 import { BaseIndividual } from "../classes/individuals";
 import { ActiveJournal } from "../classes/journal";
 import { Session } from "../classes/session";
-import { Transaction } from "../classes/transaction";
-import {
-  ClientCerysCodeObjectProps,
-  ClientTBLineProps,
-  ClientTransaction,
-  DetailedTransaction,
-} from "../interfaces/interfaces";
+import { DetailedAssetTransaction, Transaction } from "../classes/transaction";
+import { ClientCerysCodeObjectProps, ClientTBLineProps, ClientTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helper-functions";
 
 export function fetchOptionsTransBatch(
@@ -264,7 +259,7 @@ export function fetchOptionsPostClientNL(clientNL: ClientTransaction[], workbook
   };
 }
 
-export function fetchOptionsIFA(session: Session, relevantTrans: DetailedTransaction[]) {
+export function fetchOptionsIFA(session: Session, relevantTrans: DetailedAssetTransaction[]) {
   return {
     method: "POST",
     headers: {
@@ -279,7 +274,7 @@ export function fetchOptionsIFA(session: Session, relevantTrans: DetailedTransac
   };
 }
 
-export function fetchOptionsTFA(session: Session, relevantTrans: DetailedTransaction[]) {
+export function fetchOptionsTFA(session: Session, relevantTrans: DetailedAssetTransaction[]) {
   return {
     method: "POST",
     headers: {
@@ -294,7 +289,7 @@ export function fetchOptionsTFA(session: Session, relevantTrans: DetailedTransac
   };
 }
 
-export function fetchOptionsIP(session: Session, relevantTrans: DetailedTransaction[]) {
+export function fetchOptionsIP(session: Session, relevantTrans: DetailedAssetTransaction[]) {
   return {
     method: "POST",
     headers: {

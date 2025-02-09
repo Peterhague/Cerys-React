@@ -13,6 +13,7 @@ interface IntrayDetailsProps {
 
 const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => {
   const { inTrayItem, inTray } = options;
+  console.log(inTrayItem);
 
   const handleIgnore = () => {
     console.log(inTray);

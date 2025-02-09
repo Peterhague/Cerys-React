@@ -1,22 +1,23 @@
 import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
+import { DetailedAssetTransaction } from "../../classes/transaction";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
-import { AssetRegisterDb, DetailedTransaction } from "../../interfaces/interfaces";
+import { AssetRegisterDb } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export const createTFAR = async (session: Session, relevantTrans: DetailedTransaction[]) => {
+export const createTFAR = async (session: Session, relevantTrans: DetailedAssetTransaction[]) => {
   console.log(relevantTrans);
   const assignment = await postTFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createTFARWs(session);
 };
 
-export async function postTFAtoDB(session: Session, relevantTrans: DetailedTransaction[]) {
+export async function postTFAtoDB(session: Session, relevantTrans: DetailedAssetTransaction[]) {
   let assignment = session.assignment;
   const options = fetchOptionsTFA(session, relevantTrans);
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;

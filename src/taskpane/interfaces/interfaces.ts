@@ -1,6 +1,6 @@
 import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
-import { Transaction } from "../classes/transaction";
+import { DetailedAssetTransaction, Transaction } from "../classes/transaction";
 import React from "react";
 import { TrialBalanceLine } from "../classes/client-codes";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
@@ -8,10 +8,18 @@ import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
 import { InTray, InTrayAndItem, InTrayAndParentInTray, InTrayItem, InTrayRouting } from "../classes/in-trays/global";
 import { Journal } from "../classes/journal";
+import { AssetRegCreationPrompt, IdenitfyPossibleAdditionsPrompt } from "../classes/asset-register";
+import { ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
+import { NominalLedgerEntryPrompt } from "../classes/trial-balance";
 /*global Excel */
 
 export interface GlobalInterfaces {
   viewOptions: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayAndParentInTray | InTrayRouting;
+  intrayItems:
+    | IdenitfyPossibleAdditionsPrompt
+    | AssetRegCreationPrompt
+    | ClientTBBFwdReconciliation
+    | NominalLedgerEntryPrompt;
 }
 
 export interface BaseCerysCodeObjectProps {
@@ -227,7 +235,7 @@ export interface TransactionUpdateProps {
   cerysCodeObject: BaseCerysCodeObjectProps | null;
 }
 
-export interface DetailedTransaction extends BaseCerysCodeObjectProps, AssetTransactionProps, TransactionProps {}
+//export interface DetailedTransaction extends BaseCerysCodeObjectProps, AssetTransactionProps, TransactionProps {}
 
 export interface FATransaction extends Transaction {
   depnRate: string;
@@ -486,7 +494,7 @@ export interface RegisterType {
   initials: string;
   longLower: string;
   longCap: string;
-  createRegister: (session: Session, relevantTrans: DetailedTransaction[]) => Promise<void>;
+  createRegister: (session: Session, relevantTrans: DetailedAssetTransaction[]) => Promise<void>;
 }
 
 export interface ClientSoftwareDefaultsProps {

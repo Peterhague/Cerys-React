@@ -138,22 +138,10 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       });
       //const transMap = relevantTrans.map(tran => session.assignment.transactions.find(item => item._id === tran._id));
       relevantTrans.forEach((assetTran) => {
-        const transaction = assetTran.getTransaction(session);
+        const transaction = assetTran;
         const cerysCodeObj = transaction.getCerysCodeObj(session);
         const transVals = [];
         transVals.push(transaction.transactionNumber);
-        // if (transaction.transactionDate) {
-        //   const dateString =
-        //     typeof transaction.transactionDate === "string" && transaction.transactionDate.split("T")[0];
-        //   const dateStringSplit = dateString.split("-");
-        //   const dateConverted = `${dateStringSplit[1]}/${dateStringSplit[2]}/${dateStringSplit[0]}`;
-        //   transVals.push(dateConverted);
-        //   transaction.transactionDateUser = dateConverted;
-        // } else if (transaction.transactionDateClt) {
-        //   transVals.push(transaction.transactionDateClt);
-        // } else {
-        //   transVals.push("Not provided");
-        // }
         transVals.push(transaction.getExcelDate());
         transVals.push(transaction.narrative);
         if (transaction.transactionType === "journal") {
@@ -187,9 +175,8 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
           transVals.push("NA");
         }
         transVals.push(transaction.value / 100);
-        const transDtls = { assetTran, transaction, cerysCodeObj };
-        populateDepnCols(activeClient, transVals, transDtls, registerType);
-        calculateCharge(session, transDtls, registerType);
+        populateDepnCols(session, activeClient, transVals, transaction, registerType);
+        calculateCharge(session, transaction, registerType);
         assetTran.amortChg ? transVals.push(assetTran.amortChg / 100) : transVals.push(assetTran.depnChg / 100);
         valuesToPost.push(transVals);
       });
@@ -293,78 +280,79 @@ export async function createLikelyAdditionsSumm(
 }
 
 export const populateDepnCols = (
+  session: Session,
   activeClient: Client,
   transVals: string[],
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
+  transaction: AssetTransaction,
   registerType: string
 ) => {
-  const { assetTran, cerysCodeObj } = transactionDetails;
+  const cerysCodeObj = transaction.getCerysCodeObj(session);
   if (registerType === "IFA") {
     if (cerysCodeObj.assetCategoryNo === 1) {
       transVals.push(activeClient.amortBasisGwill);
       transVals.push(activeClient.amortRateGwill);
-      assetTran.amortBasis = activeClient.amortBasisGwill;
-      assetTran.amortRate = activeClient.amortRateGwill;
+      transaction.amortBasis = activeClient.amortBasisGwill;
+      transaction.amortRate = activeClient.amortRateGwill;
     } else if (cerysCodeObj.assetCategoryNo === 2) {
       transVals.push(activeClient.amortBasisPatsLics);
       transVals.push(activeClient.amortRatePatsLics);
-      assetTran.amortBasis = activeClient.amortBasisPatsLics;
-      assetTran.amortRate = activeClient.amortRatePatsLics;
+      transaction.amortBasis = activeClient.amortBasisPatsLics;
+      transaction.amortRate = activeClient.amortRatePatsLics;
     } else if (cerysCodeObj.assetCategoryNo === 3) {
       transVals.push(activeClient.amortBasisDevCosts);
       transVals.push(activeClient.amortRateDevCosts);
-      assetTran.amortBasis = activeClient.amortBasisDevCosts;
-      assetTran.amortRate = activeClient.amortRateDevCosts;
+      transaction.amortBasis = activeClient.amortBasisDevCosts;
+      transaction.amortRate = activeClient.amortRateDevCosts;
     } else if (cerysCodeObj.assetCategoryNo === 4) {
       transVals.push(activeClient.amortBasisCompSware);
       transVals.push(activeClient.amortRateCompSware);
-      assetTran.amortBasis = activeClient.amortBasisCompSware;
-      assetTran.amortRate = activeClient.amortRateCompSware;
+      transaction.amortBasis = activeClient.amortBasisCompSware;
+      transaction.amortRate = activeClient.amortRateCompSware;
     }
   } else if (registerType === "TFA") {
     if (cerysCodeObj.assetCategoryNo === 1) {
-      assetTran.depnBasis = activeClient.depnBasisFholdProp;
-      assetTran.depnRate = activeClient.depnRateFholdProp;
+      transaction.depnBasis = activeClient.depnBasisFholdProp;
+      transaction.depnRate = activeClient.depnRateFholdProp;
       transVals.push(activeClient.depnBasisFholdProp);
       transVals.push(activeClient.depnRateFholdProp);
     } else if (cerysCodeObj.assetCategoryNo === 2) {
-      assetTran.depnBasis = activeClient.depnBasisShortLhold;
-      assetTran.depnRate = activeClient.depnRateShortLhold;
+      transaction.depnBasis = activeClient.depnBasisShortLhold;
+      transaction.depnRate = activeClient.depnRateShortLhold;
       transVals.push(activeClient.depnBasisShortLhold);
       transVals.push(activeClient.depnRateShortLhold);
     } else if (cerysCodeObj.assetCategoryNo === 3) {
-      assetTran.depnBasis = activeClient.depnBasisLongLhold;
-      assetTran.depnRate = activeClient.depnRateLongLhold;
+      transaction.depnBasis = activeClient.depnBasisLongLhold;
+      transaction.depnRate = activeClient.depnRateLongLhold;
       transVals.push(activeClient.depnBasisLongLhold);
       transVals.push(activeClient.depnRateLongLhold);
     } else if (cerysCodeObj.assetCategoryNo === 4) {
-      assetTran.depnBasis = activeClient.depnBasisImprovements;
-      assetTran.depnRate = activeClient.depnRateImprovements;
+      transaction.depnBasis = activeClient.depnBasisImprovements;
+      transaction.depnRate = activeClient.depnRateImprovements;
       transVals.push(activeClient.depnBasisImprovements);
       transVals.push(activeClient.depnRateImprovements);
     } else if (cerysCodeObj.assetCategoryNo === 5) {
-      assetTran.depnBasis = activeClient.depnBasisPlantMachinery;
-      assetTran.depnRate = activeClient.depnRatePlantMachinery;
+      transaction.depnBasis = activeClient.depnBasisPlantMachinery;
+      transaction.depnRate = activeClient.depnRatePlantMachinery;
       transVals.push(activeClient.depnBasisPlantMachinery);
       transVals.push(activeClient.depnRatePlantMachinery);
     } else if (cerysCodeObj.assetCategoryNo === 6) {
-      assetTran.depnBasis = activeClient.depnBasisFixFittings;
-      assetTran.depnRate = activeClient.depnRateFixFittings;
+      transaction.depnBasis = activeClient.depnBasisFixFittings;
+      transaction.depnRate = activeClient.depnRateFixFittings;
       transVals.push(activeClient.depnBasisFixFittings);
       transVals.push(activeClient.depnRateFixFittings);
     } else if (cerysCodeObj.assetCategoryNo === 7) {
-      assetTran.depnBasis = activeClient.depnBasisMotorVehicles;
-      assetTran.depnRate = activeClient.depnRateMotorVehicles;
+      transaction.depnBasis = activeClient.depnBasisMotorVehicles;
+      transaction.depnRate = activeClient.depnRateMotorVehicles;
       transVals.push(activeClient.depnBasisMotorVehicles);
       transVals.push(activeClient.depnRateMotorVehicles);
     } else if (cerysCodeObj.assetCategoryNo === 8) {
-      assetTran.depnBasis = activeClient.depnBasisCompEquip;
-      assetTran.depnRate = activeClient.depnRateCompEquip;
+      transaction.depnBasis = activeClient.depnBasisCompEquip;
+      transaction.depnRate = activeClient.depnRateCompEquip;
       transVals.push(activeClient.depnBasisCompEquip);
       transVals.push(activeClient.depnRateCompEquip);
     } else if (cerysCodeObj.assetCategoryNo === 9) {
-      assetTran.depnBasis = activeClient.depnBasisOfficeEquip;
-      assetTran.depnRate = activeClient.depnRateOfficeEquip;
+      transaction.depnBasis = activeClient.depnBasisOfficeEquip;
+      transaction.depnRate = activeClient.depnRateOfficeEquip;
       transVals.push(activeClient.depnBasisOfficeEquip);
       transVals.push(activeClient.depnRateOfficeEquip);
     }
@@ -372,38 +360,33 @@ export const populateDepnCols = (
     if (cerysCodeObj.assetCategoryNo === 1) {
       transVals.push(activeClient.depnBasisIPOwned);
       transVals.push(activeClient.depnRateIPOwned);
-      assetTran.depnBasis = activeClient.depnBasisIPOwned;
-      assetTran.depnRate = activeClient.depnRateIPOwned;
+      transaction.depnBasis = activeClient.depnBasisIPOwned;
+      transaction.depnRate = activeClient.depnRateIPOwned;
     } else if (cerysCodeObj.assetCategoryNo === 2) {
       transVals.push(activeClient.depnBasisIPLeased);
       transVals.push(activeClient.depnRateIPLeased);
-      assetTran.depnBasis = activeClient.depnBasisIPLeased;
-      assetTran.depnRate = activeClient.depnRateIPLeased;
+      transaction.depnBasis = activeClient.depnBasisIPLeased;
+      transaction.depnRate = activeClient.depnRateIPLeased;
     }
   }
 };
 
-export function calculateCharge(
-  session: Session,
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
-  registerType: string
-) {
-  const { assetTran, transaction } = transactionDetails;
+export function calculateCharge(session: Session, transaction: AssetTransaction, registerType: string) {
   const periodEnd = session.assignment.reportingPeriod.reportingDateOrig;
   const daysHeld = calculateDiffInDays(transaction.transactionDate, periodEnd) + 1;
   const daysInPeriod = session.assignment.reportingPeriod.noOfDays;
-  const rate = assetTran.amortRate ? assetTran.amortRate : assetTran.depnRate;
+  const rate = transaction.amortRate ? transaction.amortRate : transaction.depnRate;
   const charge = Math.round(transaction.value * (parseInt(rate) / 100) * (daysHeld / daysInPeriod));
   let amortOrDepn: string;
   if (registerType === "IFA") {
     amortOrDepn = "Amort";
-    assetTran.amortChg = charge;
+    transaction.amortChg = charge;
   } else {
     amortOrDepn = "Depn";
-    assetTran.depnChg = charge;
+    transaction.depnChg = charge;
   }
   const subCatCode = registerType === "IP" ? 12 : 11;
-  assetTran.assetSubCatCodes.push(subCatCode);
+  transaction.assetSubCatCodes.push(subCatCode);
   const subTran: AssetSubTransaction = {
     assetSubCatCode: subCatCode,
     assetSubCategory: `${amortOrDepn} chg`,
@@ -411,8 +394,8 @@ export function calculateCharge(
     regColNameTwo: "Charge",
     value: charge,
   };
-  assetTran.subTransactions.push(subTran);
-  const jnls = buildAutoDepnJnls(session, transactionDetails, registerType);
+  transaction.subTransactions.push(subTran);
+  const jnls = buildAutoDepnJnls(session, transaction, registerType);
   // trouble - need to figure out when these journals actually get posted and build them at that point instead
   // session.activeJournal.journals.push(new Journal(session, jnls.debit));
   // const debitNumberValue = typeof jnls.debit.value === "string" ? parseInt(jnls.debit.value) : jnls.debit.value;
@@ -496,12 +479,8 @@ export const updateAssetNarrative = async (
   });
 };
 
-export const buildAutoDepnJnls = (
-  session: Session,
-  transactionDetails: { assetTran: AssetTransaction; transaction: Transaction; cerysCodeObj: BaseCerysCodeObjectProps },
-  registerType: string
-) => {
-  const { assetTran, cerysCodeObj } = transactionDetails;
+export const buildAutoDepnJnls = (session: Session, transaction: AssetTransaction, registerType: string) => {
+  const cerysCodeObj = transaction.getCerysCodeObj(session);
   const catNo = cerysCodeObj.assetCategoryNo;
   let amortOrDepn: string;
   let jnls: { debit: number; credit: number };
@@ -519,14 +498,14 @@ export const buildAutoDepnJnls = (
   const transactionType = "auto-depreciation";
   const debit: JournalDetailsProps = {
     cerysCode: jnls.debit,
-    value: assetTran.amortChg ? assetTran.amortChg : assetTran.depnChg,
+    value: transaction.amortChg ? transaction.amortChg : transaction.depnChg,
     narrative,
     transactionDate,
     transactionType,
   };
   const credit: JournalDetailsProps = {
     cerysCode: jnls.debit,
-    value: assetTran.amortChg ? assetTran.amortChg * -1 : assetTran.depnChg * -1,
+    value: transaction.amortChg ? transaction.amortChg * -1 : transaction.depnChg * -1,
     narrative,
     transactionDate,
     transactionType,

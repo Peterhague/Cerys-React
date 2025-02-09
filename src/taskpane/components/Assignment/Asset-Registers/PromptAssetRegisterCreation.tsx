@@ -10,14 +10,12 @@ import {
 import {
   checkFATranUpdatesForAssets,
   checkNewTransForAssets,
-  processTransBatch,
   processUpdateBatch,
 } from "../../../utils/transactions/transactions";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
-import { DetailedTransaction } from "../../../interfaces/interfaces";
 import { ViewOptions } from "../../../classes/view-options";
-import { ActiveJournal } from "../../../classes/journal";
+import { DetailedAssetTransaction } from "../../../classes/transaction";
 /* global Excel */
 
 interface PromptAssetRegisterCreationProps {
@@ -62,11 +60,9 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
       await Excel.run(async (context) => {
         session.options[`${initials}RCreationSetting`] = "main";
         const relevantAssetTrans = session.assignment.getUnprocessedFATransByType(session, initials);
-        //finaliseAssetObjects(session, relevantAssetTrans);
-        const relevantTrans: DetailedTransaction[] = relevantAssetTrans.map((assetTran) => {
-          const { transaction, cerysCodeObj } = assetTran.getTranAndCerysCodeObj(session);
-          return { ...cerysCodeObj, ...transaction, ...assetTran };
-        });
+        const relevantTrans: DetailedAssetTransaction[] = relevantAssetTrans.map(
+          (tran) => new DetailedAssetTransaction(session, tran)
+        );
         await createRegister(session, relevantTrans);
         session[`${initials}Transactions`] = [];
         // session.activeJournal.clientTB = false;

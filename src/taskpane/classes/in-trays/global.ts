@@ -1,7 +1,16 @@
 import { InTrayCollectionProps, InTrayItemProps } from "../../interfaces/interfaces";
 import { getRandomString } from "../../utils/helper-functions";
+import { AssetRegCreationPrompt, IdenitfyPossibleAdditionsPrompt } from "../asset-register";
+import { ClientTBBFwdReconciliation } from "../client-trial-balance-line";
 import { Session } from "../session";
+import { NominalLedgerEntryPrompt } from "../trial-balance";
 import { InTrayTemplate } from "./templates";
+
+export type InTrayItems =
+  | IdenitfyPossibleAdditionsPrompt
+  | AssetRegCreationPrompt
+  | ClientTBBFwdReconciliation
+  | NominalLedgerEntryPrompt;
 
 export class InTray {
   type: InTrayTemplate["type"];
@@ -98,6 +107,11 @@ export class InTrayItem {
     const options = new InTrayAndItem(inTray, this);
     session.handleDynamicView(this.detailsPath, options);
   }
+
+  // handleClickGeneric(session: Session, inTray: InTray) {
+  //   const options = new InTrayAndItem(inTray, this);
+  //   session.handleDynamicView(this.detailsPath, options);
+  // }
 }
 
 export class InTrayRouting {

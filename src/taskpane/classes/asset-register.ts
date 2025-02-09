@@ -2,7 +2,6 @@ import {
   AssetDb,
   AssetRegisterDb,
   AssetSubTransaction,
-  DetailedTransaction,
   JournalDetailsProps,
   RegisterType,
 } from "../interfaces/interfaces";
@@ -12,10 +11,16 @@ import { calculateDiffInDays } from "../utils/helper-functions";
 import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
-import { AssetTransaction } from "./transaction";
+import { AssetTransaction, DetailedAssetTransaction } from "./transaction";
 import { addOneWorksheet } from "../utils/worksheet";
 import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
 import { ActiveJournal, Journal, TransactionAttachmentProps } from "./journal";
+import { calculateCharge, populateDepnCols } from "../utils/transactions/asset-reg-generation";
+import { Client } from "./client";
+import { TransactionMap } from "./transaction-map";
+import { ExcelRangeObject } from "./range-objects";
+import { createEditableWorksheet } from "./editable-worksheet";
+import _ from "lodash";
 /* global Excel */
 
 export class AssetRegister {
@@ -127,9 +132,9 @@ export class ColumnsIndex {
 export class RegisterCreationTemplate {
   registerType: "IFA" | "TFA" | "IP";
   register: RegisterType;
-  allTransactions: DetailedTransaction[];
+  allTransactions: DetailedAssetTransaction[];
   possibleAdditions: AssetTransaction[];
-  refinedTransactions: DetailedTransaction[];
+  refinedTransactions: DetailedAssetTransaction[];
   constructor(session: Session, registerType: "IFA" | "TFA" | "IP") {
     this.registerType = registerType;
     this.register = registerTypes[registerType];
@@ -142,19 +147,14 @@ export class RegisterCreationTemplate {
       } else convertedTrans.push(tran);
     });
     this.finaliseAssetObjects(session, convertedTrans);
-    this.allTransactions = convertedTrans.map((assetTran) => {
-      const cerysCodeObj = assetTran.getCerysCodeObj(session);
-      return { ...cerysCodeObj, ...assetTran };
-    });
-    // this.possibleAdditions = this.identifyPossibleAdditions(session, convertedTrans, registerType);
-    // this.refinedTransactions = [];
+    // this.allTransactions = convertedTrans.map((assetTran) => {
+    //   const cerysCodeObj = assetTran.getCerysCodeObj(session);
+    //   return { ...cerysCodeObj, ...assetTran };
+    // });
+    this.allTransactions = convertedTrans.map((tran) => new DetailedAssetTransaction(session, tran));
     const { refined, possible } = this.refineTransactions(session, convertedTrans, registerType);
-    console.log(refined);
-    console.log(possible);
     this.possibleAdditions = possible;
     this.refinedTransactions = refined;
-    console.log(this.possibleAdditions);
-    console.log(this.refinedTransactions);
   }
 
   finaliseAssetObjects(session: Session, relevantTransactions: AssetTransaction[]) {
@@ -245,6 +245,11 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
     this.detailsActionParams = [this.transactions, this.register.initials];
     this.affirmativeAction = this.handleReanalysis;
   }
+
+  // handleClick(session: Session, inTray: InTray) {
+  //   this.createLikelyAdditionsSumm(session);
+  //   this.handleClickGeneric(session, inTray);
+  // }
 
   getIntraySubtitle() {
     return null;
@@ -363,7 +368,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
 
 export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
-  transactions: DetailedTransaction[];
+  transactions: DetailedAssetTransaction[];
   constructor(registerTemplate: RegisterCreationTemplate) {
     super({
       title: `Create ${registerTemplate.registerType} register?`,
@@ -377,8 +382,14 @@ export class AssetRegCreationPrompt extends InTrayItem {
     this.transactions = registerTemplate.refinedTransactions;
     this.getSubtitle = this.getIntraySubtitle;
     this.getSummaryText = this.getIntraySummaryText;
+    this.detailsAction = this.createTransactionsSummary;
     this.affirmativeAction = this.createRegister;
   }
+
+  // handleClick(session: Session, inTray: InTray) {
+  //   this.previewRelevantTransactions(session);
+  //   this.handleClickGeneric(session, inTray);
+  // }
 
   getIntraySubtitle() {
     return null;
@@ -392,5 +403,129 @@ export class AssetRegCreationPrompt extends InTrayItem {
 
   async createRegister(session: Session) {
     await this.register.createRegister(session, this.transactions);
+  }
+
+  // previewRelevantTransactions(session: Session) {
+  //   createRelTrans(session, this.register.initials);
+  // }
+
+  async createTransactionsSummary(session: Session) {
+    try {
+      await Excel.run(async (context) => {
+        const sheetMapping = [];
+        const name = `${this.register.initials} Transactions`;
+        const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
+        const activeClient: Client = session.customer.clients.find(
+          (client) => client._id === session.assignment.clientId
+        );
+        const amortOrDepn = this.register.initials === "IFA" ? "AMORT" : "DEPN";
+        const valuesToPost = [
+          [
+            "TRANSACTION",
+            "CERYS",
+            "CERYS",
+            "POSTING",
+            "CERYS",
+            "CERYS",
+            "CLIENT",
+            "CLIENT",
+            "CLIENT",
+            "DEBIT/",
+            amortOrDepn,
+            amortOrDepn,
+            amortOrDepn,
+          ],
+          [
+            "NUMBER",
+            "DATE",
+            "NARRATIVE",
+            "SOURCE",
+            "CODE",
+            "NOMINAL",
+            "NC",
+            "NOMINAL",
+            "NARRATIVE",
+            "(CREDIT)",
+            "BASIS",
+            "RATE",
+            "CHARGE",
+          ],
+        ];
+        session[`${this.register.initials}Transactions`] = [];
+        this.transactions.forEach((tran) => {
+          const map = new TransactionMap(tran._id, session[`${this.register.initials}Transactions`].length + 3, null); // Issue: is this right?? don't think so...
+          sheetMapping.push(map);
+        });
+        this.transactions.forEach((tran) => {
+          const cerysCodeObj = tran.getCerysCodeObj(session);
+          const transVals = [];
+          transVals.push(tran.transactionNumber);
+          transVals.push(tran.getExcelDate());
+          transVals.push(tran.narrative);
+          if (tran.transactionType === "journal") {
+            transVals.push("Journal");
+          } else if (tran.transactionType === "final journal") {
+            transVals.push("Final journal");
+          } else if (tran.transactionType === "review journal") {
+            transVals.push("Review journal");
+          } else if (tran.transactionType === "client trial balance") {
+            transVals.push("Client TB");
+          } else if (tran.transactionType === "client adjustment") {
+            transVals.push("Client adjustment");
+          } else {
+            transVals.push("Sticking plaster");
+          }
+          transVals.push(tran.cerysCode);
+          transVals.push(cerysCodeObj.cerysShortName);
+          if (tran.clientNominalCode >= 0) {
+            transVals.push(tran.clientNominalCode);
+          } else {
+            transVals.push("NA");
+          }
+          if (tran.clientNominalCode >= 0) {
+            transVals.push(tran.getClientNominalCodeObj(session).clientCodeName);
+          } else {
+            transVals.push("NA");
+          }
+          if (tran.assetNarrative) {
+            transVals.push(tran.assetNarrative);
+          } else {
+            transVals.push("NA");
+          }
+          transVals.push(tran.value / 100);
+          populateDepnCols(session, activeClient, transVals, tran, this.register.initials);
+          calculateCharge(session, tran, this.register.initials);
+          tran.amortChg ? transVals.push(tran.amortChg / 100) : transVals.push(tran.depnChg / 100);
+          valuesToPost.push(transVals);
+        });
+        const headerRange = ws.getRange("A1:M2");
+        headerRange.format.font.bold = true;
+        const range = ws.getRange(`A1:M${valuesToPost.length}`);
+        range.values = valuesToPost;
+        const rangeB = ws.getRange("B:B");
+        rangeB.numberFormat = [["dd/mm/yyyy"]];
+        const rangeJ = ws.getRange("J:J");
+        rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
+        const rangeM = ws.getRange("M:M");
+        rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
+        const rangeAM = ws.getRange("A:M");
+        rangeAM.format.autofitColumns();
+        const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
+        const transactions = _.cloneDeep(session[`${this.register.initials}Transactions`]);
+        createEditableWorksheet(
+          session,
+          transactions,
+          ws,
+          valuesToPost,
+          "FATransactions",
+          sheetMapping,
+          controlledRangeObj
+        );
+        await context.sync();
+        ws.activate();
+      });
+    } catch (e) {
+      console.error(e);
+    }
   }
 }
