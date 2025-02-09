@@ -1,7 +1,7 @@
 import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { DetailedAssetTransaction } from "../../classes/transaction";
+import { AssetTransaction } from "../../classes/transaction";
 import { createIFARegister, updateIFARegister, updateAssignmentUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsIFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { AssetRegisterDb } from "../../interfaces/interfaces";
@@ -10,13 +10,13 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createIFAR(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export async function createIFAR(session: Session, relevantTrans: AssetTransaction[]) {
   const assignment = await postIFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createIFARWs(session);
 }
 
-export async function postIFAtoDB(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export async function postIFAtoDB(session: Session, relevantTrans: AssetTransaction[]) {
   let assignment = session.assignment;
   const options = fetchOptionsIFA(session, relevantTrans);
   const endpoint = session.assignment.IFARegisterCreated ? updateIFARegister : createIFARegister;

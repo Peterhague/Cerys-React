@@ -405,8 +405,8 @@ export const validateCerysTransaction = (session: Session, sheet: EditableWorksh
     check = false;
   }
   if (
-    (tran.clientNominalCode === -1 && row[clientCodeCol - 1] !== "NA") ||
-    (tran.clientNominalCode !== -1 && tran.clientNominalCode !== row[clientCodeCol - 1])
+    (tran.representsBalanceOfClientCode === -1 && row[clientCodeCol - 1] !== "NA") ||
+    (tran.representsBalanceOfClientCode !== -1 && tran.representsBalanceOfClientCode !== row[clientCodeCol - 1])
   ) {
     check = false;
   }

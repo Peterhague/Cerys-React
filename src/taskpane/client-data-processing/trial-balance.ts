@@ -25,7 +25,7 @@ export async function enterTB(session: Session) {
           transactionType: "client trial balance",
           transactionDate: "",
           narrative: jnl.narrative,
-          clientNominalCode: jnl.getClientCodeObject(session).clientCode,
+          representsBalanceOfClientCode: jnl.getClientCodeObject(session).clientCode,
         };
         check += jnl.value;
         transactions.push(obj);

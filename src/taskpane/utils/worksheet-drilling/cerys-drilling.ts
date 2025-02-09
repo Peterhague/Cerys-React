@@ -116,15 +116,15 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         arr.push(date);
         arr.push(line.transactionType);
         arr.push(cerysCode);
-        line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
+        line.representsBalanceOfClientCode > 0 ? arr.push(line.representsBalanceOfClientCode) : arr.push("NA");
         arr.push(narrative);
         isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
         valuesToPost.push(arr);
         const clientDrill =
-          line.clientNominalCode > 0
+          line.representsBalanceOfClientCode > 0
             ? new DrillableCollection(
                 session.assignment.clientNL,
-                (tran: ClientTransaction) => tran.code === line.clientNominalCode,
+                (tran: ClientTransaction) => tran.code === line.representsBalanceOfClientCode,
                 [5],
                 clientNomDetailView
               )
@@ -239,7 +239,7 @@ export async function cerysNomDetailViewPL(
     arrOfTrans.forEach((tran) => {
       let arr = [];
       arr.push(tran.transactionType);
-      tran.clientNominalCode > 0 ? arr.push(tran.clientNominalCode) : arr.push("NA");
+      tran.representsBalanceOfClientCode > 0 ? arr.push(tran.representsBalanceOfClientCode) : arr.push("NA");
       arr.push(tran.narrative);
       arr.push(tran.value / 100);
       valuesToPost.push(arr);
@@ -297,7 +297,7 @@ async function cerysNomDetailViewBS(context: Excel.RequestContext, session: Sess
     arrOfTrans.forEach((line) => {
       let arr = [];
       arr.push(line.transactionType);
-      line.clientNominalCode > 0 ? arr.push(line.clientNominalCode) : arr.push("NA");
+      line.representsBalanceOfClientCode > 0 ? arr.push(line.representsBalanceOfClientCode) : arr.push("NA");
       arr.push(line.narrative);
       arr.push(line.value / 100);
       valuesToPost.push(arr);

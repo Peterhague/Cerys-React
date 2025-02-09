@@ -11,7 +11,7 @@ import { calculateDiffInDays } from "../utils/helper-functions";
 import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
-import { AssetTransaction, DetailedAssetTransaction } from "./transaction";
+import { AssetTransaction } from "./transaction";
 import { addOneWorksheet } from "../utils/worksheet";
 import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
 import { ActiveJournal, Journal, TransactionAttachmentProps } from "./journal";
@@ -132,26 +132,23 @@ export class ColumnsIndex {
 export class RegisterCreationTemplate {
   registerType: "IFA" | "TFA" | "IP";
   register: RegisterType;
-  allTransactions: DetailedAssetTransaction[];
   possibleAdditions: AssetTransaction[];
-  refinedTransactions: DetailedAssetTransaction[];
+  refinedTransactions: AssetTransaction[];
   constructor(session: Session, registerType: "IFA" | "TFA" | "IP") {
     this.registerType = registerType;
     this.register = registerTypes[registerType];
-    const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
+    const allRelevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
+    const filteredRelevantTrans = allRelevantTrans.filter(
+      (tran) => !tran.negatesClientTransaction(session) && !tran.isNegatedByTransRepresentingClientTrans(session)
+    );
     const convertedTrans: AssetTransaction[] = [];
-    relevantTrans.forEach((tran) => {
+    filteredRelevantTrans.forEach((tran) => {
       if (tran.getActiveClientTransactions(session).length > 0 && !tran.representsClientTransaction(session)) {
         const clientTrans = tran.getClientTransAsAssetTrans(session, true);
         convertedTrans.push(...clientTrans);
       } else convertedTrans.push(tran);
     });
     this.finaliseAssetObjects(session, convertedTrans);
-    // this.allTransactions = convertedTrans.map((assetTran) => {
-    //   const cerysCodeObj = assetTran.getCerysCodeObj(session);
-    //   return { ...cerysCodeObj, ...assetTran };
-    // });
-    this.allTransactions = convertedTrans.map((tran) => new DetailedAssetTransaction(session, tran));
     const { refined, possible } = this.refineTransactions(session, convertedTrans, registerType);
     this.possibleAdditions = possible;
     this.refinedTransactions = refined;
@@ -199,8 +196,8 @@ export class RegisterCreationTemplate {
   // }
 
   refineTransactions(session: Session, relevantTransactions: AssetTransaction[], registerType: "IFA" | "TFA" | "IP") {
-    const refined = [];
-    const possible = [];
+    const refined: AssetTransaction[] = [];
+    const possible: AssetTransaction[] = [];
     relevantTransactions.forEach((tran) => {
       let test: number;
       if (!tran.processedAsAsset && (!tran.clientTransactionAttachment || tran.representsClientTransaction(session))) {
@@ -246,11 +243,6 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
     this.affirmativeAction = this.handleReanalysis;
   }
 
-  // handleClick(session: Session, inTray: InTray) {
-  //   this.createLikelyAdditionsSumm(session);
-  //   this.handleClickGeneric(session, inTray);
-  // }
-
   getIntraySubtitle() {
     return null;
   }
@@ -283,7 +275,6 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
             transactionDate: tran.transactionDate,
             transactionType: "auto-addition",
             narrative: `${tran.assetNarrative} reanalysed as addition`,
-            clientNominalCode: tran.clientNominalCode,
           };
           const transactionAttachment: TransactionAttachmentProps = {
             type: "client",
@@ -299,7 +290,6 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
             transactionDate: tran.transactionDate,
             transactionType: "auto-addition",
             narrative: `${tran.assetNarrative} reanalysed as addition`,
-            clientNominalCode: tran.clientNominalCode,
           };
           const transactionAttachment: TransactionAttachmentProps = {
             type: "client",
@@ -328,7 +318,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
           transVals.push(transaction.transactionNumber);
           transVals.push(transaction.getExcelDate());
           transVals.push(transaction.assetNarrative);
-          transVals.push(transaction.clientNominalCode);
+          transVals.push(transaction.representsBalanceOfClientCode);
           transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
           transVals.push(transaction.value / 100);
           if (transaction.transactionType === "journal") {
@@ -368,7 +358,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
 
 export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
-  transactions: DetailedAssetTransaction[];
+  transactions: AssetTransaction[];
   constructor(registerTemplate: RegisterCreationTemplate) {
     super({
       title: `Create ${registerTemplate.registerType} register?`,
@@ -386,11 +376,6 @@ export class AssetRegCreationPrompt extends InTrayItem {
     this.affirmativeAction = this.createRegister;
   }
 
-  // handleClick(session: Session, inTray: InTray) {
-  //   this.previewRelevantTransactions(session);
-  //   this.handleClickGeneric(session, inTray);
-  // }
-
   getIntraySubtitle() {
     return null;
   }
@@ -404,10 +389,6 @@ export class AssetRegCreationPrompt extends InTrayItem {
   async createRegister(session: Session) {
     await this.register.createRegister(session, this.transactions);
   }
-
-  // previewRelevantTransactions(session: Session) {
-  //   createRelTrans(session, this.register.initials);
-  // }
 
   async createTransactionsSummary(session: Session) {
     try {
@@ -451,9 +432,8 @@ export class AssetRegCreationPrompt extends InTrayItem {
             "CHARGE",
           ],
         ];
-        session[`${this.register.initials}Transactions`] = [];
-        this.transactions.forEach((tran) => {
-          const map = new TransactionMap(tran._id, session[`${this.register.initials}Transactions`].length + 3, null); // Issue: is this right?? don't think so...
+        this.transactions.forEach((tran, index) => {
+          const map = new TransactionMap(tran._id, index + 3, null); // Issue: is this right?? don't think so...
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {
@@ -477,12 +457,12 @@ export class AssetRegCreationPrompt extends InTrayItem {
           }
           transVals.push(tran.cerysCode);
           transVals.push(cerysCodeObj.cerysShortName);
-          if (tran.clientNominalCode >= 0) {
-            transVals.push(tran.clientNominalCode);
+          if (tran.representsBalanceOfClientCode >= 0) {
+            transVals.push(tran.representsBalanceOfClientCode);
           } else {
             transVals.push("NA");
           }
-          if (tran.clientNominalCode >= 0) {
+          if (tran.representsBalanceOfClientCode >= 0) {
             transVals.push(tran.getClientNominalCodeObj(session).clientCodeName);
           } else {
             transVals.push("NA");
@@ -511,7 +491,10 @@ export class AssetRegCreationPrompt extends InTrayItem {
         const rangeAM = ws.getRange("A:M");
         rangeAM.format.autofitColumns();
         const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
-        const transactions = _.cloneDeep(session[`${this.register.initials}Transactions`]);
+        const transactions = _.cloneDeep(this.transactions);
+        console.log(transactions);
+        console.log(sheetMapping);
+        console.log(controlledRangeObj);
         createEditableWorksheet(
           session,
           transactions,

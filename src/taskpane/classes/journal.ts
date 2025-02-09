@@ -57,14 +57,14 @@ class BaseJournal {
   transactionDate: string | Date;
   transactionDateExcel: number;
   processedAsAsset: boolean;
-  clientNominalCode: number;
+  representsBalanceOfClientCode: number;
   constructor(journalDetails: JournalDetailsProps) {
     this.value = journalDetails.value;
     this.narrative = journalDetails.narrative;
     this.transactionType = journalDetails.transactionType;
     this.transactionDate = journalDetails.transactionDate;
     this.transactionDateExcel = calculateExcelDate(this.transactionDate);
-    this.clientNominalCode = journalDetails.clientNominalCode;
+    this.representsBalanceOfClientCode = journalDetails.representsBalanceOfClientCode;
   }
 }
 
@@ -97,7 +97,7 @@ export class JournalForDatabase {
   transactionDate: string | Date;
   transactionDateExcel: number;
   processedAsAsset: boolean;
-  clientNominalCode: number;
+  representsBalanceOfClientCode: number;
   cerysCode: number;
   cerysName: string;
   cerysShortName: string;
@@ -126,7 +126,7 @@ export class JournalForDatabase {
     this.transactionDate = journal.transactionDate;
     this.transactionDateExcel = journal.transactionDateExcel;
     this.processedAsAsset = journal.processedAsAsset;
-    this.clientNominalCode = journal.clientNominalCode;
+    this.representsBalanceOfClientCode = journal.representsBalanceOfClientCode;
     this.cerysCode = journal.cerysCodeObj.cerysCode;
     this.cerysName = journal.cerysCodeObj.cerysName;
     this.cerysShortName = journal.cerysCodeObj.cerysShortName;

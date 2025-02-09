@@ -7,7 +7,6 @@ import {
   TransactionProps,
 } from "../interfaces/interfaces";
 import { convertExcelDate } from "../utils/helper-functions";
-import { BaseCerysCodeObject } from "./cerys-codes";
 import { Session } from "./session";
 import { TransactionUpdate } from "./transaction-update";
 
@@ -26,7 +25,7 @@ export class Transaction {
   }[];
   narrative: string;
   user: string;
-  clientNominalCode: number;
+  representsBalanceOfClientCode: number;
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
@@ -50,7 +49,7 @@ export class Transaction {
     this.iterations = transaction.iterations;
     this.narrative = transaction.narrative;
     this.user = transaction.user;
-    this.clientNominalCode = transaction.clientNominalCode;
+    this.representsBalanceOfClientCode = transaction.representsBalanceOfClientCode;
     this.workbookRef = transaction.workbookRef;
     this.worksheetRef = transaction.worksheetRef;
     this.dateCreated = transaction.dateCreated;
@@ -96,10 +95,15 @@ export class Transaction {
     return session.chart.find((code) => code.cerysCode === this.cerysCode);
   }
 
+  getCombinedTranAndCerysCodeObj(session: Session) {
+    const cerysCodeObj = this.getCerysCodeObj(session);
+    return { ...this, ...cerysCodeObj };
+  }
+
   getClientMappingObj(session: Session) {
     let clientCodeObj: ClientCodeObjectProps;
-    if (this.clientNominalCode > 0)
-      clientCodeObj = session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
+    if (this.representsBalanceOfClientCode > 0)
+      clientCodeObj = session.clientChart.find((code) => code.clientCode === this.representsBalanceOfClientCode);
     let clientMappingObj: ClientMapping;
     if (clientCodeObj) {
       clientMappingObj = {
@@ -129,7 +133,7 @@ export class Transaction {
   }
 
   getClientTransactions(session: Session) {
-    return session.assignment.clientNL.filter((tran) => tran.code === this.clientNominalCode);
+    return session.assignment.clientNL.filter((tran) => tran.code === this.representsBalanceOfClientCode);
   }
 
   getActiveClientTransactions(session: Session) {
@@ -143,7 +147,7 @@ export class Transaction {
   }
 
   getClientNominalCodeObj(session: Session) {
-    return session.clientChart.find((code) => code.clientCode === this.clientNominalCode);
+    return session.clientChart.find((code) => code.clientCode === this.representsBalanceOfClientCode);
   }
 
   getClientTransAsCerysTrans(session: Session, excludeNullified: boolean) {
@@ -165,6 +169,25 @@ export class Transaction {
       (tran) => tran._id === this.clientTransactionAttachment && tran.value === this.value
     );
     return matchingTransaction ? true : false;
+  }
+
+  negatesClientTransaction(session: Session) {
+    const matchingTransaction = session.assignment.clientNL.find(
+      (tran) => tran._id === this.clientTransactionAttachment && tran.value === this.value * -1
+    );
+    return matchingTransaction ? true : false;
+  }
+
+  isNegatedByTransRepresentingClientTrans(session: Session) {
+    const clientTrans = this.getClientTransactions(session);
+    if (clientTrans.length === 0) return false;
+    for (let i = 0; i < clientTrans.length; i++) {
+      const match = session.assignment.transactions.find(
+        (tran) => tran.clientTransactionAttachment === clientTrans[i]._id && tran.value === clientTrans[i].value
+      );
+      if (!match) return false;
+    }
+    return true;
   }
 }
 
@@ -225,87 +248,87 @@ export class AssetTransaction extends Transaction {
   }
 }
 
-type NewBase = Omit<BaseCerysCodeObject, "_id">;
+// type NewBase = Omit<BaseCerysCodeObject, "_id">;
 
-export class DetailedTransaction extends Transaction implements NewBase {
-  cerysCode: number;
-  cerysName: string;
-  cerysShortName: string;
-  cerysExcelName: string;
-  cerysCategory: string;
-  cerysSubCategory: string | null;
-  isFixedAsset: boolean;
-  assetCategory: string | null;
-  assetCategoryNo: number | null;
-  assetSubCategory: string | null;
-  assetSubCatCode: number | null;
-  assetCodeType: string | null;
-  regColNameOne: string | null;
-  regColNameTwo: string | null;
-  altCategory: string | null;
-  defaultSign: string | null;
-  clientAdj: boolean;
-  closeOffCode: number;
-  constructor(transaction: Transaction, cerysCodeObj: BaseCerysCodeObject) {
-    super(transaction);
-    this.cerysName = cerysCodeObj.cerysName;
-    this.cerysShortName = cerysCodeObj.cerysShortName;
-    this.cerysExcelName = cerysCodeObj.cerysExcelName;
-    this.cerysCategory = cerysCodeObj.cerysCategory;
-    this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
-    this.isFixedAsset = cerysCodeObj.isFixedAsset;
-    this.assetCategory = cerysCodeObj.assetCategory;
-    this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
-    this.assetSubCategory = cerysCodeObj.assetSubCategory;
-    this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
-    this.assetCodeType = cerysCodeObj.assetCodeType;
-    this.regColNameOne = cerysCodeObj.regColNameOne;
-    this.regColNameTwo = cerysCodeObj.regColNameTwo;
-    this.altCategory = cerysCodeObj.altCategory;
-    this.defaultSign = cerysCodeObj.defaultSign;
-    this.clientAdj = cerysCodeObj.clientAdj;
-    this.closeOffCode = cerysCodeObj.closeOffCode;
-  }
-}
+// export class DetailedTransaction extends Transaction implements NewBase {
+//   cerysCode: number;
+//   cerysName: string;
+//   cerysShortName: string;
+//   cerysExcelName: string;
+//   cerysCategory: string;
+//   cerysSubCategory: string | null;
+//   isFixedAsset: boolean;
+//   assetCategory: string | null;
+//   assetCategoryNo: number | null;
+//   assetSubCategory: string | null;
+//   assetSubCatCode: number | null;
+//   assetCodeType: string | null;
+//   regColNameOne: string | null;
+//   regColNameTwo: string | null;
+//   altCategory: string | null;
+//   defaultSign: string | null;
+//   clientAdj: boolean;
+//   closeOffCode: number;
+//   constructor(transaction: Transaction, cerysCodeObj: BaseCerysCodeObject) {
+//     super(transaction);
+//     this.cerysName = cerysCodeObj.cerysName;
+//     this.cerysShortName = cerysCodeObj.cerysShortName;
+//     this.cerysExcelName = cerysCodeObj.cerysExcelName;
+//     this.cerysCategory = cerysCodeObj.cerysCategory;
+//     this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
+//     this.isFixedAsset = cerysCodeObj.isFixedAsset;
+//     this.assetCategory = cerysCodeObj.assetCategory;
+//     this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
+//     this.assetSubCategory = cerysCodeObj.assetSubCategory;
+//     this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
+//     this.assetCodeType = cerysCodeObj.assetCodeType;
+//     this.regColNameOne = cerysCodeObj.regColNameOne;
+//     this.regColNameTwo = cerysCodeObj.regColNameTwo;
+//     this.altCategory = cerysCodeObj.altCategory;
+//     this.defaultSign = cerysCodeObj.defaultSign;
+//     this.clientAdj = cerysCodeObj.clientAdj;
+//     this.closeOffCode = cerysCodeObj.closeOffCode;
+//   }
+// }
 
-export class DetailedAssetTransaction extends AssetTransaction implements NewBase {
-  cerysCode: number;
-  cerysName: string;
-  cerysShortName: string;
-  cerysExcelName: string;
-  cerysCategory: string;
-  cerysSubCategory: string | null;
-  isFixedAsset: boolean;
-  assetCategory: string | null;
-  assetCategoryNo: number | null;
-  assetSubCategory: string | null;
-  assetSubCatCode: number | null;
-  assetCodeType: string | null;
-  regColNameOne: string | null;
-  regColNameTwo: string | null;
-  altCategory: string | null;
-  defaultSign: string | null;
-  clientAdj: boolean;
-  closeOffCode: number;
-  constructor(session: Session, transaction: AssetTransaction) {
-    super(session, transaction);
-    const cerysCodeObj = transaction.getCerysCodeObj(session);
-    this.cerysName = cerysCodeObj.cerysName;
-    this.cerysShortName = cerysCodeObj.cerysShortName;
-    this.cerysExcelName = cerysCodeObj.cerysExcelName;
-    this.cerysCategory = cerysCodeObj.cerysCategory;
-    this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
-    this.isFixedAsset = cerysCodeObj.isFixedAsset;
-    this.assetCategory = cerysCodeObj.assetCategory;
-    this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
-    this.assetSubCategory = cerysCodeObj.assetSubCategory;
-    this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
-    this.assetCodeType = cerysCodeObj.assetCodeType;
-    this.regColNameOne = cerysCodeObj.regColNameOne;
-    this.regColNameTwo = cerysCodeObj.regColNameTwo;
-    this.altCategory = cerysCodeObj.altCategory;
-    this.defaultSign = cerysCodeObj.defaultSign;
-    this.clientAdj = cerysCodeObj.clientAdj;
-    this.closeOffCode = cerysCodeObj.closeOffCode;
-  }
-}
+// export class DetailedAssetTransaction extends AssetTransaction implements NewBase {
+//   cerysCode: number;
+//   cerysName: string;
+//   cerysShortName: string;
+//   cerysExcelName: string;
+//   cerysCategory: string;
+//   cerysSubCategory: string | null;
+//   isFixedAsset: boolean;
+//   assetCategory: string | null;
+//   assetCategoryNo: number | null;
+//   assetSubCategory: string | null;
+//   assetSubCatCode: number | null;
+//   assetCodeType: string | null;
+//   regColNameOne: string | null;
+//   regColNameTwo: string | null;
+//   altCategory: string | null;
+//   defaultSign: string | null;
+//   clientAdj: boolean;
+//   closeOffCode: number;
+//   constructor(session: Session, transaction: AssetTransaction) {
+//     super(session, transaction);
+//     const cerysCodeObj = transaction.getCerysCodeObj(session);
+//     this.cerysName = cerysCodeObj.cerysName;
+//     this.cerysShortName = cerysCodeObj.cerysShortName;
+//     this.cerysExcelName = cerysCodeObj.cerysExcelName;
+//     this.cerysCategory = cerysCodeObj.cerysCategory;
+//     this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
+//     this.isFixedAsset = cerysCodeObj.isFixedAsset;
+//     this.assetCategory = cerysCodeObj.assetCategory;
+//     this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
+//     this.assetSubCategory = cerysCodeObj.assetSubCategory;
+//     this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
+//     this.assetCodeType = cerysCodeObj.assetCodeType;
+//     this.regColNameOne = cerysCodeObj.regColNameOne;
+//     this.regColNameTwo = cerysCodeObj.regColNameTwo;
+//     this.altCategory = cerysCodeObj.altCategory;
+//     this.defaultSign = cerysCodeObj.defaultSign;
+//     this.clientAdj = cerysCodeObj.clientAdj;
+//     this.closeOffCode = cerysCodeObj.closeOffCode;
+//   }
+// }

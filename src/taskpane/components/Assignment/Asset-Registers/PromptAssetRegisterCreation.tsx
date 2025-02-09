@@ -15,7 +15,6 @@ import {
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ViewOptions } from "../../../classes/view-options";
-import { DetailedAssetTransaction } from "../../../classes/transaction";
 /* global Excel */
 
 interface PromptAssetRegisterCreationProps {
@@ -59,10 +58,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
     try {
       await Excel.run(async (context) => {
         session.options[`${initials}RCreationSetting`] = "main";
-        const relevantAssetTrans = session.assignment.getUnprocessedFATransByType(session, initials);
-        const relevantTrans: DetailedAssetTransaction[] = relevantAssetTrans.map(
-          (tran) => new DetailedAssetTransaction(session, tran)
-        );
+        const relevantTrans = session.assignment.getUnprocessedFATransByType(session, initials);
         await createRegister(session, relevantTrans);
         session[`${initials}Transactions`] = [];
         // session.activeJournal.clientTB = false;

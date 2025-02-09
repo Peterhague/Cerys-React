@@ -6,7 +6,7 @@ import { ClientCodeObject } from "../classes/client-codes";
 import { BaseIndividual } from "../classes/individuals";
 import { ActiveJournal } from "../classes/journal";
 import { Session } from "../classes/session";
-import { DetailedAssetTransaction, Transaction } from "../classes/transaction";
+import { AssetTransaction, Transaction } from "../classes/transaction";
 import { ClientCerysCodeObjectProps, ClientTBLineProps, ClientTransaction } from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helper-functions";
 
@@ -259,14 +259,14 @@ export function fetchOptionsPostClientNL(clientNL: ClientTransaction[], workbook
   };
 }
 
-export function fetchOptionsIFA(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export function fetchOptionsIFA(session: Session, relevantTrans: AssetTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: relevantTrans,
+      assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,
@@ -274,14 +274,14 @@ export function fetchOptionsIFA(session: Session, relevantTrans: DetailedAssetTr
   };
 }
 
-export function fetchOptionsTFA(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export function fetchOptionsTFA(session: Session, relevantTrans: AssetTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: relevantTrans,
+      assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,
@@ -289,14 +289,14 @@ export function fetchOptionsTFA(session: Session, relevantTrans: DetailedAssetTr
   };
 }
 
-export function fetchOptionsIP(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export function fetchOptionsIP(session: Session, relevantTrans: AssetTransaction[]) {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assets: relevantTrans,
+      assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
       customerId: session.customer._id,
       workbookId: session.assignment._id,
       clientId: session.assignment.clientId,

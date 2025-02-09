@@ -6,12 +6,7 @@ import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { AssetTransaction, Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
-import {
-  AssetSubTransaction,
-  BaseCerysCodeObjectProps,
-  FATransaction,
-  JournalDetailsProps,
-} from "../../interfaces/interfaces";
+import { AssetSubTransaction, FATransaction, JournalDetailsProps } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helper-functions";
@@ -62,7 +57,7 @@ export const convertNewFATrans = (session: Session) => {
     const cerysCodeObj = tran.getCerysCodeObj(session);
     const clientNL = session.assignment.clientNL;
     for (let i = 0; i < clientNL.length; i++) {
-      if (clientNL[i].code === tran.clientNominalCode) {
+      if (clientNL[i].code === tran.representsBalanceOfClientCode) {
         const trans = { ...tran };
         delete trans._id;
         trans["transactionDate"] = convertExcelDate(clientNL[i].date);
@@ -159,12 +154,12 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
         }
         transVals.push(assetTran.cerysCode);
         transVals.push(cerysCodeObj.cerysShortName);
-        if (transaction.clientNominalCode >= 0) {
-          transVals.push(transaction.clientNominalCode);
+        if (transaction.representsBalanceOfClientCode >= 0) {
+          transVals.push(transaction.representsBalanceOfClientCode);
         } else {
           transVals.push("NA");
         }
-        if (transaction.clientNominalCode >= 0) {
+        if (transaction.representsBalanceOfClientCode >= 0) {
           transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
         } else {
           transVals.push("NA");
@@ -243,12 +238,12 @@ export async function createLikelyAdditionsSumm(
         }
         transVals.push(transaction.cerysCode);
         transVals.push(cerysCodeObj.cerysShortName);
-        if (transaction.clientNominalCode >= 0) {
-          transVals.push(transaction.clientNominalCode);
+        if (transaction.representsBalanceOfClientCode >= 0) {
+          transVals.push(transaction.representsBalanceOfClientCode);
         } else {
           transVals.push("NA");
         }
-        if (transaction.clientNominalCode >= 0) {
+        if (transaction.representsBalanceOfClientCode >= 0) {
           transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
         } else {
           transVals.push("NA");
@@ -589,13 +584,13 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
           transactionDate: tran.transactionDate,
           transactionType: "auto-addition",
           narrative: `${tran.assetNarrative} reanalysed as addition`,
-          clientNominalCode: tran.clientNominalCode,
+          representsBalanceOfClientCode: tran.representsBalanceOfClientCode,
         };
         drJnl.value = tran.value;
         drJnl.transactionDate = tran.transactionDate;
         drJnl.transactionType = "auto-addition";
         drJnl.narrative = `${tran.assetNarrative} reanalysed as addition`;
-        drJnl.clientNominalCode = tran.clientNominalCode;
+        drJnl.representsBalanceOfClientCode = tran.representsBalanceOfClientCode;
         journals.push(new Journal(session, drJnl));
       }
       if (chart[i].cerysCode === tran.cerysCode) {
@@ -605,7 +600,7 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
           transactionDate: tran.transactionDate,
           transactionType: "auto-addition",
           narrative: `${tran.assetNarrative} reanalysed as addition`,
-          clientNominalCode: tran.clientNominalCode,
+          representsBalanceOfClientCode: tran.representsBalanceOfClientCode,
         };
         journals.push(new Journal(session, crJnl));
       }

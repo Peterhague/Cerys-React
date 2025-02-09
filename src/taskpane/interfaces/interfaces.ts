@@ -1,6 +1,6 @@
 import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
-import { DetailedAssetTransaction, Transaction } from "../classes/transaction";
+import { AssetTransaction, Transaction } from "../classes/transaction";
 import React from "react";
 import { TrialBalanceLine } from "../classes/client-codes";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
@@ -181,7 +181,7 @@ export interface TransactionProps {
   }[];
   narrative: string;
   user: string;
-  clientNominalCode: number;
+  representsBalanceOfClientCode: number;
   workbookRef: string;
   worksheetRef: string;
   dateCreated: string;
@@ -235,8 +235,6 @@ export interface TransactionUpdateProps {
   cerysCodeObject: BaseCerysCodeObjectProps | null;
 }
 
-//export interface DetailedTransaction extends BaseCerysCodeObjectProps, AssetTransactionProps, TransactionProps {}
-
 export interface FATransaction extends Transaction {
   depnRate: string;
   amortRate: string;
@@ -259,7 +257,7 @@ export interface JournalDetailsProps {
   transactionType: TransactionProps["transactionType"];
   narrative: string;
   transactionDate: Date | string;
-  clientNominalCode?: number;
+  representsBalanceOfClientCode?: number;
 }
 
 export interface ActiveJournalProps {
@@ -494,7 +492,7 @@ export interface RegisterType {
   initials: string;
   longLower: string;
   longCap: string;
-  createRegister: (session: Session, relevantTrans: DetailedAssetTransaction[]) => Promise<void>;
+  createRegister: (session: Session, relevantTrans: AssetTransaction[]) => Promise<void>;
 }
 
 export interface ClientSoftwareDefaultsProps {

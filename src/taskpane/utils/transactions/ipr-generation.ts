@@ -1,7 +1,7 @@
 import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { DetailedAssetTransaction } from "../../classes/transaction";
+import { AssetTransaction } from "../../classes/transaction";
 import { createIPRegister, updateAssignmentUrl, updateIPRegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { AssetRegisterDb } from "../../interfaces/interfaces";
@@ -10,13 +10,13 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export async function createIPR(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export async function createIPR(session: Session, relevantTrans: AssetTransaction[]) {
   const assignment = await postIPtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createIPRWs(session);
 }
 
-export async function postIPtoDB(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export async function postIPtoDB(session: Session, relevantTrans: AssetTransaction[]) {
   let assignment = session.assignment;
   const options = fetchOptionsIP(session, relevantTrans);
   const endpoint = session.assignment.IPRegisterCreated ? updateIPRegister : createIPRegister;

@@ -1,7 +1,7 @@
 import { AssetRegister } from "../../classes/asset-register";
 import { Assignment } from "../../classes/assignment";
 import { Session } from "../../classes/session";
-import { DetailedAssetTransaction } from "../../classes/transaction";
+import { AssetTransaction } from "../../classes/transaction";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
 import { AssetRegisterDb } from "../../interfaces/interfaces";
@@ -10,14 +10,14 @@ import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
 /* global Excel */
 
-export const createTFAR = async (session: Session, relevantTrans: DetailedAssetTransaction[]) => {
+export const createTFAR = async (session: Session, relevantTrans: AssetTransaction[]) => {
   console.log(relevantTrans);
   const assignment = await postTFAtoDB(session, relevantTrans);
   session.assignment = new Assignment(assignment);
   createTFARWs(session);
 };
 
-export async function postTFAtoDB(session: Session, relevantTrans: DetailedAssetTransaction[]) {
+export async function postTFAtoDB(session: Session, relevantTrans: AssetTransaction[]) {
   let assignment = session.assignment;
   const options = fetchOptionsTFA(session, relevantTrans);
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
