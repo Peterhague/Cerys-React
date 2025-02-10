@@ -1,7 +1,6 @@
 import { enterNL } from "../client-data-processing/nominal-ledger";
 import { INTRAY_DETAILS } from "../static-values/views";
-import { InTrayCollection, InTrayItem } from "./in-trays/global";
-import { Session } from "./session";
+import { InTrayItem } from "./in-trays/global";
 
 export class NominalLedgerEntryPrompt extends InTrayItem {
   constructor() {

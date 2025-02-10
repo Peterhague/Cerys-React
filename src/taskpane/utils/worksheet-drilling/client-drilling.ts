@@ -1,5 +1,5 @@
 import { Session } from "../../classes/session";
-import { ClientTransaction } from "../../interfaces/interfaces";
+import { ClientTransactionProps } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { getClientNomDetail } from "../taskpane/client-system-access";
 import { addOneWorksheet } from "../worksheet";
@@ -30,7 +30,7 @@ export async function showClientNominalDetail(e: Excel.WorksheetSingleClickedEve
 
 // called by showClientNominalDetail to generate a worksheet-based view of the client
 // nominal activity.
-export async function clientNomDetailView(session: Session, detail: ClientTransaction[]) {
+export async function clientNomDetailView(session: Session, detail: ClientTransactionProps[]) {
   try {
     await Excel.run(async (context) => {
       console.log("final destination...");

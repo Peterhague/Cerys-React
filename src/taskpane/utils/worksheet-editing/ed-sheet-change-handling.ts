@@ -112,7 +112,7 @@ export const updateEdSheetClientCodeMapping = async (
       const updates = [];
       sheet.sheetMapping.forEach((map) => {
         affectedTransactions.forEach((affectedTran) => {
-          if (map.transactionId === affectedTran._id) {
+          if (map.transactionId === affectedTran.cerysTransactionId) {
             affectedTran.updates.forEach((updatedItem) => {
               sheet.definedCols.forEach((definedCol) => {
                 const col = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));

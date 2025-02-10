@@ -19,7 +19,7 @@ export class BaseCerysCodeObject implements BaseCerysCodeObjectProps {
   defaultSign: string | null;
   clientAdj: boolean;
   closeOffCode: number;
-  _id: string;
+  cerysCodeObjectId: string;
   constructor(cerysCodeObj: BaseCerysCodeObjectProps) {
     this.cerysCode = cerysCodeObj.cerysCode;
     this.cerysName = cerysCodeObj.cerysName;
@@ -39,16 +39,22 @@ export class BaseCerysCodeObject implements BaseCerysCodeObjectProps {
     this.defaultSign = cerysCodeObj.defaultSign;
     this.clientAdj = cerysCodeObj.clientAdj;
     this.closeOffCode = cerysCodeObj.closeOffCode;
-    this._id = cerysCodeObj._id;
+    this.cerysCodeObjectId = cerysCodeObj._id;
   }
 }
 
-export class ClientCerysCodeObject extends BaseCerysCodeObject {
+export class ClientCerysCodeObject extends BaseCerysCodeObject implements ClientCerysCodeObjectProps {
   currentClientMapping: ClientMapping;
   previousClientMappings: ClientMapping[];
+  _id?: string;
   constructor(codeObj: ClientCerysCodeObjectProps) {
     super(codeObj);
     this.currentClientMapping = codeObj.currentClientMapping;
     this.previousClientMappings = codeObj.previousClientMappings;
+  }
+
+  revertToDbIdNotation() {
+    const reversion: ClientCerysCodeObject = { ...this, _id: this.cerysCodeObjectId };
+    return reversion;
   }
 }

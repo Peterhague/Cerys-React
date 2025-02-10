@@ -232,7 +232,11 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
                   return searchTerm && check;
                 })
                 .map((code) => (
-                  <div onClick={() => handleSelect(code)} key={code._id} tabIndex={-1}>
+                  <div
+                    onClick={() => handleSelect(code)}
+                    key={code instanceof ClientCerysCodeObject ? code.cerysCodeObjectId : code.clientCodeObjectId}
+                    tabIndex={-1}
+                  >
                     {getSuggestion(code)}
                   </div>
                 ))}

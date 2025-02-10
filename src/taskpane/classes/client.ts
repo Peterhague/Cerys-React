@@ -14,7 +14,7 @@ export class Client {
   _manager: string;
   _responsibleIndividual: string;
   clientSoftware: string;
-  _id?: string;
+  clientId?: string;
   shareClasses: ShareClass[];
   directors: NewIndiAssociation[];
   shareholders: NewIndiAssociation[];
@@ -64,7 +64,7 @@ export class Client {
     this._manager = client._manager;
     this._responsibleIndividual = client._responsibleIndividual;
     this.clientSoftware = client.clientSoftware;
-    this._id = client._id;
+    this.clientId = client._id;
     this.shareClasses = client.shareClasses ? client.shareClasses.map((i) => new ShareClass(i)) : [];
     this.directors = client.directors ? client.directors.map((i) => new NewIndiAssociation(i)) : [];
     this.shareholders = client.shareholders ? client.shareholders.map((i) => new NewIndiAssociation(i)) : [];

@@ -8,7 +8,7 @@ export const finaliseAssignment = async (session: Session) => {
   const assignment = session.assignment;
   const finalClientTB = assignment.TBEntered && getFinalClientTB(session);
   console.log(finalClientTB);
-  const customerId = session.customer._id;
+  const customerId = session.customer.customerId;
   const options = fetchOptionsFinaliseAssignment(assignment, customerId, finalClientTB);
   const updatedCustAndAssDb = await fetch(finaliseAssignmentUrl, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();

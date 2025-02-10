@@ -15,7 +15,7 @@ export class TransactionMap {
     this.drillableCollections = drillableCollections;
   }
   getTran(transactions: Transaction[]) {
-    return transactions.find((transaction) => transaction._id === this.transactionId);
+    return transactions.find((transaction) => transaction.cerysTransactionId === this.transactionId);
   }
 }
 

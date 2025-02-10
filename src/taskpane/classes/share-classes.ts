@@ -60,7 +60,7 @@ export class ShareClass {
   getOtherAllocations(individual: NewIndiAssociation) {
     let total = 0;
     this.allocations.forEach((i) => {
-      if (i.individualId !== individual._id || !individual) total += i.numberSubscribed;
+      if (i.individualId !== individual.individualId || !individual) total += i.numberSubscribed;
     });
     return total;
   }

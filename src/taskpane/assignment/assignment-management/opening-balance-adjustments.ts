@@ -12,7 +12,7 @@ import { TransactionUpdate } from "../../classes/transaction-update";
 import { ViewOptions } from "../../classes/view-options";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
-import { ClientTransaction } from "../../interfaces/interfaces";
+import { ClientCerysCodeObjectProps, ClientTransactionProps } from "../../interfaces/interfaces";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -91,7 +91,7 @@ export async function oBARelevantTransView(session: Session) {
         arr.push(line.getClientMappingObj(session).clientCode);
         arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
-        const map = new TransactionMap(line._id, rowNumber, null);
+        const map = new TransactionMap(line.cerysTransactionId, rowNumber, null);
         sheetMapping.push(map);
         rowNumber += 1;
       });
@@ -193,7 +193,8 @@ export const updateCerysCodeMapping = async (
   });
   updateEdSheetClientCodeMapping(session, wsName, relTrans);
   const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
-  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const cerysCodeObjProps: ClientCerysCodeObjectProps = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObjProps);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
   session.customer = new Customer(customer);
@@ -243,7 +244,8 @@ export const updateCerysCodeMappingIgnoreCustom = async (
   });
   updateEdSheetClientCodeMapping(session, wsName, transNotRemapped);
   const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
-  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const cerysCodeObjProps: ClientCerysCodeObjectProps = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObjProps);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, assignment, newMapping } = await updatedClientDb.json();
   session.customer = new Customer(customer);
@@ -292,10 +294,12 @@ export const updateCerysCodeMappingIncludeCustom = async (
   });
   updateEdSheetClientCodeMapping(session, wsName, relTrans);
   const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
-  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const cerysCodeObjProps: ClientCerysCodeObjectProps = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObjProps);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, newMapping } = await updatedClientDb.json();
-  const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
+  const transProps = transRemapped.map((tran) => tran.revertToDbIdNotation());
+  const nextOptions = fetchOptionsReverseCustomMapping(session, transProps);
   const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
   const assignment = await updatedAssDb.json();
   session.customer = new Customer(customer);
@@ -320,9 +324,12 @@ export const updateCerysCodeMappingIncludeCustomAsSelected = async (
   const relTrans = session.assignment.transactions.filter(
     (tran) =>
       tran.cerysCode === cerysCode &&
-      (!tran.clientMappingOverridden || selectedTransactions.find((item) => item.transactionId === tran._id))
+      (!tran.clientMappingOverridden ||
+        selectedTransactions.find((item) => item.transactionId === tran.cerysTransactionId))
   );
-  const transRemapped = selectedTransactions.map((obj) => relTrans.find((tran) => tran._id === obj.transactionId));
+  const transRemapped = selectedTransactions.map((obj) =>
+    relTrans.find((tran) => tran.cerysTransactionId === obj.transactionId)
+  );
   const ws = session.editableSheets.find((sheet) => sheet.name === wsName);
   relTrans.forEach((tran) => {
     const clientMappingObj = tran.getClientMappingObj(session);
@@ -349,10 +356,12 @@ export const updateCerysCodeMappingIncludeCustomAsSelected = async (
   });
   updateEdSheetClientCodeMapping(session, wsName, relTrans);
   const cerysCodeObj = session.chart.find((code) => code.cerysCode === cerysCode);
-  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObj);
+  const cerysCodeObjProps: ClientCerysCodeObjectProps = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
+  const options = fetchOptionsUpdateCerysCodeMapping(session, nominalCode, nominalCodeName, cerysCodeObjProps);
   const updatedClientDb = await fetch(updateCerysCodeMappingUrl, options);
   const { customer, newMapping } = await updatedClientDb.json();
-  const nextOptions = fetchOptionsReverseCustomMapping(session, transRemapped);
+  const transProps = transRemapped.map((tran) => tran.revertToDbIdNotation());
+  const nextOptions = fetchOptionsReverseCustomMapping(session, transProps);
   const updatedAssDb = await fetch(reverseCustomMappingUrl, nextOptions);
   const assignment = await updatedAssDb.json();
   session.customer = new Customer(customer);
@@ -392,7 +401,7 @@ export const createOBAWorksheet = async (session: Session) => {
         const clientNL = session.assignment.clientNL;
         const clientFigsDrillableCollection = new DrillableCollection(
           clientNL,
-          (tran: ClientTransaction) => tran.code === obj.clientCode,
+          (tran: ClientTransactionProps) => tran.code === obj.clientCode,
           [3],
           clientNomDetailView
         );

@@ -81,8 +81,8 @@ export async function createClientNLObject() {
 }
 
 export const postCltNLToDb = async (session: Session) => {
-  let assignmentId = session.assignment._id;
-  let customerId = session.customer._id;
+  let assignmentId = session.assignment.assignmentId;
+  let customerId = session.customer.customerId;
   let clientNL = session.assignment.clientNL;
   const options = fetchOptionsPostClientNL(clientNL, assignmentId, customerId);
   const updatedAssignmentDb = await fetch(postClientNLUrl, options);

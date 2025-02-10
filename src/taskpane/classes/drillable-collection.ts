@@ -1,14 +1,14 @@
-import { ClientTransaction } from "../interfaces/interfaces";
+import { ClientTransactionProps } from "../interfaces/interfaces";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
 
 export class DrillableCollection {
-  collection: (Transaction | ClientTransaction)[];
+  collection: (Transaction | ClientTransactionProps)[];
   colNumbers: number[];
   func: (session: Session, args2: any) => void;
   constructor(
-    collection: Transaction[] | ClientTransaction[],
-    filter: (item: Transaction | ClientTransaction) => boolean | null,
+    collection: Transaction[] | ClientTransactionProps[],
+    filter: (item: Transaction | ClientTransactionProps) => boolean | null,
     colNumbers: number[],
     func: (session: Session, args2: any) => void
   ) {

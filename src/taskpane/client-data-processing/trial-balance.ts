@@ -6,7 +6,7 @@ import { ActiveJournal, Journal } from "../classes/journal";
 import { Session } from "../classes/session";
 import { postClientTBUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsPostClientTB } from "../fetching/generateOptions";
-import { ClientTBLineProps, JournalDetailsProps } from "../interfaces/interfaces";
+import { ClientCerysCodeObjectProps, ClientTBLineProps, JournalDetailsProps } from "../interfaces/interfaces";
 import { INTRAY_SUMMARY } from "../static-values/views";
 import { clientCodeToCerysObject } from "../utils/taskpane/cerys-item-retrieval";
 import { processTransBatch } from "../utils/transactions/transactions";
@@ -101,9 +101,10 @@ export async function handleTBData(session: Session) {
       const arrObjs: ClientTrialBalanceLine[] = [];
       for (let i = 0; i < arrays.length; i++) {
         const cerysCodeObj = convertToCerysObject(session, arrays[i]);
+        const cerysCodeObjProps: ClientCerysCodeObjectProps = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
         const clientNomcCode = arrays[i][0];
         const value = arrays[i][2] ? arrays[i][2] * 100 : arrays[i][3] * -1 * 100;
-        arrObjs.push(new ClientTrialBalanceLine(cerysCodeObj, clientNomcCode, value, "Client TB auto-entry"));
+        arrObjs.push(new ClientTrialBalanceLine(cerysCodeObjProps, clientNomcCode, value, "Client TB auto-entry"));
       }
       await context.sync();
       return arrObjs;

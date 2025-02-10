@@ -2,7 +2,7 @@ import {
   AssignmentProps,
   ClientSoftwareDefaultsProps,
   ClientTBLineProps,
-  ClientTransaction,
+  ClientTransactionProps,
   FSCategoryBS,
   FSCategoryPL,
   PreliminaryAssignmentProps,
@@ -113,7 +113,7 @@ export class Assignment extends BaseAssignment {
   clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
   transactions: Transaction[];
-  clientNL: ClientTransaction[];
+  clientNL: ClientTransactionProps[];
   assignmentStatus: string;
   dateStarted: string;
   dateFinished: string;
@@ -131,12 +131,12 @@ export class Assignment extends BaseAssignment {
     cerysCategory: string;
     value: number;
     cerysCodes: number[];
-    _id: string;
+    activeCatsDtlsId: string;
   }[];
   activeAssetCodeTypes: string[];
   transactionBatches: number;
   finalised: boolean;
-  _id: string;
+  assignmentId: string;
   tbListenerAdded: boolean;
   pLListenerAdded: boolean;
   bSListenerAdded?: boolean;
@@ -164,11 +164,14 @@ export class Assignment extends BaseAssignment {
     this.tb = assignment.tb.map((line) => new TrialBalanceLine(line));
     this.clientTB = assignment.clientTB;
     this.activeCategories = assignment.activeCategories;
-    this.activeCategoriesDetails = assignment.activeCategoriesDetails;
+    this.activeCategoriesDetails = assignment.activeCategoriesDetails.map((details) => {
+      const obj = { ...details, activeCatsDtlsId: details._id };
+      return obj;
+    });
     this.activeAssetCodeTypes = assignment.activeAssetCodeTypes;
     this.transactionBatches = assignment.transactionBatches;
     this.finalised = assignment.finalised;
-    this._id = assignment._id;
+    this.assignmentId = assignment._id;
     this.tbListenerAdded = assignment.tbListenerAdded;
     this.pLListenerAdded = assignment.pLListenerAdded;
     this.bSListenerAdded = assignment.bSListenerAdded;
@@ -191,7 +194,7 @@ export class Assignment extends BaseAssignment {
             cerysCodeObj.cerysCategory === "Investment property" &&
             (cerysCodeObj.assetCodeType === "iPCostAddns" || cerysCodeObj.assetCodeType === "iPCostBF"))
         ) {
-          relevantTrans.push(new AssetTransaction(session, tran));
+          relevantTrans.push(new AssetTransaction(session, tran.revertToDbIdNotation()));
         }
       }
     });
@@ -256,7 +259,7 @@ export class Assignment extends BaseAssignment {
       }
       return test > 0;
     });
-    return filteredArr.map((tran) => new AssetTransaction(session, tran));
+    return filteredArr.map((tran) => new AssetTransaction(session, tran.revertToDbIdNotation()));
   }
 
   calculateProfLossCategory(category: FSCategoryPL) {
@@ -265,7 +268,7 @@ export class Assignment extends BaseAssignment {
     this.activeCategoriesDetails.forEach((obj) => {
       if (obj.cerysCategory === category.categoryName) {
         total = obj.value / 100;
-        id = obj._id;
+        id = obj.activeCatsDtlsId;
       }
     });
     return new FSCategoryLinePL(total, id, category, false);
@@ -331,7 +334,7 @@ export class Assignment extends BaseAssignment {
     this.activeCategoriesDetails.forEach((obj) => {
       if (obj.cerysCategory === "Taxation") {
         tax = obj.value / 100;
-        id = obj._id;
+        id = obj.activeCatsDtlsId;
       }
     });
     const PBT: number = profBeforeTax ? profBeforeTax : this.calculatePBT(null, null).fSValue;
@@ -353,7 +356,7 @@ export class Assignment extends BaseAssignment {
     this.activeCategoriesDetails.forEach((obj) => {
       if (obj.cerysCategory === category.categoryName) {
         total = obj.value / 100;
-        id = obj._id;
+        id = obj.activeCatsDtlsId;
       }
     });
     return new FSCategoryLineBS(total, id, category);

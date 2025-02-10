@@ -71,7 +71,7 @@ export class EditableWorksheet {
   async renewTransactions(context: Excel.RequestContext, session: Session, assignmentTrans: Transaction[]) {
     const newTrans = assignmentTrans.filter(this.transactionFilter);
     newTrans.forEach((newTran) => {
-      const transaction = this.transactions.find((tran) => tran._id === newTran._id);
+      const transaction = this.transactions.find((tran) => tran.cerysTransactionId === newTran.cerysTransactionId);
       if (transaction) newTran.updates = transaction.updates;
     });
     this.transactions = newTrans;
@@ -87,7 +87,7 @@ export class EditableWorksheet {
     const newTransToMap: Transaction[] = [];
     const additionalTrans: { tran: Transaction; map: TransactionMap }[] = [];
     this.transactions.forEach((tran) => {
-      const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran._id);
+      const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran.cerysTransactionId);
       if (existingMap) {
         rowNumbers.push(this.getCurrentRow(existingMap.rowNumberOrig));
         newMapping.push(existingMap);
@@ -98,7 +98,7 @@ export class EditableWorksheet {
     newTransToMap.forEach((tran) => {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
-      const newMap = new TransactionMap(tran._id, nextRow, null);
+      const newMap = new TransactionMap(tran.cerysTransactionId, nextRow, null);
       newMapping.push(newMap);
       additionalTrans.push({ tran, map: newMap });
       rowNumbers.push(nextRow);
@@ -109,7 +109,7 @@ export class EditableWorksheet {
       const row = obj.map.rowNumberOrig;
       console.log(row);
       this.definedCols.forEach((definedCol) => {
-        let value = definedCol.getTargetProperty(obj.tran);
+        let value = definedCol.getTargetProperty(obj.tran.revertToDbIdNotation());
         if (
           definedCol.type === "value" &&
           typeof value === "number" &&
@@ -144,7 +144,7 @@ export class EditableWorksheet {
     const deletionObjects = [];
     console.log(this.sheetMapping);
     this.sheetMapping.forEach((map) => {
-      const transaction = this.transactions.find((tran) => tran._id === map.transactionId);
+      const transaction = this.transactions.find((tran) => tran.cerysTransactionId === map.transactionId);
       if (transaction) {
         transaction.updates.length > 0 &&
           transaction.updates.forEach((update) => {

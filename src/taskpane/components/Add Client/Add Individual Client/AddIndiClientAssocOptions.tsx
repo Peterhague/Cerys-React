@@ -19,7 +19,7 @@ const AddIndiClientAssocOptions = ({ handleView, session }: addIndiClientAssocOp
   const processNewIndiClient = async () => {
     const newIndi = session.newIndiPrelim;
     delete session.newIndiPrelim;
-    const customerId = session.customer._id;
+    const customerId = session.customer.customerId;
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const url = newIndi.isClient ? postNonCorpClientUrl : postIndiUrl;
     const newIndiAndCustomerDb = await fetch(url, options);

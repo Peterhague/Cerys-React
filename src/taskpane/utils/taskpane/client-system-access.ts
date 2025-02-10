@@ -1,8 +1,8 @@
 import { Session } from "../../classes/session";
-import { ClientTransaction } from "../../interfaces/interfaces";
+import { ClientTransactionProps } from "../../interfaces/interfaces";
 
 export function getClientNomDetail(clientCode: number, session: Session) {
-  const selection: ClientTransaction[] = [];
+  const selection: ClientTransactionProps[] = [];
   session.assignment.clientNL.forEach((transaction) => {
     if (transaction.cerysCode === clientCode) {
       selection.push(transaction);

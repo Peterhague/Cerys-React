@@ -48,7 +48,7 @@ export const processTransBatch = async (
   // });
   activeJournal.finaliseJournalsForDb(session);
   console.log(activeJournal);
-  const transDtls = { customerId: session.customer._id, assignmentId: session.assignment._id };
+  const transDtls = { customerId: session.customer.customerId, assignmentId: session.assignment.assignmentId };
   const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
   session.assignment = new Assignment(assignment);
   await updateAssignmentFigures(context, session);

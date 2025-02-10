@@ -86,8 +86,8 @@ export function populateUser(session: Session, userId: string) {
 }
 
 export async function updateAssignmentDb(session: Session, target: string) {
-  const workbookId = session.assignment._id;
-  const customerId = session.customer._id;
+  const workbookId = session.assignment.assignmentId;
+  const customerId = session.customer.customerId;
   const options = fetchOptionsUpdateAssignment(customerId, workbookId, target);
   const updatedCustAndAssDb = await fetch(updateAssignmentUrl, options);
   const updatedCustAndAss = await updatedCustAndAssDb.json();
@@ -442,7 +442,7 @@ export const getDefinedCol = (sheet: EditableWorksheet, addressCol: number) => {
 };
 
 export const getTransRowNumber = (transaction: Transaction, sheet: EditableWorksheet) => {
-  const map = sheet.sheetMapping.find((map) => map.transactionId === transaction._id);
+  const map = sheet.sheetMapping.find((map) => map.transactionId === transaction.cerysTransactionId);
   return sheet.getCurrentRow(map.rowNumberOrig);
 };
 
@@ -531,7 +531,7 @@ export const buildClientTBBalSheetOnly = (session: Session) => {
     const clientCode = cerysCodeObj.currentClientMapping.clientCode;
     const clientTBObj = session.clientChart.find((code) => code.clientCode === clientCode);
     if (clientTBObj.statement === "BS" && clientCode !== pLResLineCode) {
-      bSTB.push(new ClientTrialBalanceLine(cerysCodeObj, clientCode, line.value, ""));
+      bSTB.push(new ClientTrialBalanceLine(cerysCodeObj.revertToDbIdNotation(), clientCode, line.value, ""));
     } else {
       count += line.value;
     }
@@ -542,7 +542,7 @@ export const buildClientTBBalSheetOnly = (session: Session) => {
   count += reserves.value;
   bSTB.push(
     new ClientTrialBalanceLine(
-      pLReservesLineCodeObject.getCerysCodeObj(session),
+      pLReservesLineCodeObject.getCerysCodeObj(session).revertToDbIdNotation(),
       pLReservesLineCodeObject.clientCode,
       count,
       ""

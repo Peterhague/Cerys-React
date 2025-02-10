@@ -20,7 +20,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
 
   const handleClientSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
     const activeClient = e.target.value;
-    const client = session.customer.clients.find((i) => i._id === activeClient);
+    const client = session.customer.clients.find((i) => i.clientId === activeClient);
     setClientId(client);
     setShareClasses(client.shareClasses);
     setShowShareClasses(true);
@@ -74,7 +74,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
             >
               <option>Please select</option>
               {session.customer.clients.map((client) => (
-                <option key={client._id} value={client._id}>
+                <option key={client.clientId} value={client.clientId}>
                   {client.clientName}
                 </option>
               ))}

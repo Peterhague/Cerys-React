@@ -4,7 +4,7 @@ import { Session } from "../../classes/session";
 import { AssetTransaction } from "../../classes/transaction";
 import { createTFARegister, updateAssignmentUrl, updateTFARegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsTFA, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
-import { AssetRegisterDb } from "../../interfaces/interfaces";
+import { AssetRegisterDb, AssignmentProps } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -13,12 +13,11 @@ import { populateAssetRegWs } from "./asset-reg-population";
 export const createTFAR = async (session: Session, relevantTrans: AssetTransaction[]) => {
   console.log(relevantTrans);
   const assignment = await postTFAtoDB(session, relevantTrans);
-  session.assignment = new Assignment(assignment);
+  if (assignment) session.assignment = new Assignment(assignment);
   createTFARWs(session);
 };
 
 export async function postTFAtoDB(session: Session, relevantTrans: AssetTransaction[]) {
-  let assignment = session.assignment;
   const options = fetchOptionsTFA(session, relevantTrans);
   const endpoint = session.assignment.TFARegisterCreated ? updateTFARegister : createTFARegister;
   const tFARDb = await fetch(endpoint, options);
@@ -26,12 +25,17 @@ export async function postTFAtoDB(session: Session, relevantTrans: AssetTransact
   console.log(tFAR);
   session.TFARegister = new AssetRegister(session, tFAR, "Tangible");
   if (!session.assignment.TFARegisterCreated) {
-    const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "TFARegisterCreated");
+    const options = fetchOptionsUpdateAssignment(
+      session.customer.customerId,
+      session.assignment.assignmentId,
+      "TFARegisterCreated"
+    );
     const assignmentDb = await fetch(updateAssignmentUrl, options);
-    assignment = await assignmentDb.json();
+    const assignment: AssignmentProps = await assignmentDb.json();
+    return assignment;
+  } else {
+    return null;
   }
-  console.log(assignment);
-  return assignment;
 }
 
 export async function createTFARWs(session: Session) {

@@ -21,7 +21,7 @@ const AddUser = ({ handleView, session }: addUserProps) => {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newUserDtls = { firstName, lastName, email, password, isAdmin, customerId: session.customer._id };
+    const newUserDtls = { firstName, lastName, email, password, isAdmin, customerId: session.customer.customerId };
     const { user, customer } = await processNewUser(newUserDtls);
     session.newUserAccount = user;
     session.customer = new Customer(customer);

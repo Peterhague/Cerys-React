@@ -5,15 +5,16 @@ import CerysButton from "../CerysButton";
 import { checkNewTransForAssets, processTransBatch } from "../../utils/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
-import { ClientCerysCodeObjectProps, JournalDetailsProps } from "../../interfaces/interfaces";
+import { JournalDetailsProps } from "../../interfaces/interfaces";
 import { ActiveJournal, Journal } from "../../classes/journal";
 import { LANDING_PAGE } from "../../static-values/views";
+import { ClientCerysCodeObject } from "../../classes/cerys-codes";
 /*global Excel */
 
 interface enterJournalProps {
   handleView: (view: string) => void;
   session: Session;
-  chart: ClientCerysCodeObjectProps[];
+  chart: ClientCerysCodeObject[];
 }
 
 const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {

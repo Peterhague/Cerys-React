@@ -59,7 +59,7 @@ export const convertNewFATrans = (session: Session) => {
     for (let i = 0; i < clientNL.length; i++) {
       if (clientNL[i].code === tran.representsBalanceOfClientCode) {
         const trans = { ...tran };
-        delete trans._id;
+        delete trans.cerysTransactionId;
         trans["transactionDate"] = convertExcelDate(clientNL[i].date);
         trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
         trans["subTransactions"] = [
@@ -89,7 +89,7 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       const name = `${registerType} Transactions`;
       const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
       const activeClient: Client = session.customer.clients.find(
-        (client) => client._id === session.assignment.clientId
+        (client) => client.clientId === session.assignment.clientId
       );
       const amortOrDepn = registerType === "IFA" ? "AMORT" : "DEPN";
       const valuesToPost = [
@@ -128,7 +128,11 @@ export async function createTransSumm(session: Session, relevantTrans: AssetTran
       relevantTrans.forEach((tran) => {
         //i.rowNumber = session[`${registerType}Transactions`].length + 3;
         //i.assetNarrative = i.narrative;
-        const map = new TransactionMap(tran._id, session[`${registerType}Transactions`].length + 3, null); // Issue: is this right?? don't think so...
+        const map = new TransactionMap(
+          tran.cerysTransactionId,
+          session[`${registerType}Transactions`].length + 3,
+          null
+        ); // Issue: is this right?? don't think so...
         sheetMapping.push(map);
       });
       //const transMap = relevantTrans.map(tran => session.assignment.transactions.find(item => item._id === tran._id));
@@ -440,7 +444,7 @@ export const recalculateCharge = async (
   const range = `${colLetter}${rowNumber}:${colLetter}${rowNumber}`;
   await setExcelRangeValue(sheet.name, range, charge / 100);
   session[`${registerType}Transactions`].forEach((i) => {
-    if (i._id === tran._id) {
+    if (i._id === tran.cerysTransactionId) {
       i[`${amortOrDepn}Chg`] = charge;
       i.transactionDateExcel = newValue;
       i.subTransactions.forEach((subTran) => {
@@ -468,7 +472,7 @@ export const updateAssetNarrative = async (
     registerType = "IP";
   }
   session[`${registerType}Transactions`].forEach((i) => {
-    if (i._id === tran._id) {
+    if (i._id === tran.cerysTransactionId) {
       i.assetNarrative = e.details.valueAfter;
     }
   });

@@ -56,7 +56,7 @@ class AssetRegisterItem {
   depnRate?: string;
   disposedOf: boolean;
   subTransactions: AssetSubTransaction[];
-  _id: string;
+  assetRegItemId: string;
   constructor(asset: AssetDb, periodId: string) {
     this.transactionDate = asset.transactionDate;
     this.transactionDateUser = asset.transactionDateUser;
@@ -397,7 +397,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
         const name = `${this.register.initials} Transactions`;
         const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
         const activeClient: Client = session.customer.clients.find(
-          (client) => client._id === session.assignment.clientId
+          (client) => client.clientId === session.assignment.clientId
         );
         const amortOrDepn = this.register.initials === "IFA" ? "AMORT" : "DEPN";
         const valuesToPost = [
@@ -433,7 +433,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
           ],
         ];
         this.transactions.forEach((tran, index) => {
-          const map = new TransactionMap(tran._id, index + 3, null); // Issue: is this right?? don't think so...
+          const map = new TransactionMap(tran.cerysTransactionId, index + 3, null); // Issue: is this right?? don't think so...
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {

@@ -20,7 +20,7 @@ export class BaseIndividual {
   _clientShareholdings?: Shareholding[];
   otherDirectorships?: string[];
   otherShareholdings?: string[];
-  _id?: string;
+  individualId?: string;
   constructor(individual: BaseIndividualProps) {
     this.firstName = individual ? individual.firstName : undefined;
     this.lastName = individual ? individual.lastName : undefined;
@@ -34,7 +34,7 @@ export class BaseIndividual {
     this._clientShareholdings = individual && individual._clientShareholdings ? individual._clientShareholdings : [];
     this.otherDirectorships = individual && individual.otherDirectorships ? individual.otherDirectorships : [];
     this.otherShareholdings = individual && individual.otherShareholdings ? individual.otherShareholdings : [];
-    this._id = individual ? individual._id : undefined;
+    this.individualId = individual ? individual._id : undefined;
   }
 }
 
@@ -61,7 +61,7 @@ export class NewIndiAssociation {
   potentialShareAllocations: IndividualShareAllocation[];
   associationType: "existingIndividuals" | "newIndividuals";
   preliminaryId?: string;
-  _id?: string;
+  individualId?: string;
   constructor(individual: ExtendedIndividual) {
     this.firstName = individual ? individual.firstName : "";
     this.lastName = individual ? individual.lastName : "";
@@ -81,7 +81,7 @@ export class NewIndiAssociation {
     this.potentialShareAllocations = [];
     this.associationType = individual ? "existingIndividuals" : "newIndividuals";
     this.preliminaryId = "";
-    this._id = individual && individual._id ? individual._id : Math.floor(Math.random() * 10000000).toString();
+    this.individualId = individual && individual._id ? individual._id : Math.floor(Math.random() * 10000000).toString();
   }
 }
 
@@ -92,7 +92,7 @@ export class Directorship {
   dateAppointed: string;
   dateCeased: string;
   constructor(clientId: string, dateAppointed: string, dateCeased: string, session: Session) {
-    const client = session.customer.clients.find((i) => i._id === clientId);
+    const client = session.customer.clients.find((i) => i.clientId === clientId);
     this.clientId = clientId;
     this.clientName = client.clientName;
     this.clientCode = client.clientCode;

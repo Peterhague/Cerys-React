@@ -2,7 +2,6 @@ import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
 import { AssetTransaction, Transaction } from "../classes/transaction";
 import React from "react";
-import { TrialBalanceLine } from "../classes/client-codes";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
 import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
@@ -41,7 +40,7 @@ export interface BaseCerysCodeObjectProps {
   defaultSign: string | null;
   clientAdj: boolean;
   closeOffCode: number;
-  _id: string;
+  _id?: string;
 }
 
 export interface CerysCodeObjectProps extends BaseCerysCodeObjectProps {
@@ -74,8 +73,8 @@ export interface AssignmentProps {
   responsibleIndividual: ShortUser;
   clientSoftwareDefaults: ClientSoftwareDefaultsProps;
   workbookId: string;
-  transactions: Transaction[];
-  clientNL: ClientTransaction[];
+  transactions: TransactionProps[];
+  clientNL: ClientTransactionProps[];
   assignmentStatus: string;
   dateStarted: string;
   dateFinished: string;
@@ -87,7 +86,7 @@ export interface AssignmentProps {
   IFARegisterCreated: boolean;
   TFARegisterCreated: boolean;
   IPRegisterCreated: boolean;
-  tb: TrialBalanceLine[];
+  tb: TrialBalanceLineProps[];
   clientTB: ClientTBLineProps[];
   activeCategories: string[];
   activeCategoriesDetails: {
@@ -192,7 +191,7 @@ export interface TransactionProps {
   clientTransactionId: string;
   clientTransactionAttachment: string;
   cerysTransactionAttachment: string;
-  _id: string;
+  _id?: string;
 }
 
 export interface AssetTransactionProps {
@@ -265,7 +264,7 @@ export interface ActiveJournalProps {
   journals: Journal[];
 }
 
-export interface ClientTransaction {
+export interface ClientTransactionProps {
   code: number;
   number: number;
   name: string;
@@ -304,7 +303,7 @@ export interface CustomerProps {
   clients: Client[];
   nonCorpClients: ExtendedIndividual[];
   individuals: ExtendedIndividual[];
-  _id: string;
+  _id?: string;
 }
 
 export interface CerysCodeClientMapping {

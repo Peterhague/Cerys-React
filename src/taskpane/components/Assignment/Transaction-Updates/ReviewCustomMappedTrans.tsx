@@ -24,7 +24,7 @@ const ReviewCustomMappedTrans = ({ session, options }: ReviewCustomMappedTransPr
   const [proxyTranObjs, setProxyTranObjs] = useState(
     remappedTransactions.map((tran) => {
       const proxyOboj: { transactionId: string; narrative: string; included: boolean } = {
-        transactionId: tran._id,
+        transactionId: tran.cerysTransactionId,
         narrative: tran.narrative,
         included: false,
       };

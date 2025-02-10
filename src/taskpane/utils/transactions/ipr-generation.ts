@@ -4,7 +4,7 @@ import { Session } from "../../classes/session";
 import { AssetTransaction } from "../../classes/transaction";
 import { createIPRegister, updateAssignmentUrl, updateIPRegister } from "../../fetching/apiEndpoints";
 import { fetchOptionsIP, fetchOptionsUpdateAssignment } from "../../fetching/generateOptions";
-import { AssetRegisterDb } from "../../interfaces/interfaces";
+import { AssetRegisterDb, AssignmentProps } from "../../interfaces/interfaces";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { addOneWorksheet, deleteManyWorksheets } from "../worksheet";
 import { populateAssetRegWs } from "./asset-reg-population";
@@ -12,23 +12,28 @@ import { populateAssetRegWs } from "./asset-reg-population";
 
 export async function createIPR(session: Session, relevantTrans: AssetTransaction[]) {
   const assignment = await postIPtoDB(session, relevantTrans);
-  session.assignment = new Assignment(assignment);
+  if (assignment) session.assignment = new Assignment(assignment);
   createIPRWs(session);
 }
 
 export async function postIPtoDB(session: Session, relevantTrans: AssetTransaction[]) {
-  let assignment = session.assignment;
   const options = fetchOptionsIP(session, relevantTrans);
   const endpoint = session.assignment.IPRegisterCreated ? updateIPRegister : createIPRegister;
   const iPRDb = await fetch(endpoint, options);
   const iPR: AssetRegisterDb = await iPRDb.json();
   session.IPRegister = new AssetRegister(session, iPR, "Investment property");
   if (!session.assignment.IPRegisterCreated) {
-    const options = fetchOptionsUpdateAssignment(session.customer._id, session.assignment._id, "IPRegisterCreated");
+    const options = fetchOptionsUpdateAssignment(
+      session.customer.customerId,
+      session.assignment.assignmentId,
+      "IPRegisterCreated"
+    );
     const assignmentDb = await fetch(updateAssignmentUrl, options);
-    assignment = await assignmentDb.json();
+    const assignment: AssignmentProps = await assignmentDb.json();
+    return assignment;
+  } else {
+    return null;
   }
-  return assignment;
 }
 
 export async function createIPRWs(session: Session) {

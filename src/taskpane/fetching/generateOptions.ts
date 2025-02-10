@@ -1,13 +1,18 @@
 // takes a variable and returns it embedded in a valid fetch options
 
 import { Assignment, PreliminaryAssignment } from "../classes/assignment";
-import { Client } from "../classes/client";
 import { ClientCodeObject } from "../classes/client-codes";
 import { BaseIndividual } from "../classes/individuals";
 import { ActiveJournal } from "../classes/journal";
 import { Session } from "../classes/session";
-import { AssetTransaction, Transaction } from "../classes/transaction";
-import { ClientCerysCodeObjectProps, ClientTBLineProps, ClientTransaction } from "../interfaces/interfaces";
+import { AssetTransaction } from "../classes/transaction";
+import {
+  ClientCerysCodeObjectProps,
+  ClientProps,
+  ClientTBLineProps,
+  ClientTransactionProps,
+  TransactionProps,
+} from "../interfaces/interfaces";
 import { getUpdatedTransactions } from "../utils/helper-functions";
 
 export function fetchOptionsTransBatch(
@@ -38,7 +43,7 @@ export function fetchOptionsPostClientTB(session: Session, clientTB: ClientTBLin
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assignmentId: session.assignment._id,
+      assignmentId: session.assignment.assignmentId,
       clientTB,
     }),
   };
@@ -52,8 +57,8 @@ export function fetchOptionsTransBatchUpdate(session: Session) {
     },
     body: JSON.stringify({
       updatedTransactions: getUpdatedTransactions(session),
-      customerId: session.customer._id,
-      assignmentId: session.assignment._id,
+      customerId: session.customer.customerId,
+      assignmentId: session.assignment.assignmentId,
       clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
       clientChart: session.clientChart,
       chart: session.chart,
@@ -121,7 +126,7 @@ export function fetchOptionsAddUser(newUser: {
   };
 }
 
-export function fetchOptionsAddClient(client: Client, customerId: string) {
+export function fetchOptionsAddClient(client: ClientProps, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -142,7 +147,7 @@ export function fetchOptionsUpdateClientChart(newCodes: ClientCodeObject[], sess
     },
     body: JSON.stringify({
       newCodes,
-      customerId: session.customer._id,
+      customerId: session.customer.customerId,
       clientId: session.assignment.clientId,
     }),
   };
@@ -237,7 +242,7 @@ export function fetchOptionsFinaliseAssignment(
     },
     body: JSON.stringify({
       assignment,
-      workbookId: assignment._id,
+      workbookId: assignment.assignmentId,
       customerId,
       clientId: assignment.clientId,
       finalClientTB,
@@ -245,7 +250,7 @@ export function fetchOptionsFinaliseAssignment(
   };
 }
 
-export function fetchOptionsPostClientNL(clientNL: ClientTransaction[], workbookId: string, customerId: string) {
+export function fetchOptionsPostClientNL(clientNL: ClientTransactionProps[], workbookId: string, customerId: string) {
   return {
     method: "POST",
     headers: {
@@ -267,14 +272,15 @@ export function fetchOptionsIFA(session: Session, relevantTrans: AssetTransactio
     },
     body: JSON.stringify({
       assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
-      customerId: session.customer._id,
-      workbookId: session.assignment._id,
+      customerId: session.customer.customerId,
+      workbookId: session.assignment.assignmentId,
       clientId: session.assignment.clientId,
     }),
   };
 }
 
 export function fetchOptionsTFA(session: Session, relevantTrans: AssetTransaction[]) {
+  console.log(relevantTrans);
   return {
     method: "POST",
     headers: {
@@ -282,8 +288,8 @@ export function fetchOptionsTFA(session: Session, relevantTrans: AssetTransactio
     },
     body: JSON.stringify({
       assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
-      customerId: session.customer._id,
-      workbookId: session.assignment._id,
+      customerId: session.customer.customerId,
+      workbookId: session.assignment.assignmentId,
       clientId: session.assignment.clientId,
     }),
   };
@@ -297,8 +303,8 @@ export function fetchOptionsIP(session: Session, relevantTrans: AssetTransaction
     },
     body: JSON.stringify({
       assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
-      customerId: session.customer._id,
-      workbookId: session.assignment._id,
+      customerId: session.customer.customerId,
+      workbookId: session.assignment.assignmentId,
       clientId: session.assignment.clientId,
     }),
   };
@@ -352,25 +358,25 @@ export function fetchOptionsUpdateCerysCodeMapping(
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      customerId: session.customer._id,
+      customerId: session.customer.customerId,
       clientId: session.assignment.clientId,
       clientSoftware: session.assignment.clientSoftwareDefaults.softwareName,
       clientCode: nominalCode,
       clientCodeName: nominalCodeName,
       cerysCodeObj,
-      workbookId: session.assignment._id,
+      workbookId: session.assignment.assignmentId,
     }),
   };
 }
 
-export const fetchOptionsReverseCustomMapping = (session: Session, transactions: Transaction[]) => {
+export const fetchOptionsReverseCustomMapping = (session: Session, transactions: TransactionProps[]) => {
   return {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      assignmentId: session.assignment._id,
+      assignmentId: session.assignment.assignmentId,
       transactions,
     }),
   };

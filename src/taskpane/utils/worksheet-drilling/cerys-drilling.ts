@@ -7,7 +7,7 @@ import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import { TrialBalanceLine } from "../../classes/client-codes";
-import { AddressObject, ClientTransaction } from "../../interfaces/interfaces";
+import { AddressObject, ClientTransactionProps } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -124,14 +124,14 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
           line.representsBalanceOfClientCode > 0
             ? new DrillableCollection(
                 session.assignment.clientNL,
-                (tran: ClientTransaction) => tran.code === line.representsBalanceOfClientCode,
+                (tran: ClientTransactionProps) => tran.code === line.representsBalanceOfClientCode,
                 [5],
                 clientNomDetailView
               )
             : null;
         const map = clientDrill
-          ? new TransactionMap(line._id, rowNumber, [clientDrill])
-          : new TransactionMap(line._id, rowNumber, null);
+          ? new TransactionMap(line.cerysTransactionId, rowNumber, [clientDrill])
+          : new TransactionMap(line.cerysTransactionId, rowNumber, null);
         sheetMapping.push(map);
         rowNumber += 1;
       });

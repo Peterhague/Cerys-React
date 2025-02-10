@@ -85,21 +85,23 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
       return;
     const relevantIndis = session.newClientPrelim[activeIndi.associationType];
     const order = {};
-    relevantIndis.forEach((indi, index) => (order[indi._id] = index));
-    session.newClientPrelim[activeIndi.associationType] = relevantIndis.filter((i) => i._id !== activeIndi._id);
+    relevantIndis.forEach((indi, index) => (order[indi.individualId] = index));
+    session.newClientPrelim[activeIndi.associationType] = relevantIndis.filter(
+      (i) => i.individualId !== activeIndi.individualId
+    );
     processIndividual(isAllocatedShares);
     if (_.isEqual(activeIndi, controlIndi)) return;
     session.newClientPrelim.shareClasses.forEach((item) => {
       const indiShareholding = activeIndi.potentialShareAllocations.find(
         (i) => i.shareClassNumber === item.shareClassNumber
       );
-      const allocation = item.allocations.find((i) => i.individualId === activeIndi._id);
+      const allocation = item.allocations.find((i) => i.individualId === activeIndi.individualId);
       if (indiShareholding) {
         if (allocation) {
           allocation.numberSubscribed = indiShareholding.indiAllocationLive;
         } else {
           item.allocations.push({
-            individualId: activeIndi._id,
+            individualId: activeIndi.individualId,
             numberSubscribed: indiShareholding.indiAllocationLive,
           });
         }
@@ -108,7 +110,7 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
     });
     activeIndi.potentialShareAllocations.forEach((i) => (i.indiAllocationSuspended = 0));
     session.newClientPrelim.existingIndividuals.sort((a, b) => {
-      return order[a._id] - order[b._id];
+      return order[a.individualId] - order[b.individualId];
     });
     setNewClientIndis([...session.newClientPrelim.existingIndividuals, ...session.newClientPrelim.newIndividuals]);
     backupNewClientIndis && setBackupNewClientIndis(null);
@@ -162,22 +164,30 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
       dateCeased: indi.dateCeased,
     };
     indi.newClientDirectorships = [directorship];
-    session.newClientPrelim.directors = session.newClientPrelim.directors.filter((dir) => dir._id !== indi._id);
+    session.newClientPrelim.directors = session.newClientPrelim.directors.filter(
+      (dir) => dir.individualId !== indi.individualId
+    );
     session.newClientPrelim.directors.push(indi);
   };
 
   const removeDirectorship = (indi: NewIndiAssociation) => {
     indi.newClientDirectorships = [];
-    session.newClientPrelim.directors = session.newClientPrelim.directors.filter((dir) => dir._id !== indi._id);
+    session.newClientPrelim.directors = session.newClientPrelim.directors.filter(
+      (dir) => dir.individualId !== indi.individualId
+    );
   };
 
   const addShareholding = (indi: NewIndiAssociation) => {
-    session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter((sh) => sh._id !== indi._id);
+    session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter(
+      (sh) => sh.individualId !== indi.individualId
+    );
     session.newClientPrelim.shareholders.push(indi);
   };
 
   const removeShareholding = (indi: NewIndiAssociation) => {
-    session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter((sh) => sh._id !== indi._id);
+    session.newClientPrelim.shareholders = session.newClientPrelim.shareholders.filter(
+      (sh) => sh.individualId !== indi.individualId
+    );
   };
 
   const manageShareAllocation = () => {
@@ -270,8 +280,8 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
           )}
           {mode === "update" && (
             <p>
-              {newClientIndis.find((indi) => indi._id === activeIndi._id).firstName}{" "}
-              {newClientIndis.find((indi) => indi._id === activeIndi._id).lastName}
+              {newClientIndis.find((indi) => indi.individualId === activeIndi.individualId).firstName}{" "}
+              {newClientIndis.find((indi) => indi.individualId === activeIndi.individualId).lastName}
             </p>
           )}
           <table>
@@ -448,15 +458,19 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
         <table>
           <tbody>
             {newClientIndis.map((indi) => {
-              const isDirector = session.newClientPrelim.directors.find((dir) => dir._id === indi._id);
-              const isShareholder = session.newClientPrelim.shareholders.find((sh) => sh._id === indi._id);
+              const isDirector = session.newClientPrelim.directors.find(
+                (dir) => dir.individualId === indi.individualId
+              );
+              const isShareholder = session.newClientPrelim.shareholders.find(
+                (sh) => sh.individualId === indi.individualId
+              );
               return (
-                <tr key={indi._id}>
+                <tr key={indi.individualId}>
                   <td>{`${indi.firstName} ${indi.lastName}`}</td>
                   <td>{isDirector ? "Yes" : "No"}</td>
                   <td>{isShareholder ? "Yes" : "No"}</td>
                   <td>
-                    {(!activeIndi || indi._id !== activeIndi._id) && (
+                    {(!activeIndi || indi.individualId !== activeIndi.individualId) && (
                       <button type="button" onClick={() => handleUpdateMode(indi)}>
                         Update
                       </button>

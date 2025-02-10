@@ -45,7 +45,7 @@ const AddIndiClientDtls = ({ handleView, session }: addIndiClientDtlsprops) => {
   };
 
   const processNewIndi = async (newIndi: BaseIndividual) => {
-    const customerId = session.customer._id;
+    const customerId = session.customer.customerId;
     const options = fetchOptionsNewIndi(newIndi, customerId);
     const newIndiAndCustomerDb = await fetch(postNonCorpClientUrl, options);
     const { customer } = await newIndiAndCustomerDb.json();

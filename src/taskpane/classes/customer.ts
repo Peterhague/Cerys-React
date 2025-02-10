@@ -1,7 +1,7 @@
 import { CustomerProps, ExtendedIndividual, ShortUser } from "../interfaces/interfaces";
 import { Client } from "./client";
 
-export class Customer {
+export class Customer implements CustomerProps {
   name: string;
   address: string;
   phone: string;
@@ -15,7 +15,8 @@ export class Customer {
   clients: Client[];
   nonCorpClients: ExtendedIndividual[];
   individuals: ExtendedIndividual[];
-  _id: string;
+  customerId: string;
+  _id?: string;
   constructor(customer: CustomerProps) {
     console.log(customer);
     this.name = customer.name;
@@ -31,6 +32,11 @@ export class Customer {
     this.clients = customer.clients.map((i) => new Client(i));
     this.nonCorpClients = customer.nonCorpClients;
     this.individuals = customer.individuals;
-    this._id = customer._id;
+    this.customerId = customer._id;
+  }
+
+  revertToDbIdNotation() {
+    const reversion: Customer = { ...this, _id: this.customerId };
+    return reversion;
   }
 }

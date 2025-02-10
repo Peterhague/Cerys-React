@@ -153,7 +153,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
 
       <datalist id="chart">
         {session.chart.map((code) => (
-          <option key={code._id} value={code.cerysCode}>{`${code.cerysCode} ${code.cerysName}`}</option>
+          <option key={code.cerysCodeObjectId} value={code.cerysCode}>{`${code.cerysCode} ${code.cerysName}`}</option>
         ))}
       </datalist>
 

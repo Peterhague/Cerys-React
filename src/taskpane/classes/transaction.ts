@@ -2,7 +2,7 @@ import {
   AssetSubTransaction,
   ClientCodeObjectProps,
   ClientMapping,
-  ClientTransaction,
+  ClientTransactionProps,
   ReportingPeriod,
   TransactionProps,
 } from "../interfaces/interfaces";
@@ -10,7 +10,7 @@ import { convertExcelDate } from "../utils/helper-functions";
 import { Session } from "./session";
 import { TransactionUpdate } from "./transaction-update";
 
-export class Transaction {
+export class Transaction implements TransactionProps {
   value: number;
   transactionType: TransactionProps["transactionType"];
   transactionDate: string;
@@ -37,7 +37,8 @@ export class Transaction {
   clientTransactionId: string;
   clientTransactionAttachment: string;
   cerysTransactionAttachment: string;
-  _id: string;
+  cerysTransactionId: string;
+  _id?: string;
 
   constructor(transaction: TransactionProps) {
     this.value = transaction.value;
@@ -61,7 +62,7 @@ export class Transaction {
     this.clientTransactionId = transaction.clientTransactionId;
     this.clientTransactionAttachment = transaction.clientTransactionAttachment;
     this.cerysTransactionAttachment = transaction.cerysTransactionAttachment;
-    this._id = transaction._id;
+    this.cerysTransactionId = transaction._id;
   }
 
   // getTransactionProps() {
@@ -96,14 +97,19 @@ export class Transaction {
   }
 
   getCombinedTranAndCerysCodeObj(session: Session) {
+    console.log(this);
     const cerysCodeObj = this.getCerysCodeObj(session);
-    return { ...this, ...cerysCodeObj };
+    const obj = { ...this, ...cerysCodeObj };
+    console.log(obj);
+    return obj;
   }
 
   getClientMappingObj(session: Session) {
     let clientCodeObj: ClientCodeObjectProps;
-    if (this.representsBalanceOfClientCode > 0)
-      clientCodeObj = session.clientChart.find((code) => code.clientCode === this.representsBalanceOfClientCode);
+    if (this.representsBalanceOfClientCode > 0) {
+      const codeObj = session.clientChart.find((code) => code.clientCode === this.representsBalanceOfClientCode);
+      clientCodeObj = { ...codeObj, _id: codeObj.clientCodeObjectId };
+    }
     let clientMappingObj: ClientMapping;
     if (clientCodeObj) {
       clientMappingObj = {
@@ -153,14 +159,14 @@ export class Transaction {
   getClientTransAsCerysTrans(session: Session, excludeNullified: boolean) {
     const trans = excludeNullified ? this.getActiveClientTransactions(session) : this.getClientTransactions(session);
     return trans
-      .map((tran) => new ClientTransactionConversion(tran, this))
-      .map((conversion) => new Transaction(conversion));
+      .map((tran) => new ClientTransactionConversion(tran, this.revertToDbIdNotation()))
+      .map((conversion) => new Transaction(conversion.revertToDbIdNotation()));
   }
 
   getClientTransAsAssetTrans(session: Session, excludeNullified: boolean) {
     const trans = excludeNullified ? this.getActiveClientTransactions(session) : this.getClientTransactions(session);
     return trans
-      .map((tran) => new ClientTransactionConversion(tran, this))
+      .map((tran) => new ClientTransactionConversion(tran, this.revertToDbIdNotation()))
       .map((item) => new AssetTransaction(session, item));
   }
 
@@ -189,11 +195,16 @@ export class Transaction {
     }
     return true;
   }
+
+  revertToDbIdNotation() {
+    const reversion: Transaction = { ...this, _id: this.cerysTransactionId };
+    return reversion;
+  }
 }
 
 export class ClientTransactionConversion extends Transaction {
   clientNarrative: string;
-  constructor(clientTransaction: ClientTransaction, cerysTransaction: Transaction) {
+  constructor(clientTransaction: ClientTransactionProps, cerysTransaction: TransactionProps) {
     super(cerysTransaction);
     this.transactionNumber = clientTransaction.number;
     this.value = clientTransaction.value;
@@ -220,8 +231,13 @@ export class AssetTransaction extends Transaction {
     subTransactions: AssetSubTransaction[];
   }[];
 
-  constructor(session: Session, transaction: Transaction | ClientTransactionConversion) {
-    super(transaction);
+  constructor(session: Session, transaction: TransactionProps | ClientTransactionConversion) {
+    if (!(transaction instanceof ClientTransactionConversion) && transaction.transactionNumber === 40) {
+      console.log("TRANSACTION 40!!!!!!!!!!!1111");
+      console.log(transaction);
+    }
+    const props = transaction instanceof ClientTransactionConversion ? transaction.revertToDbIdNotation() : transaction;
+    super(props);
     const cerysCodeObj = this.getCerysCodeObj(session);
     this.assetNarrative =
       transaction instanceof ClientTransactionConversion ? transaction.clientNarrative : transaction.narrative;
@@ -242,7 +258,9 @@ export class AssetTransaction extends Transaction {
   // }
 
   getTranAndCerysCodeObj(session: Session) {
-    const transaction = session.assignment.transactions.find((tran) => tran._id === this._id);
+    const transaction = session.assignment.transactions.find(
+      (tran) => tran.cerysTransactionId === this.cerysTransactionId
+    );
     const cerysCodeObj = transaction.getCerysCodeObj(session);
     return { transaction, cerysCodeObj };
   }

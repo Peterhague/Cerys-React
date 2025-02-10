@@ -40,7 +40,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
 
   const handleClientSelection = (clientId: string) => {
     setClientId(clientId);
-    const clientObj = session.customer.clients.find((i) => i._id === clientId);
+    const clientObj = session.customer.clients.find((i) => i.clientId === clientId);
     setClientObject(clientObj);
     clientObj._senior ? set_Senior(clientObj._senior) : set_Senior("");
     clientObj._manager ? set_Manager(clientObj._manager) : set_Manager("");
@@ -113,7 +113,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const manager = session.customer.users.find((i) => i._id === _manager);
     const responsibleIndividual = session.customer.users.find((i) => i._id === _responsibleIndividual);
     const prelimAssignment = new PreliminaryAssignment({
-      clientId: clientObject._id,
+      clientId: clientObject.clientId,
       clientCode: clientObject.clientCode,
       clientName: clientObject.clientName,
       assignmentType,
@@ -147,7 +147,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
   };
 
   const processNewAssignment = async (prelimAssignment: PreliminaryAssignment) => {
-    const customerId = session.customer._id;
+    const customerId = session.customer.customerId;
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
@@ -173,7 +173,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
               >
                 {!clientId && <option>Please select</option>}
                 {session.customer.clients.map((client) => (
-                  <option key={client._id} value={client._id}>
+                  <option key={client.clientId} value={client.clientId}>
                     {client.clientCode + " " + client.clientName}
                   </option>
                 ))}

@@ -83,7 +83,8 @@ export class Journal extends BaseJournal implements JournalProps {
     transactionAttachment: TransactionAttachmentProps = null
   ) {
     super(journalDetails);
-    this.cerysCodeObj = session.chart.find((code) => code.cerysCode === journalDetails.cerysCode);
+    const cerysCodeObj = session.chart.find((code) => code.cerysCode === journalDetails.cerysCode);
+    this.cerysCodeObj = { ...cerysCodeObj, _id: cerysCodeObj.cerysCodeObjectId };
     this.processedAsAsset = !this.cerysCodeObj.isFixedAsset;
     this.transactionAttachment = transactionAttachment;
   }
@@ -117,7 +118,7 @@ export class JournalForDatabase {
   clientAdj: boolean;
   closeOffCode: number;
   transactionAttachment: TransactionAttachmentProps;
-  _id?: string;
+  cerysCodeObjectId?: string;
   constructor(journal: Journal) {
     this.transactionId = journal.transactionId;
     this.value = journal.value;
@@ -146,6 +147,6 @@ export class JournalForDatabase {
     this.clientAdj = journal.cerysCodeObj.clientAdj;
     this.closeOffCode = journal.cerysCodeObj.closeOffCode;
     this.transactionAttachment = journal.transactionAttachment;
-    this._id = journal.cerysCodeObj._id;
+    this.cerysCodeObjectId = journal.cerysCodeObj._id;
   }
 }

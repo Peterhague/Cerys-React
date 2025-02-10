@@ -25,6 +25,7 @@ export class TransactionUpdate implements TransactionUpdateProps {
     this.value = value;
     this.reversion = reversion;
     this.mongoDate = mongoDate;
-    this.cerysCodeObject = type === "cerysCode" ? session.chart.find((code) => code.cerysCode === this.value) : null;
+    const cerysCodeObj = type === "cerysCode" ? session.chart.find((code) => code.cerysCode === this.value) : null;
+    this.cerysCodeObject = cerysCodeObj ? cerysCodeObj.revertToDbIdNotation() : null;
   }
 }
