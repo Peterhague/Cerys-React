@@ -65,42 +65,13 @@ export class Transaction implements TransactionProps {
     this.cerysTransactionId = transaction._id;
   }
 
-  // getTransactionProps() {
-  //   return {
-  //     cerysCode: this.cerysCode,
-  //     value: this.value,
-  //     transactionType: this.transactionType,
-  //     transactionDate: this.transactionDate,
-  //     transactionNumber: this.transactionNumber,
-  //     transactionBatchNumber: this.transactionBatchNumber,
-  //     iteration: this.iteration,
-  //     iterations: this.iterations,
-  //     narrative: this.narrative,
-  //     user: this.user,
-  //     clientNominalCode: this.clientNominalCode,
-  //     workbookRef: this.workbookRef,
-  //     worksheetRef: this.worksheetRef,
-  //     dateCreated: this.dateCreated,
-  //     updates: this.updates,
-  //     processedAsAsset: this.processedAsAsset,
-  //     clientMappingOverridden: this.clientMappingOverridden,
-  //     clientMappingOverride: this.clientMappingOverride,
-  //     clientTransactionId: this.clientTransactionId,
-  //     clientTransactionAttachment: this.clientTransactionAttachment,
-  //     cerysTransactionAttachment: this.cerysTransactionAttachment,
-  //     _id: this._id,
-  //   };
-  // }
-
   getCerysCodeObj(session: Session) {
     return session.chart.find((code) => code.cerysCode === this.cerysCode);
   }
 
   getCombinedTranAndCerysCodeObj(session: Session) {
-    console.log(this);
     const cerysCodeObj = this.getCerysCodeObj(session);
     const obj = { ...this, ...cerysCodeObj };
-    console.log(obj);
     return obj;
   }
 
@@ -232,10 +203,6 @@ export class AssetTransaction extends Transaction {
   }[];
 
   constructor(session: Session, transaction: TransactionProps | ClientTransactionConversion) {
-    if (!(transaction instanceof ClientTransactionConversion) && transaction.transactionNumber === 40) {
-      console.log("TRANSACTION 40!!!!!!!!!!!1111");
-      console.log(transaction);
-    }
     const props = transaction instanceof ClientTransactionConversion ? transaction.revertToDbIdNotation() : transaction;
     super(props);
     const cerysCodeObj = this.getCerysCodeObj(session);
@@ -252,10 +219,6 @@ export class AssetTransaction extends Transaction {
       },
     ];
   }
-  //why would you need this method? This is an extension of that transaction...
-  // getTransaction(session: Session) {
-  //   return session.assignment.transactions.find((tran) => tran._id === this._id);
-  // }
 
   getTranAndCerysCodeObj(session: Session) {
     const transaction = session.assignment.transactions.find(
@@ -265,88 +228,3 @@ export class AssetTransaction extends Transaction {
     return { transaction, cerysCodeObj };
   }
 }
-
-// type NewBase = Omit<BaseCerysCodeObject, "_id">;
-
-// export class DetailedTransaction extends Transaction implements NewBase {
-//   cerysCode: number;
-//   cerysName: string;
-//   cerysShortName: string;
-//   cerysExcelName: string;
-//   cerysCategory: string;
-//   cerysSubCategory: string | null;
-//   isFixedAsset: boolean;
-//   assetCategory: string | null;
-//   assetCategoryNo: number | null;
-//   assetSubCategory: string | null;
-//   assetSubCatCode: number | null;
-//   assetCodeType: string | null;
-//   regColNameOne: string | null;
-//   regColNameTwo: string | null;
-//   altCategory: string | null;
-//   defaultSign: string | null;
-//   clientAdj: boolean;
-//   closeOffCode: number;
-//   constructor(transaction: Transaction, cerysCodeObj: BaseCerysCodeObject) {
-//     super(transaction);
-//     this.cerysName = cerysCodeObj.cerysName;
-//     this.cerysShortName = cerysCodeObj.cerysShortName;
-//     this.cerysExcelName = cerysCodeObj.cerysExcelName;
-//     this.cerysCategory = cerysCodeObj.cerysCategory;
-//     this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
-//     this.isFixedAsset = cerysCodeObj.isFixedAsset;
-//     this.assetCategory = cerysCodeObj.assetCategory;
-//     this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
-//     this.assetSubCategory = cerysCodeObj.assetSubCategory;
-//     this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
-//     this.assetCodeType = cerysCodeObj.assetCodeType;
-//     this.regColNameOne = cerysCodeObj.regColNameOne;
-//     this.regColNameTwo = cerysCodeObj.regColNameTwo;
-//     this.altCategory = cerysCodeObj.altCategory;
-//     this.defaultSign = cerysCodeObj.defaultSign;
-//     this.clientAdj = cerysCodeObj.clientAdj;
-//     this.closeOffCode = cerysCodeObj.closeOffCode;
-//   }
-// }
-
-// export class DetailedAssetTransaction extends AssetTransaction implements NewBase {
-//   cerysCode: number;
-//   cerysName: string;
-//   cerysShortName: string;
-//   cerysExcelName: string;
-//   cerysCategory: string;
-//   cerysSubCategory: string | null;
-//   isFixedAsset: boolean;
-//   assetCategory: string | null;
-//   assetCategoryNo: number | null;
-//   assetSubCategory: string | null;
-//   assetSubCatCode: number | null;
-//   assetCodeType: string | null;
-//   regColNameOne: string | null;
-//   regColNameTwo: string | null;
-//   altCategory: string | null;
-//   defaultSign: string | null;
-//   clientAdj: boolean;
-//   closeOffCode: number;
-//   constructor(session: Session, transaction: AssetTransaction) {
-//     super(session, transaction);
-//     const cerysCodeObj = transaction.getCerysCodeObj(session);
-//     this.cerysName = cerysCodeObj.cerysName;
-//     this.cerysShortName = cerysCodeObj.cerysShortName;
-//     this.cerysExcelName = cerysCodeObj.cerysExcelName;
-//     this.cerysCategory = cerysCodeObj.cerysCategory;
-//     this.cerysSubCategory = cerysCodeObj.cerysSubCategory;
-//     this.isFixedAsset = cerysCodeObj.isFixedAsset;
-//     this.assetCategory = cerysCodeObj.assetCategory;
-//     this.assetCategoryNo = cerysCodeObj.assetCategoryNo;
-//     this.assetSubCategory = cerysCodeObj.assetSubCategory;
-//     this.assetSubCatCode = cerysCodeObj.assetSubCatCode;
-//     this.assetCodeType = cerysCodeObj.assetCodeType;
-//     this.regColNameOne = cerysCodeObj.regColNameOne;
-//     this.regColNameTwo = cerysCodeObj.regColNameTwo;
-//     this.altCategory = cerysCodeObj.altCategory;
-//     this.defaultSign = cerysCodeObj.defaultSign;
-//     this.clientAdj = cerysCodeObj.clientAdj;
-//     this.closeOffCode = cerysCodeObj.closeOffCode;
-//   }
-// }

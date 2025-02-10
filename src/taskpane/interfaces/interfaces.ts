@@ -488,10 +488,14 @@ export interface ViewOptionsProps {
 }
 
 export interface RegisterType {
-  initials: string;
+  initials: "IFA" | "TFA" | "IP";
   longLower: string;
   longCap: string;
-  createRegister: (session: Session, relevantTrans: AssetTransaction[]) => Promise<void>;
+  registerType: "Intangible" | "Tangible" | "Investment property";
+  sessionKey: "IFARegister" | "TFARegister" | "IPRegister";
+  createURL: string;
+  updateURL: string;
+  //createRegister: (session: Session, relevantTrans: AssetTransaction[]) => Promise<void>;
 }
 
 export interface ClientSoftwareDefaultsProps {

@@ -2,6 +2,7 @@ import {
   AssetDb,
   AssetRegisterDb,
   AssetSubTransaction,
+  AssignmentProps,
   JournalDetailsProps,
   RegisterType,
 } from "../interfaces/interfaces";
@@ -21,6 +22,12 @@ import { TransactionMap } from "./transaction-map";
 import { ExcelRangeObject } from "./range-objects";
 import { createEditableWorksheet } from "./editable-worksheet";
 import _ from "lodash";
+import { Assignment } from "./assignment";
+import { createIFARWs } from "../utils/transactions/ifar-generation";
+import { createTFARWs } from "../utils/transactions/tfar-generation";
+import { createIPRWs } from "../utils/transactions/ipr-generation";
+import { fetchOptionsNCA, fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
+import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 /* global Excel */
 
 export class AssetRegister {
@@ -387,7 +394,37 @@ export class AssetRegCreationPrompt extends InTrayItem {
   }
 
   async createRegister(session: Session) {
-    await this.register.createRegister(session, this.transactions);
+    const assignment = await this.postAssetsToDb(session);
+    if (assignment) session.assignment = new Assignment(assignment);
+    if (this.register.initials === "IFA") {
+      createIFARWs(session);
+    } else if (this.register.initials === "TFA") {
+      createTFARWs(session);
+    } else if (this.register.initials === "IP") {
+      createIPRWs(session);
+    }
+  }
+
+  async postAssetsToDb(session: Session) {
+    const options = fetchOptionsNCA(session, this.transactions);
+    const endpoint = session.assignment[`${this.register.initials}RegisterCreated`]
+      ? this.register.updateURL
+      : this.register.createURL;
+    const registerDb = await fetch(endpoint, options);
+    const register: AssetRegisterDb = await registerDb.json();
+    session[this.register.sessionKey] = new AssetRegister(session, register, this.register.registerType);
+    if (!session.assignment[`${this.register.initials}RegisterCreated`]) {
+      const options = fetchOptionsUpdateAssignment(
+        session.customer.customerId,
+        session.assignment.assignmentId,
+        `${this.register.initials}RegisterCreated`
+      );
+      const assignmentDb = await fetch(updateAssignmentUrl, options);
+      const assignment: AssignmentProps = await assignmentDb.json();
+      return assignment;
+    } else {
+      return null;
+    }
   }
 
   async createTransactionsSummary(session: Session) {

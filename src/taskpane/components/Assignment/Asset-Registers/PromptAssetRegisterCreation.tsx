@@ -25,7 +25,7 @@ interface PromptAssetRegisterCreationProps {
 
 const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAssetRegisterCreationProps) => {
   const { registerType } = options;
-  const { initials, longCap, longLower, createRegister } = registerType;
+  const { initials, longCap, longLower } = registerType;
   let nLEntered = session.assignment.NLEntered;
   const tBEntered = session.assignment.TBEntered;
   const [view, setView] = useState(session.options[`${initials}RCreationSetting`]);
@@ -58,8 +58,8 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
     try {
       await Excel.run(async (context) => {
         session.options[`${initials}RCreationSetting`] = "main";
-        const relevantTrans = session.assignment.getUnprocessedFATransByType(session, initials);
-        await createRegister(session, relevantTrans);
+        //const relevantTrans = session.assignment.getUnprocessedFATransByType(session, initials);
+        //await createRegister(session, relevantTrans);
         session[`${initials}Transactions`] = [];
         // session.activeJournal.clientTB = false;
         // session.activeJournal.journal = false;

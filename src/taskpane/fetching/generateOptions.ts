@@ -264,6 +264,21 @@ export function fetchOptionsPostClientNL(clientNL: ClientTransactionProps[], wor
   };
 }
 
+export function fetchOptionsNCA(session: Session, relevantTrans: AssetTransaction[]) {
+  return {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+    },
+    body: JSON.stringify({
+      assets: relevantTrans.map((tran) => tran.getCombinedTranAndCerysCodeObj(session)),
+      customerId: session.customer.customerId,
+      workbookId: session.assignment.assignmentId,
+      clientId: session.assignment.clientId,
+    }),
+  };
+}
+
 export function fetchOptionsIFA(session: Session, relevantTrans: AssetTransaction[]) {
   return {
     method: "POST",
