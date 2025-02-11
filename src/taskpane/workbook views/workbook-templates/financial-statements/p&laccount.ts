@@ -1,10 +1,9 @@
 import { FSCategoryLinePL } from "../../../classes/accounts-category-line";
-import { createControlledWorksheet, updateControlledWorksheet } from "../../../classes/controlled-worksheet";
+import { createControlledWorksheet } from "../../../classes/controlled-worksheet";
 import { ExcelRangeObject } from "../../../classes/range-objects";
 import { Session } from "../../../classes/session";
 import { ControlledInputMap } from "../../../classes/transaction-map";
 import { PL_ACCOUNT } from "../../../static-values/worksheet-defaults";
-import { PL_WSNAME } from "../../../static-values/worksheet-names";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 /* global Excel */
@@ -35,11 +34,7 @@ export async function wsPLAccount(context: Excel.RequestContext, session: Sessio
   const numbersRange = ws.getRange("F:F");
   numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
   wsPLAccountFormat(ws, pLoss);
-  if (session.controlledSheets.find((ws) => ws.name === PL_WSNAME)) {
-    updateControlledWorksheet(session, pLoss, pLValues, sheetMapping, excelRangeObj, 1, PL_WSNAME);
-  } else {
-    createControlledWorksheet(session, pLoss, ws, pLValues, sheetMapping, excelRangeObj, 1, "cerysCategory");
-  }
+  createControlledWorksheet(session, pLoss, ws, pLValues, sheetMapping, excelRangeObj, 1, "cerysCategory");
 }
 
 export function wsPLAccountFormat(ws: Excel.Worksheet, profLossAccount: FSCategoryLinePL[]) {

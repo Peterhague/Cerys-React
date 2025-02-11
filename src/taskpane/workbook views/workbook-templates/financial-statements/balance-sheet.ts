@@ -1,10 +1,9 @@
 import { FSCategoryLineBS } from "../../../classes/accounts-category-line";
-import { createControlledWorksheet, updateControlledWorksheet } from "../../../classes/controlled-worksheet";
+import { createControlledWorksheet } from "../../../classes/controlled-worksheet";
 import { ExcelRangeObject } from "../../../classes/range-objects";
 import { Session } from "../../../classes/session";
 import { ControlledInputMap } from "../../../classes/transaction-map";
 import { BALANCE_SHEET } from "../../../static-values/worksheet-defaults";
-import { BS_WSNAME } from "../../../static-values/worksheet-names";
 import { clearUsedRange, getOrAddWorksheet } from "../../../utils/worksheet";
 import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule-header";
 /* global Excel */
@@ -39,11 +38,7 @@ export async function wsBalanceSheet(context: Excel.RequestContext, session: Ses
   currencyRange.format.horizontalAlignment = "Right";
   currencyRange.format.font.bold = true;
   wsBSAccountFormat(ws, balSheet);
-  if (session.controlledSheets.find((ws) => ws.name === BS_WSNAME)) {
-    updateControlledWorksheet(session, balSheet, values, sheetMapping, excelRangeObj, 1, BS_WSNAME);
-  } else {
-    createControlledWorksheet(session, balSheet, ws, values, sheetMapping, excelRangeObj, 1, "cerysCategory");
-  }
+  createControlledWorksheet(session, balSheet, ws, values, sheetMapping, excelRangeObj, 1, "cerysCategory");
 }
 
 export function wsBSAccountFormat(ws: Excel.Worksheet, balanceSheet: FSCategoryLineBS[]) {

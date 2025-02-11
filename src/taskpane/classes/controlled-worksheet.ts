@@ -66,6 +66,7 @@ export class ControlledWorksheet {
   }
 
   getCurrentRow(originalRow: number) {
+    console.log(originalRow);
     const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
     return rowObj ? rowObj.current : undefined;
   }
@@ -103,6 +104,7 @@ export const createControlledWorksheet = (
   uniqueColumn: number | null,
   uniqueValue: string | null
 ) => {
+  session.controlledSheets = session.controlledSheets.filter((sheet) => sheet.name !== ws.name);
   const controlledWs = new ControlledWorksheet(
     controlledInputs,
     ws,
@@ -112,31 +114,9 @@ export const createControlledWorksheet = (
     uniqueColumn,
     uniqueValue
   );
-  const arr = [controlledWs];
-  session.controlledSheets.forEach((sheet) => {
-    if (sheet.name !== controlledWs.name) arr.push(sheet);
-  });
-  session.controlledSheets = arr;
+  session.controlledSheets.push(controlledWs);
   addControlledSheetEventHandlers(session, ws);
   return controlledWs;
-};
-
-export const updateControlledWorksheet = (
-  session: Session,
-  controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
-  wsValues: string[][],
-  sheetMapping: ControlledInputMap[],
-  controlledRangeObject: ExcelRangeObject,
-  uniqueColumn: number | null,
-  wsName: string
-) => {
-  const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
-  sheet.controlledInputs = controlledInputs;
-  sheet.usedRange = wsValues;
-  sheet.sheetMapping = sheetMapping;
-  sheet.protectedRange = new ProtectedRange(controlledRangeObject);
-  sheet.uniqueColumn = uniqueColumn;
-  sheet.uniqueValue;
 };
 
 export const createMappingObject = (excelRangeObj: ExcelRangeObject) => {

@@ -28,6 +28,10 @@ export class TrialBalanceLine {
   getCerysCodeObj(session: Session) {
     return session.chart.find((codeObj) => codeObj.cerysCode === this.cerysCode);
   }
+
+  getCerysTransactions(session: Session) {
+    return session.assignment.transactions.filter((tran) => tran.cerysCode === this.cerysCode);
+  }
 }
 
 export class ClientCodeObject {

@@ -1,6 +1,6 @@
 import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
-import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
+import { createControlledWorksheet } from "../../classes/controlled-worksheet";
 import { Customer } from "../../classes/customer";
 import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
@@ -434,11 +434,7 @@ export const createOBAWorksheet = async (session: Session) => {
       ws.getRange(excelRangeObj.getColRangeAbs(7)).numberFormat = STANDARD_NUMBER_FORMAT;
       const autoFitRange = ws.getRange("B:G");
       autoFitRange.format.autofitColumns();
-      if (session.controlledSheets.find((ws) => ws.name === wsName)) {
-        updateControlledWorksheet(session, combinedTBObjs, values, sheetMapping, excelRangeObj, 1, wsName);
-      } else {
-        createControlledWorksheet(session, combinedTBObjs, ws, values, sheetMapping, excelRangeObj, 1, "clientCode");
-      }
+      createControlledWorksheet(session, combinedTBObjs, ws, values, sheetMapping, excelRangeObj, 1, "clientCode");
       ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, wsName));
       ws.activate();
       await context.sync();

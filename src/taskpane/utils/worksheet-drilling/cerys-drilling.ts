@@ -30,7 +30,7 @@ import { clientNomDetailView, showClientNominalDetail } from "./client-drilling"
 
 export function addTbClickListener(context: Excel.RequestContext, session: Session) {
   const ws = context.workbook.worksheets.getItem(TRIAL_BALANCE.name);
-  ws.onSingleClicked.add((e) => showNominalDetail(e, session));
+  ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, TRIAL_BALANCE.name));
   session.assignment.tbListenerAdded = true;
 }
 

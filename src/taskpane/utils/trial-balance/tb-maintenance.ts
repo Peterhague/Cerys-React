@@ -1,12 +1,13 @@
-import { createControlledWorksheet, updateControlledWorksheet } from "../../classes/controlled-worksheet";
+import { createControlledWorksheet } from "../../classes/controlled-worksheet";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { ControlledInputMap } from "../../classes/transaction-map";
 import { TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
-import { TB_WSNAME } from "../../static-values/worksheet-names";
 import { applyWorkhseetHeader, worksheetHeader } from "../../workbook views/components/schedule-header";
 import { clearUsedRange, getOrAddWorksheet } from "../worksheet";
+import { cerysNomDetailView } from "../worksheet-drilling/cerys-drilling";
 /* global Excel */
 
 export async function wsTrialBalance(context: Excel.RequestContext, session: Session) {
@@ -23,10 +24,12 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   headersRange.format.font.bold = true;
   const trialBalance = session.assignment.tb;
   const tBValues = [];
-  const sheetMapping = [];
+  const sheetMapping: ControlledInputMap[] = [];
   trialBalance.forEach((line) => {
     tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
-    sheetMapping.push(new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], null));
+    const transactions = line.getCerysTransactions(session);
+    const nomDetailDrillableCollection = new DrillableCollection(transactions, null, [1, 2, 3], cerysNomDetailView);
+    sheetMapping.push(new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], [nomDetailDrillableCollection]));
   });
   const excelRangeObj = new ExcelRangeObject({ row: 11, col: 1 }, tBValues);
   const range = ws.getRange(excelRangeObj.address);
@@ -45,9 +48,5 @@ export async function wsTrialBalance(context: Excel.RequestContext, session: Ses
   const bottomBorder = total.format.borders.getItem("EdgeBottom");
   topBorder.style = "Continuous";
   bottomBorder.style = "Double";
-  if (session.controlledSheets.find((ws) => ws.name === TB_WSNAME)) {
-    updateControlledWorksheet(session, trialBalance, tBValues, sheetMapping, excelRangeObj, 1, TB_WSNAME);
-  } else {
-    createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj, 1, "cerysCode");
-  }
+  createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj, 1, "cerysCode");
 }
