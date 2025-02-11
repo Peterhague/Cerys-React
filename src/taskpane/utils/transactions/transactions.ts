@@ -18,40 +18,20 @@ import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs } from "../worksheet-editing/ed-sheet-change-handling";
 /* global Excel */
 
-export const processTransBatch = async (
-  context: Excel.RequestContext,
-  session: Session,
-  activeJournal: ActiveJournal
-) => {
-  // const journals: Journal[] = activeJournal.journals.map((jnl) => {
-  //   return { ...jnl, ...jnl.cerysCodeObj };
-  // });
-  // journals.forEach((jnl) => {
-  //   const periodStartDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
-  //   if (jnl.narrative === "") jnl.narrative = "No narrative";
-  //   if (jnl.transactionDate === "") {
-  //     if (
-  //       jnl.cerysCodeObj.assetSubCategory === "Cost bfwd" ||
-  //       jnl.cerysCodeObj.assetSubCategory === "Amort bfwd" ||
-  //       jnl.cerysCodeObj.assetSubCategory === "Depn bfwd"
-  //     ) {
-  //       jnl.transactionDate = periodStartDate;
-  //     } else {
-  //       jnl.transactionDate = session.assignment.reportingPeriod.reportingDateOrig;
-  //     }
-  //   }
-  //   jnl.transactionDateExcel = calculateExcelDate(jnl.transactionDate);
-  //   jnl.transactionType = activeJournal.type;
-  //   // jnl.clientTB = activeJournal.clientTB;
-  //   // jnl.journal = activeJournal.journal;
-  //   // trouble
-  // });
-  activeJournal.finaliseJournalsForDb(session);
-  console.log(activeJournal);
-  const transDtls = { customerId: session.customer.customerId, assignmentId: session.assignment.assignmentId };
-  const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
-  session.assignment = new Assignment(assignment);
-  await updateAssignmentFigures(context, session);
+export const processTransBatch = async (session: Session, activeJournal: ActiveJournal) => {
+  try {
+    await Excel.run(async (context) => {
+      activeJournal.finaliseJournalsForDb(session);
+      console.log(activeJournal);
+      const transDtls = { customerId: session.customer.customerId, assignmentId: session.assignment.assignmentId };
+      const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
+      session.assignment = new Assignment(assignment);
+      await updateAssignmentFigures(context, session);
+      await context.sync();
+    });
+  } catch (e) {
+    console.error(e);
+  }
 };
 
 export const submitTransactionUpdates = async (session: Session) => {

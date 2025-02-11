@@ -1,6 +1,6 @@
 import { ActiveSubCategory, AssetRegister, ColumnsIndex } from "../../classes/asset-register";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
-import { colNumToLetter } from "../excel-col-conversion";
+import { colNumToLetter } from "../../utils/excel-col-conversion";
 /* global Excel */
 
 export function populateAssetRegWs(
@@ -164,7 +164,7 @@ const buildRegPerCategory = (
     register.assets.forEach((tran) => {
       if (tran.assetCategory === cat.assetCategory) {
         const assetLine = [];
-        assetLine.push(tran.transactionDateExcel);
+        assetLine.push(tran.getExcelDate());
         assetLine.push(tran.assetNarrative);
         assetLine.push(`=IF(B3-A${rowNumber} > 365, 365, B3-A${rowNumber})`);
         for (let i = 0; i < numberCols - 3; i++) {

@@ -1,4 +1,5 @@
 import {
+  ActiveJournalProps,
   AssetDb,
   AssetRegisterDb,
   AssetSubTransaction,
@@ -23,11 +24,12 @@ import { ExcelRangeObject } from "./range-objects";
 import { createEditableWorksheet } from "./editable-worksheet";
 import _ from "lodash";
 import { Assignment } from "./assignment";
-import { createIFARWs } from "../utils/transactions/ifar-generation";
-import { createTFARWs } from "../utils/transactions/tfar-generation";
-import { createIPRWs } from "../utils/transactions/ipr-generation";
-import { fetchOptionsNCA, fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
-import { updateAssignmentUrl } from "../fetching/apiEndpoints";
+import { fetchOptionsNCA } from "../fetching/generateOptions";
+import {
+  createIFARegisterWorksheet,
+  createIPRegisterWorksheet,
+  createTFARegisterWorksheet,
+} from "../workbook views/workbook-templates/asset-registers";
 /* global Excel */
 
 export class AssetRegister {
@@ -48,9 +50,6 @@ export class AssetRegister {
 
 class AssetRegisterItem {
   transactionDate: string;
-  transactionDateUser: string;
-  transactionDateClt: number;
-  transactionDateExcel: number;
   narrative: string;
   assetNarrative: string;
   assetCategory: string;
@@ -66,9 +65,6 @@ class AssetRegisterItem {
   assetRegItemId: string;
   constructor(asset: AssetDb, periodId: string) {
     this.transactionDate = asset.transactionDate;
-    this.transactionDateUser = asset.transactionDateUser;
-    this.transactionDateClt = asset.transactionDateClt;
-    this.transactionDateExcel = asset.transactionDateExcel;
     this.narrative = asset.narrative;
     this.assetNarrative = asset.assetNarrative;
     this.assetCategory = asset.assetCategory;
@@ -80,6 +76,16 @@ class AssetRegisterItem {
     if (asset.depnRate) this.depnRate = asset.depnRate;
     this.disposedOf = asset.disposedOf;
     this.subTransactions = asset.periods.find((period) => period.reportingPeriodId === periodId).subTransactions;
+  }
+
+  getExcelDate() {
+    const date = new Date(this.transactionDate);
+    const baseDate = new Date("1899-12-30");
+    const utc1 = Date.UTC(date.getFullYear(), date.getMonth(), date.getDate());
+    const utc2 = Date.UTC(baseDate.getFullYear(), baseDate.getMonth(), baseDate.getDate());
+    const timeDiff = Math.abs(utc2 - utc1);
+    const excelDate = Math.ceil(timeDiff / (1000 * 60 * 60 * 24));
+    return excelDate;
   }
 }
 
@@ -260,14 +266,8 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
   }
 
   handleReanalysis = async (session: Session) => {
-    try {
-      await Excel.run(async (context) => {
-        const activeJournal = this.createTransactionUpdates(session);
-        await processTransBatch(context, session, activeJournal);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    const activeJournal = this.createTransactionUpdates(session);
+    await processTransBatch(session, activeJournal);
   };
 
   createTransactionUpdates(session: Session) {
@@ -366,6 +366,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
 export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
   transactions: AssetTransaction[];
+  depreciationJournals: ActiveJournal;
   constructor(registerTemplate: RegisterCreationTemplate) {
     super({
       title: `Create ${registerTemplate.registerType} register?`,
@@ -381,6 +382,8 @@ export class AssetRegCreationPrompt extends InTrayItem {
     this.getSummaryText = this.getIntraySummaryText;
     this.detailsAction = this.createTransactionsSummary;
     this.affirmativeAction = this.createRegister;
+    const journalProps: ActiveJournalProps = { type: "auto-depreciation", journals: [] };
+    this.depreciationJournals = new ActiveJournal(journalProps);
   }
 
   getIntraySubtitle() {
@@ -394,37 +397,31 @@ export class AssetRegCreationPrompt extends InTrayItem {
   }
 
   async createRegister(session: Session) {
-    const assignment = await this.postAssetsToDb(session);
-    if (assignment) session.assignment = new Assignment(assignment);
+    await processTransBatch(session, this.depreciationJournals);
+    const registerAndUpdatedAssignment = await this.postAssetsToDb(session);
+    const register: AssetRegisterDb = registerAndUpdatedAssignment.register;
+    const assignment: AssignmentProps = registerAndUpdatedAssignment.assignment;
+    session.assignment = new Assignment(assignment);
+    session[this.register.sessionKey] = new AssetRegister(session, register, this.register.registerType);
     if (this.register.initials === "IFA") {
-      createIFARWs(session);
+      createIFARegisterWorksheet(session);
     } else if (this.register.initials === "TFA") {
-      createTFARWs(session);
+      createTFARegisterWorksheet(session);
     } else if (this.register.initials === "IP") {
-      createIPRWs(session);
+      createIPRegisterWorksheet(session);
     }
   }
 
   async postAssetsToDb(session: Session) {
+    console.log("POSTING!!!!!");
+    console.log(this.transactions);
     const options = fetchOptionsNCA(session, this.transactions);
     const endpoint = session.assignment[`${this.register.initials}RegisterCreated`]
       ? this.register.updateURL
       : this.register.createURL;
-    const registerDb = await fetch(endpoint, options);
-    const register: AssetRegisterDb = await registerDb.json();
-    session[this.register.sessionKey] = new AssetRegister(session, register, this.register.registerType);
-    if (!session.assignment[`${this.register.initials}RegisterCreated`]) {
-      const options = fetchOptionsUpdateAssignment(
-        session.customer.customerId,
-        session.assignment.assignmentId,
-        `${this.register.initials}RegisterCreated`
-      );
-      const assignmentDb = await fetch(updateAssignmentUrl, options);
-      const assignment: AssignmentProps = await assignmentDb.json();
-      return assignment;
-    } else {
-      return null;
-    }
+    const registerAndUpdatedAssignmentDb = await fetch(endpoint, options);
+    const registerAndUpdatedAssignment = await registerAndUpdatedAssignmentDb.json();
+    return registerAndUpdatedAssignment;
   }
 
   async createTransactionsSummary(session: Session) {
@@ -470,7 +467,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
           ],
         ];
         this.transactions.forEach((tran, index) => {
-          const map = new TransactionMap(tran.cerysTransactionId, index + 3, null); // Issue: is this right?? don't think so...
+          const map = new TransactionMap(tran.cerysTransactionId, index + 3, null);
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {
@@ -479,19 +476,20 @@ export class AssetRegCreationPrompt extends InTrayItem {
           transVals.push(tran.transactionNumber);
           transVals.push(tran.getExcelDate());
           transVals.push(tran.narrative);
-          if (tran.transactionType === "journal") {
-            transVals.push("Journal");
-          } else if (tran.transactionType === "final journal") {
-            transVals.push("Final journal");
-          } else if (tran.transactionType === "review journal") {
-            transVals.push("Review journal");
-          } else if (tran.transactionType === "client trial balance") {
-            transVals.push("Client TB");
-          } else if (tran.transactionType === "client adjustment") {
-            transVals.push("Client adjustment");
-          } else {
-            transVals.push("Sticking plaster");
-          }
+          // if (tran.transactionType === "journal") {
+          //   transVals.push("Journal");
+          // } else if (tran.transactionType === "final journal") {
+          //   transVals.push("Final journal");
+          // } else if (tran.transactionType === "review journal") {
+          //   transVals.push("Review journal");
+          // } else if (tran.transactionType === "client trial balance") {
+          //   transVals.push("Client TB");
+          // } else if (tran.transactionType === "client adjustment") {
+          //   transVals.push("Client adjustment");
+          // } else {
+          //   transVals.push("Sticking plaster");
+          // }
+          transVals.push(tran.transactionType);
           transVals.push(tran.cerysCode);
           transVals.push(cerysCodeObj.cerysShortName);
           if (tran.representsBalanceOfClientCode >= 0) {
@@ -511,7 +509,8 @@ export class AssetRegCreationPrompt extends InTrayItem {
           }
           transVals.push(tran.value / 100);
           populateDepnCols(session, activeClient, transVals, tran, this.register.initials);
-          calculateCharge(session, tran, this.register.initials);
+          const jnls = calculateCharge(session, tran, this.register.initials);
+          this.depreciationJournals.journals.push(...jnls);
           tran.amortChg ? transVals.push(tran.amortChg / 100) : transVals.push(tran.depnChg / 100);
           valuesToPost.push(transVals);
         });

@@ -4,7 +4,6 @@ import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
 import { ActiveJournal, Journal } from "./journal";
 import { Session } from "./session";
-/* global Excel */
 
 export class ClientTrialBalanceLine {
   cerysCodeObj: ClientCerysCodeObjectProps;
@@ -104,26 +103,20 @@ export class ClientTBBFwdReconciliation extends InTrayItem {
   }
 
   async postUnpostedAdjustments(session: Session) {
-    try {
-      await Excel.run(async (context) => {
-        const diffs = this.getAllDifferences();
-        const activeJournal = new ActiveJournal({ type: "OBA auto-entry", journals: [] });
-        diffs.forEach((i) => {
-          const cerysCode = session.clientChart.find((code) => code.clientCode === i.clientCode).cerysCode;
-          activeJournal.journals.push(
-            new Journal(session, {
-              cerysCode,
-              value: i.difference / 100,
-              narrative: "OBA auto-entry",
-              transactionDate: session.assignment.reportingPeriod.reportingDate,
-              transactionType: "OBA auto-entry",
-            })
-          );
-        });
-        await processTransBatch(context, session, activeJournal);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    const diffs = this.getAllDifferences();
+    const activeJournal = new ActiveJournal({ type: "OBA auto-entry", journals: [] });
+    diffs.forEach((i) => {
+      const cerysCode = session.clientChart.find((code) => code.clientCode === i.clientCode).cerysCode;
+      activeJournal.journals.push(
+        new Journal(session, {
+          cerysCode,
+          value: i.difference / 100,
+          narrative: "OBA auto-entry",
+          transactionDate: session.assignment.reportingPeriod.reportingDate,
+          transactionType: "OBA auto-entry",
+        })
+      );
+    });
+    await processTransBatch(session, activeJournal);
   }
 }

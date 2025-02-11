@@ -45,26 +45,19 @@ async function writeToDATA(context: Excel.RequestContext, dataSpread: string[][]
 }
 
 export const postOpBalJnls = async (session: Session) => {
-  try {
-    await Excel.run(async (context) => {
-      const transactionDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
-      const journals: Journal[] = [];
-      session.assignment.reportingPeriod.bFTB.forEach((line) => {
-        const journalDetails: JournalDetailsProps = {
-          cerysCode: line.cerysCode,
-          narrative: "automatic opening balance",
-          transactionType: "opening balance",
-          value: line.value,
-          transactionDate,
-        };
-        journals.push(new Journal(session, journalDetails));
-      });
-      const activeJournal = new ActiveJournal({ type: "opening balance", journals });
-      await processTransBatch(context, session, activeJournal);
-      await context.sync();
-      session.handleView(ASSIGNMENT_DASH_HOME);
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  const transactionDate = session.assignment.reportingPeriod.periodStart.split("T")[0];
+  const journals: Journal[] = [];
+  session.assignment.reportingPeriod.bFTB.forEach((line) => {
+    const journalDetails: JournalDetailsProps = {
+      cerysCode: line.cerysCode,
+      narrative: "automatic opening balance",
+      transactionType: "opening balance",
+      value: line.value,
+      transactionDate,
+    };
+    journals.push(new Journal(session, journalDetails));
+  });
+  const activeJournal = new ActiveJournal({ type: "opening balance", journals });
+  await processTransBatch(session, activeJournal);
+  session.handleView(ASSIGNMENT_DASH_HOME);
 };

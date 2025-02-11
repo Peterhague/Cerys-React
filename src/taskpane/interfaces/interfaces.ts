@@ -1,6 +1,6 @@
 import { Session } from "../classes/session";
 import { TransactionUpdate } from "../classes/transaction-update";
-import { AssetTransaction, Transaction } from "../classes/transaction";
+import { Transaction } from "../classes/transaction";
 import React from "react";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
 import { ShareClass } from "../classes/share-classes";
@@ -545,9 +545,6 @@ export interface AssetRegisterDb {
 
 export interface AssetDb {
   transactionDate: string;
-  transactionDateUser: string;
-  transactionDateClt: number;
-  transactionDateExcel: number;
   narrative: string;
   assetNarrative: string;
   assetCategory: string;

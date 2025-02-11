@@ -9,7 +9,6 @@ import { JournalDetailsProps } from "../../interfaces/interfaces";
 import { ActiveJournal, Journal } from "../../classes/journal";
 import { LANDING_PAGE } from "../../static-values/views";
 import { ClientCerysCodeObject } from "../../classes/cerys-codes";
-/*global Excel */
 
 interface enterJournalProps {
   handleView: (view: string) => void;
@@ -29,15 +28,9 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
   const inputRef = useRef<HTMLInputElement>(null);
 
   const handleSubmit = async (e: React.FormEvent) => {
-    try {
-      await Excel.run(async (context) => {
-        e.preventDefault();
-        await processTransBatch(context, session, activeJournal);
-        checkNewTransForAssets(session);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    e.preventDefault();
+    await processTransBatch(session, activeJournal);
+    checkNewTransForAssets(session);
   };
 
   const handleJournal = async (e: React.FormEvent) => {

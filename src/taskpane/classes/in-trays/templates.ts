@@ -141,6 +141,10 @@ export const createAssetRegisterInTrayCollections = (session: Session, registerT
   const items: InTrayItem[] = [];
   const prompts = checkTransUnregisteredAssets(session);
   const prompt = prompts.find((i) => (i.registerType = registerType));
+  if (prompt.refinedTransactions.length > 0) {
+    console.log("REFINED TRANSACTIONS!!!!");
+    console.log(prompt.refinedTransactions);
+  }
   if (prompt.possibleAdditions.length > 0) items.push(new IdenitfyPossibleAdditionsPrompt(prompt));
   if (prompt.refinedTransactions.length > 0) items.push(new AssetRegCreationPrompt(prompt));
   return items;

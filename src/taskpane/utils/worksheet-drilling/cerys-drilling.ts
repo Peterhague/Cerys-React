@@ -51,6 +51,7 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
+      console.log(map);
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;

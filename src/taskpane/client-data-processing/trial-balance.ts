@@ -13,42 +13,36 @@ import { processTransBatch } from "../utils/transactions/transactions";
 /* global Excel */
 
 export async function enterTB(session: Session) {
-  try {
-    await Excel.run(async (context) => {
-      const clientTBObjs: ClientTrialBalanceLine[] = await handleTBData(session);
-      let check = 0;
-      const transactions: JournalDetailsProps[] = [];
-      clientTBObjs.forEach((jnl) => {
-        const obj: JournalDetailsProps = {
-          cerysCode: jnl.cerysCodeObj.cerysCode,
-          value: jnl.value,
-          transactionType: "client trial balance",
-          transactionDate: "",
-          narrative: jnl.narrative,
-          representsBalanceOfClientCode: jnl.getClientCodeObject(session).clientCode,
-        };
-        check += jnl.value;
-        transactions.push(obj);
-      });
-      if (check !== 0) return;
-      const journals = transactions.map((tran) => new Journal(session, tran));
-      const activeJournal = new ActiveJournal({ type: "client trial balance", journals });
-      await processTransBatch(context, session, activeJournal);
-      //checkNewTransForAssets(session);
-      const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
-      postClientTB(session, clientTB);
-      const tbEntryCollections = createTBEntryCollections(session);
-      const inTray = session.assignment.inTray;
-      tbEntryCollections.forEach((collection) => {
-        if (collection.getItems(session).length > 0) {
-          inTray.addCollection(collection);
-        }
-      });
-      session.handleDynamicView(INTRAY_SUMMARY, inTray);
-    });
-  } catch (e) {
-    console.error(e);
-  }
+  const clientTBObjs: ClientTrialBalanceLine[] = await handleTBData(session);
+  let check = 0;
+  const transactions: JournalDetailsProps[] = [];
+  clientTBObjs.forEach((jnl) => {
+    const obj: JournalDetailsProps = {
+      cerysCode: jnl.cerysCodeObj.cerysCode,
+      value: jnl.value,
+      transactionType: "client trial balance",
+      transactionDate: "",
+      narrative: jnl.narrative,
+      representsBalanceOfClientCode: jnl.getClientCodeObject(session).clientCode,
+    };
+    check += jnl.value;
+    transactions.push(obj);
+  });
+  if (check !== 0) return;
+  const journals = transactions.map((tran) => new Journal(session, tran));
+  const activeJournal = new ActiveJournal({ type: "client trial balance", journals });
+  await processTransBatch(session, activeJournal);
+  //checkNewTransForAssets(session);
+  const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
+  postClientTB(session, clientTB);
+  const tbEntryCollections = createTBEntryCollections(session);
+  const inTray = session.assignment.inTray;
+  tbEntryCollections.forEach((collection) => {
+    if (collection.getItems(session).length > 0) {
+      inTray.addCollection(collection);
+    }
+  });
+  session.handleDynamicView(INTRAY_SUMMARY, inTray);
 }
 
 export async function checkTBMapping(session: Session) {

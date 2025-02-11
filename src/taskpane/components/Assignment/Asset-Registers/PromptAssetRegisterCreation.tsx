@@ -1,21 +1,7 @@
 import * as React from "react";
-import { useState } from "react";
-import { enterNL } from "../../../client-data-processing/nominal-ledger";
-import { getUpdatedTransactions, updateAssignmentFigures } from "../../../utils/helper-functions";
-import {
-  convertNewFATrans,
-  identifyLikelyAdditions,
-  previewRelTrans,
-} from "../../../utils/transactions/asset-reg-generation";
-import {
-  checkFATranUpdatesForAssets,
-  checkNewTransForAssets,
-  processUpdateBatch,
-} from "../../../utils/transactions/transactions";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ViewOptions } from "../../../classes/view-options";
-/* global Excel */
 
 interface PromptAssetRegisterCreationProps {
   handleView: (view: string) => void;
@@ -23,79 +9,79 @@ interface PromptAssetRegisterCreationProps {
   options: ViewOptions;
 }
 
-const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAssetRegisterCreationProps) => {
-  const { registerType } = options;
-  const { initials, longCap, longLower } = registerType;
-  let nLEntered = session.assignment.NLEntered;
-  const tBEntered = session.assignment.TBEntered;
-  const [view, setView] = useState(session.options[`${initials}RCreationSetting`]);
+const PromptAssetRegisterCreation = ({ handleView, session }: PromptAssetRegisterCreationProps) => {
+  // const { registerType } = options;
+  // const { initials, longCap, longLower } = registerType;
+  // let nLEntered = session.assignment.NLEntered;
+  // const tBEntered = session.assignment.TBEntered;
+  // const [view, setView] = useState(session.options[`${initials}RCreationSetting`]);
   //const journal = session.activeJournal.journal;
   // trouble
-  const registerCreated = session.assignment[`${initials}RegisterCreated`];
+  //const registerCreated = session.assignment[`${initials}RegisterCreated`];
 
-  const handleCreateRequest = () => {
-    if (nLEntered || !tBEntered) {
-      identifyLikelyAdditions(session, initials, setView);
-    } else {
-      setView("NLPrompt");
-    }
-  };
+  // const handleCreateRequest = () => {
+  //   if (nLEntered || !tBEntered) {
+  //     identifyLikelyAdditions(session, initials, setView);
+  //   } else {
+  //     setView("NLPrompt");
+  //   }
+  // };
 
-  const handleNLImport = async () => {
-    await enterNL(session);
-    convertNewFATrans(session);
-    nLEntered = session.assignment.NLEntered;
-    handleCreateRequest();
-  };
+  // const handleNLImport = async () => {
+  //   await enterNL(session);
+  //   convertNewFATrans(session);
+  //   nLEntered = session.assignment.NLEntered;
+  //   handleCreateRequest();
+  // };
 
   const handleAbort = (view: string) => {
-    session.options[`${initials}RCreationSetting`] = "main";
+    session.options[`RCreationSetting`] = "main";
     //session.activeJournal.journals = [];
     handleView(view);
   };
 
-  const handleSubmit = async () => {
-    try {
-      await Excel.run(async (context) => {
-        session.options[`${initials}RCreationSetting`] = "main";
-        //const relevantTrans = session.assignment.getUnprocessedFATransByType(session, initials);
-        //await createRegister(session, relevantTrans);
-        session[`${initials}Transactions`] = [];
-        // session.activeJournal.clientTB = false;
-        // session.activeJournal.journal = false;
-        // session.activeJournal.journalType = "auto-journal";
-        // trouble
-        //await processTransBatch(context, session, activeJournal);
-        checkNewTransForAssets(session);
-        await context.sync();
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // const handleSubmit = async () => {
+  //   try {
+  //     await Excel.run(async (context) => {
+  //       session.options[`${initials}RCreationSetting`] = "main";
+  //       //const relevantTrans = session.assignment.getUnprocessedFATransByType(session, initials);
+  //       //await createRegister(session, relevantTrans);
+  //       session[`${initials}Transactions`] = [];
+  //       // session.activeJournal.clientTB = false;
+  //       // session.activeJournal.journal = false;
+  //       // session.activeJournal.journalType = "auto-journal";
+  //       // trouble
+  //       //await processTransBatch(context, session, activeJournal);
+  //       checkNewTransForAssets(session);
+  //       await context.sync();
+  //     });
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
 
-  const handleReanalysis = async () => {
-    try {
-      await Excel.run(async (context) => {
-        if (getUpdatedTransactions(session).length > 0) {
-          await processUpdateBatch(session);
-          updateAssignmentFigures(context, session);
-          checkFATranUpdatesForAssets(session);
-        }
-        // if (session.activeJournal.journals.length > 0) {
-        //   //await processTransBatch(context, session, activeJournal);
-        //   checkFATranUpdatesForAssets(session);
-        // }
-        previewRelTrans(session, initials);
-      });
-    } catch (e) {
-      console.error(e);
-    }
-  };
+  // const handleReanalysis = async () => {
+  //   try {
+  //     await Excel.run(async (context) => {
+  //       if (getUpdatedTransactions(session).length > 0) {
+  //         await processUpdateBatch(session);
+  //         updateAssignmentFigures(context, session);
+  //         checkFATranUpdatesForAssets(session);
+  //       }
+  //       // if (session.activeJournal.journals.length > 0) {
+  //       //   //await processTransBatch(context, session, activeJournal);
+  //       //   checkFATranUpdatesForAssets(session);
+  //       // }
+  //       //previewRelTrans(session, initials);
+  //     });
+  //   } catch (e) {
+  //     console.error(e);
+  //   }
+  // };
 
   return (
     <>
-      {view === "main" && !registerCreated && (
+      {/* {view === "main" && !registerCreated && (
         <>
           <p>Your data suggests this client owns {longLower}.</p>
           <p>You have not set up a relevant asset register.</p>
@@ -127,7 +113,7 @@ const PromptAssetRegisterCreation = ({ handleView, session, options }: PromptAss
         </>
       )}
       {view === "confirm" && <CerysButton buttonText={"SUBMIT DETAILS"} handleClick={() => handleSubmit()} />}
-      {true && <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />}
+      {true && <CerysButton buttonText={"CONTINUE POSTING JOURNALS"} handleClick={() => handleAbort("enterJournal")} />} */}
 
       <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleAbort("assignmentDashHome")} />
     </>
