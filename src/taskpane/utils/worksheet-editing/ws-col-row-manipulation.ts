@@ -16,7 +16,6 @@ import { cancelAutoFill, reinstateNumberFormats } from "./ws-range-editing";
 /* global Excel */
 
 export const handleOtherEdSheetChange = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
@@ -36,7 +35,7 @@ export const handleOtherEdSheetChange = async (
   } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Left") {
     await handleCellDeletionLeft(session, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Down") {
-    handleCellInsertionDown(context, e, wsName, sheet, addressObj);
+    handleCellInsertionDown(e, wsName, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Right") {
     handleCellInsertionRight(e, wsName, sheet, addressObj);
   }
@@ -269,7 +268,6 @@ export const handleCellDeletionLeft = async (session: Session, sheet: EditableWo
 };
 
 export const handleCellInsertionDown = (
-  context: Excel.RequestContext,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: EditableWorksheet,
@@ -300,7 +298,7 @@ export const handleCellInsertionDown = (
   } else if (firstCol < protectedLastCol || lastCol > protectedFirstCol) {
     if (!sheet.dataCorrupted) {
       const range = `${colNumToLetter(firstCol)}${firstRow}:${colNumToLetter(lastCol)}${lastRow}`;
-      deleteWorksheetRangeDown(context, wsName, range);
+      deleteWorksheetRangeDown(wsName, range);
     }
   }
 };

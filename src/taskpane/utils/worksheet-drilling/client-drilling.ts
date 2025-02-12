@@ -2,7 +2,7 @@ import { Session } from "../../classes/session";
 import { ClientTransactionProps } from "../../interfaces/interfaces";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
 import { getClientNomDetail } from "../taskpane/client-system-access";
-import { addOneWorksheet } from "../worksheet";
+import { addDefaultWorksheet } from "../worksheet";
 /* global Excel */
 
 // Called by a click on the client code in the Cerys code analysis sheets.
@@ -33,9 +33,7 @@ export async function showClientNominalDetail(e: Excel.WorksheetSingleClickedEve
 export async function clientNomDetailView(session: Session, detail: ClientTransactionProps[]) {
   try {
     await Excel.run(async (context) => {
-      console.log("final destination...");
-      console.log(detail);
-      const { ws } = await addOneWorksheet(context, session, {
+      const ws = await addDefaultWorksheet(context, session, {
         name: `${detail[0].cerysCode} analysis`,
         addListeners: undefined,
       });

@@ -26,7 +26,7 @@ export const processTransBatch = async (session: Session, activeJournal: ActiveJ
       const transDtls = { customerId: session.customer.customerId, assignmentId: session.assignment.assignmentId };
       const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
       session.assignment = new Assignment(assignment);
-      await updateAssignmentFigures(context, session);
+      await updateAssignmentFigures(session);
       await context.sync();
     });
   } catch (e) {
@@ -35,47 +35,39 @@ export const processTransBatch = async (session: Session, activeJournal: ActiveJ
 };
 
 export const submitTransactionUpdates = async (session: Session) => {
-  try {
-    await Excel.run(async (context) => {
-      console.log("surely here????");
-      let updatedTrans = getUpdatedTransactions(session);
-      const isTBUpdated = checkTransForRecoding(updatedTrans);
-      updatedTrans.forEach((tran) => {
-        tran.updates.forEach((update) => {
-          session.editableSheets.forEach((sheet) => {
-            if (update.worksheetName === sheet.name) {
-              highlightEditableRanges(context, sheet);
-            }
-          });
-        });
-      });
-      await processUpdateBatch(session);
-      const promptSheetDeletion = await renewEdSheetsTransRefs(context, session);
-      if (isTBUpdated) {
-        if (promptSheetDeletion) {
-          await updateAssignmentFigures(context, session);
-          session.options.updatedTransactions = updatedTrans;
-          session.handleView(DELETE_SHEET_PROMPT);
-        } else {
-          console.log("this branch?");
-          await updateAssignmentFigures(context, session);
-          checkNewTransForAssets(session);
-        }
-      } else {
-        console.log("this branch??");
-        callNextView(session);
-      }
+  let updatedTrans = getUpdatedTransactions(session);
+  const isTBUpdated = checkTransForRecoding(updatedTrans);
+  updatedTrans.forEach((tran) => {
+    tran.updates.forEach((update) => {
       session.editableSheets.forEach((sheet) => {
-        if (sheet.editButtonStatus === "inProgress") sheet.editButtonStatus = "hide";
+        if (update.worksheetName === sheet.name) {
+          highlightEditableRanges(sheet);
+        }
       });
-      const activeWs = await getActiveWorksheet();
-      const acitveEditableWS = session.editableSheets.find((sheet) => sheet.name === activeWs.name);
-      if (acitveEditableWS) session.setEditButton(acitveEditableWS.editButtonStatus);
-      await context.sync();
     });
-  } catch (e) {
-    console.error(e);
+  });
+  await processUpdateBatch(session);
+  const promptSheetDeletion = await renewEdSheetsTransRefs(session);
+  if (isTBUpdated) {
+    if (promptSheetDeletion) {
+      await updateAssignmentFigures(session);
+      session.options.updatedTransactions = updatedTrans;
+      session.handleView(DELETE_SHEET_PROMPT);
+    } else {
+      console.log("this branch?");
+      await updateAssignmentFigures(session);
+      checkNewTransForAssets(session);
+    }
+  } else {
+    console.log("this branch??");
+    callNextView(session);
   }
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.editButtonStatus === "inProgress") sheet.editButtonStatus = "hide";
+  });
+  const activeWs = await getActiveWorksheet();
+  const acitveEditableWS = session.editableSheets.find((sheet) => sheet.name === activeWs.name);
+  if (acitveEditableWS) session.setEditButton(acitveEditableWS.editButtonStatus);
 };
 
 export const processUpdateBatch = async (session: Session) => {

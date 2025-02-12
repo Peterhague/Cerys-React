@@ -24,7 +24,7 @@ import {
   handleWorksheetDrill,
 } from "../helper-functions";
 import { getCerysNomDetailBS, getCerysNomDetailPL } from "../taskpane/cerys-item-retrieval";
-import { addOneWorksheet } from "../worksheet";
+import { addDefaultWorksheet } from "../worksheet";
 import { clientNomDetailView, showClientNominalDetail } from "./client-drilling";
 /* global Excel */
 
@@ -80,7 +80,7 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       console.log(input);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
-      await cerysNomDetailViewPL(context, session, arrOfTransArrs);
+      await cerysNomDetailViewPL(session, arrOfTransArrs);
       await context.sync();
     });
   } catch (e) {
@@ -99,7 +99,9 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         if (tran.updates.length > 0) sheetInMidEdit = true;
       });
       const wsName = `${cerysCodeObj.cerysExcelName} analysis`;
-      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const ws = await addDefaultWorksheet(context, session, { name: wsName, addListeners: undefined });
+      ws.load(["name", "id"]);
+      await context.sync();
       const range = ws.getRange(`A1:G${transactions.length + 2}`);
       const valuesToPost = [
         ["Transaction", "Transaction", "Transaction", "Cerys", "Client", "Transaction", "Value"],
@@ -158,6 +160,7 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
       ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, wsName));
       ws.activate();
       if (sheetInMidEdit) handleEditButtonClick(session);
+      await context.sync();
     });
   } catch (e) {
     console.error(e);
@@ -221,36 +224,39 @@ export const handleOtherCellClick = (
   }
 };
 
-export async function cerysNomDetailViewPL(
-  context: Excel.RequestContext,
-  session: Session,
-  arrOfTransArrs: Transaction[][]
-) {
-  const cerysCodeObj = arrOfTransArrs[0][0].getCerysCodeObj(session);
-  const catName = getCategoryShortName(cerysCodeObj.cerysCategory);
-  const { ws } = await addOneWorksheet(context, session, {
-    name: `${catName} analysis`,
-    addListeners: undefined,
-  });
-  const valuesToPost = [];
-  arrOfTransArrs.forEach((arrOfTrans) => {
-    const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
-    valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
-    valuesToPost.push(["", "", "", ""]);
-    arrOfTrans.forEach((tran) => {
-      let arr = [];
-      arr.push(tran.transactionType);
-      tran.representsBalanceOfClientCode > 0 ? arr.push(tran.representsBalanceOfClientCode) : arr.push("NA");
-      arr.push(tran.narrative);
-      arr.push(tran.value / 100);
-      valuesToPost.push(arr);
+export async function cerysNomDetailViewPL(session: Session, arrOfTransArrs: Transaction[][]) {
+  try {
+    await Excel.run(async (context) => {
+      const cerysCodeObj = arrOfTransArrs[0][0].getCerysCodeObj(session);
+      const catName = getCategoryShortName(cerysCodeObj.cerysCategory);
+      const ws = await addDefaultWorksheet(context, session, {
+        name: `${catName} analysis`,
+        addListeners: undefined,
+      });
+      const valuesToPost = [];
+      arrOfTransArrs.forEach((arrOfTrans) => {
+        const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
+        valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
+        valuesToPost.push(["", "", "", ""]);
+        arrOfTrans.forEach((tran) => {
+          let arr = [];
+          arr.push(tran.transactionType);
+          tran.representsBalanceOfClientCode > 0 ? arr.push(tran.representsBalanceOfClientCode) : arr.push("NA");
+          arr.push(tran.narrative);
+          arr.push(tran.value / 100);
+          valuesToPost.push(arr);
+        });
+        valuesToPost.push(["", "", "", ""]);
+      });
+      const range = ws.getRange(`A1:D${valuesToPost.length}`);
+      range.values = valuesToPost;
+      ws.activate();
+      ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+      await context.sync();
     });
-    valuesToPost.push(["", "", "", ""]);
-  });
-  const range = ws.getRange(`A1:D${valuesToPost.length}`);
-  range.values = valuesToPost;
-  ws.activate();
-  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+  } catch (e) {
+    console.error(e);
+  }
 }
 
 export function addBsClickListener(context: Excel.RequestContext, session: Session) {
@@ -274,7 +280,7 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailBS(category, session);
-      await cerysNomDetailViewBS(context, session, arrOfTransArrs);
+      await cerysNomDetailViewBS(session, arrOfTransArrs);
       await context.sync();
     });
   } catch (e) {
@@ -282,39 +288,46 @@ export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventAr
   }
 };
 
-async function cerysNomDetailViewBS(context: Excel.RequestContext, session: Session, arrOfTransArrs: Transaction[][]) {
-  const assignment = session.assignment;
-  const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
-  const catName = getCategoryShortName(cerysCategory);
-  const { ws } = await addOneWorksheet(context, session, {
-    name: `${catName} analysis`,
-    addListeners: undefined,
-  });
-  const valuesToPost = [];
-  arrOfTransArrs.forEach((arrOfTrans) => {
-    const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
-    valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
-    valuesToPost.push(["", "", "", ""]);
-    arrOfTrans.forEach((line) => {
-      let arr = [];
-      arr.push(line.transactionType);
-      line.representsBalanceOfClientCode > 0 ? arr.push(line.representsBalanceOfClientCode) : arr.push("NA");
-      arr.push(line.narrative);
-      arr.push(line.value / 100);
-      valuesToPost.push(arr);
+async function cerysNomDetailViewBS(session: Session, arrOfTransArrs: Transaction[][]) {
+  try {
+    await Excel.run(async (context) => {
+      const assignment = session.assignment;
+      const cerysCategory = arrOfTransArrs[0][0].getCerysCodeObj(session).cerysCategory;
+      const catName = getCategoryShortName(cerysCategory);
+      const ws = await addDefaultWorksheet(context, session, {
+        name: `${catName} analysis`,
+        addListeners: undefined,
+      });
+      const valuesToPost = [];
+      arrOfTransArrs.forEach((arrOfTrans) => {
+        const cerysCodeObj = arrOfTrans[0].getCerysCodeObj(session);
+        valuesToPost.push([`Nominal Code ${cerysCodeObj.cerysCode}: ${cerysCodeObj.cerysName}`, "", "", ""]);
+        valuesToPost.push(["", "", "", ""]);
+        arrOfTrans.forEach((line) => {
+          let arr = [];
+          arr.push(line.transactionType);
+          line.representsBalanceOfClientCode > 0 ? arr.push(line.representsBalanceOfClientCode) : arr.push("NA");
+          arr.push(line.narrative);
+          arr.push(line.value / 100);
+          valuesToPost.push(arr);
+        });
+        valuesToPost.push(["", "", "", ""]);
+      });
+      if (cerysCategory === "Profit & loss reserve") {
+        const profit = assignment.calculateProfit(null, null).fSValue;
+        if (profit > 0) {
+          valuesToPost.push(["Profit for the period", "", "", profit]);
+        } else if (profit < 0) {
+          valuesToPost.push(["Loss for the period", "", "", profit]);
+        }
+      }
+      const range = ws.getRange(`A1:D${valuesToPost.length}`);
+      range.values = valuesToPost;
+      ws.activate();
+      ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
+      await context.sync();
     });
-    valuesToPost.push(["", "", "", ""]);
-  });
-  if (cerysCategory === "Profit & loss reserve") {
-    const profit = assignment.calculateProfit(null, null).fSValue;
-    if (profit > 0) {
-      valuesToPost.push(["Profit for the period", "", "", profit]);
-    } else if (profit < 0) {
-      valuesToPost.push(["Loss for the period", "", "", profit]);
-    }
+  } catch (e) {
+    console.error(e);
   }
-  const range = ws.getRange(`A1:D${valuesToPost.length}`);
-  range.values = valuesToPost;
-  ws.activate();
-  ws.onSingleClicked.add(async (e) => showClientNominalDetail(e, session));
 }

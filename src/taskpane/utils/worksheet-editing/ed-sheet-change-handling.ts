@@ -49,34 +49,27 @@ export const handleEditableSheetChange = async (
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string
 ) => {
-  try {
-    await Excel.run(async (context) => {
-      if (session.options.allowEffects > 0) {
-        session.options.allowEffects -= 1;
-        return;
-      }
-      const isRangeEdited = parseChangeEventObjectType(e);
-      const { sheet, addressObj, definedCol } = parseEdSheetChangeEventDetails(session, e, wsName);
-      if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
-        handleOtherEdSheetChange(context, session, e, wsName, sheet, addressObj);
-        return;
-      }
-      const handledSuccessfully =
-        isRangeEdited && (await handleEdSheetRangeEdit(context, session, e, sheet, addressObj, definedCol));
-      await handleSheetDataCorruption(session, wsName, sheet);
-      sheet.usedRange = await getWorksheetUsedRange(context, wsName);
-      session.options.autoFillOverride = false;
-      if (handledSuccessfully && definedCol.type === "cerysCode") {
-        await completeCerysCodeUpdate(session, e, sheet, addressObj);
-      } else if (handledSuccessfully && definedCol.type === "cerysName") {
-        await completeCerysNameUpdate(context, session, e, sheet, addressObj);
-      } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
-        await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
-      }
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
+  if (session.options.allowEffects > 0) {
+    session.options.allowEffects -= 1;
+    return;
+  }
+  const isRangeEdited = parseChangeEventObjectType(e);
+  const { sheet, addressObj, definedCol } = parseEdSheetChangeEventDetails(session, e, wsName);
+  if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
+    handleOtherEdSheetChange(session, e, wsName, sheet, addressObj);
+    return;
+  }
+  const handledSuccessfully =
+    isRangeEdited && (await handleEdSheetRangeEdit(session, e, sheet, addressObj, definedCol));
+  await handleSheetDataCorruption(session, wsName, sheet);
+  sheet.usedRange = await getWorksheetUsedRange(wsName);
+  session.options.autoFillOverride = false;
+  if (handledSuccessfully && definedCol.type === "cerysCode") {
+    await completeCerysCodeUpdate(session, e, sheet, addressObj);
+  } else if (handledSuccessfully && definedCol.type === "cerysName") {
+    await completeCerysNameUpdate(session, e, sheet, addressObj);
+  } else if (handledSuccessfully && definedCol.type === "clientCodeMapping") {
+    await completeClientCodeMappingUpdate(session, e, sheet, addressObj);
   }
 };
 
@@ -106,40 +99,34 @@ export const updateEdSheetClientCodeMapping = async (
   wsName: string,
   affectedTransactions: Transaction[]
 ) => {
-  try {
-    await Excel.run(async (context) => {
-      const sheet = session.editableSheets.find((ws) => ws.name === wsName);
-      const updates = [];
-      sheet.sheetMapping.forEach((map) => {
-        affectedTransactions.forEach((affectedTran) => {
-          if (map.transactionId === affectedTran.cerysTransactionId) {
-            affectedTran.updates.forEach((updatedItem) => {
-              sheet.definedCols.forEach((definedCol) => {
-                const col = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));
-                const row = sheet.getCurrentRow(map.rowNumberOrig);
-                let update: { address: string; value?: string | number } = {
-                  address: `${col}${row}:${col}${row}`,
-                };
-                if (definedCol.type === updatedItem.type) {
-                  update.value = updatedItem.value;
-                  update.value && updates.push(update);
-                }
-              });
-            });
-          }
+  const sheet = session.editableSheets.find((ws) => ws.name === wsName);
+  const updates = [];
+  sheet.sheetMapping.forEach((map) => {
+    affectedTransactions.forEach((affectedTran) => {
+      if (map.transactionId === affectedTran.cerysTransactionId) {
+        affectedTran.updates.forEach((updatedItem) => {
+          sheet.definedCols.forEach((definedCol) => {
+            const col = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));
+            const row = sheet.getCurrentRow(map.rowNumberOrig);
+            let update: { address: string; value?: string | number } = {
+              address: `${col}${row}:${col}${row}`,
+            };
+            if (definedCol.type === updatedItem.type) {
+              update.value = updatedItem.value;
+              update.value && updates.push(update);
+            }
+          });
         });
-      });
-      postEditableSheetEffects(context, session, sheet.name, updates);
+      }
     });
-  } catch (e) {
-    console.error(e);
-  }
+  });
+  postEditableSheetEffects(session, sheet.name, updates);
 };
 
-export const renewEdSheetsTransRefs = async (context: Excel.RequestContext, session: Session) => {
+export const renewEdSheetsTransRefs = async (session: Session) => {
   let promptSheetDeletion = false;
   for (let i = 0; i < session.editableSheets.length; i++) {
-    await session.editableSheets[i].renewTransactions(context, session, session.assignment.transactions);
+    await session.editableSheets[i].renewTransactions(session, session.assignment.transactions);
     if (session.editableSheets[i].transactions.length === 0) {
       session.editableSheets[i].promptDeletion = true;
       promptSheetDeletion = true;

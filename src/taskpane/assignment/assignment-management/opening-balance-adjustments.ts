@@ -29,7 +29,7 @@ import {
   interpretEventAddress,
 } from "../../utils/helper-functions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
-import { addOneWorksheet, setExcelRangeValue } from "../../utils/worksheet";
+import { addDefaultWorksheet, setExcelRangeValue } from "../../utils/worksheet";
 import { cerysNomDetailView } from "../../utils/worksheet-drilling/cerys-drilling";
 import { clientNomDetailView } from "../../utils/worksheet-drilling/client-drilling";
 import { updateEdSheetClientCodeMapping } from "../../utils/worksheet-editing/ed-sheet-change-handling";
@@ -49,7 +49,9 @@ export async function oBARelevantTransView(session: Session) {
         if (tran.updates.length > 0) sheetInMidEdit = true;
       });
       const wsName = "OBA relevant transactions";
-      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const ws = await addDefaultWorksheet(context, session, { name: wsName, addListeners: undefined });
+      ws.load(["name", "id"]);
+      await context.sync();
       const range = ws.getRange(`A1:I${relTrans.length + 2}`);
       const valuesToPost = [
         [
@@ -381,7 +383,9 @@ export const createOBAWorksheet = async (session: Session) => {
       const combinedTBObjs: AssignmentClientTBObject[] = buildConsolidatedClientTrialBalance(session);
       console.log(combinedTBObjs);
       const wsName = OBA_WSNAME;
-      const { ws } = await addOneWorksheet(context, session, { name: wsName, addListeners: undefined });
+      const ws = await addDefaultWorksheet(context, session, { name: wsName, addListeners: undefined });
+      ws.load(["name", "id"]);
+      await context.sync();
       const wsHeaders = worksheetHeader(session, wsName);
       applyWorkhseetHeader(ws, wsHeaders);
       const sheetMapping: ControlledInputMap[] = [];

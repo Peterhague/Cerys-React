@@ -5,8 +5,6 @@ import { accessExcelContext, clearNextViewButOne } from "../../../utils/helper-f
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils/worksheet";
 import { checkNewTransForAssets } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
-/* global Excel */
-
 interface deleteSheetPromptProps {
   handleView: (view: string) => void;
   session: Session;
@@ -19,30 +17,18 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   clearNextViewButOne(session);
 
   const deleteSheets = async () => {
-    try {
-      await Excel.run(async (context) => {
-        deleteManyWorksheets(context, sheetsToDelete);
-        checkNewTransForAssets(session);
-        session.options.updatedTransactions = [];
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    deleteManyWorksheets(sheetsToDelete);
+    checkNewTransForAssets(session);
+    session.options.updatedTransactions = [];
   };
 
   const deleteSingleWorksheet = async (sheetName: string) => {
-    try {
-      await Excel.run(async (context) => {
-        await deleteManyWorksheets(context, [sheetName]);
-        const newArr = [];
-        session.editableSheets.forEach((ws) => {
-          if (ws.name !== sheetName) newArr.push(ws);
-        });
-        setEmptySheets(newArr);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    await deleteManyWorksheets([sheetName]);
+    const newArr = [];
+    session.editableSheets.forEach((ws) => {
+      if (ws.name !== sheetName) newArr.push(ws);
+    });
+    setEmptySheets(newArr);
   };
 
   const skipDeleteSheets = () => {

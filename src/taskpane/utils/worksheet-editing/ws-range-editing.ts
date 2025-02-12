@@ -34,7 +34,6 @@ import { handleEditableSheetChange } from "./ed-sheet-change-handling";
 /* global Excel */
 
 export const handleEdSheetRangeEdit = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
@@ -48,10 +47,9 @@ export const handleEdSheetRangeEdit = async (
   if (!autoFillObj.isAutoFill)
     await testEdSheetChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
   if (autoFillObj.isAutoFill) {
-    await simulateAutoFillChanges(context, session, sheet, autoFillObj);
+    await simulateAutoFillChanges(session, sheet, autoFillObj);
   } else {
-    handledSuccessfully =
-      isEditModeEnabled && (await captureReanalysis(context, session, e, sheet, addressObj, definedCol));
+    handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, definedCol));
   }
   return handledSuccessfully;
 };
@@ -104,7 +102,6 @@ export const checkForAutoFill = (e: Excel.WorksheetChangedEventArgs | QuasiEvent
 };
 
 export const captureReanalysis = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
@@ -144,7 +141,7 @@ export const captureReanalysis = async (
     return handledSuccessfully;
   }
   if (tests.isValid) {
-    processTransUpdateEffects(context, session, sheet, definedCol, range, tests);
+    processTransUpdateEffects(session, sheet, definedCol, range, tests);
     handledSuccessfully = true;
   }
   return handledSuccessfully;
@@ -183,7 +180,6 @@ export const processTransactionUpdate = (
 };
 
 export const processTransUpdateEffects = (
-  context: Excel.RequestContext,
   session: Session,
   sheet: EditableWorksheet,
   definedCol: DefinedCol,
@@ -193,7 +189,7 @@ export const processTransUpdateEffects = (
   const updatedTrans = getUpdatedTransactions(session);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
-  !definedCol.isQuasiMutable && highlightRanges(context, sheet.name, [range], color);
+  !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
   if (
     session.currentView === "promptIFARCreation" ||
     session.currentView === "promptTFARCreation" ||
@@ -333,7 +329,7 @@ export const cancelAutoFill = async (wsName: string, address: string) => {
   }
 };
 
-export const reverseTransactionUpdates = async (context: Excel.RequestContext, session: Session) => {
+export const reverseTransactionUpdates = async (session: Session) => {
   const reversals = [];
   const updatedTrans = getUpdatedTransactions(session);
   updatedTrans.forEach((tran) => {
@@ -349,12 +345,11 @@ export const reverseTransactionUpdates = async (context: Excel.RequestContext, s
       reversals.push(reversal);
     });
   });
-  await setManyWorksheetRangeValues(context, reversals);
+  await setManyWorksheetRangeValues(reversals);
   session.setEditButton("hide");
 };
 
 export const simulateAutoFillChanges = async (
-  context: Excel.RequestContext,
   session: Session,
   sheet: EditableWorksheet,
   autoFillObj: AutoFillObject
@@ -381,7 +376,7 @@ export const simulateAutoFillChanges = async (
   });
   for (let i = 0; i < ranges.length; i++) {
     const valueAfterRange = `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`;
-    const valueAfter = await getWorksheetRangeValues(context, wsName, valueAfterRange);
+    const valueAfter = await getWorksheetRangeValues(wsName, valueAfterRange);
     const event = new QuasiEventObject({
       address: `${colNumToLetter(ranges[i].colNumber)}${ranges[i].rowNumber}`,
       details: { valueBefore: ranges[i].valueBefore, valueAfter: valueAfter[0][0] },
@@ -460,7 +455,6 @@ export const completeCerysCodeUpdate = async (
 };
 
 export const completeCerysNameUpdate = async (
-  context: Excel.RequestContext,
   session: Session,
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   sheet: EditableWorksheet,
@@ -483,7 +477,7 @@ export const completeCerysNameUpdate = async (
     const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;
     session.options.allowEffects = 1;
     await setExcelRangeValue(sheet.name, range, nomCodeObj.currentClientMapping.clientCode);
-    sheet.usedRange = await getWorksheetUsedRange(context, sheet.name);
+    sheet.usedRange = await getWorksheetUsedRange(sheet.name);
     if (clientCodeNameMappingCol > 0) {
       const colLetter = colNumToLetter(clientCodeNameMappingCol);
       const range = `${colLetter}${firstRow}:${colLetter}${firstRow}`;

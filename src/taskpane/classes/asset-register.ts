@@ -14,7 +14,7 @@ import { processTransBatch } from "../utils/transactions/transactions";
 import { InTrayItem } from "./in-trays/global";
 import { Session } from "./session";
 import { AssetTransaction } from "./transaction";
-import { addOneWorksheet } from "../utils/worksheet";
+import { addDefaultWorksheet } from "../utils/worksheet";
 import { STANDARD_NUMBER_FORMAT } from "../static-values/worksheet-formats";
 import { ActiveJournal, Journal, TransactionAttachmentProps } from "./journal";
 import { calculateCharge, populateDepnCols } from "../utils/transactions/asset-reg-generation";
@@ -314,7 +314,7 @@ export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
       await Excel.run(async (context) => {
         const registerType = this.register.initials;
         const name = `${registerType} Possible Additions`;
-        const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
+        const ws = await addDefaultWorksheet(context, session, { name, addListeners: undefined });
         const valuesToPost = [
           ["TRANSACTION", "CLIENT", "CLIENT", "CLIENT", "CLIENT", "DEBIT/", "POSTING", "CERYS", "CERYS", "CERYS"],
           ["NUMBER", "DATE", "NARRATIVE", "NC", "NOMINAL", "(CREDIT)", "SOURCE", "CODE", "NOMINAL", "NARRATIVE"],
@@ -429,7 +429,9 @@ export class AssetRegCreationPrompt extends InTrayItem {
       await Excel.run(async (context) => {
         const sheetMapping = [];
         const name = `${this.register.initials} Transactions`;
-        const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
+        const ws = await addDefaultWorksheet(context, session, { name, addListeners: undefined });
+        ws.load(["name", "id"]);
+        await context.sync();
         const activeClient: Client = session.customer.clients.find(
           (client) => client.clientId === session.assignment.clientId
         );

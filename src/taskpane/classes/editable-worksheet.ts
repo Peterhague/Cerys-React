@@ -68,20 +68,20 @@ export class EditableWorksheet {
     this.transactionFilter = this.createTransactionFilter(session);
     this.isValueInverted = this.testValueInversion(session);
   }
-  async renewTransactions(context: Excel.RequestContext, session: Session, assignmentTrans: Transaction[]) {
+  async renewTransactions(session: Session, assignmentTrans: Transaction[]) {
     const newTrans = assignmentTrans.filter(this.transactionFilter);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran.cerysTransactionId === newTran.cerysTransactionId);
       if (transaction) newTran.updates = transaction.updates;
     });
     this.transactions = newTrans;
-    await this.createChangeObjects(context);
-    await this.updateMapping(context, session);
+    await this.createChangeObjects();
+    await this.updateMapping(session);
     this.transactions.forEach((tran) => (tran.updates = []));
     return newTrans;
   }
 
-  async updateMapping(context, session: Session) {
+  async updateMapping(session: Session) {
     const rowNumbers = [];
     const newMapping: TransactionMap[] = [];
     const newTransToMap: Transaction[] = [];
@@ -135,11 +135,11 @@ export class EditableWorksheet {
       });
     });
     if (updates.length > 0) {
-      await postEditableSheetEffects(context, session, this.name, updates);
+      await postEditableSheetEffects(session, this.name, updates);
     }
   }
 
-  async createChangeObjects(context: Excel.RequestContext) {
+  async createChangeObjects() {
     const updates = [];
     const deletionObjects = [];
     console.log(this.sheetMapping);
@@ -165,13 +165,13 @@ export class EditableWorksheet {
       }
     });
     console.log(updates);
-    updates.length > 0 && setManyExcelRangeValues(context, this.name, updates);
+    updates.length > 0 && setManyExcelRangeValues(this.name, updates);
     console.log(deletionObjects);
     if (deletionObjects.length > 0) {
       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
       // therefore needs to be done from bottom of page up
       deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
-      await deleteWorksheetRangesUp(context, deletionObjects);
+      await deleteWorksheetRangesUp(deletionObjects);
     }
   }
 

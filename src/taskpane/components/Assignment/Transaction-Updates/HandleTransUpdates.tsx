@@ -5,7 +5,6 @@ import { reverseTransactionUpdates } from "../../../utils/worksheet-editing/ws-r
 import { submitTransactionUpdates } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, REVIEW_TRANS_UPDATES } from "../../../static-values/views";
-/* global Excel */
 
 interface handleTransUpdatesProps {
   handleView: (view: string) => void;
@@ -18,14 +17,8 @@ const HandleTransUpdates = ({ handleView, session }: handleTransUpdatesProps) =>
   };
 
   const handleDiscard = async () => {
-    try {
-      await Excel.run(async (context) => {
-        await reverseTransactionUpdates(context, session);
-        callNextView(session);
-      });
-    } catch (e) {
-      console.error(e);
-    }
+    await reverseTransactionUpdates(session);
+    callNextView(session);
   };
 
   const handleSubmit = async () => {

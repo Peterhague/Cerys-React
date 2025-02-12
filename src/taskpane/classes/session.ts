@@ -10,7 +10,6 @@ import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
 import { BaseIndividual } from "./individuals";
 import { Transaction } from "./transaction";
-import { Worksheet } from "./worksheet";
 
 export class Session {
   assignment: Assignment;
@@ -41,7 +40,6 @@ export class Session {
     autoFillOverride: Boolean;
     updatedTransactions: Transaction[];
     allowEffects: number;
-    ignoreWsAddition: number;
     listeningForDoubleClick: boolean;
   } = {
     IFARCreationSetting: "main",
@@ -50,10 +48,8 @@ export class Session {
     autoFillOverride: false,
     updatedTransactions: [],
     allowEffects: 0,
-    ignoreWsAddition: 0,
     listeningForDoubleClick: false,
   };
-  worksheets: Worksheet[] = [];
   newClientPrelim: Client;
   newCorpClientShareholders: BaseIndividualProps[] = [];
   newIndiPrelim: BaseIndividual;

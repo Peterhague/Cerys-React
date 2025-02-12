@@ -13,24 +13,17 @@ export const handleControlledSheetChange = async (
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string
 ) => {
-  try {
-    await Excel.run(async (context) => {
-      if (e.triggerSource === "ThisLocalAddin") return;
-      const isRangeEdited = parseChangeEventObjectType(e);
-      const { sheet, addressObj } = parseControlledSheetChangeEventDetails(session, e, wsName);
-      if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
-        handleOtherControlledSheetChange(context, e, wsName, sheet, addressObj);
-        return;
-      }
-      isRangeEdited && (await testControlledSheetChangesForRejection(e, sheet, addressObj));
-      if (sheet.dataCorrupted) await resetToPreviousValues(wsName, sheet);
-      sheet.usedRange = await getWorksheetUsedRange(context, wsName);
-      session.options.autoFillOverride = false;
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
+  if (e.triggerSource === "ThisLocalAddin") return;
+  const isRangeEdited = parseChangeEventObjectType(e);
+  const { sheet, addressObj } = parseControlledSheetChangeEventDetails(session, e, wsName);
+  if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
+    handleOtherControlledSheetChange(e, wsName, sheet, addressObj);
+    return;
   }
+  isRangeEdited && (await testControlledSheetChangesForRejection(e, sheet, addressObj));
+  if (sheet.dataCorrupted) await resetToPreviousValues(wsName, sheet);
+  sheet.usedRange = await getWorksheetUsedRange(wsName);
+  session.options.autoFillOverride = false;
 };
 
 export const parseControlledSheetChangeEventDetails = (
@@ -66,7 +59,6 @@ export const testControlledSheetChangesForRejection = async (
 };
 
 export const handleOtherControlledSheetChange = async (
-  context: Excel.RequestContext,
   e: Excel.WorksheetChangedEventArgs,
   wsName: string,
   sheet: ControlledWorksheet,
@@ -85,7 +77,7 @@ export const handleOtherControlledSheetChange = async (
   } else if (e.changeType === "CellDeleted" && e.changeDirectionState.deleteShiftDirection === "Left") {
     await handleCellDeletionLeft(sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Down") {
-    handleCellInsertionDown(context, wsName, sheet, addressObj);
+    handleCellInsertionDown(wsName, sheet, addressObj);
   } else if (e.changeType === "CellInserted" && e.changeDirectionState.insertShiftDirection === "Right") {
     handleCellInsertionRight(sheet, addressObj);
   }
@@ -188,12 +180,7 @@ const handleCellDeletionLeft = async (sheet: ControlledWorksheet, addressObj: Ad
   }
 };
 
-const handleCellInsertionDown = (
-  context: Excel.RequestContext,
-  wsName: string,
-  sheet: ControlledWorksheet,
-  addressObj: AddressObject
-) => {
+const handleCellInsertionDown = (wsName: string, sheet: ControlledWorksheet, addressObj: AddressObject) => {
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
   const rowsInserted = lastRow - firstRow + 1;
@@ -205,7 +192,7 @@ const handleCellInsertionDown = (
   } else if (firstCol < protectedLastCol || lastCol > protectedFirstCol) {
     if (!sheet.dataCorrupted) {
       const range = `${colNumToLetter(firstCol)}${firstRow}:${colNumToLetter(lastCol)}${lastRow}`;
-      deleteWorksheetRangeDown(context, wsName, range);
+      deleteWorksheetRangeDown(wsName, range);
     }
   }
 };

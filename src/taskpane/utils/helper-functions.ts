@@ -4,7 +4,6 @@ import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
 import { Transaction } from "../classes/transaction";
-import { Worksheet } from "../classes/worksheet";
 import { updateAssignmentUrl } from "../fetching/apiEndpoints";
 import { fetchOptionsUpdateAssignment } from "../fetching/generateOptions";
 import { ClientTBLineProps } from "../interfaces/interfaces";
@@ -14,7 +13,6 @@ import { colLetterToNum, colNumToLetter } from "./excel-col-conversion";
 import { wsTrialBalance } from "./trial-balance/tb-maintenance";
 import {
   getActiveWorksheetName,
-  getWorksheet,
   getWorksheetUsedRange,
   highlightEditableRanges,
   highlightRanges,
@@ -51,7 +49,6 @@ export const registerWorksheetsCollectionHandler = async (session: Session) => {
     await Excel.run(async (context) => {
       let sheets = context.workbook.worksheets;
       sheets.onDeleted.add(async (e) => handleSheetDeletion(e, session));
-      sheets.onAdded.add(async (e) => await handleSheetAddition(context, e, session));
       await context.sync();
     });
   } catch (e) {
@@ -63,22 +60,6 @@ export const handleSheetDeletion = (e: Excel.WorksheetDeletedEventArgs, session:
   session.editableSheets = session.editableSheets
     .filter((sheet) => sheet.worksheetId !== e.worksheetId)
     .map((sheet) => sheet);
-  session.worksheets = session.worksheets.filter((sheet) => sheet.id !== e.worksheetId).map((sheet) => sheet);
-};
-
-export const handleSheetAddition = async (
-  context: Excel.RequestContext,
-  e: Excel.WorksheetAddedEventArgs,
-  session: Session
-) => {
-  if (session.options.ignoreWsAddition > 0) {
-    session.options.ignoreWsAddition -= 1;
-    return;
-  }
-  const ws = getWorksheet(context, e.worksheetId);
-  ws.load("name");
-  await context.sync();
-  session.worksheets.push(new Worksheet(ws.name, e.worksheetId));
 };
 
 export function populateUser(session: Session, userId: string) {
@@ -164,8 +145,7 @@ export const calculateDiffInDays = (inputDate1: Date | string, inputDate2: Date 
 export const setEditButtonValue = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
-      // appropriate
-      const wsName = await getActiveWorksheetName(context);
+      const wsName = await getActiveWorksheetName();
       session.editableSheets.forEach((sheet) => {
         if (sheet.name === wsName) {
           session.setEditButton(sheet.editButtonStatus);
@@ -180,128 +160,113 @@ export const setEditButtonValue = async (session: Session) => {
 };
 
 export const handleEditButtonClick = async (session: Session) => {
-  try {
-    await Excel.run(async (context) => {
-      // appropriate
-      const wsName = await getActiveWorksheetName(context);
-      const highlightGreenRanges = [];
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name === wsName) {
-          let dateCol: number;
-          let cerysCodeCol: number;
-          let cerysNarrativeCol: number;
-          let clientCodeMappingCol: number;
-          sheet.definedCols.forEach((col) => {
-            const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
-            if (col.type === "date") dateCol = currentCol;
-            if (col.type === "cerysCode") cerysCodeCol = currentCol;
-            if (col.type === "cerysNarrative") cerysNarrativeCol = currentCol;
-            if (col.type === "clientCodeMapping") clientCodeMappingCol = currentCol;
-          });
-          const dateColLetter = colNumToLetter(dateCol);
-          const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
-          const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
-          const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
-          getUpdatedTransactions(session).forEach((tran) => {
-            tran.updates.forEach((update) => {
-              if (update.worksheetName === wsName) {
-                const rowNumber = getTransRowNumber(tran, sheet);
-                if (update.type === "cerysCode") {
-                  const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "date") {
-                  const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "cerysNarrative") {
-                  const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "clientCodeMapping") {
-                  const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-              }
-            });
-          });
-          if (sheet.editButtonStatus === "show") {
-            highlightEditableRanges(context, sheet);
-            highlightRanges(context, wsName, highlightGreenRanges, "lightGreen");
-            sheet.editButtonStatus = "hide";
-          } else {
-            unhighlightEditableRanges(context, sheet);
-            sheet.editButtonStatus = "show";
-          }
-          session.setEditButton(sheet.editButtonStatus);
-          return;
-        }
+  const wsName = await getActiveWorksheetName();
+  const highlightGreenRanges = [];
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      let dateCol: number;
+      let cerysCodeCol: number;
+      let cerysNarrativeCol: number;
+      let clientCodeMappingCol: number;
+      sheet.definedCols.forEach((col) => {
+        const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
+        if (col.type === "date") dateCol = currentCol;
+        if (col.type === "cerysCode") cerysCodeCol = currentCol;
+        if (col.type === "cerysNarrative") cerysNarrativeCol = currentCol;
+        if (col.type === "clientCodeMapping") clientCodeMappingCol = currentCol;
       });
-    });
-  } catch (e) {
-    console.error(e);
-  }
+      const dateColLetter = colNumToLetter(dateCol);
+      const cerysCodeColLetter = colNumToLetter(cerysCodeCol);
+      const cerysNarrativeColLetter = colNumToLetter(cerysNarrativeCol);
+      const clientCodeMappingColLetter = colNumToLetter(clientCodeMappingCol);
+      getUpdatedTransactions(session).forEach((tran) => {
+        tran.updates.forEach((update) => {
+          if (update.worksheetName === wsName) {
+            const rowNumber = getTransRowNumber(tran, sheet);
+            if (update.type === "cerysCode") {
+              const range = `${cerysCodeColLetter}${rowNumber}:${cerysCodeColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "date") {
+              const range = `${dateColLetter}${rowNumber}:${dateColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "cerysNarrative") {
+              const range = `${cerysNarrativeColLetter}${rowNumber}:${cerysNarrativeColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "clientCodeMapping") {
+              const range = `${clientCodeMappingColLetter}${rowNumber}:${clientCodeMappingColLetter}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+          }
+        });
+      });
+      if (sheet.editButtonStatus === "show") {
+        highlightEditableRanges(sheet);
+        highlightRanges(wsName, highlightGreenRanges, "lightGreen");
+        sheet.editButtonStatus = "hide";
+      } else {
+        unhighlightEditableRanges(sheet);
+        sheet.editButtonStatus = "show";
+      }
+      session.setEditButton(sheet.editButtonStatus);
+      return;
+    }
+  });
 };
 
 export const simulateEditButtonClick = async (session: Session) => {
-  try {
-    await Excel.run(async (context) => {
-      //Appropriate
-      const wsName = await getActiveWorksheetName(context);
-      const highlightGreenRanges = [];
-      const updatedTrans = getUpdatedTransactions(session);
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name === wsName) {
-          let codeColNumber;
-          let dateColNumber;
-          let narrColNumber;
-          let clientCodeMappingNumber;
-          sheet.definedCols.forEach((col) => {
-            const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
-            if (col.type === "cerysCode") codeColNumber = currentCol;
-            if (col.type === "date") dateColNumber = currentCol;
-            if (col.type === "cerysNarrative") narrColNumber = currentCol;
-            if (col.type === "clientCodeMapping") clientCodeMappingNumber = currentCol;
-          });
-          updatedTrans.forEach((tran) => {
-            const rowNumber = getTransRowNumber(tran, sheet);
-            tran.updates.forEach((update) => {
-              if (update.worksheetName === wsName) {
-                if (update.type === "cerysCode") {
-                  const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "date") {
-                  const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "cerysNarrative") {
-                  const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-                if (update.type === "clientCodeMapping") {
-                  const range = `${colNumToLetter(clientCodeMappingNumber)}${rowNumber}:${colNumToLetter(clientCodeMappingNumber)}${rowNumber}`;
-                  highlightGreenRanges.push(range);
-                }
-              }
-            });
-          });
-          highlightEditableRanges(context, sheet);
-          highlightRanges(context, wsName, highlightGreenRanges, "lightGreen");
-          return;
-        }
+  const wsName = await getActiveWorksheetName();
+  const highlightGreenRanges = [];
+  const updatedTrans = getUpdatedTransactions(session);
+  session.editableSheets.forEach((sheet) => {
+    if (sheet.name === wsName) {
+      let codeColNumber;
+      let dateColNumber;
+      let narrColNumber;
+      let clientCodeMappingNumber;
+      sheet.definedCols.forEach((col) => {
+        const currentCol = sheet.getCurrentColumn(col.colNumberOrig);
+        if (col.type === "cerysCode") codeColNumber = currentCol;
+        if (col.type === "date") dateColNumber = currentCol;
+        if (col.type === "cerysNarrative") narrColNumber = currentCol;
+        if (col.type === "clientCodeMapping") clientCodeMappingNumber = currentCol;
       });
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
+      updatedTrans.forEach((tran) => {
+        const rowNumber = getTransRowNumber(tran, sheet);
+        tran.updates.forEach((update) => {
+          if (update.worksheetName === wsName) {
+            if (update.type === "cerysCode") {
+              const range = `${colNumToLetter(codeColNumber)}${rowNumber}:${colNumToLetter(codeColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "date") {
+              const range = `${colNumToLetter(dateColNumber)}${rowNumber}:${colNumToLetter(dateColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "cerysNarrative") {
+              const range = `${colNumToLetter(narrColNumber)}${rowNumber}:${colNumToLetter(narrColNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+            if (update.type === "clientCodeMapping") {
+              const range = `${colNumToLetter(clientCodeMappingNumber)}${rowNumber}:${colNumToLetter(clientCodeMappingNumber)}${rowNumber}`;
+              highlightGreenRanges.push(range);
+            }
+          }
+        });
+      });
+      highlightEditableRanges(sheet);
+      highlightRanges(wsName, highlightGreenRanges, "lightGreen");
+      return;
+    }
+  });
 };
 
-export const updateAssignmentFigures = async (context: Excel.RequestContext, session: Session) => {
-  await wsTrialBalance(context, session);
-  await wsPLAccount(context, session);
-  await wsBalanceSheet(context, session);
+export const updateAssignmentFigures = async (session: Session) => {
+  await wsTrialBalance(session);
+  await wsPLAccount(session);
+  await wsBalanceSheet(session);
 };
 
 export const interpretEventAddress = (
@@ -416,20 +381,8 @@ export const resetEdSheetCallBack = () => {
 };
 
 export const getActiveEdSheet = async (session: Session) => {
-  try {
-    const rtnVal = await Excel.run(async (context) => {
-      const wsName = await getActiveWorksheetName(context);
-      let ws;
-      session.editableSheets.forEach((sheet) => {
-        if (sheet.name === wsName) ws = sheet;
-      });
-      return ws;
-    });
-    return rtnVal;
-  } catch (e) {
-    console.error(e);
-    return e;
-  }
+  const wsName = await getActiveWorksheetName();
+  return session.editableSheets.find((sheet) => sheet.name === wsName);
 };
 
 export const checkEditMode = (sheet: EditableWorksheet) => {
@@ -505,16 +458,11 @@ export const accessExcelContext = async (func, args) => {
   }
 };
 
-export const postEditableSheetEffects = async (
-  context: Excel.RequestContext,
-  session: Session,
-  wsName: string,
-  updates: ExcelRangeUpdate[]
-) => {
+export const postEditableSheetEffects = async (session: Session, wsName: string, updates: ExcelRangeUpdate[]) => {
   session.options.allowEffects = updates.length;
-  setManyExcelRangeValues(context, wsName, updates);
+  setManyExcelRangeValues(wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
-  sheet.usedRange = await getWorksheetUsedRange(context, wsName);
+  sheet.usedRange = await getWorksheetUsedRange(wsName);
 };
 
 export const buildClientTBBalSheetOnly = (session: Session) => {

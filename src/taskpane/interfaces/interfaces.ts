@@ -464,11 +464,6 @@ export interface AutoFillObject {
   repRange: string;
 }
 
-export interface ProxyWorksheet {
-  name: string;
-  ws: Excel.Worksheet;
-}
-
 export interface WorksheetDefaults {
   name: string;
   addListeners: [(context: Excel.RequestContext, session: Session) => void];

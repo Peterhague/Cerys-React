@@ -104,6 +104,8 @@ export const createControlledWorksheet = (
   uniqueColumn: number | null,
   uniqueValue: string | null
 ) => {
+  console.log(ws.name);
+  console.log(sheetMapping);
   session.controlledSheets = session.controlledSheets.filter((sheet) => sheet.name !== ws.name);
   const controlledWs = new ControlledWorksheet(
     controlledInputs,
