@@ -4,6 +4,7 @@ import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { InTray, InTrayAndParentInTray, InTrayItem } from "../../../classes/in-trays/global";
 import { ASSIGNMENT_DASH_HOME, INTRAY_NESTED_SUMMARY, INTRAY_SUMMARY } from "../../../static-values/views";
+import { handleInTrayRouting } from "../../../utils/in-trays/in-tray-routing";
 
 interface IntrayDetailsProps {
   handleView: (view: string) => void;
@@ -21,27 +22,29 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
 
   const handleAffirmative = async () => {
     await inTrayItem.affirmativeAction(session);
-    updateInTray();
-    handleReturn();
+    // updateInTray();
+    // handleReturn();
+    handleInTrayRouting(session, inTray);
   };
 
   const handleReturn = () => {
-    const route = inTray.parentInTray && inTray.collections.length > 0 ? INTRAY_NESTED_SUMMARY : INTRAY_SUMMARY;
-    const routeOptions =
-      inTray.parentInTray && inTray.collections.length > 0
-        ? new InTrayAndParentInTray(inTray, inTray.parentInTray)
-        : inTray;
-    session.handleDynamicView(route, routeOptions);
+    handleInTrayRouting(session, inTray);
+    // const route = inTray.parentInTray && inTray.collections.length > 0 ? INTRAY_NESTED_SUMMARY : INTRAY_SUMMARY;
+    // const routeOptions =
+    //   inTray.parentInTray && inTray.collections.length > 0
+    //     ? new InTrayAndParentInTray(inTray, inTray.parentInTray)
+    //     : inTray;
+    // session.handleDynamicView(route, routeOptions);
   };
 
-  const updateInTray = () => {
-    inTray.collections.forEach((coll) => {
-      const items = coll.getItems(session);
-      console.log(items);
-      if (items.length === 0) inTray.deleteCollection(coll);
-    });
-    console.log(inTray.collections);
-  };
+  // const updateInTray = () => {
+  //   inTray.collections.forEach((coll) => {
+  //     const items = coll.getItems(session);
+  //     console.log(items);
+  //     if (items.length === 0) inTray.deleteCollection(coll);
+  //   });
+  //   console.log(inTray.collections);
+  // };
 
   return (
     <>

@@ -77,27 +77,38 @@ export const createAssetRegGlobalCollection = (parentInTray: InTray) => {
 // asset reg child intrays
 export const createAssetRegistersInTrays = (session: Session, parentInTray: InTray) => {
   const registerPromptsDetails = checkTransUnregisteredAssets(session);
-  const assRegTemplate = registerPromptsDetails.length > 0 && new InTrayAssetRegisterTemplate(registerPromptsDetails);
-  const inTray = new InTray(assRegTemplate, parentInTray);
-  return [inTray];
+  console.log(registerPromptsDetails);
+  // const assRegTemplate = registerPromptsDetails.length > 0 && new InTrayAssetRegisterTemplate(registerPromptsDetails);
+  // const inTray = new InTray(assRegTemplate, parentInTray);
+  const inTrays =
+    registerPromptsDetails.length > 0 &&
+    registerPromptsDetails.map(
+      (promptDetails) => new InTray(new InTrayAssetRegisterTemplate(promptDetails), parentInTray)
+    );
+  return inTrays;
 };
 
 export class InTrayAssetRegisterTemplate extends InTrayTemplate {
-  prompts: AssetRegisterPromptDetails[];
-  constructor(prompts: AssetRegisterPromptDetails[]) {
+  prompt: AssetRegisterPromptDetails;
+  constructor(prompt: AssetRegisterPromptDetails) {
     super("AssetRegister", "Asset Register");
-    this.prompts = prompts;
-    const collections = prompts.map((prompt) => {
-      const title = prompt.register.longCap;
-      const inTrayCollectionProps: InTrayCollectionProps = {
-        title,
-        itemsAction: createAssetRegisterInTrayCollections,
-        itemsActionParams: [prompt.registerType],
-      };
-      const coll = new InTrayCollection(inTrayCollectionProps);
-      return coll;
-    });
-    this.collections.push(...collections);
+    this.prompt = prompt;
+    // const collections = prompts.map((prompt) => {
+    //   const title = prompt.register.longCap;
+    //   const inTrayCollectionProps: InTrayCollectionProps = {
+    //     title,
+    //     itemsAction: createAssetRegisterInTrayCollections,
+    //     itemsActionParams: [prompt.registerType],
+    //   };
+    //   const coll = new InTrayCollection(inTrayCollectionProps);
+    //   return coll;
+    // });
+    const inTrayCollectionProps: InTrayCollectionProps = {
+      title: prompt.register.longCap,
+      itemsAction: createAssetRegisterInTrayCollections,
+      itemsActionParams: [prompt.registerType],
+    };
+    this.collections.push(new InTrayCollection(inTrayCollectionProps));
   }
 }
 

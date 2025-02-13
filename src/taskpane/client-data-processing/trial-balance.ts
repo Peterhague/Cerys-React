@@ -32,7 +32,6 @@ export async function enterTB(session: Session) {
   const journals = transactions.map((tran) => new Journal(session, tran));
   const activeJournal = new ActiveJournal({ type: "client trial balance", journals });
   await processTransBatch(session, activeJournal);
-  //checkNewTransForAssets(session);
   const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
   postClientTB(session, clientTB);
   const tbEntryCollections = createTBEntryCollections(session);
