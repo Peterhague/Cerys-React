@@ -51,7 +51,6 @@ export function getCerysNomDetailPL(category: string, session: Session) {
 
 export function getCerysNomDetailBS(category: string, session: Session) {
   const assignment = session.assignment;
-  console.log(category);
   let cat = category;
   if (category === "Cash at bank and in hand") {
     cat = "Cash";
@@ -61,7 +60,6 @@ export function getCerysNomDetailBS(category: string, session: Session) {
     cat = "Creditors > 1 year";
   }
   let selection: number[];
-  console.log(assignment.activeCategoriesDetails);
   assignment.activeCategoriesDetails.forEach((obj) => {
     if (obj.cerysCategory === cat || obj.cerysCategory === category) {
       selection = obj.cerysCodes;

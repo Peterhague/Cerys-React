@@ -38,7 +38,6 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
     const [showSuggestions, setShowSuggestions] = useState(false);
 
     const handleChange = (value: string) => {
-      console.log(value);
       if (activeIndi) {
         if (value.length > searchDisplay.length) {
           return;
@@ -64,11 +63,8 @@ const IndividualInput = React.forwardRef<HTMLInputElement, IndividualInputProps>
         if (fullName.toLowerCase().includes(value.toLowerCase())) check = true;
         return value && check;
       });
-      console.log(suggestedIndi);
-      console.log(filteredSelection.length);
       if (!suggestedIndi && filteredSelection.length === 1) setSuggestedIndi(filteredSelection[0]);
       if (suggestedIndi && filteredSelection.length !== 1) {
-        console.log(filteredSelection.length);
         setSuggestedIndi(null);
       }
     };

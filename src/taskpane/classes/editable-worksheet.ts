@@ -40,7 +40,7 @@ export class EditableWorksheet {
     session: Session,
     transactions: Transaction[],
     ws: Excel.Worksheet,
-    wsValues: string[][],
+    wsValues: (string | number)[][],
     type: string,
     sheetMapping: TransactionMap[],
     controlledRangeObj: ExcelRangeObject
@@ -107,7 +107,6 @@ export class EditableWorksheet {
     const updates: ExcelRangeUpdate[] = [];
     additionalTrans.forEach((obj) => {
       const row = obj.map.rowNumberOrig;
-      console.log(row);
       this.definedCols.forEach((definedCol) => {
         let value = definedCol.getTargetProperty(obj.tran.revertToDbIdNotation());
         if (
@@ -142,7 +141,6 @@ export class EditableWorksheet {
   async createChangeObjects() {
     const updates = [];
     const deletionObjects = [];
-    console.log(this.sheetMapping);
     this.sheetMapping.forEach((map) => {
       const transaction = this.transactions.find((tran) => tran.cerysTransactionId === map.transactionId);
       if (transaction) {
@@ -160,13 +158,10 @@ export class EditableWorksheet {
             }
           });
       } else {
-        console.log("correct branch...");
         deletionObjects.push(createDeletionObject(map, this));
       }
     });
-    console.log(updates);
     updates.length > 0 && setManyExcelRangeValues(this.name, updates);
-    console.log(deletionObjects);
     if (deletionObjects.length > 0) {
       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
       // therefore needs to be done from bottom of page up
@@ -256,7 +251,7 @@ export const createEditableWorksheet = (
   session: Session,
   transactions: (Transaction | FATransaction)[],
   ws: Excel.Worksheet,
-  wsValues: string[][],
+  wsValues: (string | number)[][],
   type: string,
   sheetMapping: TransactionMap[],
   controlledRangeObj: ExcelRangeObject

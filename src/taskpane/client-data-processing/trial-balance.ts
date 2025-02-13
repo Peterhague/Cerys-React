@@ -36,7 +36,7 @@ export async function enterTB(session: Session) {
   const clientTB: ClientTBLineProps[] = buildClientTB(session, clientTBObjs);
   postClientTB(session, clientTB);
   const tbEntryCollections = createTBEntryCollections(session);
-  const inTray = session.assignment.inTray;
+  const inTray = session.inTray;
   tbEntryCollections.forEach((collection) => {
     if (collection.getItems(session).length > 0) {
       inTray.addCollection(collection);

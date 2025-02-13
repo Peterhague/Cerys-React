@@ -40,7 +40,6 @@ export const createTFARegisterWorksheet = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const register = session.TFARegister;
-      console.log(register);
       const activeCatsNames = [];
       const TFAActiveCats = [];
       register.assets.forEach((i) => {
@@ -89,7 +88,6 @@ export const createIPRegisterWorksheet = async (session: Session) => {
       });
       const wsName = "IP Register";
       const ws = await addDefaultWorksheet(context, session, { name: wsName, addListeners: undefined });
-      console.log(ws);
       const wsHeaders = worksheetHeader(session, "Investment property register");
       applyWorkhseetHeader(ws, wsHeaders);
       populateAssetRegWs(IPActiveCats, IPRegister, ws, "IP");

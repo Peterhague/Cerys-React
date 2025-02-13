@@ -72,8 +72,6 @@ import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { Session } from "./session";
 import { AssetTransaction, Transaction } from "./transaction";
 import { TrialBalanceLine } from "./client-codes";
-import { InTray } from "./in-trays/global";
-import { InTrayAssignment } from "./in-trays/templates";
 
 class BaseAssignment {
   clientId: string;
@@ -140,7 +138,6 @@ export class Assignment extends BaseAssignment {
   tbListenerAdded: boolean;
   pLListenerAdded: boolean;
   bSListenerAdded?: boolean;
-  inTray: InTray;
   constructor(assignment: AssignmentProps) {
     super(assignment);
     this.reportingPeriod = assignment.reportingPeriod;
@@ -175,7 +172,6 @@ export class Assignment extends BaseAssignment {
     this.tbListenerAdded = assignment.tbListenerAdded;
     this.pLListenerAdded = assignment.pLListenerAdded;
     this.bSListenerAdded = assignment.bSListenerAdded;
-    this.inTray = new InTray(new InTrayAssignment());
   }
 
   getUnprocessedFATransByType(session: Session, registerType: string) {

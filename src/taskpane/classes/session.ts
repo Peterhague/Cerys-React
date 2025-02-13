@@ -8,6 +8,8 @@ import { ControlledWorksheet } from "./controlled-worksheet";
 import { Customer } from "./customer";
 import { EditableCell } from "./editable-cell";
 import { EditableWorksheet } from "./editable-worksheet";
+import { InTray } from "./in-trays/global";
+import { InTrayAssignment } from "./in-trays/templates";
 import { BaseIndividual } from "./individuals";
 import { Transaction } from "./transaction";
 
@@ -66,4 +68,5 @@ export class Session {
   IFATransactions: [];
   IPTransactions: { assetCategory: string; assetCategoryNo: number }[];
   TFATransactions: [];
+  inTray = new InTray(new InTrayAssignment());
 }

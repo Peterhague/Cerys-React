@@ -16,21 +16,31 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
   console.log(inTrayItem);
 
   const handleIgnore = () => {
-    console.log(inTray);
-    console.log(inTrayItem);
-    //inTray.deleteThisItem(inTrayItem);
     session.handleDynamicView(INTRAY_SUMMARY, inTray);
   };
 
   const handleAffirmative = async () => {
     await inTrayItem.affirmativeAction(session);
-    //inTray.deleteThisItem(inTrayItem);
+    updateInTray();
+    handleReturn();
   };
 
   const handleReturn = () => {
-    const route = inTray.parentInTray ? INTRAY_NESTED_SUMMARY : INTRAY_SUMMARY;
-    const options = inTray.parentInTray ? new InTrayAndParentInTray(inTray, inTray.parentInTray) : inTray;
-    session.handleDynamicView(route, options);
+    const route = inTray.parentInTray && inTray.collections.length > 0 ? INTRAY_NESTED_SUMMARY : INTRAY_SUMMARY;
+    const routeOptions =
+      inTray.parentInTray && inTray.collections.length > 0
+        ? new InTrayAndParentInTray(inTray, inTray.parentInTray)
+        : inTray;
+    session.handleDynamicView(route, routeOptions);
+  };
+
+  const updateInTray = () => {
+    inTray.collections.forEach((coll) => {
+      const items = coll.getItems(session);
+      console.log(items);
+      if (items.length === 0) inTray.deleteCollection(coll);
+    });
+    console.log(inTray.collections);
   };
 
   return (

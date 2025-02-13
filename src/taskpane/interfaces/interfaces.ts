@@ -571,7 +571,7 @@ export interface InTrayItemProps {
 
 export interface InTrayCollectionProps {
   title: string;
-  itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[];
+  itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[] | InTrayItem | InTray;
   itemsActionParams: unknown[];
 }
 

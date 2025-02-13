@@ -48,7 +48,6 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
           }
         });
         !allocationUpdated && session.newIndiPrelim._clientShareholdings.push(allocation);
-        console.log(session.newIndiPrelim);
       } else {
         console.log("There aren't enough shares available for this allocation");
       }

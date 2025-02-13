@@ -26,7 +26,6 @@ const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps
       i.preliminaryId = i.individualId;
       delete i.individualId;
     });
-    console.log(client.newIndividuals);
     const customerId = session.customer.customerId;
     const options = fetchOptionsAddClient(client, customerId);
     const newCustAndClientDb = await fetch(addClientGlobalUrl, options);

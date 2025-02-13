@@ -30,7 +30,7 @@ const AssignmentDashHome = ({ session, handleView }: assignmentDashHomeProps) =>
       <CerysButton buttonText={"INDEX"} handleClick={() => handleView(USER_LOGIN)} />
       <CerysButton
         buttonText={"INTRAY"}
-        handleClick={() => session.handleDynamicView(INTRAY_SUMMARY, session.assignment.inTray)}
+        handleClick={() => session.handleDynamicView(INTRAY_SUMMARY, session.inTray)}
       />
     </>
   );

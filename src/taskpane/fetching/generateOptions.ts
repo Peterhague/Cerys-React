@@ -295,7 +295,6 @@ export function fetchOptionsIFA(session: Session, relevantTrans: AssetTransactio
 }
 
 export function fetchOptionsTFA(session: Session, relevantTrans: AssetTransaction[]) {
-  console.log(relevantTrans);
   return {
     method: "POST",
     headers: {

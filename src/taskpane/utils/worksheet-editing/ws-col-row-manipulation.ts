@@ -125,12 +125,8 @@ export const handleRowDeletion = async (session: Session, sheet: EditableWorkshe
       callNextView(session);
     }
   }
-  console.log(sheet.mappingObject);
   sheet.mappingObject.rows.forEach((rowObj) => {
-    console.log(rowObj.current);
-    console.log(lastRow);
     if (rowObj.current > lastRow) {
-      console.log("rows deleted");
       rowObj.current -= rowsDeleted;
     }
     if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;

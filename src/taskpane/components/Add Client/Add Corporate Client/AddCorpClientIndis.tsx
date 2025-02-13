@@ -150,7 +150,6 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
     activeIndi.potentialShareAllocations.forEach((allocation) => {
       allocation.indiAllocationSubmitted = allocation.indiAllocationLive;
     });
-    console.log(activeIndi);
     if (isDirector || isShareholder) {
       session.newClientPrelim[activeIndi.associationType].push(activeIndi);
     }
@@ -242,7 +241,6 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
   const cancelFormInput = () => {
     const copy = _.cloneDeep(backupNewClientIndis);
     setNewClientIndis(copy);
-    console.log(newClientIndis);
     setBackupNewClientIndis(null);
     nullifyForm();
   };

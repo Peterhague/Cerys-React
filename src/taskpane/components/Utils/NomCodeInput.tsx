@@ -73,7 +73,6 @@ const NomCodeInput = React.forwardRef<HTMLInputElement, nomCodeInputProps>(
     };
 
     const handleBlur = (e: React.FocusEvent) => {
-      console.log(searchTerm.trim());
       if (e.currentTarget.contains(e.relatedTarget)) {
         return;
       } else {

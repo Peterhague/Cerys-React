@@ -151,7 +151,6 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
     const options = fetchOptionsNewAssignment(prelimAssignment, customerId);
     const updatedCustAndNewAssDb = await fetch(assignmentUrl, options);
     const updatedCustAndNewAss = await updatedCustAndNewAssDb.json();
-    console.log(updatedCustAndNewAss);
     session.chart = updatedCustAndNewAss.chart.map((i: ClientCerysCodeObjectProps) => new ClientCerysCodeObject(i));
     return updatedCustAndNewAss;
   };

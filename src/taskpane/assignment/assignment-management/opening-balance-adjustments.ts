@@ -381,7 +381,6 @@ export const createOBAWorksheet = async (session: Session) => {
   try {
     await Excel.run(async (context) => {
       const combinedTBObjs: AssignmentClientTBObject[] = buildConsolidatedClientTrialBalance(session);
-      console.log(combinedTBObjs);
       const wsName = OBA_WSNAME;
       const ws = await addDefaultWorksheet(context, session, { name: wsName, addListeners: undefined });
       ws.load(["name", "id"]);
@@ -391,7 +390,6 @@ export const createOBAWorksheet = async (session: Session) => {
       const sheetMapping: ControlledInputMap[] = [];
       const values = [["", "", "Per Client", "", "Per Accounts", "", "Adjustments"]];
       values.push(["Code", "Name", "DR/CR", "", "DR/CR", "", "DR/CR"], ["", "", "", "", "", "", ""]);
-      console.log(combinedTBObjs);
       combinedTBObjs.forEach((obj) => {
         values.push([
           `${obj.clientCode}`,

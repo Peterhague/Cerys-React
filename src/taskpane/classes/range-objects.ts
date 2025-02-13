@@ -11,7 +11,7 @@ export class ExcelRangeObject {
   lastColLetter: string;
   lastRow: number;
 
-  constructor(startingCell: { row: number; col: number }, values: string[][]) {
+  constructor(startingCell: { row: number; col: number }, values: (string | number)[][]) {
     this.numberOfRows = values.length;
     this.numberOfCols = values[0].length;
     this.firstCol = startingCell.col;

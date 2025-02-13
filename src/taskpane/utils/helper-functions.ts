@@ -558,9 +558,7 @@ export const handleWorksheetDrill = async (
   if (!sheet) sheet = session.editableSheets.find((ws) => ws.name === wsName);
   if (!sheet) return;
   const addressObj = interpretEventAddress(e);
-  console.log(addressObj);
   const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow);
-  console.log(map);
   if (!map) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);

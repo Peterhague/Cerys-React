@@ -16,51 +16,28 @@ export class InTray {
   type: InTrayTemplate["type"];
   title: string;
   collections: InTrayCollection[];
-  // collectionsAction: (...args: unknown[]) => InTrayCollection[] | Promise<InTrayCollection[]>;
-  // collectionsActionParams: unknown[];
   parentInTray: InTray;
   id: string;
   constructor(intray: InTrayTemplate, parentInTray: InTray = null) {
     this.type = intray.type;
     this.title = intray.title;
-    // intray.collections.forEach((coll) => {
-    //   const items = coll.getItems(session);
-    //   console.log(items);
-    //   items.forEach((item) => {
-    //     if (item instanceof InTray) item.parentInTray = this;
-    //   });
-    // });
     this.collections = intray.collections;
     this.parentInTray = parentInTray;
     this.id = getRandomString();
   }
 
   addCollection(collection: InTrayCollection) {
-    // const items = collection.getItems(session);
-    // console.log(items);
-    // items.forEach((item) => {
-    //   if (item instanceof InTray) item.parentInTray = this;
-    // });
     this.collections.push(collection);
   }
-  // deleteThisItem(inTrayItem: InTrayItem) {
-  //   this.collections.find((coll) => coll.id === inTrayItem.collectionId).deleteItem(inTrayItem);
-  // }
 
-  // addItem(inTrayItem: InTrayItem) {
-  //   this.collections.find((coll) => coll.id === inTrayItem.collectionId).items.push(inTrayItem);
-  // }
-  // getCollections() {
-  //   const collections: InTrayCollection[] | Promise<InTrayCollection[]> = this.collectionsAction(
-  //     ...this.collectionsActionParams
-  //   );
-  //   return collections;
-  // }
+  deleteCollection(collection: InTrayCollection) {
+    this.collections = this.collections.filter((coll) => coll.id !== collection.id);
+  }
 }
 
 export class InTrayCollection {
   title: string;
-  itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[];
+  itemsAction: (session: Session, ...args: unknown[]) => (InTrayItem | InTray)[] | InTrayItem | InTray;
   itemsActionParams: unknown[];
   id: string;
   constructor(inTrayCollection: InTrayCollectionProps) {
@@ -71,7 +48,12 @@ export class InTrayCollection {
   }
 
   getItems(session: Session) {
-    return this.itemsAction(session, ...this.itemsActionParams);
+    const items = this.itemsAction(session, ...this.itemsActionParams);
+    if (Array.isArray(items)) {
+      return items;
+    } else if (items) {
+      return [items];
+    } else return [];
   }
 
   // deleteItem(inTrayItem: InTrayItem | InTray) {

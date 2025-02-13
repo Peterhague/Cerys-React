@@ -23,6 +23,7 @@ const Footer = ({ editButton, session }: footerProps) => {
           <CerysButton buttonText={"Hide"} handleClick={() => handleEditButtonClick(session)} />
         )}
       </>
+      <CerysButton buttonText="Log Session" handleClick={() => console.log(session)} />
     </>
   );
 };

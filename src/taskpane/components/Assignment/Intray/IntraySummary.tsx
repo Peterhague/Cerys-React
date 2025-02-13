@@ -12,14 +12,11 @@ interface IntraySummaryProps {
 }
 
 const IntraySummary = ({ session, intray, handleView }: IntraySummaryProps) => {
+  console.log(intray);
   const handleNestedInTray = (childInTray: InTray) => {
     const options = new InTrayAndParentInTray(childInTray, intray);
     session.handleDynamicView(INTRAY_NESTED_SUMMARY, options);
   };
-  console.log(intray.collections[0]);
-  console.log(intray.collections[0].getItems(session));
-  intray.collections.length > 1 && console.log(intray.collections[1]);
-  intray.collections.length > 1 && console.log(intray.collections[1].getItems(session));
 
   return (
     <>

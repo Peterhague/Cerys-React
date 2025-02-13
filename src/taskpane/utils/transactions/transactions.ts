@@ -22,7 +22,6 @@ export const processTransBatch = async (session: Session, activeJournal: ActiveJ
   try {
     await Excel.run(async (context) => {
       activeJournal.finaliseJournalsForDb(session);
-      console.log(activeJournal);
       const transDtls = { customerId: session.customer.customerId, assignmentId: session.assignment.assignmentId };
       const { assignment } = await postTransactionsDb(session, activeJournal, transDtls);
       session.assignment = new Assignment(assignment);
@@ -54,12 +53,10 @@ export const submitTransactionUpdates = async (session: Session) => {
       session.options.updatedTransactions = updatedTrans;
       session.handleView(DELETE_SHEET_PROMPT);
     } else {
-      console.log("this branch?");
       await updateAssignmentFigures(session);
       checkNewTransForAssets(session);
     }
   } else {
-    console.log("this branch??");
     callNextView(session);
   }
   session.editableSheets.forEach((sheet) => {

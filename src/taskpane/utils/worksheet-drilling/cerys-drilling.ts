@@ -43,7 +43,6 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
 export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
     await Excel.run(async (context) => {
-      console.log("click registered!!");
       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
@@ -51,7 +50,6 @@ export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs
           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
-      console.log(map);
       if (!map) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const code = input instanceof TrialBalanceLine && input.cerysCode;
@@ -75,9 +73,7 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
       if (!map) return;
-      console.log(map);
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
-      console.log(input);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
       await cerysNomDetailViewPL(session, arrOfTransArrs);
@@ -92,7 +88,6 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
   try {
     await Excel.run(async (context) => {
       let sheetInMidEdit = false;
-      console.log(transactions);
       const cerysCodeObj = transactions[0].getCerysCodeObj(session);
       const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
       transactions.forEach((tran) => {
@@ -186,8 +181,6 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
         cerysCodeCol = ws.getCurrentColumn(col.colNumberOrig);
       } else if (col.type === "clientCode") {
         clientCodeCol = ws.getCurrentColumn(col.colNumberOrig);
-        console.log(col.colNumberOrig);
-        console.log(ws.getOriginalColumn(col.colNumberOrig));
       } else if (col.type === "clientCodeMapping") {
         clientCodeMappingCol = ws.getCurrentColumn(col.colNumberOrig);
       }
@@ -214,7 +207,6 @@ export const handleOtherCellClick = (
   clientCodeCol: number,
   withinEditableRange: boolean
 ) => {
-  console.log(clientCodeCol);
   if (session.currentView === NOM_CODE_SELECTION || session.currentView === CLIENT_NOM_CODE_SELECTION) {
     callNextView(session);
     session.activeEditableCell = createEditableCell(null, null, null);

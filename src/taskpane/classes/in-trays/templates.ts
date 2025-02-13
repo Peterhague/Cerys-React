@@ -1,7 +1,7 @@
 import { reconcileClientBFTB } from "../../client-data-processing/nominal-ledger";
 import { ClientTBLineProps, InTrayCollectionProps } from "../../interfaces/interfaces";
 import { checkTransUnregisteredAssets } from "../../utils/transactions/asset-reg-generation";
-import { AssetRegCreationPrompt, IdenitfyPossibleAdditionsPrompt, RegisterCreationTemplate } from "../asset-register";
+import { AssetRegCreationPrompt, IdenitfyPossibleAdditionsPrompt, AssetRegisterPromptDetails } from "../asset-register";
 import { Session } from "../session";
 import { NominalLedgerEntryPrompt } from "../trial-balance";
 import { InTray, InTrayCollection, InTrayItem } from "./global";
@@ -23,16 +23,6 @@ export class InTrayAssignment extends InTrayTemplate {
   }
 }
 
-// export class InTrayTrialBalanceEntry extends InTrayTemplate {
-//   constructor(session: Session) {
-//     super("TrialBalanceEntry", "Trial Balance Entry In Tray");
-//     const collection = new InTrayCollection();
-//     const nLEntryPrompt = !session.assignment.NLEntered && new NominalLedgerEntryPrompt(collection);
-//     nLEntryPrompt && collection.items.push(nLEntryPrompt);
-//     collection.items.length > 0 && this.collections.push(collection);
-//   }
-// }
-
 export const createTBEntryCollections = (session: Session) => {
   const collections: InTrayCollection[] = [];
   const inTrayCollectionProps: InTrayCollectionProps = {
@@ -41,20 +31,17 @@ export const createTBEntryCollections = (session: Session) => {
     itemsActionParams: [],
   };
   const nomLedgerPromptCollection = new InTrayCollection(inTrayCollectionProps);
-  // const nLEntryPrompt = !session.assignment.NLEntered && new NominalLedgerEntryPrompt();
-  // if (nLEntryPrompt) {
-  //   collection.items.push(nLEntryPrompt);
-  //   collections.push(collection);
-  // }
   if (nomLedgerPromptCollection.getItems(session).length > 0) collections.push(nomLedgerPromptCollection);
   return collections;
 };
 
 export const getItemsNLPromptCollection = (session: Session) => {
   const prompt = !session.assignment.NLEntered && new NominalLedgerEntryPrompt();
-  return [prompt];
+  return prompt;
 };
 
+// returns the InTrayCollections that are potentially added to the assignment intray on posting of a client
+// nominal ledger.
 export const createNLEntryCollections = (session: Session, openingBalances: ClientTBLineProps[]) => {
   const collections: InTrayCollection[] = [];
   const opBalsCollectionProps: InTrayCollectionProps = {
@@ -63,64 +50,42 @@ export const createNLEntryCollections = (session: Session, openingBalances: Clie
     itemsActionParams: [openingBalances],
   };
   collections.push(new InTrayCollection(opBalsCollectionProps));
-  const parentInTray = session.assignment.inTray;
-  const assetRegCollections: InTrayCollection = createAssetRegistersInTray(parentInTray);
-  collections.push(assetRegCollections);
+  const parentInTray = session.inTray;
+  const assetRegCollection: InTrayCollection = createAssetRegGlobalCollection(parentInTray);
+  collections.push(assetRegCollection);
   return collections;
 };
 
 const getItemsOpBalsNotReconciledCollection = (session: Session, openingBalances: ClientTBLineProps[]) => {
   const openingBalancesRec = session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances);
-  return openingBalancesRec ? [openingBalancesRec] : [];
+  return openingBalancesRec;
 };
 
-export const createAssetRegistersInTray = (parentInTray: InTray) => {
+// called on posting of client NL and returns to the assignment intray the collection for prompting
+// various asset reg related actions
+export const createAssetRegGlobalCollection = (parentInTray: InTray) => {
   const inTrayCollectionProps: InTrayCollectionProps = {
     title: "Fixed Asset Registers",
-    itemsAction: createAssetRegistersInTrayCollections,
+    itemsAction: createAssetRegistersInTrays,
     itemsActionParams: [parentInTray],
   };
   const assRegCollection = new InTrayCollection(inTrayCollectionProps);
   return assRegCollection;
 };
 
-export const createAssetRegistersInTrayCollections = (session: Session, parentInTray: InTray) => {
-  const registerPrompts = checkTransUnregisteredAssets(session);
-  const assRegTemplate = registerPrompts.length > 0 && new InTrayAssetRegister(registerPrompts);
+// returns to the assignment intray an array of collection items which themselves generate specific
+// asset reg child intrays
+export const createAssetRegistersInTrays = (session: Session, parentInTray: InTray) => {
+  const registerPromptsDetails = checkTransUnregisteredAssets(session);
+  const assRegTemplate = registerPromptsDetails.length > 0 && new InTrayAssetRegisterTemplate(registerPromptsDetails);
   const inTray = new InTray(assRegTemplate, parentInTray);
   return [inTray];
 };
 
-// export class InTrayNominalLedgerEntry extends InTrayTemplate {
-//   constructor(session: Session, openingBalances: ClientTBLineProps[]) {
-//     super("NominalLedgerEntry", "Nominal Ledger Entry In Tray");
-//     this.createOpeningBalancesCollection(session, openingBalances);
-//     this.createAssetRegistersCollections(session);
-//   }
-
-//   createOpeningBalancesCollection(session: Session, openingBalances: ClientTBLineProps[]) {
-//     const opBalCollection = new InTrayCollection("Opening Balances");
-//     const openingBalancesRec =
-//       session.clientBFwdTB.length > 0 && reconcileClientBFTB(session, openingBalances, opBalCollection);
-//     openingBalancesRec && opBalCollection.items.push(openingBalancesRec);
-//     opBalCollection.items.length > 0 && this.collections.push(opBalCollection);
-//   }
-
-//   createAssetRegistersCollections(session: Session) {
-//     const assRegCollection = new InTrayCollection("Fixed Asset Registers");
-//     const registerPrompts = checkTransUnregisteredAssets(session);
-//     const assRegTemplate = registerPrompts.length > 0 && new InTrayAssetRegister(registerPrompts);
-//     console.log(assRegTemplate);
-//     assRegCollection.items.push(new InTray(assRegTemplate));
-//     this.collections.push(assRegCollection);
-//   }
-// }
-
-export class InTrayAssetRegister extends InTrayTemplate {
-  prompts: RegisterCreationTemplate[];
-  constructor(prompts: RegisterCreationTemplate[]) {
+export class InTrayAssetRegisterTemplate extends InTrayTemplate {
+  prompts: AssetRegisterPromptDetails[];
+  constructor(prompts: AssetRegisterPromptDetails[]) {
     super("AssetRegister", "Asset Register");
-    console.log(prompts);
     this.prompts = prompts;
     const collections = prompts.map((prompt) => {
       const title = prompt.register.longCap;
@@ -136,16 +101,12 @@ export class InTrayAssetRegister extends InTrayTemplate {
   }
 }
 
+// called by the asset reg intrays' getItems() method to return the active items for that particular
+// intray
 export const createAssetRegisterInTrayCollections = (session: Session, registerType: "IFA" | "TFA" | "IP") => {
-  console.log("creating register intray items...");
   const items: InTrayItem[] = [];
-  const prompts = checkTransUnregisteredAssets(session);
-  const prompt = prompts.find((i) => (i.registerType = registerType));
-  if (prompt.refinedTransactions.length > 0) {
-    console.log("REFINED TRANSACTIONS!!!!");
-    console.log(prompt.refinedTransactions);
-  }
-  if (prompt.possibleAdditions.length > 0) items.push(new IdenitfyPossibleAdditionsPrompt(prompt));
-  if (prompt.refinedTransactions.length > 0) items.push(new AssetRegCreationPrompt(prompt));
+  const assetRegDetails = new AssetRegisterPromptDetails(session, registerType);
+  if (assetRegDetails.possibleAdditions.length > 0) items.push(new IdenitfyPossibleAdditionsPrompt(assetRegDetails));
+  if (assetRegDetails.refinedTransactions.length > 0) items.push(new AssetRegCreationPrompt(assetRegDetails));
   return items;
 };

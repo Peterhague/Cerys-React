@@ -15,7 +15,7 @@ export async function enterNL(session: Session) {
   const assignment = await postCltNLToDb(session);
   session.assignment = new Assignment(assignment);
   const inTrayCollections: InTrayCollection[] = createNLEntryCollections(session, openingBalances);
-  const inTray = session.assignment.inTray;
+  const inTray = session.inTray;
   inTrayCollections.forEach((collection) => {
     if (collection.getItems(session).length > 0) {
       inTray.addCollection(collection);

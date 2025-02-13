@@ -8,275 +8,19 @@ import { AssetSubTransaction, FATransaction, JournalDetailsProps } from "../../i
 import { colNumToLetter } from "../excel-col-conversion";
 import { calculateDiffInDays, convertExcelDate, getTransRowNumber } from "../helper-functions";
 import { setExcelRangeValue } from "../worksheet";
-import { RegisterCreationTemplate } from "../../classes/asset-register";
+import { AssetRegisterPromptDetails } from "../../classes/asset-register";
 /*global Excel */
 
 export const checkTransUnregisteredAssets = (session: Session) => {
   const registersToPrompt = session.assignment.getRegisterPrompts(session);
-  const mapped = registersToPrompt.map((reg) => new RegisterCreationTemplate(session, reg));
+  const mapped = registersToPrompt.map((reg) => new AssetRegisterPromptDetails(session, reg));
   return mapped;
 };
-
-// export const identifyLikelyAdditions = async (
-//   session: Session,
-//   registerType: string,
-//   setView: React.Dispatch<string>
-// ) => {
-//   console.log("next step working");
-//   const bFTransLikelyAddns: AssetTransaction[] = session.assignment.getTransLikelyAdditions(session, registerType);
-//   console.log(bFTransLikelyAddns);
-//   if (bFTransLikelyAddns.length > 0) {
-//     await createLikelyAdditionsSumm(session, bFTransLikelyAddns, registerType);
-//     setView("confirmBFAreAddns");
-//     createTransactionUpdates(session, bFTransLikelyAddns);
-//   } else {
-//     previewRelTrans(session, registerType);
-//   }
-// };
-
-// export const previewRelTrans = (session: Session, registerType: string) => {
-//   accessExcelContext(deleteManyWorksheets, [[`${registerType} Possible Additions`]]);
-//   createRelTrans(session, registerType);
-//   //setView("confirm");
-//   session.options[`${registerType}RCreationSetting`] = "confirm";
-// };
-
-// export async function createRelTrans(session: Session, registerType: string) {
-//   const relevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
-//   createTransSumm(session, relevantTrans, registerType);
-// }
-
-export const convertNewFATrans = (session: Session) => {
-  const updatedTrans = [];
-  session.assignment.transactions.forEach((tran) => {
-    const cerysCodeObj = tran.getCerysCodeObj(session);
-    const clientNL = session.assignment.clientNL;
-    for (let i = 0; i < clientNL.length; i++) {
-      if (clientNL[i].code === tran.representsBalanceOfClientCode) {
-        const trans = { ...tran };
-        delete trans.cerysTransactionId;
-        trans["transactionDate"] = convertExcelDate(clientNL[i].date);
-        trans["assetSubCatCodes"] = [trans["assetSubCatCode"]];
-        trans["subTransactions"] = [
-          {
-            assetSubCategory: cerysCodeObj.assetSubCategory,
-            assetSubCatCode: cerysCodeObj.assetSubCatCode,
-            regColNameOne: cerysCodeObj.regColNameOne,
-            regColNameTwo: cerysCodeObj.regColNameTwo,
-            value: clientNL[i].value,
-          },
-        ];
-        trans["transactionDateClt"] = clientNL[i].date;
-        trans["clientNominalCode"] = clientNL[i].code;
-        trans["clientNominalName"] = clientNL[i].name;
-        trans["assetNarrative"] = clientNL[i].detail;
-        trans["value"] = clientNL[i].value;
-        updatedTrans.push(trans);
-      }
-    }
-  });
-};
-
-// export async function createTransSumm(session: Session, relevantTrans: AssetTransaction[], registerType: string) {
-//   try {
-//     await Excel.run(async (context) => {
-//       const sheetMapping = [];
-//       const name = `${registerType} Transactions`;
-//       const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
-//       const activeClient: Client = session.customer.clients.find(
-//         (client) => client.clientId === session.assignment.clientId
-//       );
-//       const amortOrDepn = registerType === "IFA" ? "AMORT" : "DEPN";
-//       const valuesToPost = [
-//         [
-//           "TRANSACTION",
-//           "CERYS",
-//           "CERYS",
-//           "POSTING",
-//           "CERYS",
-//           "CERYS",
-//           "CLIENT",
-//           "CLIENT",
-//           "CLIENT",
-//           "DEBIT/",
-//           amortOrDepn,
-//           amortOrDepn,
-//           amortOrDepn,
-//         ],
-//         [
-//           "NUMBER",
-//           "DATE",
-//           "NARRATIVE",
-//           "SOURCE",
-//           "CODE",
-//           "NOMINAL",
-//           "NC",
-//           "NOMINAL",
-//           "NARRATIVE",
-//           "(CREDIT)",
-//           "BASIS",
-//           "RATE",
-//           "CHARGE",
-//         ],
-//       ];
-//       session[`${registerType}Transactions`] = [];
-//       relevantTrans.forEach((tran) => {
-//         //i.rowNumber = session[`${registerType}Transactions`].length + 3;
-//         //i.assetNarrative = i.narrative;
-//         const map = new TransactionMap(
-//           tran.cerysTransactionId,
-//           session[`${registerType}Transactions`].length + 3,
-//           null
-//         ); // Issue: is this right?? don't think so...
-//         sheetMapping.push(map);
-//       });
-//       //const transMap = relevantTrans.map(tran => session.assignment.transactions.find(item => item._id === tran._id));
-//       relevantTrans.forEach((assetTran) => {
-//         const transaction = assetTran;
-//         const cerysCodeObj = transaction.getCerysCodeObj(session);
-//         const transVals = [];
-//         transVals.push(transaction.transactionNumber);
-//         transVals.push(transaction.getExcelDate());
-//         transVals.push(transaction.narrative);
-//         if (transaction.transactionType === "journal") {
-//           transVals.push("Journal");
-//         } else if (transaction.transactionType === "final journal") {
-//           transVals.push("Final journal");
-//         } else if (transaction.transactionType === "review journal") {
-//           transVals.push("Review journal");
-//         } else if (transaction.transactionType === "client trial balance") {
-//           transVals.push("Client TB");
-//         } else if (transaction.transactionType === "client adjustment") {
-//           transVals.push("Client adjustment");
-//         } else {
-//           transVals.push("Sticking plaster");
-//         }
-//         transVals.push(assetTran.cerysCode);
-//         transVals.push(cerysCodeObj.cerysShortName);
-//         if (transaction.representsBalanceOfClientCode >= 0) {
-//           transVals.push(transaction.representsBalanceOfClientCode);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         if (transaction.representsBalanceOfClientCode >= 0) {
-//           transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         if (assetTran.assetNarrative) {
-//           transVals.push(assetTran.assetNarrative);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         transVals.push(transaction.value / 100);
-//         populateDepnCols(session, activeClient, transVals, transaction, registerType);
-//         calculateCharge(session, transaction, registerType);
-//         assetTran.amortChg ? transVals.push(assetTran.amortChg / 100) : transVals.push(assetTran.depnChg / 100);
-//         valuesToPost.push(transVals);
-//       });
-//       const headerRange = ws.getRange("A1:M2");
-//       headerRange.format.font.bold = true;
-//       const range = ws.getRange(`A1:M${valuesToPost.length}`);
-//       range.values = valuesToPost;
-//       const rangeB = ws.getRange("B:B");
-//       rangeB.numberFormat = [["dd/mm/yyyy"]];
-//       const rangeJ = ws.getRange("J:J");
-//       rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
-//       const rangeM = ws.getRange("M:M");
-//       rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
-//       const rangeAM = ws.getRange("A:M");
-//       rangeAM.format.autofitColumns();
-//       const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
-//       const transactions = _.cloneDeep(session[`${registerType}Transactions`]);
-//       createEditableWorksheet(
-//         session,
-//         transactions,
-//         ws,
-//         valuesToPost,
-//         "FATransactions",
-//         sheetMapping,
-//         controlledRangeObj
-//       );
-//       await context.sync();
-//       ws.activate();
-//     });
-//   } catch (e) {
-//     console.error(e);
-//   }
-// }
-
-// export async function createLikelyAdditionsSumm(
-//   session: Session,
-//   transactions: AssetTransaction[],
-//   registerType: string
-// ) {
-//   try {
-//     await Excel.run(async (context) => {
-//       const name = `${registerType} Possible Additions`;
-//       const { ws } = await addOneWorksheet(context, session, { name, addListeners: undefined });
-//       const valuesToPost = [
-//         ["TRANSACTION", "CERYS", "CERYS", "POSTING", "CERYS", "CERYS", "CLIENT", "CLIENT", "CLIENT", "DEBIT/"],
-//         ["NUMBER", "DATE", "NARRATIVE", "SOURCE", "CODE", "NOMINAL", "NC", "NOMINAL", "NARRATIVE", "(CREDIT)"],
-//       ];
-//       transactions.forEach((transaction) => {
-//         const cerysCodeObj = transaction.getCerysCodeObj(session);
-//         const transVals = [];
-//         transVals.push(transaction.transactionNumber);
-//         transVals.push(transaction.getExcelDate());
-//         transVals.push(transaction.narrative);
-//         if (transaction.transactionType === "journal") {
-//           transVals.push("Journal");
-//         } else if (transaction.transactionType === "final journal") {
-//           transVals.push("Final journal");
-//         } else if (transaction.transactionType === "review journal") {
-//           transVals.push("Review journal");
-//         } else if (transaction.transactionType === "client trial balance") {
-//           transVals.push("Client TB");
-//         } else if (transaction.transactionType === "client adjustment") {
-//           transVals.push("Client adjustment");
-//         }
-//         transVals.push(transaction.cerysCode);
-//         transVals.push(cerysCodeObj.cerysShortName);
-//         if (transaction.representsBalanceOfClientCode >= 0) {
-//           transVals.push(transaction.representsBalanceOfClientCode);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         if (transaction.representsBalanceOfClientCode >= 0) {
-//           transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         if (transaction.assetNarrative) {
-//           transVals.push(transaction.assetNarrative);
-//         } else {
-//           transVals.push("NA");
-//         }
-//         transVals.push(transaction.value / 100);
-//         valuesToPost.push(transVals);
-//       });
-//       const headerRange = ws.getRange("A1:J2");
-//       headerRange.format.font.bold = true;
-//       const range = ws.getRange(`A1:J${valuesToPost.length}`);
-//       range.values = valuesToPost;
-//       const rangeB = ws.getRange("B:B");
-//       rangeB.numberFormat = [["dd/mm/yyyy"]];
-//       const rangeJ = ws.getRange("J:J");
-//       rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
-//       const rangeAJ = ws.getRange("A:J");
-//       rangeAJ.format.autofitColumns();
-//       await context.sync();
-//       ws.activate();
-//     });
-//   } catch (e) {
-//     console.error(e);
-//   }
-// }
 
 export const populateDepnCols = (
   session: Session,
   activeClient: Client,
-  transVals: string[],
+  transVals: (string | number)[],
   transaction: AssetTransaction,
   registerType: string
 ) => {
@@ -394,12 +138,6 @@ export function calculateCharge(session: Session, transaction: AssetTransaction,
   journals.push(new Journal(session, jnls.debit));
   journals.push(new Journal(session, jnls.credit));
   return journals;
-  // session.activeJournal.journals.push(new Journal(session, jnls.debit));
-  // const debitNumberValue = typeof jnls.debit.value === "string" ? parseInt(jnls.debit.value) : jnls.debit.value;
-  // session.activeJournal.netValue += debitNumberValue;
-  // session.activeJournal.journals.push(new Journal(session, jnls.credit));
-  // const creditNumberValue = typeof jnls.credit.value === "string" ? parseInt(jnls.credit.value) : jnls.credit.value;
-  // session.activeJournal.netValue += creditNumberValue;
 }
 
 export const recalculateCharge = async (
@@ -610,17 +348,3 @@ export const createTransactionUpdates = (session: Session, bFTransLikelyAddns: A
   });
   return new ActiveJournal({ type: "auto-addition", journals });
 };
-
-// export const finaliseAssetObjects = (session: Session, relevantTrans: AssetTransaction[]) => {
-//   const reportingPeriod = session.assignment.reportingPeriod;
-//   relevantTrans.forEach((asset) => {
-//     asset.activePeriods = [reportingPeriod._id];
-//     asset.periods = [
-//       {
-//         reportingPeriodNumber: reportingPeriod.periodNumber,
-//         reportingPeriodId: reportingPeriod._id,
-//         subTransactions: asset.subTransactions,
-//       },
-//     ];
-//   });
-// };

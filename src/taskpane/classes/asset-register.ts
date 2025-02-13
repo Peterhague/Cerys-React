@@ -142,7 +142,9 @@ export class ColumnsIndex {
   }
 }
 
-export class RegisterCreationTemplate {
+// returns an object to the asset register intray with the reelevant information for determining which
+// collections that intray should produce
+export class AssetRegisterPromptDetails {
   registerType: "IFA" | "TFA" | "IP";
   register: RegisterType;
   possibleAdditions: AssetTransaction[];
@@ -181,33 +183,6 @@ export class RegisterCreationTemplate {
     });
   }
 
-  // identifyPossibleAdditions(
-  //   session: Session,
-  //   relevantTransactions: AssetTransaction[],
-  //   registerType: "IFA" | "TFA" | "IP"
-  // ) {
-  //   return relevantTransactions.filter((tran) => {
-  //     let test: number;
-  //     if (!tran.processedAsAsset && !tran.clientTransactionAttachment) {
-  //       const cerysCodeObj = tran.getCerysCodeObj(session);
-  //       if (
-  //         (registerType === "IFA" &&
-  //           cerysCodeObj.cerysCategory === "Intangible assets" &&
-  //           cerysCodeObj.assetCodeType === "iFACostBF") ||
-  //         (registerType === "TFA" &&
-  //           cerysCodeObj.cerysCategory === "Tangible assets" &&
-  //           cerysCodeObj.assetCodeType === "tFACostBF") ||
-  //         (registerType === "IP" &&
-  //           cerysCodeObj.cerysCategory === "Investment property" &&
-  //           cerysCodeObj.assetCodeType === "iPCostBF")
-  //       ) {
-  //         test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
-  //       }
-  //     }
-  //     return test > 0;
-  //   });
-  // }
-
   refineTransactions(session: Session, relevantTransactions: AssetTransaction[], registerType: "IFA" | "TFA" | "IP") {
     const refined: AssetTransaction[] = [];
     const possible: AssetTransaction[] = [];
@@ -233,12 +208,24 @@ export class RegisterCreationTemplate {
     });
     return { refined, possible };
   }
+
+  registerCreated(session: Session) {
+    let registerCreated: boolean;
+    if (this.registerType === "IFA") {
+      registerCreated = session.assignment.IFARegisterCreated;
+    } else if (this.registerType === "TFA") {
+      registerCreated = session.assignment.TFARegisterCreated;
+    } else if (this.registerType === "IP") {
+      registerCreated = session.assignment.IPRegisterCreated;
+    }
+    return registerCreated;
+  }
 }
 
 export class IdenitfyPossibleAdditionsPrompt extends InTrayItem {
   register: RegisterType;
   transactions: AssetTransaction[];
-  constructor(registerTemplate: RegisterCreationTemplate) {
+  constructor(registerTemplate: AssetRegisterPromptDetails) {
     super({
       title: `Identify possible ${registerTemplate.registerType} additions`,
       getSubtitle: null,
@@ -367,7 +354,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
   register: RegisterType;
   transactions: AssetTransaction[];
   depreciationJournals: ActiveJournal;
-  constructor(registerTemplate: RegisterCreationTemplate) {
+  constructor(registerTemplate: AssetRegisterPromptDetails) {
     super({
       title: `Create ${registerTemplate.registerType} register?`,
       getSubtitle: null,
@@ -413,8 +400,6 @@ export class AssetRegCreationPrompt extends InTrayItem {
   }
 
   async postAssetsToDb(session: Session) {
-    console.log("POSTING!!!!!");
-    console.log(this.transactions);
     const options = fetchOptionsNCA(session, this.transactions);
     const endpoint = session.assignment[`${this.register.initials}RegisterCreated`]
       ? this.register.updateURL
@@ -436,103 +421,24 @@ export class AssetRegCreationPrompt extends InTrayItem {
           (client) => client.clientId === session.assignment.clientId
         );
         const amortOrDepn = this.register.initials === "IFA" ? "AMORT" : "DEPN";
-        const valuesToPost = [
-          [
-            "TRANSACTION",
-            "CERYS",
-            "CERYS",
-            "POSTING",
-            "CERYS",
-            "CERYS",
-            "CLIENT",
-            "CLIENT",
-            "CLIENT",
-            "DEBIT/",
-            amortOrDepn,
-            amortOrDepn,
-            amortOrDepn,
-          ],
-          [
-            "NUMBER",
-            "DATE",
-            "NARRATIVE",
-            "SOURCE",
-            "CODE",
-            "NOMINAL",
-            "NC",
-            "NOMINAL",
-            "NARRATIVE",
-            "(CREDIT)",
-            "BASIS",
-            "RATE",
-            "CHARGE",
-          ],
-        ];
+        const valuesToPost: (string | number)[][] = [];
+        valuesToPost.push(...this.getTransSummHeadings(amortOrDepn));
         this.transactions.forEach((tran, index) => {
           const map = new TransactionMap(tran.cerysTransactionId, index + 3, null);
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {
-          const cerysCodeObj = tran.getCerysCodeObj(session);
-          const transVals = [];
-          transVals.push(tran.transactionNumber);
-          transVals.push(tran.getExcelDate());
-          transVals.push(tran.narrative);
-          // if (tran.transactionType === "journal") {
-          //   transVals.push("Journal");
-          // } else if (tran.transactionType === "final journal") {
-          //   transVals.push("Final journal");
-          // } else if (tran.transactionType === "review journal") {
-          //   transVals.push("Review journal");
-          // } else if (tran.transactionType === "client trial balance") {
-          //   transVals.push("Client TB");
-          // } else if (tran.transactionType === "client adjustment") {
-          //   transVals.push("Client adjustment");
-          // } else {
-          //   transVals.push("Sticking plaster");
-          // }
-          transVals.push(tran.transactionType);
-          transVals.push(tran.cerysCode);
-          transVals.push(cerysCodeObj.cerysShortName);
-          if (tran.representsBalanceOfClientCode >= 0) {
-            transVals.push(tran.representsBalanceOfClientCode);
-          } else {
-            transVals.push("NA");
-          }
-          if (tran.representsBalanceOfClientCode >= 0) {
-            transVals.push(tran.getClientNominalCodeObj(session).clientCodeName);
-          } else {
-            transVals.push("NA");
-          }
-          if (tran.assetNarrative) {
-            transVals.push(tran.assetNarrative);
-          } else {
-            transVals.push("NA");
-          }
-          transVals.push(tran.value / 100);
+          const transVals: (string | number)[] = [];
+          this.addDataToWorksheetRangeValues(session, tran, transVals);
           populateDepnCols(session, activeClient, transVals, tran, this.register.initials);
           const jnls = calculateCharge(session, tran, this.register.initials);
           this.depreciationJournals.journals.push(...jnls);
           tran.amortChg ? transVals.push(tran.amortChg / 100) : transVals.push(tran.depnChg / 100);
           valuesToPost.push(transVals);
         });
-        const headerRange = ws.getRange("A1:M2");
-        headerRange.format.font.bold = true;
-        const range = ws.getRange(`A1:M${valuesToPost.length}`);
-        range.values = valuesToPost;
-        const rangeB = ws.getRange("B:B");
-        rangeB.numberFormat = [["dd/mm/yyyy"]];
-        const rangeJ = ws.getRange("J:J");
-        rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
-        const rangeM = ws.getRange("M:M");
-        rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
-        const rangeAM = ws.getRange("A:M");
-        rangeAM.format.autofitColumns();
+        this.formatTransactionsSummary(ws, valuesToPost);
         const controlledRangeObj = new ExcelRangeObject({ row: 1, col: 1 }, valuesToPost);
         const transactions = _.cloneDeep(this.transactions);
-        console.log(transactions);
-        console.log(sheetMapping);
-        console.log(controlledRangeObj);
         createEditableWorksheet(
           session,
           transactions,
@@ -548,5 +454,81 @@ export class AssetRegCreationPrompt extends InTrayItem {
     } catch (e) {
       console.error(e);
     }
+  }
+
+  getTransSummHeadings(amortOrDepn: "AMORT" | "DEPN") {
+    return [
+      [
+        "TRANSACTION",
+        "CERYS",
+        "CERYS",
+        "POSTING",
+        "CERYS",
+        "CERYS",
+        "CLIENT",
+        "CLIENT",
+        "CLIENT",
+        "DEBIT/",
+        amortOrDepn,
+        amortOrDepn,
+        amortOrDepn,
+      ],
+      [
+        "NUMBER",
+        "DATE",
+        "NARRATIVE",
+        "SOURCE",
+        "CODE",
+        "NOMINAL",
+        "NC",
+        "NOMINAL",
+        "NARRATIVE",
+        "(CREDIT)",
+        "BASIS",
+        "RATE",
+        "CHARGE",
+      ],
+    ];
+  }
+
+  addDataToWorksheetRangeValues(session: Session, transaction: AssetTransaction, transVals: (string | number)[]) {
+    const cerysCodeObj = transaction.getCerysCodeObj(session);
+    transVals.push(transaction.transactionNumber);
+    transVals.push(transaction.getExcelDate());
+    transVals.push(transaction.narrative);
+    transVals.push(transaction.transactionType);
+    transVals.push(transaction.cerysCode);
+    transVals.push(cerysCodeObj.cerysShortName);
+    if (transaction.representsBalanceOfClientCode >= 0) {
+      transVals.push(transaction.representsBalanceOfClientCode);
+    } else {
+      transVals.push("NA");
+    }
+    if (transaction.representsBalanceOfClientCode >= 0) {
+      transVals.push(transaction.getClientNominalCodeObj(session).clientCodeName);
+    } else {
+      transVals.push("NA");
+    }
+    if (transaction.assetNarrative) {
+      transVals.push(transaction.assetNarrative);
+    } else {
+      transVals.push("NA");
+    }
+    transVals.push(transaction.value / 100);
+  }
+
+  formatTransactionsSummary(ws: Excel.Worksheet, valuesToPost: (string | number)[][]) {
+    const headerRange = ws.getRange("A1:M2");
+    headerRange.format.font.bold = true;
+    const range = ws.getRange(`A1:M${valuesToPost.length}`);
+    range.values = valuesToPost;
+    const rangeB = ws.getRange("B:B");
+    rangeB.numberFormat = [["dd/mm/yyyy"]];
+    const rangeJ = ws.getRange("J:J");
+    rangeJ.numberFormat = STANDARD_NUMBER_FORMAT;
+    const rangeM = ws.getRange("M:M");
+    rangeM.numberFormat = STANDARD_NUMBER_FORMAT;
+    const rangeAM = ws.getRange("A:M");
+    rangeAM.format.autofitColumns();
   }
 }

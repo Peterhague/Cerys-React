@@ -11,7 +11,6 @@ import { addDefaultWorksheet } from "../worksheet";
 export async function showClientNominalDetail(e: Excel.WorksheetSingleClickedEventArgs, session: Session) {
   try {
     await Excel.run(async (context) => {
-      console.log("next...");
       const address = e.address;
       const ws = context.workbook.worksheets.getActiveWorksheet();
       const range = ws.getRange(`${address}:${address}`);

@@ -225,7 +225,6 @@ const handleCellInsertionRight = (sheet: ControlledWorksheet, addressObj: Addres
 
 export const handleControlledSheetRowSort = async (session: Session, wsName: string) => {
   const usedRange: any[][] = await accessExcelContext(getWorksheetUsedRange, [wsName]);
-  console.log(usedRange);
   const sheet = session.controlledSheets.find((ws) => ws.name === wsName);
   const uniqueCol = sheet.uniqueColumn;
   if (!uniqueCol) return;

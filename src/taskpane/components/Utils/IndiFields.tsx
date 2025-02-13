@@ -9,7 +9,6 @@ interface IndiFieldsProps {
 const IndiFields = ({ activeIndi, setActiveIndi }: IndiFieldsProps) => {
   const updateState = (e: React.ChangeEvent<HTMLInputElement>, key: string) => {
     const newState = { ...activeIndi, [key]: e.target.value };
-    console.log(activeIndi);
     setActiveIndi(newState);
   };
 

@@ -113,8 +113,6 @@ const AppBody = ({ session }: AppBodyProps) => {
   const [editButton, setEditButton] = useState("off");
   const [options, setOptions] = useState<GlobalInterfaces["viewOptions"]>(BLANK_VIEW_OPTIONS);
 
-  console.log(session);
-
   const handleView = (view: string) => {
     session.currentView = view;
     setView(view);
@@ -127,7 +125,7 @@ const AppBody = ({ session }: AppBodyProps) => {
   };
 
   const bodyView = () => {
-    let body;
+    let body: React.JSX.Element;
     let footer = (
       <Footer handleView={handleView} setEditButton={setEditButton} editButton={editButton} session={session} />
     );

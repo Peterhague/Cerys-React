@@ -41,8 +41,6 @@ export async function wsTrialBalance(session: Session) {
       const range = ws.getRange(excelRangeObj.address);
       range.format.font.bold = false;
       range.values = tBValues;
-      console.log(sheetMapping);
-      console.log(tBValues);
       range.format.horizontalAlignment = "Left";
       const total = ws.getRange(`C${tBValues.length + 12}: C${tBValues.length + 12}`);
       total.values = [[0]];
@@ -56,7 +54,6 @@ export async function wsTrialBalance(session: Session) {
       const bottomBorder = total.format.borders.getItem("EdgeBottom");
       topBorder.style = "Continuous";
       bottomBorder.style = "Double";
-      console.log("here just before vital fn");
       createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj, 1, "cerysCode");
       await context.sync();
     });
