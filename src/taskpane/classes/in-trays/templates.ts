@@ -77,15 +77,13 @@ export const createAssetRegGlobalCollection = (parentInTray: InTray) => {
 // asset reg child intrays
 export const createAssetRegistersInTrays = (session: Session, parentInTray: InTray) => {
   const registerPromptsDetails = checkTransUnregisteredAssets(session);
-  console.log(registerPromptsDetails);
-  // const assRegTemplate = registerPromptsDetails.length > 0 && new InTrayAssetRegisterTemplate(registerPromptsDetails);
-  // const inTray = new InTray(assRegTemplate, parentInTray);
   const inTrays =
     registerPromptsDetails.length > 0 &&
     registerPromptsDetails.map(
       (promptDetails) => new InTray(new InTrayAssetRegisterTemplate(promptDetails), parentInTray)
     );
-  return inTrays;
+  const filteredInTrays = inTrays.filter((tray) => tray.hasAnyUnderlyingItems(session));
+  return filteredInTrays;
 };
 
 export class InTrayAssetRegisterTemplate extends InTrayTemplate {
@@ -93,16 +91,6 @@ export class InTrayAssetRegisterTemplate extends InTrayTemplate {
   constructor(prompt: AssetRegisterPromptDetails) {
     super("AssetRegister", "Asset Register");
     this.prompt = prompt;
-    // const collections = prompts.map((prompt) => {
-    //   const title = prompt.register.longCap;
-    //   const inTrayCollectionProps: InTrayCollectionProps = {
-    //     title,
-    //     itemsAction: createAssetRegisterInTrayCollections,
-    //     itemsActionParams: [prompt.registerType],
-    //   };
-    //   const coll = new InTrayCollection(inTrayCollectionProps);
-    //   return coll;
-    // });
     const inTrayCollectionProps: InTrayCollectionProps = {
       title: prompt.register.longCap,
       itemsAction: createAssetRegisterInTrayCollections,
@@ -119,5 +107,6 @@ export const createAssetRegisterInTrayCollections = (session: Session, registerT
   const assetRegDetails = new AssetRegisterPromptDetails(session, registerType);
   if (assetRegDetails.possibleAdditions.length > 0) items.push(new IdenitfyPossibleAdditionsPrompt(assetRegDetails));
   if (assetRegDetails.refinedTransactions.length > 0) items.push(new AssetRegCreationPrompt(assetRegDetails));
+  console.log(items);
   return items;
 };

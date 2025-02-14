@@ -5,7 +5,7 @@ import React from "react";
 import { Directorship, NewIndiAssociation, Shareholding } from "../classes/individuals";
 import { ShareClass } from "../classes/share-classes";
 import { Client } from "../classes/client";
-import { InTray, InTrayAndItem, InTrayAndParentInTray, InTrayItem, InTrayRouting } from "../classes/in-trays/global";
+import { InTray, InTrayAndItem, InTrayItem, InTrayRouting } from "../classes/in-trays/global";
 import { Journal } from "../classes/journal";
 import { AssetRegCreationPrompt, IdenitfyPossibleAdditionsPrompt } from "../classes/asset-register";
 import { ClientTBBFwdReconciliation } from "../classes/client-trial-balance-line";
@@ -13,7 +13,7 @@ import { NominalLedgerEntryPrompt } from "../classes/trial-balance";
 /*global Excel */
 
 export interface GlobalInterfaces {
-  viewOptions: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayAndParentInTray | InTrayRouting;
+  viewOptions: ViewOptionsProps | InTray | InTrayItem | InTrayAndItem | InTrayRouting;
   intrayItems:
     | IdenitfyPossibleAdditionsPrompt
     | AssetRegCreationPrompt

@@ -215,6 +215,7 @@ export class Assignment extends BaseAssignment {
 
   getRegisterPrompts(session: Session) {
     const relevantTrans = this.transactions.filter((tran) => !tran.processedAsAsset);
+    console.log(relevantTrans);
     const prompts: ("IFA" | "TFA" | "IP")[] = [];
     const ifa = relevantTrans.find((tran) => {
       const cerysCodeObj = tran.getCerysCodeObj(session);

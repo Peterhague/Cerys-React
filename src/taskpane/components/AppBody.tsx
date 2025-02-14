@@ -79,7 +79,6 @@ import {
   ENTER_JOURNAL,
   HANDLE_TRANS_UPDATES,
   INTRAY_DETAILS,
-  INTRAY_NESTED_SUMMARY,
   INTRAY_SUMMARY,
   LANDING_PAGE,
   MANAGE_ASSIGNMENT_DASH_HOME,
@@ -99,8 +98,8 @@ import {
 import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientIndis";
 import { GlobalInterfaces } from "../interfaces/interfaces";
 import { ViewOptions } from "../classes/view-options";
-import { InTray, InTrayAndItem, InTrayAndParentInTray } from "../classes/in-trays/global";
-import IntrayNestedSummary from "./Assignment/Intray/InTrayNestedSummary";
+import { InTray, InTrayAndItem } from "../classes/in-trays/global";
+// import IntrayNestedSummary from "./Assignment/Intray/InTrayNestedSummary";
 import IntraySummary from "./Assignment/Intray/InTraySummary";
 import IntrayDetails from "./Assignment/Intray/InTrayDetails";
 
@@ -186,12 +185,12 @@ const AppBody = ({ session }: AppBodyProps) => {
         break;
       case INTRAY_SUMMARY:
         if (options instanceof InTray)
-          body = <IntraySummary handleView={handleView} session={session} intray={options} />;
+          body = <IntraySummary handleView={handleView} session={session} inTray={options} />;
         break;
-      case INTRAY_NESTED_SUMMARY:
-        if (options instanceof InTrayAndParentInTray)
-          body = <IntrayNestedSummary handleView={handleView} session={session} inTrayAndParentInTray={options} />;
-        break;
+      // case INTRAY_NESTED_SUMMARY:
+      //   if (options instanceof InTrayAndParentInTray)
+      //     body = <IntrayNestedSummary handleView={handleView} session={session} inTrayAndParentInTray={options} />;
+      //   break;
       case INTRAY_DETAILS:
         if (options instanceof InTrayAndItem)
           body = <IntrayDetails handleView={handleView} session={session} options={options} />;

@@ -33,6 +33,22 @@ export class InTray {
   deleteCollection(collection: InTrayCollection) {
     this.collections = this.collections.filter((coll) => coll.id !== collection.id);
   }
+
+  reconstructPath() {
+    const path: InTray[] = [];
+    let inTray: InTray = this;
+    while (inTray) {
+      if (inTray.parentInTray) path.push(inTray.parentInTray);
+      inTray = inTray.parentInTray;
+    }
+    return path.reverse();
+  }
+
+  hasAnyUnderlyingItems(session: Session) {
+    const validColl = this.collections.find((coll) => coll.getItems(session).length > 0);
+    console.log(validColl);
+    return validColl ? true : false;
+  }
 }
 
 export class InTrayCollection {
@@ -90,10 +106,14 @@ export class InTrayItem {
     session.handleDynamicView(this.detailsPath, options);
   }
 
-  // handleClickGeneric(session: Session, inTray: InTray) {
-  //   const options = new InTrayAndItem(inTray, this);
-  //   session.handleDynamicView(this.detailsPath, options);
-  // }
+  reconstructPath(inTray: InTray) {
+    const path: InTray[] = [inTray];
+    while (inTray) {
+      if (inTray.parentInTray) path.push(inTray.parentInTray);
+      inTray = inTray.parentInTray;
+    }
+    return path.reverse();
+  }
 }
 
 export class InTrayRouting {
@@ -114,11 +134,11 @@ export class InTrayAndItem {
   }
 }
 
-export class InTrayAndParentInTray {
-  inTray: InTray;
-  parentInTray: InTray;
-  constructor(inTray: InTray, parentInTray: InTray) {
-    this.inTray = inTray;
-    this.parentInTray = parentInTray;
-  }
-}
+// export class InTrayAndParentInTray {
+//   inTray: InTray;
+//   parentInTray: InTray;
+//   constructor(inTray: InTray, parentInTray: InTray) {
+//     this.inTray = inTray;
+//     this.parentInTray = parentInTray;
+//   }
+// }
