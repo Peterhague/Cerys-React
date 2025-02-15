@@ -31,7 +31,7 @@ export const createTBEntryCollections = (session: Session) => {
     itemsActionParams: [],
   };
   const nomLedgerPromptCollection = new InTrayCollection(inTrayCollectionProps);
-  if (nomLedgerPromptCollection.getItems(session).length > 0) collections.push(nomLedgerPromptCollection);
+  if (nomLedgerPromptCollection.countItems(session) > 0) collections.push(nomLedgerPromptCollection);
   return collections;
 };
 
@@ -82,8 +82,8 @@ export const createAssetRegistersInTrays = (session: Session, parentInTray: InTr
     registerPromptsDetails.map(
       (promptDetails) => new InTray(new InTrayAssetRegisterTemplate(promptDetails), parentInTray)
     );
-  const filteredInTrays = inTrays.filter((tray) => tray.hasAnyUnderlyingItems(session));
-  return filteredInTrays;
+  //const filteredInTrays = inTrays.filter((tray) => tray.hasAnyUnderlyingItems(session));
+  return inTrays;
 };
 
 export class InTrayAssetRegisterTemplate extends InTrayTemplate {

@@ -17,11 +17,11 @@ export async function enterNL(session: Session) {
   const inTrayCollections: InTrayCollection[] = createNLEntryCollections(session, openingBalances);
   const inTray = session.inTray;
   inTrayCollections.forEach((collection) => {
-    if (collection.getItems(session).length > 0) {
+    if (collection.countItems(session) > 0) {
       inTray.addCollection(collection);
     }
   });
-  inTrayCollections.find((i) => i.getItems(session).length > 0) && session.handleDynamicView(INTRAY_SUMMARY, inTray);
+  inTrayCollections.find((i) => i.countItems(session) > 0) && session.handleDynamicView(INTRAY_SUMMARY, inTray);
 }
 
 export async function createClientNLObject() {

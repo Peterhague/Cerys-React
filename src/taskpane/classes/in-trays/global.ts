@@ -45,7 +45,8 @@ export class InTray {
   }
 
   hasAnyUnderlyingItems(session: Session) {
-    const validColl = this.collections.find((coll) => coll.getItems(session).length > 0);
+    console.log(this);
+    const validColl = this.collections.find((coll) => coll.countItems(session) > 0);
     console.log(validColl);
     return validColl ? true : false;
   }
@@ -63,19 +64,50 @@ export class InTrayCollection {
     this.id = getRandomString();
   }
 
-  getItems(session: Session) {
+  countItems(session: Session) {
     const items = this.itemsAction(session, ...this.itemsActionParams);
-    if (Array.isArray(items)) {
-      return items;
-    } else if (items) {
-      return [items];
+    const cleansedItems = this.cleanseItems(session, items);
+    let len: number;
+    if (Array.isArray(cleansedItems)) {
+      len = cleansedItems.length;
+    } else if (cleansedItems) {
+      len = 1;
+    } else len = 0;
+    return len;
+  }
+
+  getItems(session: Session) {
+    console.log(this);
+    const items = this.itemsAction(session, ...this.itemsActionParams);
+    console.log(items);
+    const cleansedItems = this.cleanseItems(session, items);
+    console.log(cleansedItems);
+    if (Array.isArray(cleansedItems)) {
+      return cleansedItems;
+    } else if (cleansedItems) {
+      return [cleansedItems];
     } else return [];
   }
 
-  // deleteItem(inTrayItem: InTrayItem | InTray) {
-  //   const items = this.getItems();
-  //   this.items = this.items.filter((i) => i.id !== inTrayItem.id).map((i) => i);
-  // }
+  cleanseItems(session: Session, items: (InTrayItem | InTray)[] | InTrayItem | InTray) {
+    if (!Array.isArray(items)) {
+      if (!(items instanceof InTray)) {
+        return items;
+      } else {
+        return items.hasAnyUnderlyingItems(session) ? items : false;
+      }
+    } else {
+      const newArray = [];
+      items.forEach((item) => {
+        if (!(item instanceof InTray)) {
+          newArray.push(item);
+        } else {
+          if (item.hasAnyUnderlyingItems(session)) newArray.push(item);
+        }
+      });
+      return newArray;
+    }
+  }
 }
 
 export class InTrayItem {
@@ -86,6 +118,7 @@ export class InTrayItem {
   detailsActionParams: unknown[];
   detailsPath: "inTrayDetails" | "inTraySummary";
   affirmativeAction: (param: Session | null) => void | Promise<void>;
+  extendsInTrayItem: boolean;
   id: string;
   collectionId: string;
   constructor(inTrayItem: InTrayItemProps) {
@@ -97,6 +130,7 @@ export class InTrayItem {
     this.detailsPath = inTrayItem.detailsPath;
     this.affirmativeAction = inTrayItem.affirmativeAction;
     this.id = getRandomString();
+    this.extendsInTrayItem = true;
     //this.collectionId = inTrayCollection.id;
   }
 
@@ -133,12 +167,3 @@ export class InTrayAndItem {
     this.inTrayItem = inTrayItem;
   }
 }
-
-// export class InTrayAndParentInTray {
-//   inTray: InTray;
-//   parentInTray: InTray;
-//   constructor(inTray: InTray, parentInTray: InTray) {
-//     this.inTray = inTray;
-//     this.parentInTray = parentInTray;
-//   }
-// }

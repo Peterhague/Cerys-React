@@ -37,7 +37,7 @@ export async function enterTB(session: Session) {
   const tbEntryCollections = createTBEntryCollections(session);
   const inTray = session.inTray;
   tbEntryCollections.forEach((collection) => {
-    if (collection.getItems(session).length > 0) {
+    if (collection.countItems(session) > 0) {
       inTray.addCollection(collection);
     }
   });
