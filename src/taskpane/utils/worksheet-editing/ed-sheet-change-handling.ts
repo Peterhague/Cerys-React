@@ -49,6 +49,7 @@ export const handleEditableSheetChange = async (
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string
 ) => {
+  console.log(e);
   if (session.options.allowEffects > 0) {
     session.options.allowEffects -= 1;
     return;

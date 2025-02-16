@@ -40,6 +40,7 @@ export const handleEdSheetRangeEdit = async (
   addressObj: AddressObject,
   definedCol: DefinedCol
 ) => {
+  console.log(e);
   session.activeEditableCell = createEditableCell(null, null, null);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
@@ -51,6 +52,7 @@ export const handleEdSheetRangeEdit = async (
   } else {
     handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, definedCol));
   }
+  console.log(handledSuccessfully);
   return handledSuccessfully;
 };
 
@@ -120,7 +122,7 @@ export const captureReanalysis = async (
     updated: false,
   };
   const map = sheet.sheetMapping.find((m) => sheet.getCurrentRow(m.rowNumberOrig) === eRowNumber);
-  const tran = map.getTran(sheet.transactions);
+  const tran = map.getTran(session.assignment.transactions);
   const validationObj: TranUpdateFinalValidation = validateChange(session, tran, definedCol, e);
   const { isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
@@ -136,6 +138,10 @@ export const captureReanalysis = async (
       return handledSuccessfully;
     }
   }
+  const test =
+    tran == session.assignment.transactions.find((tran) => tran.cerysTransactionId === tran.cerysTransactionId);
+  console.log("test result is " + test);
+  console.log(tran);
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
     return handledSuccessfully;
@@ -164,6 +170,7 @@ export const processTransactionUpdate = (
   newValue: string | number,
   sheet: EditableWorksheet
 ) => {
+  console.log("creating transaction update....");
   deleteExistingUpdate(tran, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
@@ -186,7 +193,9 @@ export const processTransUpdateEffects = (
   range: string,
   tests: TranUpdatePrimaryValidation
 ) => {
+  console.log("processing trans update effects....");
   const updatedTrans = getUpdatedTransactions(session);
+  console.log(updatedTrans);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
   !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
@@ -292,7 +301,9 @@ export const createNewTransactionUpdate = (
   sheet: EditableWorksheet,
   definedCol: DefinedCol
 ) => {
+  console.log("new update here...");
   let reversion;
+  console.log(definedCol);
   if (definedCol.type === "date") {
     reversion = tran.getExcelDate();
   } else if (definedCol.type === "cerysCode") {
@@ -312,7 +323,9 @@ export const createNewTransactionUpdate = (
     reversion,
     mongoDate
   );
+  console.log(update);
   tran.updates.push(update);
+  console.log(tran);
   return update;
 };
 

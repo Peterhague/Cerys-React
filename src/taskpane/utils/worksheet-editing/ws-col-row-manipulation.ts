@@ -345,7 +345,7 @@ export const handleEdSheetRowSort = async (session: Session, wsName: string) => 
       });
       const protectedRowNumbers: number[] = [];
       sheet.sheetMapping.forEach((map) => {
-        const transaction = map.getTran(sheet.transactions);
+        const transaction = map.getTran(session.assignment.transactions);
         usedRange.forEach((row, index) => {
           if (row[uniqueCol - 1] === transaction.transactionNumber) {
             validateOtherValues(session, sheet, transaction, row);

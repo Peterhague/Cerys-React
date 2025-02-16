@@ -45,9 +45,7 @@ export class InTray {
   }
 
   hasAnyUnderlyingItems(session: Session) {
-    console.log(this);
     const validColl = this.collections.find((coll) => coll.countItems(session) > 0);
-    console.log(validColl);
     return validColl ? true : false;
   }
 }
@@ -64,48 +62,54 @@ export class InTrayCollection {
     this.id = getRandomString();
   }
 
-  countItems(session: Session) {
+  generateItems(session) {
     const items = this.itemsAction(session, ...this.itemsActionParams);
-    const cleansedItems = this.cleanseItems(session, items);
+    const cleansedItems = this.removeEmptyInTraysFromItems(session, items);
+    return cleansedItems;
+  }
+
+  countItems(session: Session) {
+    const items = this.generateItems(session);
     let len: number;
-    if (Array.isArray(cleansedItems)) {
-      len = cleansedItems.length;
-    } else if (cleansedItems) {
+    if (Array.isArray(items)) {
+      len = items.length;
+    } else if (items) {
       len = 1;
     } else len = 0;
     return len;
   }
 
   getItems(session: Session) {
-    console.log(this);
-    const items = this.itemsAction(session, ...this.itemsActionParams);
-    console.log(items);
-    const cleansedItems = this.cleanseItems(session, items);
-    console.log(cleansedItems);
-    if (Array.isArray(cleansedItems)) {
-      return cleansedItems;
-    } else if (cleansedItems) {
-      return [cleansedItems];
+    const items = this.generateItems(session);
+    if (Array.isArray(items)) {
+      return items;
+    } else if (items) {
+      return [items];
     } else return [];
   }
 
-  cleanseItems(session: Session, items: (InTrayItem | InTray)[] | InTrayItem | InTray) {
-    if (!Array.isArray(items)) {
-      if (!(items instanceof InTray)) {
-        return items;
-      } else {
-        return items.hasAnyUnderlyingItems(session) ? items : false;
-      }
-    } else {
+  // checks the collection items returned by itemsAction function to see if any of them are
+  // inTrays themselves - ie child inTray of the inTray to which this collection belongs.
+  // Any inTrays found in the items are then checked via its hasAnyUnderlyingItems method to see
+  // if it actually contains any items itself. If it doesn't then it's purged from this collection's
+  // items.
+  removeEmptyInTraysFromItems(session: Session, items: (InTrayItem | InTray)[] | InTrayItem | InTray) {
+    if (Array.isArray(items)) {
       const newArray = [];
       items.forEach((item) => {
-        if (!(item instanceof InTray)) {
-          newArray.push(item);
-        } else {
+        if (item instanceof InTray) {
           if (item.hasAnyUnderlyingItems(session)) newArray.push(item);
+        } else {
+          newArray.push(item);
         }
       });
       return newArray;
+    } else {
+      if (items instanceof InTray) {
+        return items.hasAnyUnderlyingItems(session) ? items : false;
+      } else {
+        return items;
+      }
     }
   }
 }

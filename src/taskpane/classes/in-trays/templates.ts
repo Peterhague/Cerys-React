@@ -107,6 +107,5 @@ export const createAssetRegisterInTrayCollections = (session: Session, registerT
   const assetRegDetails = new AssetRegisterPromptDetails(session, registerType);
   if (assetRegDetails.possibleAdditions.length > 0) items.push(new IdenitfyPossibleAdditionsPrompt(assetRegDetails));
   if (assetRegDetails.refinedTransactions.length > 0) items.push(new AssetRegCreationPrompt(assetRegDetails));
-  console.log(items);
   return items;
 };

@@ -13,7 +13,6 @@ interface IntraySummaryProps {
 }
 
 const IntraySummary = ({ session, inTray, handleView }: IntraySummaryProps) => {
-  console.log(inTray);
   const path = inTray.reconstructPath();
   const handleInTray = (childInTray: InTray) => {
     session.handleDynamicView(INTRAY_SUMMARY, childInTray);
