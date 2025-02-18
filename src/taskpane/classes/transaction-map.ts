@@ -1,15 +1,19 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
-import { DrillableCollection } from "./drillable-collection";
 import { Transaction } from "./transaction";
 import { TrialBalanceLine } from "./client-codes";
+import { DrillableCollectionDynamic, DrillableCollectionStatic } from "./drillable-collection";
 
 export class TransactionMap {
   transactionId: string;
   rowNumberOrig: number;
-  drillableCollections: DrillableCollection[];
+  drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[];
 
-  constructor(transactionId: string, rowNumber: number, drillableCollections: DrillableCollection[] | null) {
+  constructor(
+    transactionId: string,
+    rowNumber: number,
+    drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[] | null
+  ) {
     this.transactionId = transactionId;
     this.rowNumberOrig = rowNumber;
     this.drillableCollections = drillableCollections;
@@ -24,13 +28,13 @@ export class ControlledInputMap {
   identifier: string;
   rowNumberOrig: number;
   colNumbers: number[];
-  drillableCollections: DrillableCollection[];
+  drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[];
 
   constructor(
     controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject,
     rowNumber: number,
     colNumbers: number[],
-    drillableCollections: DrillableCollection[] | null
+    drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[] | null
   ) {
     this.identifier = "identifier";
     this.identity = controlledInput[this.identifier];

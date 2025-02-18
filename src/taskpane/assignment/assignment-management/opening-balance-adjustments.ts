@@ -2,7 +2,7 @@ import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createControlledWorksheet } from "../../classes/controlled-worksheet";
 import { Customer } from "../../classes/customer";
-import { DrillableCollection } from "../../classes/drillable-collection";
+import { DrillableCollectionStatic } from "../../classes/drillable-collection";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
@@ -401,19 +401,19 @@ export const createOBAWorksheet = async (session: Session) => {
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
         const clientNL = session.assignment.clientNL;
-        const clientFigsDrillableCollection = new DrillableCollection(
+        const clientFigsDrillableCollection = new DrillableCollectionStatic(
           clientNL,
           (tran: ClientTransactionProps) => tran.code === obj.clientCode,
           [3],
           clientNomDetailView
         );
-        const accountsDrillableCollection = new DrillableCollection(
+        const accountsDrillableCollection = new DrillableCollectionStatic(
           obj.assignmentTransactions,
           null,
           [5],
           cerysNomDetailView
         );
-        const adjustmentsDrillableCollection = new DrillableCollection(
+        const adjustmentsDrillableCollection = new DrillableCollectionStatic(
           obj.assignmentTransactions,
           (tran: Transaction) => !(tran.transactionType === "client trial balance"),
           [7],
@@ -464,6 +464,6 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
   if (!map) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
-    if (valid) console.log(collection.collection);
+    if (valid) console.log(collection.getCollection(session));
   });
 };

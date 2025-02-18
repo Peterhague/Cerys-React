@@ -49,11 +49,9 @@ export const submitTransactionUpdates = async (session: Session) => {
   const promptSheetDeletion = await renewEdSheetsTransRefs(session);
   if (isTBUpdated) {
     if (promptSheetDeletion) {
-      await updateAssignmentFigures(session);
       session.options.updatedTransactions = updatedTrans;
       session.handleView(DELETE_SHEET_PROMPT);
     } else {
-      await updateAssignmentFigures(session);
       checkNewTransForAssets(session);
     }
   } else {
@@ -76,6 +74,7 @@ export const processUpdateBatch = async (session: Session) => {
     tran.processedAsAsset = false;
   });
   session.assignment = new Assignment(assignment);
+  await updateAssignmentFigures(session);
   return updatedTransactions;
 };
 

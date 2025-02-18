@@ -1,17 +1,16 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "../../classes/accounts-category-line";
-import { DrillableCollection } from "../../classes/drillable-collection";
+import { DrillableCollectionStatic } from "../../classes/drillable-collection";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
-import { TrialBalanceLine } from "../../classes/client-codes";
 import { AddressObject, ClientTransactionProps } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
-import { BS_WSNAME, PL_WSNAME, TB_WSNAME } from "../../static-values/worksheet-names";
+import { BS_WSNAME, PL_WSNAME } from "../../static-values/worksheet-names";
 import {
   handleEditButtonClick,
   interpretEventAddress,
@@ -40,27 +39,31 @@ export function addPlClickListener(context: Excel.RequestContext, session: Sessi
   session.assignment.pLListenerAdded = true;
 }
 
-export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
-  try {
-    await Excel.run(async (context) => {
-      const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
-      const addressObj = interpretEventAddress(e);
-      const map = sheet.sheetMapping.find(
-        (mapping) =>
-          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
-          sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
-      );
-      if (!map) return;
-      const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
-      const code = input instanceof TrialBalanceLine && input.cerysCode;
-      const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
-      await cerysNomDetailView(session, transactions);
-      await context.sync();
-    });
-  } catch (e) {
-    console.error(e);
-  }
-};
+// export const showNominalDetail = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
+//   try {
+//     await Excel.run(async (context) => {
+//       console.log("hello there");
+//       const sheet = session.controlledSheets.find((sheet) => sheet.name === TB_WSNAME);
+//       const addressObj = interpretEventAddress(e);
+//       const map = sheet.sheetMapping.find(
+//         (mapping) =>
+//           sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+//           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
+//       );
+//       console.log(map);
+//       if (!map) return;
+//       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
+//       const code = input instanceof TrialBalanceLine && input.cerysCode;
+//       const transactions = session.assignment.transactions.filter((tran) => tran.cerysCode === code);
+//       console.log(session.assignment.transactions);
+//       console.log(transactions);
+//       await cerysNomDetailView(session, transactions);
+//       await context.sync();
+//     });
+//   } catch (e) {
+//     console.error(e);
+//   }
+// };
 
 export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
@@ -105,6 +108,7 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
       isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
       let rowNumber = 3;
       const sheetMapping = [];
+      console.log(transactions);
       transactions.forEach((line) => {
         const date = getUpdatedDate(line) ? getUpdatedDate(line).value : line.getExcelDate();
         const cerysCode = getUpdatedCerysCode(line) ? getUpdatedCerysCode(line) : line.cerysCode;
@@ -120,7 +124,7 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         valuesToPost.push(arr);
         const clientDrill =
           line.representsBalanceOfClientCode > 0
-            ? new DrillableCollection(
+            ? new DrillableCollectionStatic(
                 session.assignment.clientNL,
                 (tran: ClientTransactionProps) => tran.code === line.representsBalanceOfClientCode,
                 [5],

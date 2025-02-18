@@ -1,5 +1,5 @@
 import { createControlledWorksheet } from "../../classes/controlled-worksheet";
-import { DrillableCollection } from "../../classes/drillable-collection";
+import { DrillableCollectionStatic } from "../../classes/drillable-collection";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { ControlledInputMap } from "../../classes/transaction-map";
@@ -13,6 +13,7 @@ import { cerysNomDetailView } from "../worksheet-drilling/cerys-drilling";
 export async function wsTrialBalance(session: Session) {
   try {
     await Excel.run(async (context) => {
+      console.log("running new trial balance");
       const ws: Excel.Worksheet = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
       ws.load(["name", "id"]);
       await context.sync();
@@ -32,7 +33,12 @@ export async function wsTrialBalance(session: Session) {
       trialBalance.forEach((line) => {
         tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
         const transactions = line.getCerysTransactions(session);
-        const nomDetailDrillableCollection = new DrillableCollection(transactions, null, [1, 2, 3], cerysNomDetailView);
+        const nomDetailDrillableCollection = new DrillableCollectionStatic(
+          transactions,
+          null,
+          [1, 2, 3],
+          cerysNomDetailView
+        );
         sheetMapping.push(
           new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], [nomDetailDrillableCollection])
         );

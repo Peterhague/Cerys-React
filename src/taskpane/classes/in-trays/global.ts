@@ -62,7 +62,7 @@ export class InTrayCollection {
     this.id = getRandomString();
   }
 
-  generateItems(session) {
+  generateItems(session: Session) {
     const items = this.itemsAction(session, ...this.itemsActionParams);
     const cleansedItems = this.removeEmptyInTraysFromItems(session, items);
     return cleansedItems;
