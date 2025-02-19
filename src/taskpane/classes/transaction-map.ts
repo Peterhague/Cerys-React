@@ -2,19 +2,22 @@ import { FSCategoryLineBS, FSCategoryLinePL } from "./accounts-category-line";
 import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { Transaction } from "./transaction";
 import { TrialBalanceLine } from "./client-codes";
-import { DrillableCollectionDynamic, DrillableCollectionStatic } from "./drillable-collection";
+import { DrillableCollection } from "./drillable-collection";
 
 export class TransactionMap {
   transactionId: string;
+  controlledInput: Transaction;
   rowNumberOrig: number;
-  drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[];
+  drillableCollections: DrillableCollection[];
 
   constructor(
     transactionId: string,
+    controlledInput: Transaction,
     rowNumber: number,
-    drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[] | null
+    drillableCollections: DrillableCollection[] | null
   ) {
     this.transactionId = transactionId;
+    this.controlledInput = controlledInput;
     this.rowNumberOrig = rowNumber;
     this.drillableCollections = drillableCollections;
   }
@@ -24,18 +27,20 @@ export class TransactionMap {
 }
 
 export class ControlledInputMap {
+  controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject;
   identity: string | number;
   identifier: string;
   rowNumberOrig: number;
   colNumbers: number[];
-  drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[];
+  drillableCollections: DrillableCollection[];
 
   constructor(
     controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject,
     rowNumber: number,
     colNumbers: number[],
-    drillableCollections: (DrillableCollectionStatic | DrillableCollectionDynamic)[] | null
+    drillableCollections: DrillableCollection[] | null
   ) {
+    this.controlledInput = controlledInput;
     this.identifier = "identifier";
     this.identity = controlledInput[this.identifier];
     this.rowNumberOrig = rowNumber;

@@ -567,4 +567,8 @@ export class Assignment extends BaseAssignment {
     bSArray.push(equity);
     return bSArray;
   }
+
+  getClientTransByCode(clientCode: number) {
+    return this.clientNL.filter((code) => code.code === clientCode);
+  }
 }

@@ -562,10 +562,14 @@ export const handleWorksheetDrill = async (
   if (!map) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
-    if (valid) collection.drillInto(session);
+    if (valid) collection.drillInto(session, map);
   });
 };
 
 export const getRandomString = () => {
   return Math.round(Math.random() * 10000000).toString();
+};
+
+export const returnsItself = (obj: unknown) => {
+  return obj;
 };

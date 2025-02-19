@@ -2,7 +2,7 @@ import { Assignment } from "../../classes/assignment";
 import { AssignmentClientTBObject } from "../../classes/assignment-client-TB-obj";
 import { createControlledWorksheet } from "../../classes/controlled-worksheet";
 import { Customer } from "../../classes/customer";
-import { DrillableCollectionStatic } from "../../classes/drillable-collection";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
@@ -12,7 +12,7 @@ import { TransactionUpdate } from "../../classes/transaction-update";
 import { ViewOptions } from "../../classes/view-options";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
 import { fetchOptionsReverseCustomMapping, fetchOptionsUpdateCerysCodeMapping } from "../../fetching/generateOptions";
-import { ClientCerysCodeObjectProps, ClientTransactionProps } from "../../interfaces/interfaces";
+import { ClientCerysCodeObjectProps } from "../../interfaces/interfaces";
 import { BLANK_VIEW_OPTIONS } from "../../static-values/view-options";
 import { REVIEW_CUSTOM_MAPPED_TRANS, USER_CONFIRM_PROMPT } from "../../static-values/views";
 import { STANDARD_NUMBER_FORMAT } from "../../static-values/worksheet-formats";
@@ -27,6 +27,7 @@ import {
   handleEditButtonClick,
   handleWorksheetDrill,
   interpretEventAddress,
+  returnsItself,
 } from "../../utils/helper-functions";
 import { getClientCodeMappingMessage } from "../../utils/messages";
 import { addDefaultWorksheet, setExcelRangeValue } from "../../utils/worksheet";
@@ -93,7 +94,7 @@ export async function oBARelevantTransView(session: Session) {
         arr.push(line.getClientMappingObj(session).clientCode);
         arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
-        const map = new TransactionMap(line.cerysTransactionId, rowNumber, null);
+        const map = new TransactionMap(line.cerysTransactionId, line, rowNumber, null);
         sheetMapping.push(map);
         rowNumber += 1;
       });
@@ -400,22 +401,26 @@ export const createOBAWorksheet = async (session: Session) => {
           "",
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
-        const clientNL = session.assignment.clientNL;
-        const clientFigsDrillableCollection = new DrillableCollectionStatic(
-          clientNL,
-          (tran: ClientTransactionProps) => tran.code === obj.clientCode,
+        // const clientNL = session.assignment.clientNL;
+        const clientFigsDrillableCollection = new DrillableCollection(
+          { getter: session.assignment.getClientTransByCode, getterParams: [], getterParamsMapTarget: "clientCode" },
           [3],
           clientNomDetailView
         );
-        const accountsDrillableCollection = new DrillableCollectionStatic(
-          obj.assignmentTransactions,
-          null,
+        const accountsDrillableCollection = new DrillableCollection(
+          {
+            getter: returnsItself,
+            getterParams: [],
+            getterParamsMapTarget: "assignmentTransactions",
+          },
           [5],
           cerysNomDetailView
         );
-        const adjustmentsDrillableCollection = new DrillableCollectionStatic(
-          obj.assignmentTransactions,
-          (tran: Transaction) => !(tran.transactionType === "client trial balance"),
+        const filter = (assignmentTransactions: Transaction[]) => {
+          return assignmentTransactions.filter((tran) => !(tran.transactionType === "client trial balance"));
+        };
+        const adjustmentsDrillableCollection = new DrillableCollection(
+          { getter: filter, getterParams: [], getterParamsMapTarget: "assignmentTransactions" },
           [7],
           cerysNomDetailView
         );
@@ -464,6 +469,6 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
   if (!map) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
-    if (valid) console.log(collection.getCollection(session));
+    if (valid) console.log(collection);
   });
 };

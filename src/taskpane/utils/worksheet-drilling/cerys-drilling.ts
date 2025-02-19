@@ -1,5 +1,5 @@
 import { FSCategoryLineBS, FSCategoryLinePL } from "../../classes/accounts-category-line";
-import { DrillableCollectionStatic } from "../../classes/drillable-collection";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { createEditableCell } from "../../classes/editable-cell";
 import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
@@ -122,18 +122,20 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         arr.push(narrative);
         isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
         valuesToPost.push(arr);
+        const filter = (clientNL: ClientTransactionProps[], arg2: number) => {
+          return clientNL.filter((code) => code.code === arg2);
+        };
         const clientDrill =
           line.representsBalanceOfClientCode > 0
-            ? new DrillableCollectionStatic(
-                session.assignment.clientNL,
-                (tran: ClientTransactionProps) => tran.code === line.representsBalanceOfClientCode,
+            ? new DrillableCollection(
+                { getter: filter, getterParams: session.assignment.clientNL, getterParamsMapTarget: "code" },
                 [5],
                 clientNomDetailView
               )
             : null;
         const map = clientDrill
-          ? new TransactionMap(line.cerysTransactionId, rowNumber, [clientDrill])
-          : new TransactionMap(line.cerysTransactionId, rowNumber, null);
+          ? new TransactionMap(line.cerysTransactionId, line, rowNumber, [clientDrill])
+          : new TransactionMap(line.cerysTransactionId, line, rowNumber, null);
         sheetMapping.push(map);
         rowNumber += 1;
       });

@@ -1,5 +1,6 @@
+import { TrialBalanceLine } from "../../classes/client-codes";
 import { createControlledWorksheet } from "../../classes/controlled-worksheet";
-import { DrillableCollectionStatic } from "../../classes/drillable-collection";
+import { DrillableCollection } from "../../classes/drillable-collection";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { ControlledInputMap } from "../../classes/transaction-map";
@@ -30,12 +31,14 @@ export async function wsTrialBalance(session: Session) {
       const trialBalance = session.assignment.tb;
       const tBValues = [];
       const sheetMapping: ControlledInputMap[] = [];
+      const func = (session: Session, line: TrialBalanceLine) => {
+        return line.getCerysTransactions(session);
+      };
       trialBalance.forEach((line) => {
         tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
-        const transactions = line.getCerysTransactions(session);
-        const nomDetailDrillableCollection = new DrillableCollectionStatic(
-          transactions,
-          null,
+        // const transactions = line.getCerysTransactions(session);
+        const nomDetailDrillableCollection = new DrillableCollection(
+          { getter: func, getterParams: [session], getterParamsMapTarget: "itself" },
           [1, 2, 3],
           cerysNomDetailView
         );

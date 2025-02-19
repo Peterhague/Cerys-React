@@ -424,7 +424,7 @@ export class AssetRegCreationPrompt extends InTrayItem {
         const valuesToPost: (string | number)[][] = [];
         valuesToPost.push(...this.getTransSummHeadings(amortOrDepn));
         this.transactions.forEach((tran, index) => {
-          const map = new TransactionMap(tran.cerysTransactionId, index + 3, null);
+          const map = new TransactionMap(tran.cerysTransactionId, tran, index + 3, null);
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {
