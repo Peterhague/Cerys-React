@@ -401,9 +401,11 @@ export const createOBAWorksheet = async (session: Session) => {
           "",
           `${obj.assignmentValue / 100 - obj.clientValue / 100}`,
         ]);
-        // const clientNL = session.assignment.clientNL;
+        const getter = (session: Session, clientCode: number) => {
+          return session.assignment.clientNL.filter((code) => code.code === clientCode);
+        };
         const clientFigsDrillableCollection = new DrillableCollection(
-          { getter: session.assignment.getClientTransByCode, getterParams: [], getterParamsMapTarget: "clientCode" },
+          { getter, getterParams: [session], getterParamsMapTarget: "clientCode" },
           [3],
           clientNomDetailView
         );

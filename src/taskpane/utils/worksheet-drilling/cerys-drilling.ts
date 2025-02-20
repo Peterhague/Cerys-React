@@ -90,6 +90,7 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
 export const cerysNomDetailView = async (session: Session, transactions: Transaction[]) => {
   try {
     await Excel.run(async (context) => {
+      console.log(transactions);
       let sheetInMidEdit = false;
       const cerysCodeObj = transactions[0].getCerysCodeObj(session);
       const isValueInverted = cerysCodeObj.defaultSign === "credit" ? true : false;
@@ -122,13 +123,17 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         arr.push(narrative);
         isValueInverted ? arr.push(-line.value / 100) : arr.push(line.value / 100);
         valuesToPost.push(arr);
-        const filter = (clientNL: ClientTransactionProps[], arg2: number) => {
-          return clientNL.filter((code) => code.code === arg2);
+        const filter = (clientNL: ClientTransactionProps[], arg2: number, arg3: number) => {
+          return clientNL.filter((code) => code[arg2] === arg3);
         };
         const clientDrill =
           line.representsBalanceOfClientCode > 0
             ? new DrillableCollection(
-                { getter: filter, getterParams: session.assignment.clientNL, getterParamsMapTarget: "code" },
+                {
+                  getter: filter,
+                  getterParams: [session.assignment.clientNL, "code"],
+                  getterParamsMapTarget: "representsBalanceOfClientCode",
+                },
                 [5],
                 clientNomDetailView
               )

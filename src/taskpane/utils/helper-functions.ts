@@ -554,14 +554,18 @@ export const handleWorksheetDrill = async (
   session: Session,
   wsName: string
 ) => {
+  console.log("click");
   let sheet: ControlledWorksheet | EditableWorksheet = session.controlledSheets.find((ws) => ws.name === wsName);
   if (!sheet) sheet = session.editableSheets.find((ws) => ws.name === wsName);
   if (!sheet) return;
+  console.log(sheet);
   const addressObj = interpretEventAddress(e);
   const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow);
   if (!map) return;
+  console.log(map);
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
+    console.log(collection);
     if (valid) collection.drillInto(session, map);
   });
 };
