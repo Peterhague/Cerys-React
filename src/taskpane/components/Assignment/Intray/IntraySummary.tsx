@@ -7,12 +7,11 @@ import { InTray, InTrayItem } from "../../../classes/in-trays/global";
 import { handleInTrayRouting } from "../../../utils/in-trays/in-tray-routing";
 
 interface IntraySummaryProps {
-  handleView: (view: string) => void;
   session: Session;
   inTray: InTray;
 }
 
-const IntraySummary = ({ session, inTray, handleView }: IntraySummaryProps) => {
+const IntraySummary = ({ session, inTray }: IntraySummaryProps) => {
   const path = inTray.reconstructPath();
   const handleInTray = (childInTray: InTray) => {
     session.handleDynamicView(INTRAY_SUMMARY, childInTray);
@@ -64,7 +63,7 @@ const IntraySummary = ({ session, inTray, handleView }: IntraySummaryProps) => {
             </button>
           ))}
       </div>
-      <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"Assignment Home"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

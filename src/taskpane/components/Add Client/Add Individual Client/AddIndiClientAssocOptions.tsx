@@ -11,11 +11,10 @@ import {
 import { Customer } from "../../../classes/customer";
 
 interface addIndiClientAssocOptionsProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddIndiClientAssocOptions = ({ handleView, session }: addIndiClientAssocOptionsProps) => {
+const AddIndiClientAssocOptions = ({ session }: addIndiClientAssocOptionsProps) => {
   const processNewIndiClient = async () => {
     const newIndi = session.newIndiPrelim;
     delete session.newIndiPrelim;
@@ -25,13 +24,16 @@ const AddIndiClientAssocOptions = ({ handleView, session }: addIndiClientAssocOp
     const newIndiAndCustomerDb = await fetch(url, options);
     const { customer } = await newIndiAndCustomerDb.json();
     session.customer = new Customer(customer);
-    handleView(CUSTOMER_DASH_HOME);
+    session.handleView(CUSTOMER_DASH_HOME);
   };
   return (
     <>
       <p>Associate with existing corporate client?</p>
-      <CerysButton buttonText={"AS DIRECTOR"} handleClick={() => handleView(ADD_INDI_CLIENT_ASSOC_DIR)} />
-      <CerysButton buttonText={"AS SHAREHOLDER"} handleClick={() => handleView(ADD_INDI_CLIENT_ASSOC_SHAREHOLDER)} />
+      <CerysButton buttonText={"AS DIRECTOR"} handleClick={() => session.handleView(ADD_INDI_CLIENT_ASSOC_DIR)} />
+      <CerysButton
+        buttonText={"AS SHAREHOLDER"}
+        handleClick={() => session.handleView(ADD_INDI_CLIENT_ASSOC_SHAREHOLDER)}
+      />
       <CerysButton buttonText={"Submit Now"} handleClick={() => processNewIndiClient()} />
     </>
   );

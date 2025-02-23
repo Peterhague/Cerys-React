@@ -3,19 +3,19 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { Session } from "../../../classes/session";
 import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
+
 interface addIndiClientAssocSHProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps) => {
+const AddIndiClientAssocSH = ({ session }: addIndiClientAssocSHProps) => {
   const [clientId, setClientId] = useState({});
   const [shareClasses, setShareClasses] = useState(null);
   const [showShareClasses, setShowShareClasses] = useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
+    session.handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
   };
 
   const handleClientSelection = (e: React.ChangeEvent<HTMLSelectElement>) => {
@@ -122,7 +122,7 @@ const AddIndiClientAssocSH = ({ handleView, session }: addIndiClientAssocSHProps
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

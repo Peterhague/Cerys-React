@@ -12,11 +12,12 @@ import { InTray, InTrayItem } from "../classes/in-trays/global";
 interface userLoginProps {
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: ViewOptions | InTray | InTrayItem) => void;
+  handleOverlayView: (overlayView: string) => void;
   session: Session;
   setEditButton: (state: string) => void;
 }
 
-const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: userLoginProps) => {
+const UserLogin = ({ handleView, handleDynamicView, handleOverlayView, setEditButton, session }: userLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -34,6 +35,7 @@ const UserLogin = ({ handleView, handleDynamicView, setEditButton, session }: us
     session.customer = new Customer(customer);
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
+    session.handleOverlayView = handleOverlayView;
     session.setEditButton = setEditButton;
     await registerWorksheetsCollectionHandler(session);
     handleView(USER_DASH_HOME);

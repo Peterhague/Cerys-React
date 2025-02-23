@@ -9,11 +9,10 @@ import { Customer } from "../../classes/customer";
 import { BaseIndividual } from "../../classes/individuals";
 
 interface addIndiDtlsprops {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
+const AddIndiDtls = ({ session }: addIndiDtlsprops) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -37,7 +36,7 @@ const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
     session.newIndiPrelim = newIndi;
     const route = session.customer.clients.length > 0 ? "addIndiClientAssocOptions" : "customerDashHome";
     session.customer.clients.length === 0 && processNewIndi(newIndi);
-    handleView(route);
+    session.handleView(route);
   };
 
   const processNewIndi = async (newIndi: BaseIndividual) => {
@@ -114,7 +113,7 @@ const AddIndiDtls = ({ handleView, session }: addIndiDtlsprops) => {
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

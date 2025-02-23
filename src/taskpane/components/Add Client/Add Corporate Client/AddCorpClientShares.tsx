@@ -6,11 +6,10 @@ import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/vi
 import { ShareClass } from "../../../classes/share-classes";
 
 interface addCorpClientSharesProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) => {
+const AddCorpClientShares = ({ session }: addCorpClientSharesProps) => {
   const [shareClassName, setShareClassName] = useState("");
   const [numberIssued, setNumberIssued] = useState(0);
   const [valuePerShare, setValuePerShare] = useState(0);
@@ -26,7 +25,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
       prelimAllocation: 0,
     };
     session.newClientPrelim.shareClasses.push(new ShareClass(newClientShares));
-    handleView(ADD_CORP_CLIENT_OPTIONS);
+    session.handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -75,7 +74,7 @@ const AddCorpClientShares = ({ handleView, session }: addCorpClientSharesProps) 
           <button type="submit">Submit class</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

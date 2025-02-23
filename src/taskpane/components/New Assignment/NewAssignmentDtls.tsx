@@ -18,11 +18,10 @@ import { AssetRegister } from "../../classes/asset-register";
 import { ViewOptions } from "../../classes/view-options";
 
 interface newAssignmentDtlsProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
+const NewAssignmentDtls = ({ session }: newAssignmentDtlsProps) => {
   const [view, setView] = useState("main");
   const [clientId, setClientId] = useState("");
   const [clientObject, setClientObject] = useState<Client>(null);
@@ -142,7 +141,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
       };
       session.handleDynamicView(USER_CONFIRM_PROMPT, new ViewOptions(options));
     } else {
-      handleView(ASSIGNMENT_DASH_HOME);
+      session.handleView(ASSIGNMENT_DASH_HOME);
     }
   };
 
@@ -325,7 +324,7 @@ const NewAssignmentDtls = ({ handleView, session }: newAssignmentDtlsProps) => {
           </>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

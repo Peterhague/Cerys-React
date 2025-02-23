@@ -6,12 +6,11 @@ import { ASSIGNMENT_DASH_HOME, INTRAY_SUMMARY } from "../../../static-values/vie
 import { handleInTrayRouting } from "../../../utils/in-trays/in-tray-routing";
 
 interface IntrayDetailsProps {
-  handleView: (view: string) => void;
   session: Session;
   options: { inTrayItem: InTrayItem; inTray: InTray };
 }
 
-const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => {
+const IntrayDetails = ({ session, options }: IntrayDetailsProps) => {
   const { inTrayItem, inTray } = options;
   const path = inTrayItem.reconstructPath(inTray);
 
@@ -34,7 +33,7 @@ const IntrayDetails = ({ session, options, handleView }: IntrayDetailsProps) => 
       <CerysButton buttonText={"Yes"} handleClick={handleAffirmative} />
       <CerysButton buttonText={"Ignore"} handleClick={handleIgnore} />
       <CerysButton buttonText={"Return to In-tray"} handleClick={handleReturn} />
-      <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"Assignment Home"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
       <div>
         {path.length > 0 &&
           path.map((item) => (

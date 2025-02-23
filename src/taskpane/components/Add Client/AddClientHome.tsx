@@ -1,19 +1,22 @@
 import * as React from "react";
 import CerysButton from "../CerysButton";
 import { ADD_CORP_CLIENT_DETAILS, ADD_INDI_CLIENT_DETAILS } from "../../static-values/views";
+import { Session } from "../../classes/session";
 
 interface addClientHomeProps {
-  handleView: (view: string) => void;
-  session: {};
+  session: Session;
 }
 
-const AddClientHome = (props: addClientHomeProps) => {
+const AddClientHome = ({ session }: addClientHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"ADD CORPORATE CLIENT"} handleClick={() => props.handleView(ADD_CORP_CLIENT_DETAILS)} />
+      <CerysButton
+        buttonText={"ADD CORPORATE CLIENT"}
+        handleClick={() => session.handleView(ADD_CORP_CLIENT_DETAILS)}
+      />
       <CerysButton
         buttonText={"ADD INDIVIDUAL AS CLIENT"}
-        handleClick={() => props.handleView(ADD_INDI_CLIENT_DETAILS)}
+        handleClick={() => session.handleView(ADD_INDI_CLIENT_DETAILS)}
       />
     </>
   );

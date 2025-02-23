@@ -10,11 +10,10 @@ import { ClientCodeObject } from "../../classes/client-codes";
 import { ClientCodeObjectProps } from "../../interfaces/interfaces";
 
 interface mapUnmappedCodes {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
+const MapUnmappedCodes = ({ session }: mapUnmappedCodes) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const [codeObjects, setCodeObjects] = useState(session.unmappedCodeObjects);
 
@@ -171,7 +170,7 @@ const MapUnmappedCodes = ({ handleView, session }: mapUnmappedCodes) => {
         <button onClick={() => handleSubmit()}>Submit changes</button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

@@ -6,7 +6,6 @@ import { activateWorksheet, deleteManyWorksheets } from "../../../utils/workshee
 import { checkNewTransForAssets } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 interface deleteSheetPromptProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 

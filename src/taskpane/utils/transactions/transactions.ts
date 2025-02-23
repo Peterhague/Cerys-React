@@ -51,12 +51,13 @@ export const submitTransactionUpdates = async (session: Session) => {
     await updateAssignmentFigures(session);
     if (promptSheetDeletion) {
       session.options.updatedTransactions = updatedTrans;
-      session.handleView(DELETE_SHEET_PROMPT);
+      session.handleOverlayView(DELETE_SHEET_PROMPT);
     } else {
       checkNewTransForAssets(session);
     }
   } else {
-    callNextView(session);
+    //callNextView(session);
+    session.handleOverlayView("");
   }
   session.editableSheets.forEach((sheet) => {
     if (sheet.editButtonStatus === "inProgress") sheet.editButtonStatus = "hide";

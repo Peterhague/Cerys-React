@@ -6,11 +6,10 @@ import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/vi
 import { Client } from "../../../classes/client";
 
 interface addCorpClientDepnIPProps {
-  handleView: (view) => void;
   session: Session;
 }
 
-const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) => {
+const AddCorpClientDepnIP = ({ session }: addCorpClientDepnIPProps) => {
   const [depnBasisIPOwned, setDepnBasisIPOwned] = useState("");
   const [depnRateIPOwned, setDepnRateIPOwned] = useState("");
   const [depnBasisIPLeased, setDepnBasisIPLeased] = useState("");
@@ -34,7 +33,7 @@ const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) 
     };
     const updatedObj = { ...session.newClientPrelim, ...depnPols };
     session.newClientPrelim = new Client(updatedObj);
-    handleView(ADD_CORP_CLIENT_OPTIONS);
+    session.handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -129,7 +128,7 @@ const AddCorpClientDepnIP = ({ handleView, session }: addCorpClientDepnIPProps) 
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

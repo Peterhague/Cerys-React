@@ -11,12 +11,11 @@ import { LANDING_PAGE } from "../../static-values/views";
 import { ClientCerysCodeObject } from "../../classes/cerys-codes";
 
 interface enterJournalProps {
-  handleView: (view: string) => void;
   session: Session;
   chart: ClientCerysCodeObject[];
 }
 
-const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
+const EnterJournal = ({ session, chart }: enterJournalProps) => {
   const [activeJournal, setActiveJournal] = useState(new ActiveJournal({ type: "journal", journals: [] }));
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
@@ -140,7 +139,7 @@ const EnterJournal = ({ handleView, session, chart }: enterJournalProps) => {
           </div>
         )}
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

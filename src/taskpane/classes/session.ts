@@ -31,6 +31,7 @@ export class Session {
   TFARegister: AssetRegister;
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: GlobalInterfaces["viewOptions"]) => void;
+  handleOverlayView: (overlayView: string) => void;
   setEditButton: (editButtonStatus: string) => void;
   unmappedCodeObjects: ClientCodeObject[] = [];
   arrowIndex: number = -1;

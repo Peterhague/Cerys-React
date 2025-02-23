@@ -6,11 +6,10 @@ import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/vi
 import { Client } from "../../../classes/client";
 
 interface addCorpClientAmortProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) => {
+const AddCorpClientAmort = ({ session }: addCorpClientAmortProps) => {
   const [amortBasisGwill, setAmortBasisGwill] = useState("SL");
   const [amortRateGwill, setAmortRateGwill] = useState("");
   const [amortBasisPatsLics, setAmortBasisPatsLics] = useState("SL");
@@ -50,7 +49,7 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
     };
     const updatedObj = { ...session.newClientPrelim, ...amortPols };
     session.newClientPrelim = new Client(updatedObj);
-    handleView(ADD_CORP_CLIENT_OPTIONS);
+    session.handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -223,7 +222,7 @@ const AddCorpClientAmort = ({ handleView, session }: addCorpClientAmortProps) =>
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

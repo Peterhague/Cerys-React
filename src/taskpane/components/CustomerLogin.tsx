@@ -11,11 +11,18 @@ import { GlobalInterfaces } from "../interfaces/interfaces";
 interface customerLoginProps {
   handleView: (view: string) => void;
   handleDynamicView: (view: string, options: GlobalInterfaces["viewOptions"]) => void;
+  handleOverlayView: (overlayView: string) => void;
   setEditButton: (state: string) => void;
   session: Session;
 }
 
-const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }: customerLoginProps) => {
+const CustomerLogin = ({
+  handleView,
+  handleDynamicView,
+  handleOverlayView,
+  session,
+  setEditButton,
+}: customerLoginProps) => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
 
@@ -28,6 +35,7 @@ const CustomerLogin = ({ handleView, handleDynamicView, session, setEditButton }
     session.customer = new Customer(customer);
     session.handleView = handleView;
     session.handleDynamicView = handleDynamicView;
+    session.handleOverlayView = handleOverlayView;
     session.setEditButton = setEditButton;
     handleView(CUSTOMER_DASH_HOME);
   };

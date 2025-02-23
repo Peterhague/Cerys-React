@@ -5,11 +5,10 @@ import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_OPTIONS, LANDING_PAGE } from "../../../static-values/views";
 import { Client } from "../../../classes/client";
 interface addCorpClientDepnProps {
-  handleView: (view) => void;
   session: Session;
 }
 
-const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
+const AddCorpClientDepn = ({ session }: addCorpClientDepnProps) => {
   const [depnBasisFholdProp, setDepnBasisFholdProp] = useState("SL");
   const [depnRateFholdProp, setDepnRateFholdProp] = useState("");
   const [depnBasisShortLhold, setDepnBasisShortLhold] = useState("SL");
@@ -89,7 +88,7 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
     };
     const updatedObj = { ...session.newClientPrelim, ...depnPols };
     session.newClientPrelim = new Client(updatedObj);
-    handleView(ADD_CORP_CLIENT_OPTIONS);
+    session.handleView(ADD_CORP_CLIENT_OPTIONS);
   };
 
   return (
@@ -452,7 +451,7 @@ const AddCorpClientDepn = ({ handleView, session }: addCorpClientDepnProps) => {
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

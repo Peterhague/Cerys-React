@@ -7,21 +7,21 @@ import {
   LANDING_PAGE,
   USER_LOGIN,
 } from "../static-values/views";
+import { Session } from "../classes/session";
 
 interface customerDashHomeProps {
-  handleView: (view: string) => void;
-  session: {};
+  session: Session;
 }
 
-const CustomerDashHome = ({ handleView }: customerDashHomeProps) => {
+const CustomerDashHome = ({ session }: customerDashHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"CLIENTS"} handleClick={() => handleView(CUSTOMER_CLIENTS_HOME)} />
-      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleClick={() => handleView(CUSTOMER_INDIS_HOME)} />
-      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleClick={() => handleView(LANDING_PAGE)} />
-      <CerysButton buttonText={"LICENCES"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"STAFF"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"SIGN IN AS USER"} handleClick={() => handleView(USER_LOGIN)} />
+      <CerysButton buttonText={"CLIENTS"} handleClick={() => session.handleView(CUSTOMER_CLIENTS_HOME)} />
+      <CerysButton buttonText={"NON-CLIENT INDIVIDUALS"} handleClick={() => session.handleView(CUSTOMER_INDIS_HOME)} />
+      <CerysButton buttonText={"NON-CLIENT COMPANIES"} handleClick={() => session.handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"LICENCES"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"STAFF"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"SIGN IN AS USER"} handleClick={() => session.handleView(USER_LOGIN)} />
     </>
   );
 };

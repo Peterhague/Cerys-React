@@ -7,16 +7,15 @@ import { ASSIGNMENT_DASH_HOME, CUSTOMER_SIGN_UP, MAP_UNMAPPED_CODES, USER_LOGIN 
 import { ClientCodeObject } from "../../classes/client-codes";
 
 interface enterClientDataHomeProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const EnterClientDataHome = ({ handleView, session }: enterClientDataHomeProps) => {
+const EnterClientDataHome = ({ session }: enterClientDataHomeProps) => {
   const handleTBEntry = async () => {
     const unmappedCodeObjects: ClientCodeObject[] = await checkTBMapping(session);
     if (unmappedCodeObjects.length > 0) {
       session.unmappedCodeObjects = unmappedCodeObjects;
-      handleView(MAP_UNMAPPED_CODES);
+      session.handleView(MAP_UNMAPPED_CODES);
     } else {
       enterTB(session);
     }
@@ -24,13 +23,13 @@ const EnterClientDataHome = ({ handleView, session }: enterClientDataHomeProps) 
 
   return (
     <>
-      <CerysButton buttonText={"GO BACK"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"GO BACK"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
       <CerysButton buttonText={"TRIAL BALANCE"} handleClick={() => handleTBEntry()} />
       <CerysButton buttonText={"NOMINAL LEDGER"} handleClick={() => enterNL(session)} />
-      <CerysButton buttonText={"AGED DEBTORS REPORT"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"AGED CREDITORS REPORT"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"VAT DATA"} handleClick={() => handleView(USER_LOGIN)} />
-      <CerysButton buttonText={"WAGES DATA"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"AGED DEBTORS REPORT"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"AGED CREDITORS REPORT"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"VAT DATA"} handleClick={() => session.handleView(USER_LOGIN)} />
+      <CerysButton buttonText={"WAGES DATA"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
     </>
   );
 };

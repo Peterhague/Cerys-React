@@ -10,7 +10,6 @@ import {
 import { ViewOptions } from "../../../classes/view-options";
 
 interface ReviewCustomMappedTransProps {
-  handleView: (view: string) => void;
   session: Session;
   options: ViewOptions;
 }

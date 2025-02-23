@@ -6,11 +6,10 @@ import { ADD_INDI_CLIENT_ASSOC_OPTIONS, LANDING_PAGE } from "../../../static-val
 import { Directorship } from "../../../classes/individuals";
 
 interface addIndiClientAssocDirProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirProps) => {
+const AddIndiClientAssocDir = ({ session }: addIndiClientAssocDirProps) => {
   const [clientId, setClientId] = useState("");
   const [dateAppointed, setDateAppointed] = useState("");
   const [isCeased, setIsCeased] = useState(false);
@@ -20,7 +19,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
     e.preventDefault();
     const directorship = new Directorship(clientId, dateAppointed, dateCeased, session);
     session.newIndiPrelim._clientDirectorships.push(directorship);
-    handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
+    session.handleView(ADD_INDI_CLIENT_ASSOC_OPTIONS);
   };
 
   return (
@@ -85,7 +84,7 @@ const AddIndiClientAssocDir = ({ handleView, session }: addIndiClientAssocDirPro
           </div>
         </>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

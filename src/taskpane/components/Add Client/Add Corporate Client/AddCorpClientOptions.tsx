@@ -15,11 +15,10 @@ import {
 import { Customer } from "../../../classes/customer";
 
 interface addCorpClientOptionsProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps) => {
+const AddCorpClientOptions = ({ session }: addCorpClientOptionsProps) => {
   const handleSubmission = async () => {
     const client = session.newClientPrelim;
     client.newIndividuals.forEach((i) => {
@@ -32,26 +31,26 @@ const AddCorpClientOptions = ({ handleView, session }: addCorpClientOptionsProps
     const { customer } = await newCustAndClientDb.json();
     session.customer = new Customer(customer);
     delete session.newClientPrelim;
-    handleView(CUSTOMER_DASH_HOME);
+    session.handleView(CUSTOMER_DASH_HOME);
   };
 
   return (
     <>
-      <CerysButton buttonText={"ADD ANOTHER CLASS"} handleClick={() => handleView(ADD_CORP_CLIENT_SHARES)} />
+      <CerysButton buttonText={"ADD ANOTHER CLASS"} handleClick={() => session.handleView(ADD_CORP_CLIENT_SHARES)} />
       <CerysButton
         buttonText={"ENTER AMORTISATION POLICIES"}
-        handleClick={() => handleView(ADD_CORP_CLIENT_AMORTISATION)}
+        handleClick={() => session.handleView(ADD_CORP_CLIENT_AMORTISATION)}
       />
       <CerysButton
         buttonText={"ENTER DEPRECIATION POLICIES"}
-        handleClick={() => handleView(ADD_CORP_CLIENT_DEPRECIATION)}
+        handleClick={() => session.handleView(ADD_CORP_CLIENT_DEPRECIATION)}
       />
       <CerysButton
         buttonText={"ENTER IP DEPN POLICIES"}
-        handleClick={() => handleView(ADD_CORP_CLIENT_DEPRECIATION_INV_PROP)}
+        handleClick={() => session.handleView(ADD_CORP_CLIENT_DEPRECIATION_INV_PROP)}
       />
-      <CerysButton buttonText={"ENTER VAT DETAILS"} handleClick={() => handleView(ADD_CLIENT_HOME)} />
-      <CerysButton buttonText={"ADD INDIVIDUALS"} handleClick={() => handleView(ADD_CORP_CLIENT_INDIS)} />
+      <CerysButton buttonText={"ENTER VAT DETAILS"} handleClick={() => session.handleView(ADD_CLIENT_HOME)} />
+      <CerysButton buttonText={"ADD INDIVIDUALS"} handleClick={() => session.handleView(ADD_CORP_CLIENT_INDIS)} />
       <CerysButton buttonText={"Submit client now"} handleClick={() => handleSubmission()} />
     </>
   );

@@ -5,11 +5,10 @@ import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_DIRS_HOME, LANDING_PAGE } from "../../../static-values/views";
 
 interface addCorpClientDirNewProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) => {
+const AddCorpClientDirNew = ({ session }: addCorpClientDirNewProps) => {
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
@@ -20,7 +19,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
   const handleSubmit = async (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     session.newCorpClientDirectors.push({ firstName, lastName, email, phone, address, uTR });
-    handleView(ADD_CORP_CLIENT_DIRS_HOME);
+    session.handleView(ADD_CORP_CLIENT_DIRS_HOME);
   };
 
   return (
@@ -98,7 +97,7 @@ const AddCorpClientDirNew = ({ handleView, session }: addCorpClientDirNewProps) 
           <button type="submit">Submit details</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

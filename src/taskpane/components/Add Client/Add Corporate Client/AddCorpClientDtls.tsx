@@ -5,11 +5,10 @@ import { Session } from "../../../classes/session";
 import { ADD_CORP_CLIENT_SHARES, LANDING_PAGE } from "../../../static-values/views";
 import { Client } from "../../../classes/client";
 interface addCorpClientDtlsProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
+const AddCorpClientDtls = ({ session }: addCorpClientDtlsProps) => {
   const [clientCode, setClientCode] = useState("");
   const [clientName, setClientName] = useState("");
   const [companyNumber, setCompanyNumber] = useState("");
@@ -43,7 +42,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
       existingIndividuals: [],
     };
     session.newClientPrelim = new Client(newClientDtls);
-    handleView(ADD_CORP_CLIENT_SHARES);
+    session.handleView(ADD_CORP_CLIENT_SHARES);
   };
 
   const generateAccRefDate = (month: string, nominatedDay: number) => {
@@ -372,7 +371,7 @@ const AddCorpClientDtls = ({ handleView, session }: addCorpClientDtlsProps) => {
           <button type="submit">Add share classes</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

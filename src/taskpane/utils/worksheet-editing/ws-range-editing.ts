@@ -13,6 +13,7 @@ import {
   TranUpdateFinalValidation,
   TranUpdatePrimaryValidation,
 } from "../../interfaces/interfaces";
+import { HANDLE_TRANS_UPDATES } from "../../static-values/views";
 import { colNumToLetter } from "../excel-col-conversion";
 import {
   checkEditMode,
@@ -205,12 +206,15 @@ export const processTransUpdateEffects = (
     session.currentView === "propmptIPRCreation"
   )
     setNextViewButOne(session);
-  const view = updatedTrans.length > 0 ? "handleTransUpdates" : session.nextView;
-  session.handleView(view);
+  // const view = updatedTrans.length > 0 ? HANDLE_TRANS_UPDATES : session.nextView;
+  // session.handleView(view);
   if (updatedTrans.length > 0) {
     session.setEditButton("off");
+    session.handleOverlayView(HANDLE_TRANS_UPDATES);
   } else {
     session.setEditButton("hide");
+    // session.handleView(session.nextView);
+    session.handleOverlayView("");
   }
 };
 

@@ -99,7 +99,6 @@ import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientI
 import { GlobalInterfaces } from "../interfaces/interfaces";
 import { ViewOptions } from "../classes/view-options";
 import { InTray, InTrayAndItem } from "../classes/in-trays/global";
-// import IntrayNestedSummary from "./Assignment/Intray/InTrayNestedSummary";
 import IntraySummary from "./Assignment/Intray/InTraySummary";
 import IntrayDetails from "./Assignment/Intray/InTrayDetails";
 
@@ -109,6 +108,7 @@ interface AppBodyProps {
 
 const AppBody = ({ session }: AppBodyProps) => {
   const [view, setView] = useState<string>("landingPage");
+  const [overlayView, setOverlayView] = useState<string>("");
   const [editButton, setEditButton] = useState("off");
   const [options, setOptions] = useState<GlobalInterfaces["viewOptions"]>(BLANK_VIEW_OPTIONS);
 
@@ -123,189 +123,201 @@ const AppBody = ({ session }: AppBodyProps) => {
     setView(view);
   };
 
+  const handleOverlayView = (overlayView: string) => {
+    setOverlayView(overlayView);
+  };
+
   const bodyView = () => {
+    console.log(view);
     let body: React.JSX.Element;
-    let footer = (
-      <Footer handleView={handleView} setEditButton={setEditButton} editButton={editButton} session={session} />
-    );
-    switch (view) {
-      case LANDING_PAGE:
-        body = <LandingPage handleView={handleView} session={session} />;
-        footer = null;
-        break;
-      case USER_LOGIN:
-        body = (
-          <UserLogin
-            handleView={handleView}
-            handleDynamicView={handleDynamicView}
-            session={session}
-            setEditButton={setEditButton}
-          />
-        );
-        footer = null;
-        break;
-      case USER_DASH_HOME:
-        body = <UserDashHome handleView={handleView} />;
-        session.nextView = view;
-        break;
-      case CUSTOMER_LOGIN:
-        body = (
-          <CustomerLogin
-            handleView={handleView}
-            handleDynamicView={handleDynamicView}
-            session={session}
-            setEditButton={setEditButton}
-          />
-        );
-        footer = null;
-        break;
-      case CUSTOMER_SIGN_UP:
-        body = <CustomerSignUp handleView={handleView} session={session} />;
-        footer = null;
-        break;
-      case CUSTOMER_SIGN_UP_DETAILS:
-        body = <CustomerSignUpDtls handleView={handleView} session={session} />;
-        break;
-      case CUSTOMER_SIGN_UP_PLAN:
-        body = <CustomerSignUpPlan handleView={handleView} session={session} />;
-        break;
-      case NEW_CUSTOMER_LANDING:
-        body = <NewCustomerLanding handleView={handleView} session={session} />;
-        break;
-      case ADD_USER:
-        body = <AddUser handleView={handleView} session={session} />;
-        break;
-      case CUSTOMER_DASH_HOME:
-        body = <CustomerDashHome handleView={handleView} session={session} />;
-        session.nextView = view;
-        break;
-      case MANAGE_ASSIGNMENT_DASH_HOME:
-        body = <ManageAssignmentDashHome handleView={handleView} session={session} />;
-        session.nextView = view;
-        break;
-      case INTRAY_SUMMARY:
-        if (options instanceof InTray)
-          body = <IntraySummary handleView={handleView} session={session} inTray={options} />;
-        break;
-      // case INTRAY_NESTED_SUMMARY:
-      //   if (options instanceof InTrayAndParentInTray)
-      //     body = <IntrayNestedSummary handleView={handleView} session={session} inTrayAndParentInTray={options} />;
-      //   break;
-      case INTRAY_DETAILS:
-        if (options instanceof InTrayAndItem)
-          body = <IntrayDetails handleView={handleView} session={session} options={options} />;
-        break;
-      case OPENING_BALANCE_ADJUSTMENTS:
-        body = <OpeningBalanceAdjustments handleView={handleView} session={session} />;
-        session.nextView = view;
-        break;
-      case NOM_CODE_SELECTION:
-        body = <NomCodeSelection handleView={handleView} session={session} chart={session.chart} />;
-        break;
-      case CLIENT_NOM_CODE_SELECTION:
-        body = <NomCodeSelection handleView={handleView} session={session} chart={session.clientChart} />;
-        break;
-      case USER_CONFIRM_PROMPT:
-        if (options instanceof ViewOptions)
-          body = <UserConfirmPrompt handleView={handleView} session={session} options={options} />;
-        break;
-      case CUSTOMER_CLIENTS_HOME:
-        body = <CustomerClientsHome handleView={handleView} session={session} />;
-        break;
-      case ADD_CLIENT_HOME:
-        body = <AddClientHome handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_DETAILS:
-        body = <AddCorpClientDtls handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_SHARES:
-        body = <AddCorpClientShares handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_OPTIONS:
-        body = <AddCorpClientOptions handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_INDIS:
-        body = <AddCorpClientIndis handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_DIRS_HOME:
-        body = <AddCorpClientDirsHome handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_DIR_NEW:
-        body = <AddCorpClientDirNew handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_SHAREHOLDERS_HOME:
-        body = <AddCorpClientSHHome handleView={handleView} session={session} />;
-        break;
-      case ADD_COPR_CLIENT_SHAREHOLDER_NEW:
-        body = <AddCorpClientSHNew handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_AMORTISATION:
-        body = <AddCorpClientAmort handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_DEPRECIATION:
-        body = <AddCorpClientDepn handleView={handleView} session={session} />;
-        break;
-      case ADD_CORP_CLIENT_DEPRECIATION_INV_PROP:
-        body = <AddCorpClientDepnIP handleView={handleView} session={session} />;
-        break;
-      case ADD_INDI_CLIENT_DETAILS:
-        body = <AddIndiClientDtls handleView={handleView} session={session} />;
-        break;
-      case ADD_INDI_CLIENT_ASSOC_OPTIONS:
-        body = <AddIndiClientAssocOptions handleView={handleView} session={session} />;
-        break;
-      case ADD_INDI_CLIENT_ASSOC_DIR:
-        body = <AddIndiClientAssocDir handleView={handleView} session={session} />;
-        break;
-      case ADD_INDI_CLIENT_ASSOC_SHAREHOLDER:
-        body = <AddIndiClientAssocSH handleView={handleView} session={session} />;
-        break;
-      case CUSTOMER_INDIS_HOME:
-        body = <CustomerIndisHome handleView={handleView} session={session} />;
-        break;
-      case ADD_INDI_DETAILS:
-        body = <AddIndiDtls handleView={handleView} session={session} />;
-        break;
-      case USER_ASSIGNMENTS_HOME:
-        body = <UserAssignmentsHome handleView={handleView} session={session} />;
-        break;
-      case NEW_ASSIGNMENT_DETAILS:
-        body = <NewAssignmentDtls handleView={handleView} session={session} />;
-        break;
-      case ASSIGNMENT_DASH_HOME:
-        body = <AssignmentDashHome handleView={handleView} session={session} />;
-        session.nextView = view;
-        break;
-      case ENTER_CLIENT_DATA_HOME:
-        body = <EnterClientDataHome handleView={handleView} session={session} />;
-        session.nextView = view;
-        break;
-      case ENTER_JOURNAL:
-        body = <EnterJournal handleView={handleView} session={session} chart={session.chart} />;
-        break;
-      case PROMPT_ASSET_REGISTER_CREATION:
-        if (options instanceof ViewOptions)
-          body = <PromptAssetRegisterCreation handleView={handleView} session={session} options={options} />;
-        break;
-      case HANDLE_TRANS_UPDATES:
-        body = <HandleTransUpdates handleView={handleView} session={session} />;
-        break;
-      case REVIEW_TRANS_UPDATES:
-        body = <ReviewTransUpdates handleView={handleView} session={session} />;
-        break;
-      case REVIEW_CUSTOM_MAPPED_TRANS:
-        if (options instanceof ViewOptions)
-          body = <ReviewCustomMappedTrans handleView={handleView} session={session} options={options} />;
-        break;
-      case DELETE_SHEET_PROMPT:
-        body = <DeleteSheetPrompt handleView={handleView} session={session} />;
-        break;
-      case MAP_UNMAPPED_CODES:
-        body = <MapUnmappedCodes handleView={handleView} session={session} />;
-        break;
-      default:
-        body = <LandingPage handleView={handleView} session={session} />;
+    let footer = <Footer setEditButton={setEditButton} editButton={editButton} session={session} />;
+    if (overlayView) {
+      switch (overlayView) {
+        case HANDLE_TRANS_UPDATES:
+          body = <HandleTransUpdates session={session} />;
+          break;
+        case REVIEW_TRANS_UPDATES:
+          body = <ReviewTransUpdates session={session} />;
+          break;
+        case DELETE_SHEET_PROMPT:
+          body = <DeleteSheetPrompt session={session} />;
+          break;
+      }
+    } else {
+      switch (view) {
+        case LANDING_PAGE:
+          body = <LandingPage handleView={handleView} />;
+          footer = null;
+          break;
+        case USER_LOGIN:
+          body = (
+            <UserLogin
+              handleView={handleView}
+              handleDynamicView={handleDynamicView}
+              handleOverlayView={handleOverlayView}
+              session={session}
+              setEditButton={setEditButton}
+            />
+          );
+          footer = null;
+          break;
+        case USER_DASH_HOME:
+          body = <UserDashHome session={session} />;
+          session.nextView = view;
+          break;
+        case CUSTOMER_LOGIN:
+          body = (
+            <CustomerLogin
+              handleView={handleView}
+              handleDynamicView={handleDynamicView}
+              handleOverlayView={handleOverlayView}
+              session={session}
+              setEditButton={setEditButton}
+            />
+          );
+          footer = null;
+          break;
+        case CUSTOMER_SIGN_UP:
+          body = <CustomerSignUp handleView={handleView} session={session} />;
+          footer = null;
+          break;
+        case CUSTOMER_SIGN_UP_DETAILS:
+          body = <CustomerSignUpDtls handleView={handleView} session={session} />;
+          break;
+        case CUSTOMER_SIGN_UP_PLAN:
+          body = <CustomerSignUpPlan handleView={handleView} session={session} />;
+          break;
+        case NEW_CUSTOMER_LANDING:
+          body = <NewCustomerLanding handleView={handleView} session={session} />;
+          break;
+        case ADD_USER:
+          body = <AddUser handleView={handleView} session={session} />;
+          break;
+        case CUSTOMER_DASH_HOME:
+          body = <CustomerDashHome session={session} />;
+          session.nextView = view;
+          break;
+        case MANAGE_ASSIGNMENT_DASH_HOME:
+          body = <ManageAssignmentDashHome session={session} />;
+          session.nextView = view;
+          break;
+        case INTRAY_SUMMARY:
+          if (options instanceof InTray) body = <IntraySummary session={session} inTray={options} />;
+          break;
+        case INTRAY_DETAILS:
+          if (options instanceof InTrayAndItem) body = <IntrayDetails session={session} options={options} />;
+          break;
+        case OPENING_BALANCE_ADJUSTMENTS:
+          body = <OpeningBalanceAdjustments session={session} />;
+          session.nextView = view;
+          break;
+        case NOM_CODE_SELECTION:
+          body = <NomCodeSelection session={session} chart={session.chart} />;
+          break;
+        case CLIENT_NOM_CODE_SELECTION:
+          body = <NomCodeSelection session={session} chart={session.clientChart} />;
+          break;
+        case USER_CONFIRM_PROMPT:
+          if (options instanceof ViewOptions) body = <UserConfirmPrompt session={session} options={options} />;
+          break;
+        case CUSTOMER_CLIENTS_HOME:
+          body = <CustomerClientsHome session={session} />;
+          break;
+        case ADD_CLIENT_HOME:
+          body = <AddClientHome session={session} />;
+          break;
+        case ADD_CORP_CLIENT_DETAILS:
+          body = <AddCorpClientDtls session={session} />;
+          break;
+        case ADD_CORP_CLIENT_SHARES:
+          body = <AddCorpClientShares session={session} />;
+          break;
+        case ADD_CORP_CLIENT_OPTIONS:
+          body = <AddCorpClientOptions session={session} />;
+          break;
+        case ADD_CORP_CLIENT_INDIS:
+          body = <AddCorpClientIndis session={session} />;
+          break;
+        case ADD_CORP_CLIENT_DIRS_HOME:
+          body = <AddCorpClientDirsHome session={session} />;
+          break;
+        case ADD_CORP_CLIENT_DIR_NEW:
+          body = <AddCorpClientDirNew session={session} />;
+          break;
+        case ADD_CORP_CLIENT_SHAREHOLDERS_HOME:
+          body = <AddCorpClientSHHome session={session} />;
+          break;
+        case ADD_COPR_CLIENT_SHAREHOLDER_NEW:
+          body = <AddCorpClientSHNew session={session} />;
+          break;
+        case ADD_CORP_CLIENT_AMORTISATION:
+          body = <AddCorpClientAmort session={session} />;
+          break;
+        case ADD_CORP_CLIENT_DEPRECIATION:
+          body = <AddCorpClientDepn session={session} />;
+          break;
+        case ADD_CORP_CLIENT_DEPRECIATION_INV_PROP:
+          body = <AddCorpClientDepnIP session={session} />;
+          break;
+        case ADD_INDI_CLIENT_DETAILS:
+          body = <AddIndiClientDtls session={session} />;
+          break;
+        case ADD_INDI_CLIENT_ASSOC_OPTIONS:
+          body = <AddIndiClientAssocOptions session={session} />;
+          break;
+        case ADD_INDI_CLIENT_ASSOC_DIR:
+          body = <AddIndiClientAssocDir session={session} />;
+          break;
+        case ADD_INDI_CLIENT_ASSOC_SHAREHOLDER:
+          body = <AddIndiClientAssocSH session={session} />;
+          break;
+        case CUSTOMER_INDIS_HOME:
+          body = <CustomerIndisHome session={session} />;
+          break;
+        case ADD_INDI_DETAILS:
+          body = <AddIndiDtls session={session} />;
+          break;
+        case USER_ASSIGNMENTS_HOME:
+          body = <UserAssignmentsHome session={session} />;
+          break;
+        case NEW_ASSIGNMENT_DETAILS:
+          body = <NewAssignmentDtls session={session} />;
+          break;
+        case ASSIGNMENT_DASH_HOME:
+          body = <AssignmentDashHome session={session} />;
+          session.nextView = view;
+          break;
+        case ENTER_CLIENT_DATA_HOME:
+          body = <EnterClientDataHome session={session} />;
+          session.nextView = view;
+          break;
+        case ENTER_JOURNAL:
+          body = <EnterJournal session={session} chart={session.chart} />;
+          break;
+        case PROMPT_ASSET_REGISTER_CREATION:
+          if (options instanceof ViewOptions)
+            body = <PromptAssetRegisterCreation session={session} options={options} />;
+          break;
+        case HANDLE_TRANS_UPDATES:
+          body = <HandleTransUpdates session={session} />;
+          break;
+        case REVIEW_TRANS_UPDATES:
+          body = <ReviewTransUpdates session={session} />;
+          break;
+        case REVIEW_CUSTOM_MAPPED_TRANS:
+          if (options instanceof ViewOptions) body = <ReviewCustomMappedTrans session={session} options={options} />;
+          break;
+        case DELETE_SHEET_PROMPT:
+          body = <DeleteSheetPrompt session={session} />;
+          break;
+        case MAP_UNMAPPED_CODES:
+          body = <MapUnmappedCodes session={session} />;
+          break;
+        default:
+          body = <LandingPage handleView={handleView} />;
+      }
     }
+
     return (
       <>
         <p>Header</p>

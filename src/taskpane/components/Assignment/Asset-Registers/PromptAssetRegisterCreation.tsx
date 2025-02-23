@@ -4,12 +4,11 @@ import { Session } from "../../../classes/session";
 import { ViewOptions } from "../../../classes/view-options";
 
 interface PromptAssetRegisterCreationProps {
-  handleView: (view: string) => void;
   session: Session;
   options: ViewOptions;
 }
 
-const PromptAssetRegisterCreation = ({ handleView, session }: PromptAssetRegisterCreationProps) => {
+const PromptAssetRegisterCreation = ({ session }: PromptAssetRegisterCreationProps) => {
   // const { registerType } = options;
   // const { initials, longCap, longLower } = registerType;
   // let nLEntered = session.assignment.NLEntered;
@@ -37,7 +36,7 @@ const PromptAssetRegisterCreation = ({ handleView, session }: PromptAssetRegiste
   const handleAbort = (view: string) => {
     session.options[`RCreationSetting`] = "main";
     //session.activeJournal.journals = [];
-    handleView(view);
+    session.handleView(view);
   };
 
   // const handleSubmit = async () => {

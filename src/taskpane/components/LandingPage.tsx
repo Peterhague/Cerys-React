@@ -1,10 +1,8 @@
 import * as React from "react";
 import CerysButton from "./CerysButton";
-import { Session } from "../classes/session";
 
 interface LandingPageProps {
   handleView: (view: string) => void;
-  session: Session;
 }
 
 const LandingPage = ({ handleView }: LandingPageProps) => {

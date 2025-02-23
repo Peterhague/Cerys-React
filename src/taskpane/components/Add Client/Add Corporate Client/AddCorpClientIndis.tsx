@@ -11,11 +11,10 @@ import _ from "lodash";
 import IndiFields from "../../Utils/IndiFields";
 
 interface AddCorpClientIndisProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) => {
+const AddCorpClientIndis = ({ session }: AddCorpClientIndisProps) => {
   const [mode, setMode] = useState("search");
   const [activeIndi, setActiveIndi] = useState<NewIndiAssociation>(null);
   const [controlIndi, setControlIndi] = useState<NewIndiAssociation>(null);
@@ -481,7 +480,7 @@ const AddCorpClientIndis = ({ session, handleView }: AddCorpClientIndisProps) =>
         </table>
       )}
       <CerysButton buttonText={"Add new individual"} handleClick={handleNewIndi} />
-      <CerysButton buttonText={"Finish"} handleClick={() => handleView(ADD_CORP_CLIENT_OPTIONS)} />
+      <CerysButton buttonText={"Finish"} handleClick={() => session.handleView(ADD_CORP_CLIENT_OPTIONS)} />
     </>
   );
 };

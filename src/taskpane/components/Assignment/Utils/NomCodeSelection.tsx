@@ -12,12 +12,11 @@ import { ClientCodeObject } from "../../../classes/client-codes";
 import { ClientCerysCodeObject } from "../../../classes/cerys-codes";
 
 interface nomCodeSelectionProps {
-  handleView: (view: string) => void;
   session: Session;
   chart: ClientCerysCodeObject[] | ClientCodeObject[];
 }
 
-const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps) => {
+const NomCodeSelection = ({ session, chart }: nomCodeSelectionProps) => {
   const [nominalCode, setNominalCode] = useState("");
   const [nominalCodeName, setNominalCodeName] = useState("");
   const [searchTerm, setSearchTerm] = useState("");
@@ -49,7 +48,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
     e.preventDefault();
     session.activeEditableCell = createEditableCell(null, null, null);
     if (getUpdatedTransactions(session).length > 0) {
-      handleView(HANDLE_TRANS_UPDATES);
+      session.handleOverlayView(HANDLE_TRANS_UPDATES);
     } else {
       callNextView(session);
     }
@@ -77,7 +76,7 @@ const NomCodeSelection = ({ handleView, session, chart }: nomCodeSelectionProps)
           <button onClick={(e) => handleGoBack(e)}>Back</button>
         </div>
       </form>
-      <CerysButton buttonText={"Return"} handleClick={() => handleView(LANDING_PAGE)} />
+      <CerysButton buttonText={"Return"} handleClick={() => session.handleView(LANDING_PAGE)} />
     </>
   );
 };

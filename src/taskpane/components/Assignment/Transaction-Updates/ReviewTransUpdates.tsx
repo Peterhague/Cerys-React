@@ -16,11 +16,10 @@ import { Session } from "../../../classes/session";
 import { ASSIGNMENT_DASH_HOME, HANDLE_TRANS_UPDATES } from "../../../static-values/views";
 
 interface reviewTransUpdatesProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) => {
+const ReviewTransUpdates = ({ session }: reviewTransUpdatesProps) => {
   const [activeIndex, setActiveIndex] = useState(0);
   const updatedTransactions = getUpdatedTransactions(session);
   // updatedTransactions.sort((a, b) => {
@@ -163,11 +162,15 @@ const ReviewTransUpdates = ({ handleView, session }: reviewTransUpdatesProps) =>
         </div>
       )}
       <div>
-        <button onClick={() => handleSubmit()}>Submit changes</button>
-        <button onClick={() => handleView(HANDLE_TRANS_UPDATES)}>Go back</button>
+        <button type="button" onClick={() => handleSubmit()}>
+          Submit changes
+        </button>
+        <button type="button" onClick={() => session.handleOverlayView(HANDLE_TRANS_UPDATES)}>
+          Go back
+        </button>
       </div>
 
-      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"ASSIGNMENT HOME"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
     </>
   );
 };

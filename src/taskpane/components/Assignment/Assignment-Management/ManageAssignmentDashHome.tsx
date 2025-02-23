@@ -8,11 +8,10 @@ import { ASSIGNMENT_DASH_HOME, OPENING_BALANCE_ADJUSTMENTS, USER_CONFIRM_PROMPT 
 import { ViewOptions } from "../../../classes/view-options";
 
 interface manageAssignmentDashHomeProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashHomeProps) => {
+const ManageAssignmentDashHome = ({ session }: manageAssignmentDashHomeProps) => {
   const test = () => {
     const options = {
       handleYes: () => console.log("yes"),
@@ -34,11 +33,11 @@ const ManageAssignmentDashHome = ({ session, handleView }: manageAssignmentDashH
       <CerysButton buttonText={"FINALISE"} handleClick={() => finaliseAssignment(session)} />
       <CerysButton
         buttonText={"Opening Balance Adjustments"}
-        handleClick={() => handleView(OPENING_BALANCE_ADJUSTMENTS)}
+        handleClick={() => session.handleView(OPENING_BALANCE_ADJUSTMENTS)}
       />
       <CerysButton buttonText={"Test dynamic component"} handleClick={() => test()} />
       <CerysButton buttonText={"Update chart"} handleClick={() => updateChart()} />
-      <CerysButton buttonText={"Assignment Home"} handleClick={() => handleView(ASSIGNMENT_DASH_HOME)} />
+      <CerysButton buttonText={"Assignment Home"} handleClick={() => session.handleView(ASSIGNMENT_DASH_HOME)} />
       <CerysButton buttonText={"test"} handleClick={() => tbreq()} />
     </>
   );

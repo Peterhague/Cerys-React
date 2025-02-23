@@ -4,15 +4,14 @@ import { ADD_CLIENT_HOME, CUSTOMER_SIGN_UP } from "../static-values/views";
 import { Session } from "../classes/session";
 
 interface customerClientsHomeProps {
-  handleView: (view: string) => void;
   session: Session;
 }
 
-const CustomerClientsHome = ({ handleView }: customerClientsHomeProps) => {
+const CustomerClientsHome = ({ session }: customerClientsHomeProps) => {
   return (
     <>
-      <CerysButton buttonText={"MANAGE CLIENTS"} handleClick={() => handleView(CUSTOMER_SIGN_UP)} />
-      <CerysButton buttonText={"ADD CLIENT"} handleClick={() => handleView(ADD_CLIENT_HOME)} />
+      <CerysButton buttonText={"MANAGE CLIENTS"} handleClick={() => session.handleView(CUSTOMER_SIGN_UP)} />
+      <CerysButton buttonText={"ADD CLIENT"} handleClick={() => session.handleView(ADD_CLIENT_HOME)} />
     </>
   );
 };
