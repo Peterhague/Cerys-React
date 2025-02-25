@@ -3,6 +3,7 @@ import { colNumToLetter } from "../utils/excel-col-conversion";
 import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helper-functions";
 import { createDeletionObject } from "../utils/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
+import { checkTransactionsForAssets } from "./asset-register";
 import { createMappingObject } from "./controlled-worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
 import { ExcelRangeUpdate } from "./excel-range-editing";
@@ -33,7 +34,8 @@ export class EditableWorksheet {
   sheetMapping: TransactionMap[];
   mappingObject: MappingObjectProps;
   filterObj: { target: string; value: string | number | boolean };
-  transactionFilter: (tran: Transaction) => boolean;
+  transactionFilter: (session: Session, edSheet: this) => Transaction[];
+  transactionFilterTarget: "clientAdj" | "cerysCode" | "IFA" | "TFA" | "IP";
   isValueInverted: boolean;
 
   constructor(
@@ -43,7 +45,8 @@ export class EditableWorksheet {
     wsValues: (string | number)[][],
     type: string,
     sheetMapping: TransactionMap[],
-    controlledRangeObj: ExcelRangeObject
+    controlledRangeObj: ExcelRangeObject,
+    transactionFilterTarget: "clientAdj" | "cerysCode" | "IFA" | "TFA" | "IP"
   ) {
     this.name = ws.name;
     this.type = type;
@@ -65,11 +68,18 @@ export class EditableWorksheet {
     this.sheetMapping = sheetMapping;
     this.mappingObject = createMappingObject(controlledRangeObj);
     this.filterObj = this.createEditableSheetFilterObj();
-    this.transactionFilter = this.createTransactionFilter(session);
+    this.transactionFilter = this.createTransactionFilter();
+    this.transactionFilterTarget = transactionFilterTarget;
     this.isValueInverted = this.testValueInversion(session);
   }
+
   async renewTransactions(session: Session, assignmentTrans: Transaction[]) {
-    const newTrans = assignmentTrans.filter(this.transactionFilter);
+    console.log("here");
+    console.log(assignmentTrans);
+    console.log(this.transactionFilter);
+    // const newTrans = assignmentTrans.filter(this.transactionFilter);
+    const newTrans = this.transactionFilter(session, this);
+    console.log(this.transactionFilter);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran.cerysTransactionId === newTran.cerysTransactionId);
       if (transaction) newTran.updates = transaction.updates;
@@ -195,12 +205,17 @@ export class EditableWorksheet {
     }
   };
 
-  createTransactionFilter = (session: Session) => {
+  createTransactionFilter = () => {
     switch (this.type) {
       case "OBARelevantAdjustments":
-        return (tran: Transaction) => tran.getCerysCodeObj(session).clientAdj;
+        //return (tran: Transaction) => tran.getCerysCodeObj(session).clientAdj;
+        return OBARelevantAdjustmentsTransFilter;
       case "cerysCodeAnalysis":
-        return (tran: Transaction) => tran.cerysCode === this.transactions[0].cerysCode;
+        // return (tran: Transaction) => tran.cerysCode === this.transactions[0].cerysCode;
+        return cerysCodeAnalysisTransFilter;
+      case "FATransactions":
+        //return (tran: Transaction) => tran;
+        return FATransactionsTransFilter;
       default:
         return null;
     }
@@ -254,9 +269,19 @@ export const createEditableWorksheet = (
   wsValues: (string | number)[][],
   type: string,
   sheetMapping: TransactionMap[],
-  controlledRangeObj: ExcelRangeObject
+  controlledRangeObj: ExcelRangeObject,
+  transactionFilterTarget: "clientAdj" | "cerysCode" | "IFA" | "TFA" | "IP"
 ) => {
-  const editableWs = new EditableWorksheet(session, transactions, ws, wsValues, type, sheetMapping, controlledRangeObj);
+  const editableWs = new EditableWorksheet(
+    session,
+    transactions,
+    ws,
+    wsValues,
+    type,
+    sheetMapping,
+    controlledRangeObj,
+    transactionFilterTarget
+  );
   const arr = [editableWs];
   session.editableSheets.forEach((sheet) => {
     if (sheet.name !== editableWs.name) arr.push(sheet);
@@ -264,4 +289,28 @@ export const createEditableWorksheet = (
   session.editableSheets = arr;
   addEditableSheetEventHandlers(session, ws);
   return editableWs;
+};
+
+export const OBARelevantAdjustmentsTransFilter = (session: Session, edSheet: EditableWorksheet) => {
+  return session.assignment.transactions.filter(
+    (tran) => tran.getCerysCodeObj(session)[edSheet.transactionFilterTarget]
+  );
+};
+
+export const cerysCodeAnalysisTransFilter = (session: Session, edSheet: EditableWorksheet) => {
+  return session.assignment.transactions.filter(
+    (tran) => tran.cerysCode === edSheet.transactions[0][edSheet.transactionFilterTarget]
+  );
+};
+
+export const FATransactionsTransFilter = (session: Session, edSheet: EditableWorksheet) => {
+  if (
+    edSheet.transactionFilterTarget === "IFA" ||
+    edSheet.transactionFilterTarget === "TFA" ||
+    edSheet.transactionFilterTarget === "IP"
+  ) {
+    const registerType = edSheet.transactionFilterTarget;
+    const { refined } = checkTransactionsForAssets(session, registerType);
+    return refined;
+  } else return null;
 };

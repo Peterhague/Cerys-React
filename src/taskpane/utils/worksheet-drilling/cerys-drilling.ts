@@ -160,7 +160,8 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         valuesToPost,
         "cerysCodeAnalysis",
         sheetMapping,
-        controlledRangeObj
+        controlledRangeObj,
+        "cerysCode"
       );
       columnsRange.format.autofitColumns();
       ws.onSingleClicked.add((e) => handleWorksheetDrill(e, session, wsName));

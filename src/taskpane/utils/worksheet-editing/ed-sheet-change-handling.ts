@@ -125,6 +125,7 @@ export const updateEdSheetClientCodeMapping = async (
 };
 
 export const renewEdSheetsTransRefs = async (session: Session) => {
+  console.log("here");
   let promptSheetDeletion = false;
   for (let i = 0; i < session.editableSheets.length; i++) {
     await session.editableSheets[i].renewTransactions(session, session.assignment.transactions);

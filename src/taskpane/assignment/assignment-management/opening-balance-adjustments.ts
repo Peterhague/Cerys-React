@@ -114,7 +114,8 @@ export async function oBARelevantTransView(session: Session) {
         valuesToPost,
         "OBARelevantAdjustments",
         sheetMapping,
-        controlledRangeObj
+        controlledRangeObj,
+        "clientAdj"
       );
       columnsRange.format.autofitColumns();
       ws.activate();

@@ -152,62 +152,63 @@ export class AssetRegisterPromptDetails {
   constructor(session: Session, registerType: "IFA" | "TFA" | "IP") {
     this.registerType = registerType;
     this.register = registerTypes[registerType];
-    const allRelevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
-    const filteredRelevantTrans = allRelevantTrans.filter(
-      (tran) => !tran.negatesClientTransaction(session) && !tran.isNegatedByTransRepresentingClientTrans(session)
-    );
-    const convertedTrans: AssetTransaction[] = [];
-    filteredRelevantTrans.forEach((tran) => {
-      if (tran.getActiveClientTransactions(session).length > 0 && !tran.representsClientTransaction(session)) {
-        const clientTrans = tran.getClientTransAsAssetTrans(session, true);
-        convertedTrans.push(...clientTrans);
-      } else convertedTrans.push(tran);
-    });
-    this.finaliseAssetObjects(session, convertedTrans);
-    const { refined, possible } = this.refineTransactions(session, convertedTrans, registerType);
+    // const allRelevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
+    // const filteredRelevantTrans = allRelevantTrans.filter(
+    //   (tran) => !tran.negatesClientTransaction(session) && !tran.isNegatedByTransRepresentingClientTrans(session)
+    // );
+    // const convertedTrans: AssetTransaction[] = [];
+    // filteredRelevantTrans.forEach((tran) => {
+    //   if (tran.getActiveClientTransactions(session).length > 0 && !tran.representsClientTransaction(session)) {
+    //     const clientTrans = tran.getClientTransAsAssetTrans(session, true);
+    //     convertedTrans.push(...clientTrans);
+    //   } else convertedTrans.push(tran);
+    // });
+    // this.finaliseAssetObjects(session, convertedTrans);
+    // const { refined, possible } = this.refineTransactions(session, convertedTrans, registerType);
+    const { refined, possible } = checkTransactionsForAssets(session, registerType);
     this.possibleAdditions = possible;
     this.refinedTransactions = refined;
   }
 
-  finaliseAssetObjects(session: Session, relevantTransactions: AssetTransaction[]) {
-    const reportingPeriod = session.assignment.reportingPeriod;
-    relevantTransactions.forEach((asset) => {
-      asset.activePeriods = [reportingPeriod._id];
-      asset.periods = [
-        {
-          reportingPeriodNumber: reportingPeriod.periodNumber,
-          reportingPeriodId: reportingPeriod._id,
-          subTransactions: asset.subTransactions,
-        },
-      ];
-    });
-  }
+  // finaliseAssetObjects(session: Session, relevantTransactions: AssetTransaction[]) {
+  //   const reportingPeriod = session.assignment.reportingPeriod;
+  //   relevantTransactions.forEach((asset) => {
+  //     asset.activePeriods = [reportingPeriod._id];
+  //     asset.periods = [
+  //       {
+  //         reportingPeriodNumber: reportingPeriod.periodNumber,
+  //         reportingPeriodId: reportingPeriod._id,
+  //         subTransactions: asset.subTransactions,
+  //       },
+  //     ];
+  //   });
+  // }
 
-  refineTransactions(session: Session, relevantTransactions: AssetTransaction[], registerType: "IFA" | "TFA" | "IP") {
-    const refined: AssetTransaction[] = [];
-    const possible: AssetTransaction[] = [];
-    relevantTransactions.forEach((tran) => {
-      let test: number;
-      if (!tran.processedAsAsset && (!tran.clientTransactionAttachment || tran.representsClientTransaction(session))) {
-        const cerysCodeObj = tran.getCerysCodeObj(session);
-        if (
-          (registerType === "IFA" &&
-            cerysCodeObj.cerysCategory === "Intangible assets" &&
-            cerysCodeObj.assetCodeType === "iFACostBF") ||
-          (registerType === "TFA" &&
-            cerysCodeObj.cerysCategory === "Tangible assets" &&
-            cerysCodeObj.assetCodeType === "tFACostBF") ||
-          (registerType === "IP" &&
-            cerysCodeObj.cerysCategory === "Investment property" &&
-            cerysCodeObj.assetCodeType === "iPCostBF")
-        ) {
-          test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
-        }
-      }
-      test > 0 ? possible.push(tran) : refined.push(tran);
-    });
-    return { refined, possible };
-  }
+  // refineTransactions(session: Session, relevantTransactions: AssetTransaction[], registerType: "IFA" | "TFA" | "IP") {
+  //   const refined: AssetTransaction[] = [];
+  //   const possible: AssetTransaction[] = [];
+  //   relevantTransactions.forEach((tran) => {
+  //     let test: number;
+  //     if (!tran.processedAsAsset && (!tran.clientTransactionAttachment || tran.representsClientTransaction(session))) {
+  //       const cerysCodeObj = tran.getCerysCodeObj(session);
+  //       if (
+  //         (registerType === "IFA" &&
+  //           cerysCodeObj.cerysCategory === "Intangible assets" &&
+  //           cerysCodeObj.assetCodeType === "iFACostBF") ||
+  //         (registerType === "TFA" &&
+  //           cerysCodeObj.cerysCategory === "Tangible assets" &&
+  //           cerysCodeObj.assetCodeType === "tFACostBF") ||
+  //         (registerType === "IP" &&
+  //           cerysCodeObj.cerysCategory === "Investment property" &&
+  //           cerysCodeObj.assetCodeType === "iPCostBF")
+  //       ) {
+  //         test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
+  //       }
+  //     }
+  //     test > 0 ? possible.push(tran) : refined.push(tran);
+  //   });
+  //   return { refined, possible };
+  // }
 
   registerCreated(session: Session) {
     let registerCreated: boolean;
@@ -446,7 +447,8 @@ export class AssetRegCreationPrompt extends InTrayItem {
           valuesToPost,
           "FATransactions",
           sheetMapping,
-          controlledRangeObj
+          controlledRangeObj,
+          this.register.initials
         );
         await context.sync();
         ws.activate();
@@ -532,3 +534,63 @@ export class AssetRegCreationPrompt extends InTrayItem {
     rangeAM.format.autofitColumns();
   }
 }
+
+export const checkTransactionsForAssets = (session: Session, registerType: "IFA" | "TFA" | "IP") => {
+  const allRelevantTrans = session.assignment.getUnprocessedFATransByType(session, registerType);
+  const filteredRelevantTrans = allRelevantTrans.filter(
+    (tran) => !tran.negatesClientTransaction(session) && !tran.isNegatedByTransRepresentingClientTrans(session)
+  );
+  const convertedTrans: AssetTransaction[] = [];
+  filteredRelevantTrans.forEach((tran) => {
+    if (tran.getActiveClientTransactions(session).length > 0 && !tran.representsClientTransaction(session)) {
+      const clientTrans = tran.getClientTransAsAssetTrans(session, true);
+      convertedTrans.push(...clientTrans);
+    } else convertedTrans.push(tran);
+  });
+  finaliseAssetObjects(session, convertedTrans);
+  return refineTransactions(session, convertedTrans, registerType);
+};
+
+export const finaliseAssetObjects = (session: Session, relevantTransactions: AssetTransaction[]) => {
+  const reportingPeriod = session.assignment.reportingPeriod;
+  relevantTransactions.forEach((asset) => {
+    asset.activePeriods = [reportingPeriod._id];
+    asset.periods = [
+      {
+        reportingPeriodNumber: reportingPeriod.periodNumber,
+        reportingPeriodId: reportingPeriod._id,
+        subTransactions: asset.subTransactions,
+      },
+    ];
+  });
+};
+
+export const refineTransactions = (
+  session: Session,
+  relevantTransactions: AssetTransaction[],
+  registerType: "IFA" | "TFA" | "IP"
+) => {
+  const refined: AssetTransaction[] = [];
+  const possible: AssetTransaction[] = [];
+  relevantTransactions.forEach((tran) => {
+    let test: number;
+    if (!tran.processedAsAsset && (!tran.clientTransactionAttachment || tran.representsClientTransaction(session))) {
+      const cerysCodeObj = tran.getCerysCodeObj(session);
+      if (
+        (registerType === "IFA" &&
+          cerysCodeObj.cerysCategory === "Intangible assets" &&
+          cerysCodeObj.assetCodeType === "iFACostBF") ||
+        (registerType === "TFA" &&
+          cerysCodeObj.cerysCategory === "Tangible assets" &&
+          cerysCodeObj.assetCodeType === "tFACostBF") ||
+        (registerType === "IP" &&
+          cerysCodeObj.cerysCategory === "Investment property" &&
+          cerysCodeObj.assetCodeType === "iPCostBF")
+      ) {
+        test = calculateDiffInDays(session.assignment.reportingPeriod.periodStart, tran.transactionDate);
+      }
+    }
+    test > 0 ? possible.push(tran) : refined.push(tran);
+  });
+  return { refined, possible };
+};
