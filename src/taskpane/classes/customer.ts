@@ -18,7 +18,6 @@ export class Customer implements CustomerProps {
   customerId: string;
   _id?: string;
   constructor(customer: CustomerProps) {
-    console.log(customer);
     this.name = customer.name;
     this.address = customer.address;
     this.phone = customer.phone;

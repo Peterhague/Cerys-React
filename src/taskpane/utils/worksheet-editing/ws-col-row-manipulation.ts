@@ -22,6 +22,7 @@ export const handleOtherEdSheetChange = async (
   sheet: EditableWorksheet,
   addressObj: AddressObject
 ) => {
+  console.log("OTHER CHANGE TYPE DETECTED!!!!");
   if (e.changeType === "ColumnInserted") {
     await handleColumnInsertion(e, wsName, sheet, addressObj);
   } else if (e.changeType === "ColumnDeleted") {
@@ -114,6 +115,7 @@ export const handleRowInsertion = async (
 };
 
 export const handleRowDeletion = async (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
+  console.log("row deleted!!!!!!!!!!!!!!!!!!!!!!!!!!!!!");
   const { firstRow, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
@@ -128,8 +130,9 @@ export const handleRowDeletion = async (session: Session, sheet: EditableWorkshe
   sheet.mappingObject.rows.forEach((rowObj) => {
     if (rowObj.current > lastRow) {
       rowObj.current -= rowsDeleted;
+    } else if (rowObj.current >= firstRow && rowObj.current <= lastRow) {
+      rowObj.current = 0;
     }
-    if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
   });
   const { protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
   if (firstRow <= protectedFirstRow && lastRow >= protectedLastRow) {
@@ -158,7 +161,8 @@ export const handleRowDeletion = async (session: Session, sheet: EditableWorkshe
   sheet.editableRowRanges = newRowRanges;
 };
 
-export const handleCellDeletionUp = async (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
+export const handleCellDeletionUp = (session: Session, sheet: EditableWorksheet, addressObj: AddressObject) => {
+  console.log("Cells deleted UP!!!!");
   const { firstCol, firstRow, lastCol, lastRow } = addressObj;
   const rowsDeleted = lastRow - firstRow + 1;
   if (session.activeEditableCell.wsName === sheet.name) {
@@ -175,8 +179,11 @@ export const handleCellDeletionUp = async (session: Session, sheet: EditableWork
   const { protectedFirstCol, protectedLastCol, protectedFirstRow, protectedLastRow } = sheet.getCurrentProtectedRange();
   if (protectedFirstCol >= firstCol && protectedLastCol <= lastCol) {
     sheet.mappingObject.rows.forEach((rowObj) => {
-      if (rowObj.current > lastRow) rowObj.current -= rowsDeleted;
-      if (rowObj.current >= firstRow && rowObj.current <= lastRow) rowObj.current = 0;
+      if (rowObj.current > lastRow) {
+        rowObj.current -= rowsDeleted;
+      } else if (rowObj.current >= firstRow && rowObj.current <= lastRow) {
+        rowObj.current = 0;
+      }
     });
     if (firstRow <= protectedFirstRow && lastRow >= protectedLastRow) {
       sheet.protectedRangeDeleted = true;

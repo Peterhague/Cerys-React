@@ -24,7 +24,6 @@ export class DrillableCollection {
   }
 
   drillInto(session: Session, map: ControlledInputMap | TransactionMap) {
-    console.log(map);
     const params = [...this.collectionInstructions.getterParams];
     if (this.collectionInstructions.getterParamsMapTarget) {
       if (this.collectionInstructions.getterParamsMapTarget === "itself") {
@@ -33,10 +32,7 @@ export class DrillableCollection {
         params.push(map.controlledInput[this.collectionInstructions.getterParamsMapTarget]);
       }
     }
-    console.log(params);
-    console.log(this.collectionInstructions.getter);
     const collection = this.collectionInstructions.getter(...params);
-    console.log(collection);
     this.func(session, collection);
   }
 }

@@ -3,6 +3,7 @@ import { ExcelDeletionObject, ExcelRangeUpdate } from "../classes/excel-range-ed
 import { Session } from "../classes/session";
 import { WorksheetDefaults } from "../interfaces/interfaces";
 import { colNumToLetter } from "./excel-col-conversion";
+import { interpretExcelAddress } from "./helper-functions";
 /* global Excel */
 
 export const addDefaultWorksheet = async (
@@ -162,6 +163,7 @@ export const setManyExcelRangeValues = async (wsName: string, updates: ExcelRang
         const range = ws.getRange(update.address);
         range.values = update.value;
       });
+      await autoFitColumns(context, wsName);
       await context.sync();
     });
   } catch (e) {
@@ -302,4 +304,29 @@ export const loadWorksheetProperties = async (
     obj[prop] = ws[prop];
   });
   return obj;
+};
+
+export const autoFitColumns = async (context: Excel.RequestContext, wsName: string) => {
+  const ws = context.workbook.worksheets.getItem(wsName);
+  const usedRange = ws.getUsedRange();
+  usedRange.format.autofitColumns();
+  usedRange.load("address, columnCount");
+  await context.sync();
+  const addressSplit = usedRange.address.split("!");
+  const addressObj = interpretExcelAddress(addressSplit[1]);
+  console.log(addressObj);
+  const columns: Excel.Range[] = [];
+  for (let i = addressObj.firstCol; i < addressObj.lastCol + 1; i++) {
+    const colLetter = colNumToLetter(i);
+    const col = ws.getRange(`${colLetter}${addressObj.firstRow}:${colLetter}${addressObj.lastRow}`);
+    col.load("format/columnWidth");
+    columns.push(col);
+  }
+  await context.sync();
+  columns.forEach((col) => {
+    if (col.format.columnWidth < 48) {
+      col.format.columnWidth = 48;
+    }
+  });
+  await context.sync();
 };

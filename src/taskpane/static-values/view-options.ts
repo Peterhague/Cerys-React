@@ -6,12 +6,6 @@ export const BLANK_VIEW_OPTIONS: ViewOptionsProps = {
   message: undefined,
   yesButtonText: "Yes",
   noButtonText: "No",
-  // registerType: {
-  //   initials: "",
-  //   longLower: "",
-  //   longCap: "",
-  //   createRegister: async (context: Excel.RequestContext, session: Session) => console.log(context, session),
-  // },
   nominalCode: "",
   nominalCodeName: "",
   cerysCode: 0,

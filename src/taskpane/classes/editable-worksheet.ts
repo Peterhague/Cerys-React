@@ -1,8 +1,13 @@
 import { FATransaction, MappingObjectProps } from "../interfaces/interfaces";
 import { colNumToLetter } from "../utils/excel-col-conversion";
-import { addEditableSheetEventHandlers, postEditableSheetEffects } from "../utils/helper-functions";
+import {
+  addEditableSheetEventHandlers,
+  interpretExcelAddress,
+  postEditableSheetEffects,
+} from "../utils/helper-functions";
 import { createDeletionObject } from "../utils/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
+import { handleCellDeletionUp } from "../utils/worksheet-editing/ws-col-row-manipulation";
 import { checkTransactionsForAssets } from "./asset-register";
 import { createMappingObject } from "./controlled-worksheet";
 import { createDefinedCol, DefinedCol, getDefinedColsSchema } from "./defined-col";
@@ -74,18 +79,15 @@ export class EditableWorksheet {
   }
 
   async renewTransactions(session: Session, assignmentTrans: Transaction[]) {
-    console.log("here");
     console.log(assignmentTrans);
-    console.log(this.transactionFilter);
     // const newTrans = assignmentTrans.filter(this.transactionFilter);
     const newTrans = this.transactionFilter(session, this);
-    console.log(this.transactionFilter);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran.cerysTransactionId === newTran.cerysTransactionId);
       if (transaction) newTran.updates = transaction.updates;
     });
     this.transactions = newTrans;
-    await this.createChangeObjects();
+    await this.createChangeObjects(session);
     await this.updateMapping(session);
     this.transactions.forEach((tran) => (tran.updates = []));
     return newTrans;
@@ -115,6 +117,7 @@ export class EditableWorksheet {
     });
     this.sheetMapping = newMapping;
     const updates: ExcelRangeUpdate[] = [];
+    console.log(this.definedCols);
     additionalTrans.forEach((obj) => {
       const row = obj.map.rowNumberOrig;
       this.definedCols.forEach((definedCol) => {
@@ -128,6 +131,8 @@ export class EditableWorksheet {
           if (this.isValueInverted) value = value * -1;
         } else if (definedCol.type === "clientCode" && typeof value === "number") {
           value = value >= 0 ? value : "NA";
+        } else if (definedCol.type === "date") {
+          value = obj.tran.getExcelDate();
         }
         const col = colNumToLetter(this.getCurrentColumn(definedCol.colNumberOrig));
         const address = `${col}${row}:${col}${row}`;
@@ -143,12 +148,15 @@ export class EditableWorksheet {
         }
       });
     });
+    console.log(updates);
+    console.log("mapping updated here!!!");
     if (updates.length > 0) {
       await postEditableSheetEffects(session, this.name, updates);
     }
   }
 
-  async createChangeObjects() {
+  async createChangeObjects(session: Session) {
+    console.log(session);
     const updates = [];
     const deletionObjects = [];
     this.sheetMapping.forEach((map) => {
@@ -171,11 +179,18 @@ export class EditableWorksheet {
         deletionObjects.push(createDeletionObject(map, this));
       }
     });
+    console.log(updates);
     updates.length > 0 && setManyExcelRangeValues(this.name, updates);
+    console.log(deletionObjects);
     if (deletionObjects.length > 0) {
       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
       // therefore needs to be done from bottom of page up
       deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
+      const addressObj = interpretExcelAddress(deletionObjects[0].range);
+      console.log(addressObj);
+      console.log(deletionObjects);
+      session.options.allowEffects += 1;
+      handleCellDeletionUp(session, this, addressObj);
       await deleteWorksheetRangesUp(deletionObjects);
     }
   }
@@ -235,6 +250,8 @@ export class EditableWorksheet {
   }
 
   getCurrentRow(originalRow: number) {
+    console.log(originalRow);
+    console.log(this.mappingObject);
     const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
     return rowObj ? rowObj.current : undefined;
   }

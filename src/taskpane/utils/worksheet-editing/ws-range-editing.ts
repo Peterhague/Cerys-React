@@ -41,10 +41,11 @@ export const handleEdSheetRangeEdit = async (
   addressObj: AddressObject,
   definedCol: DefinedCol
 ) => {
-  console.log(e);
+  console.log("next stage working");
   session.activeEditableCell = createEditableCell(null, null, null);
   let handledSuccessfully = false;
   const isEditModeEnabled = checkEditMode(sheet);
+  console.log(isEditModeEnabled);
   const autoFillObj: AutoFillObject = !session.options.autoFillOverride && checkForAutoFill(e); // returns false if autoFillOverride is true
   if (!autoFillObj.isAutoFill)
     await testEdSheetChangesForRejection(e, sheet, addressObj, definedCol, isEditModeEnabled); // runs even if autoFillObj === false
@@ -53,7 +54,6 @@ export const handleEdSheetRangeEdit = async (
   } else {
     handledSuccessfully = isEditModeEnabled && (await captureReanalysis(session, e, sheet, addressObj, definedCol));
   }
-  console.log(handledSuccessfully);
   return handledSuccessfully;
 };
 
@@ -111,6 +111,7 @@ export const captureReanalysis = async (
   addressObj: AddressObject,
   definedCol: DefinedCol
 ) => {
+  console.log("analysis captured");
   const wsName = sheet.name;
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
@@ -123,11 +124,14 @@ export const captureReanalysis = async (
     updated: false,
   };
   const map = sheet.sheetMapping.find((m) => sheet.getCurrentRow(m.rowNumberOrig) === eRowNumber);
+  console.log(map);
   const tran = map.getTran(session.assignment.transactions);
   const validationObj: TranUpdateFinalValidation = validateChange(session, tran, definedCol, e);
+  console.log(validationObj);
   const { isNegation } = validationObj;
   tests.isNotNegation = !isNegation;
   const isValidTransactionUpdate: boolean = combineAllValidation(definedCol, validationObj);
+  console.log(isValidTransactionUpdate);
   const range = `${e.address}:${e.address}`;
   if (isValidTransactionUpdate) {
     processTransactionUpdate(session, tran, tests, definedCol, validationObj, e, newValue, sheet);
@@ -139,10 +143,6 @@ export const captureReanalysis = async (
       return handledSuccessfully;
     }
   }
-  const test =
-    tran == session.assignment.transactions.find((tran) => tran.cerysTransactionId === tran.cerysTransactionId);
-  console.log("test result is " + test);
-  console.log(tran);
   if (tests.changeRejected) {
     await setExcelRangeValue(wsName, range, e.details.valueBefore);
     return handledSuccessfully;
@@ -171,7 +171,6 @@ export const processTransactionUpdate = (
   newValue: string | number,
   sheet: EditableWorksheet
 ) => {
-  console.log("creating transaction update....");
   deleteExistingUpdate(tran, tests, definedCol);
   if (!validationObj.isNegation) {
     createNewTransactionUpdate(session, tran, newValue, sheet, definedCol);
@@ -194,9 +193,7 @@ export const processTransUpdateEffects = (
   range: string,
   tests: TranUpdatePrimaryValidation
 ) => {
-  console.log("processing trans update effects....");
   const updatedTrans = getUpdatedTransactions(session);
-  console.log(updatedTrans);
   sheet.editButtonStatus = updatedTrans.length > 0 ? "inProgress" : "hide";
   const color = tests.isNotNegation ? "lightGreen" : "yellow";
   !definedCol.isQuasiMutable && highlightRanges(sheet.name, [range], color);
@@ -305,9 +302,7 @@ export const createNewTransactionUpdate = (
   sheet: EditableWorksheet,
   definedCol: DefinedCol
 ) => {
-  console.log("new update here...");
   let reversion;
-  console.log(definedCol);
   if (definedCol.type === "date") {
     reversion = tran.getExcelDate();
   } else if (definedCol.type === "cerysCode") {
@@ -327,9 +322,7 @@ export const createNewTransactionUpdate = (
     reversion,
     mongoDate
   );
-  console.log(update);
   tran.updates.push(update);
-  console.log(tran);
   return update;
 };
 

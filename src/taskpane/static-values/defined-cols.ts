@@ -15,7 +15,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: [["dd/mm/yyyy"]],
     isUnique: false,
-    key: ["transactionDateExcel"],
+    key: ["transactionDate"],
   },
   transType: {
     type: "transType",
@@ -47,7 +47,7 @@ export const DEFINED_COLS = {
     isQuasiMutable: false,
     format: [["0"]],
     isUnique: false,
-    key: ["clientNominalCode"],
+    key: ["representsBalanceOfClientCode"],
   },
   clientCodeName: {
     type: "clientCodeName",

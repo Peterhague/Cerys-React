@@ -128,7 +128,6 @@ const AppBody = ({ session }: AppBodyProps) => {
   };
 
   const bodyView = () => {
-    console.log(view);
     let body: React.JSX.Element;
     let footer = <Footer setEditButton={setEditButton} editButton={editButton} session={session} />;
     if (overlayView) {
@@ -141,6 +140,12 @@ const AppBody = ({ session }: AppBodyProps) => {
           break;
         case DELETE_SHEET_PROMPT:
           body = <DeleteSheetPrompt session={session} />;
+          break;
+        case NOM_CODE_SELECTION:
+          body = <NomCodeSelection session={session} chart={session.chart} />;
+          break;
+        case CLIENT_NOM_CODE_SELECTION:
+          body = <NomCodeSelection session={session} chart={session.clientChart} />;
           break;
       }
     } else {
@@ -210,12 +215,6 @@ const AppBody = ({ session }: AppBodyProps) => {
         case OPENING_BALANCE_ADJUSTMENTS:
           body = <OpeningBalanceAdjustments session={session} />;
           session.nextView = view;
-          break;
-        case NOM_CODE_SELECTION:
-          body = <NomCodeSelection session={session} chart={session.chart} />;
-          break;
-        case CLIENT_NOM_CODE_SELECTION:
-          body = <NomCodeSelection session={session} chart={session.clientChart} />;
           break;
         case USER_CONFIRM_PROMPT:
           if (options instanceof ViewOptions) body = <UserConfirmPrompt session={session} options={options} />;

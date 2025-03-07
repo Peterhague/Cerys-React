@@ -1,4 +1,4 @@
-export const colNumToLetter = (numberCols) => {
+export const colNumToLetter = (numberCols: number) => {
   switch (numberCols) {
     case 1:
       return "A";

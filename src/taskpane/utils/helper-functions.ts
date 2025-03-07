@@ -1,5 +1,4 @@
 import { AssignmentClientTBObject } from "../classes/assignment-client-TB-obj";
-import { DefinedCol } from "../classes/defined-col";
 import { EditableWorksheet } from "../classes/editable-worksheet";
 import { ExcelRangeUpdate } from "../classes/excel-range-editing";
 import { Session } from "../classes/session";
@@ -364,22 +363,6 @@ export const addControlledSheetEventHandlers = (session: Session, ws: Excel.Work
   ws.onRowSorted.add(async () => handleControlledSheetRowSort(session, ws.name));
 };
 
-export const hasDefinedColOf = (sheet: EditableWorksheet, colType: string) => {
-  let definedCol: DefinedCol;
-  sheet.definedCols.forEach((col) => {
-    if (col.type === colType) definedCol = col;
-  });
-  return definedCol;
-};
-
-export const resetEdSheetCallBack = () => {
-  return {
-    function: () => console.log("void"),
-    args: [],
-    count: 0,
-  };
-};
-
 export const getActiveEdSheet = async (session: Session) => {
   const wsName = await getActiveWorksheetName();
   return session.editableSheets.find((sheet) => sheet.name === wsName);
@@ -459,7 +442,7 @@ export const accessExcelContext = async (func, args) => {
 };
 
 export const postEditableSheetEffects = async (session: Session, wsName: string, updates: ExcelRangeUpdate[]) => {
-  session.options.allowEffects = updates.length;
+  session.options.allowEffects += updates.length;
   setManyExcelRangeValues(wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   sheet.usedRange = await getWorksheetUsedRange(wsName);
@@ -554,18 +537,15 @@ export const handleWorksheetDrill = async (
   session: Session,
   wsName: string
 ) => {
-  console.log("click");
   let sheet: ControlledWorksheet | EditableWorksheet = session.controlledSheets.find((ws) => ws.name === wsName);
   if (!sheet) sheet = session.editableSheets.find((ws) => ws.name === wsName);
   if (!sheet) return;
-  console.log(sheet);
   const addressObj = interpretEventAddress(e);
   const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow);
   if (!map) return;
   console.log(map);
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
-    console.log(collection);
     if (valid) collection.drillInto(session, map);
   });
 };

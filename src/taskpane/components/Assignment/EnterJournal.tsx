@@ -2,7 +2,7 @@ import * as React from "react";
 import { useState } from "react";
 import { useRef } from "react";
 import CerysButton from "../CerysButton";
-import { checkNewTransForAssets, processTransBatch } from "../../utils/transactions/transactions";
+import { processTransBatch } from "../../utils/transactions/transactions";
 import NomCodeInput from "../Utils/NomCodeInput";
 import { Session } from "../../classes/session";
 import { JournalDetailsProps } from "../../interfaces/interfaces";
@@ -29,7 +29,7 @@ const EnterJournal = ({ session, chart }: enterJournalProps) => {
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     await processTransBatch(session, activeJournal);
-    checkNewTransForAssets(session);
+    //checkNewTransForAssets(session);
   };
 
   const handleJournal = async (e: React.FormEvent) => {

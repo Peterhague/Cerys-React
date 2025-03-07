@@ -15,7 +15,6 @@ import {
   handleEditButtonClick,
   interpretEventAddress,
   checkEditMode,
-  callNextView,
   getUpdatedDate,
   getUpdatedCerysCode,
   getUpdatedNarrative,
@@ -198,7 +197,7 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
       }
     });
   if (withinEditableRange && cerysCodeCol === addressObj.firstCol) {
-    session.handleView(NOM_CODE_SELECTION);
+    session.handleOverlayView(NOM_CODE_SELECTION);
     session.activeEditableCell = createEditableCell(addressObj, wsName, "cerysCoding");
   } else if (withinEditableRange && clientCodeMappingCol === addressObj.firstCol) {
     handleClientMappingCellClick(session, addressObj, wsName);
@@ -208,7 +207,7 @@ export const handleSingleClick = (session: Session, e: Excel.WorksheetSingleClic
 };
 
 export const handleClientMappingCellClick = (session: Session, addressObj: AddressObject, wsName: string) => {
-  session.handleView(CLIENT_NOM_CODE_SELECTION);
+  session.handleOverlayView(CLIENT_NOM_CODE_SELECTION);
   session.activeEditableCell = createEditableCell(addressObj, wsName, "clientCodeMapping");
 };
 
@@ -220,7 +219,8 @@ export const handleOtherCellClick = (
   withinEditableRange: boolean
 ) => {
   if (session.currentView === NOM_CODE_SELECTION || session.currentView === CLIENT_NOM_CODE_SELECTION) {
-    callNextView(session);
+    //callNextView(session);
+    session.handleOverlayView("");
     session.activeEditableCell = createEditableCell(null, null, null);
   }
   if (withinEditableRange && clientCodeCol === addressObj.firstCol) {

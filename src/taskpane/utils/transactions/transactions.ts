@@ -5,15 +5,11 @@ import { ActiveJournal } from "../../classes/journal";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
-import { ViewOptions } from "../../classes/view-options";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
-import { RegisterType } from "../../interfaces/interfaces";
-import { getAssetRegisterType } from "../../static-values/register-types";
-import { getViewOptions } from "../../static-values/view-options";
-import { DELETE_SHEET_PROMPT, PROMPT_ASSET_REGISTER_CREATION } from "../../static-values/views";
+import { DELETE_SHEET_PROMPT } from "../../static-values/views";
 import { colNumToLetter } from "../excel-col-conversion";
-import { callNextView, getUpdatedTransactions, updateAssignmentFigures } from "../helper-functions";
+import { getUpdatedTransactions, updateAssignmentFigures } from "../helper-functions";
 import { getActiveWorksheet, highlightEditableRanges } from "../worksheet";
 import { renewEdSheetsTransRefs } from "../worksheet-editing/ed-sheet-change-handling";
 /* global Excel */
@@ -35,7 +31,7 @@ export const processTransBatch = async (session: Session, activeJournal: ActiveJ
 
 export const submitTransactionUpdates = async (session: Session) => {
   let updatedTrans = getUpdatedTransactions(session);
-  const isTBUpdated = checkTransForRecoding(updatedTrans);
+  const TBIsUpdated = checkTransForRecoding(updatedTrans);
   updatedTrans.forEach((tran) => {
     tran.updates.forEach((update) => {
       session.editableSheets.forEach((sheet) => {
@@ -47,16 +43,15 @@ export const submitTransactionUpdates = async (session: Session) => {
   });
   await processUpdateBatch(session);
   const promptSheetDeletion = await renewEdSheetsTransRefs(session);
-  if (isTBUpdated) {
+  if (TBIsUpdated) {
     await updateAssignmentFigures(session);
     if (promptSheetDeletion) {
       session.options.updatedTransactions = updatedTrans;
       session.handleOverlayView(DELETE_SHEET_PROMPT);
     } else {
-      checkNewTransForAssets(session);
+      session.handleOverlayView("");
     }
   } else {
-    //callNextView(session);
     session.handleOverlayView("");
   }
   session.editableSheets.forEach((sheet) => {
@@ -79,18 +74,18 @@ export const processUpdateBatch = async (session: Session) => {
   return updatedTransactions;
 };
 
-export const checkNewTransForAssets = (session: Session) => {
-  const nextRegisterPrompt: "IFA" | "TFA" | "IP" = session.assignment.getNextRegisterPrompt(session);
-  let register: RegisterType;
-  if (!nextRegisterPrompt) {
-    callNextView(session);
-    return;
-  } else {
-    register = getAssetRegisterType(nextRegisterPrompt);
-  }
-  const options = getViewOptions([{ key: "registerType", value: register }]);
-  session.handleDynamicView(PROMPT_ASSET_REGISTER_CREATION, new ViewOptions(options));
-};
+// export const checkNewTransForAssets = (session: Session) => {
+//   const nextRegisterPrompt: "IFA" | "TFA" | "IP" = session.assignment.getNextRegisterPrompt(session);
+//   let register: RegisterType;
+//   if (!nextRegisterPrompt) {
+//     callNextView(session);
+//     return;
+//   } else {
+//     register = getAssetRegisterType(nextRegisterPrompt);
+//   }
+//   const options = getViewOptions([{ key: "registerType", value: register }]);
+//   session.handleDynamicView(PROMPT_ASSET_REGISTER_CREATION, new ViewOptions(options));
+// };
 
 export const checkFATranUpdatesForAssets = (session: Session) => {
   session.assignment.transactions.forEach((tran) => {

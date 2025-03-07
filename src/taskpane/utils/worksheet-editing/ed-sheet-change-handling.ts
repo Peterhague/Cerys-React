@@ -32,14 +32,14 @@ export const handleWorksheetSelection = async (session: Session, e, wsName: stri
     if (addressObj.firstRow >= range.firstRow && addressObj.firstRow <= range.lastRow) withinEditableRange = true;
   });
   if (!withinEditableRange) return;
-  let cerysCodeCol;
+  let cerysCodeCol: number;
   ws.definedCols.forEach((col) => {
     if (col.type === "cerysCode") {
       cerysCodeCol = ws.getCurrentColumn(col.colNumberOrig);
     }
   });
   if (cerysCodeCol === addressObj.firstCol) {
-    session.handleView(NOM_CODE_SELECTION);
+    session.handleOverlayView(NOM_CODE_SELECTION);
     session.activeEditableCell = createEditableCell(addressObj, wsName, null);
   }
 };
@@ -51,10 +51,13 @@ export const handleEditableSheetChange = async (
 ) => {
   console.log(e);
   if (session.options.allowEffects > 0) {
+    console.log("EFFECTS ALLOWED ONLY");
     session.options.allowEffects -= 1;
     return;
   }
+  console.log("change registered");
   const isRangeEdited = parseChangeEventObjectType(e);
+  console.log(isRangeEdited);
   const { sheet, addressObj, definedCol } = parseEdSheetChangeEventDetails(session, e, wsName);
   if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
     handleOtherEdSheetChange(session, e, wsName, sheet, addressObj);
@@ -65,6 +68,7 @@ export const handleEditableSheetChange = async (
   await handleSheetDataCorruption(session, wsName, sheet);
   sheet.usedRange = await getWorksheetUsedRange(wsName);
   session.options.autoFillOverride = false;
+  console.log(handledSuccessfully);
   if (handledSuccessfully && definedCol.type === "cerysCode") {
     await completeCerysCodeUpdate(session, e, sheet, addressObj);
   } else if (handledSuccessfully && definedCol.type === "cerysName") {
@@ -125,7 +129,6 @@ export const updateEdSheetClientCodeMapping = async (
 };
 
 export const renewEdSheetsTransRefs = async (session: Session) => {
-  console.log("here");
   let promptSheetDeletion = false;
   for (let i = 0; i < session.editableSheets.length; i++) {
     await session.editableSheets[i].renewTransactions(session, session.assignment.transactions);

@@ -3,7 +3,6 @@ import { useState } from "react";
 import CerysButton from "../../CerysButton";
 import { accessExcelContext, clearNextViewButOne } from "../../../utils/helper-functions";
 import { activateWorksheet, deleteManyWorksheets } from "../../../utils/worksheet";
-import { checkNewTransForAssets } from "../../../utils/transactions/transactions";
 import { Session } from "../../../classes/session";
 interface deleteSheetPromptProps {
   session: Session;
@@ -17,7 +16,7 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
 
   const deleteSheets = async () => {
     deleteManyWorksheets(sheetsToDelete);
-    checkNewTransForAssets(session);
+    // checkNewTransForAssets(session);
     session.options.updatedTransactions = [];
   };
 
@@ -31,7 +30,7 @@ const DeleteSheetPrompt = ({ session }: deleteSheetPromptProps) => {
   };
 
   const skipDeleteSheets = () => {
-    checkNewTransForAssets(session);
+    // checkNewTransForAssets(session);
     session.options.updatedTransactions = [];
   };
 
