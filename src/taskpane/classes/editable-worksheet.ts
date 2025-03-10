@@ -4,6 +4,7 @@ import {
   addEditableSheetEventHandlers,
   interpretExcelAddress,
   postEditableSheetEffects,
+  updateEdSheetMappingObj,
 } from "../utils/helper-functions";
 import { createDeletionObject } from "../utils/transactions/transactions";
 import { deleteWorksheetRangesUp, setManyExcelRangeValues } from "../utils/worksheet";
@@ -152,6 +153,7 @@ export class EditableWorksheet {
     console.log("mapping updated here!!!");
     if (updates.length > 0) {
       await postEditableSheetEffects(session, this.name, updates);
+      updateEdSheetMappingObj(this, updates);
     }
   }
 

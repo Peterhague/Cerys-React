@@ -448,6 +448,20 @@ export const postEditableSheetEffects = async (session: Session, wsName: string,
   sheet.usedRange = await getWorksheetUsedRange(wsName);
 };
 
+export const updateEdSheetMappingObj = (edSheet: EditableWorksheet, updates: ExcelRangeUpdate[]) => {
+  updates.forEach((update) => {
+    const addressObj = interpretExcelAddress(update.address);
+    for (let i = addressObj.firstCol; i < addressObj.lastCol + 1; i++) {
+      const existingCol = edSheet.mappingObject.columns.find((col) => col.current === i);
+      if (!existingCol) edSheet.mappingObject.columns.push({ original: i, current: i });
+    }
+    for (let i = addressObj.firstRow; i < addressObj.lastRow + 1; i++) {
+      const existingRow = edSheet.mappingObject.rows.find((row) => row.current === i);
+      if (!existingRow) edSheet.mappingObject.rows.push({ original: i, current: i });
+    }
+  });
+};
+
 export const buildClientTBBalSheetOnly = (session: Session) => {
   const bSTB: ClientTrialBalanceLine[] = [];
   const pLReservesLineCodeObject = session.clientChart.find(
