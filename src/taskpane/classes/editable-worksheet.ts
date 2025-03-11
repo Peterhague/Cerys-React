@@ -254,7 +254,8 @@ export class EditableWorksheet {
   getCurrentRow(originalRow: number) {
     console.log(originalRow);
     console.log(this.mappingObject);
-    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
+    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow && obj.current > 0);
+    console.log(rowObj);
     return rowObj ? rowObj.current : undefined;
   }
 
