@@ -125,7 +125,7 @@ export const checkTransForRecoding = (updatedTrans: Transaction[]) => {
 
 export const createDeletionObject = (map: TransactionMap, sheet: EditableWorksheet) => {
   const { protectedFirstCol, protectedLastCol } = sheet.getCurrentProtectedRange();
-  const rowNumber = sheet.getCurrentRow(map.rowNumberOrig);
+  const rowNumber = sheet.getCurrentRow(map.index);
   const firstCol = colNumToLetter(protectedFirstCol);
   const lastCol = colNumToLetter(protectedLastCol);
   const deletionRange = `${firstCol}${rowNumber}:${lastCol}${rowNumber}`;

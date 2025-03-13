@@ -371,8 +371,8 @@ export class AssetRegCreationPrompt extends InTrayItem {
         const amortOrDepn = this.register.initials === "IFA" ? "AMORT" : "DEPN";
         const valuesToPost: (string | number)[][] = [];
         valuesToPost.push(...this.getTransSummHeadings(amortOrDepn));
-        this.transactions.forEach((tran, index) => {
-          const map = new TransactionMap(tran.cerysTransactionId, tran, index + 3, null);
+        this.transactions.forEach((tran) => {
+          const map = new TransactionMap(tran.cerysTransactionId, tran, sheetMapping.length + 1, null);
           sheetMapping.push(map);
         });
         this.transactions.forEach((tran) => {

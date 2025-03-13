@@ -5,7 +5,7 @@ import { AssignmentClientTBObject } from "./assignment-client-TB-obj";
 import { ExcelRangeObject, ProtectedRange } from "./range-objects";
 import { Session } from "./session";
 import { Transaction } from "./transaction";
-import { ControlledInputMap } from "./transaction-map";
+import { ControlledInputMap, StaticInputMap } from "./transaction-map";
 import { TrialBalanceLine } from "./client-codes";
 /* global Excel */
 
@@ -24,7 +24,7 @@ export class ControlledWorksheet {
   dataCorrupted: boolean;
   controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[];
   usedRange: any[][];
-  sheetMapping: ControlledInputMap[];
+  sheetMapping: (ControlledInputMap | StaticInputMap)[];
   mappingObject: MappingObjectProps;
   uniqueColumn: number | null;
   uniqueValue: string | null;
@@ -36,11 +36,15 @@ export class ControlledWorksheet {
     controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
     ws: Excel.Worksheet,
     wsValues: string[][],
-    sheetMapping: ControlledInputMap[],
+    sheetMapping: (ControlledInputMap | StaticInputMap)[],
     controlledRangeObject: ExcelRangeObject,
     uniqueColumn: number | null,
     uniqueValue: string | null
   ) {
+    console.log(controlledRangeObject);
+    console.log(sheetMapping);
+    console.log(wsValues);
+    insertStaticInputMaps(wsValues, sheetMapping);
     this.name = ws.name;
     this.edited = false;
     this.promptDeletion = false;
@@ -61,23 +65,23 @@ export class ControlledWorksheet {
   }
 
   getCurrentColumn(originalColumn: number) {
-    const colObj = this.mappingObject.columns.find((obj) => obj.original === originalColumn);
+    const colObj = this.mappingObject.columns.find((obj) => obj.index === originalColumn);
     return colObj ? colObj.current : undefined;
   }
 
   getCurrentRow(originalRow: number) {
-    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow);
+    const rowObj = this.mappingObject.rows.find((obj) => obj.index === originalRow);
     return rowObj ? rowObj.current : undefined;
   }
 
   getOriginalColumn(currentColumn: number) {
     const colObj = this.mappingObject.columns.find((obj) => obj.current === currentColumn);
-    return colObj ? colObj.original : undefined;
+    return colObj ? colObj.index : undefined;
   }
 
   getOriginalRow(currenRow: number) {
     const rowObj = this.mappingObject.rows.find((obj) => obj.current === currenRow);
-    return rowObj ? rowObj.original : undefined;
+    return rowObj ? rowObj.index : undefined;
   }
 
   getCurrentProtectedRange() {
@@ -98,7 +102,7 @@ export const createControlledWorksheet = (
   controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[],
   ws: Excel.Worksheet,
   wsValues: string[][],
-  sheetMapping: ControlledInputMap[],
+  sheetMapping: (ControlledInputMap | StaticInputMap)[],
   controlledRangeObject: ExcelRangeObject,
   uniqueColumn: number | null,
   uniqueValue: string | null
@@ -121,11 +125,24 @@ export const createControlledWorksheet = (
 export const createMappingObject = (excelRangeObj: ExcelRangeObject) => {
   const columns: MapTrackingProps[] = [];
   for (let i = 0; i < excelRangeObj.numberOfCols; i++) {
-    columns.push({ original: i + excelRangeObj.firstCol, current: i + excelRangeObj.firstCol });
+    columns.push({ index: i + 1, current: i + excelRangeObj.firstCol });
   }
   const rows: MapTrackingProps[] = [];
   for (let i = 0; i < excelRangeObj.numberOfRows; i++) {
-    rows.push({ original: i + excelRangeObj.firstRow, current: i + excelRangeObj.firstRow });
+    rows.push({ index: i + 1, current: i + excelRangeObj.firstRow });
   }
   return { columns, rows };
+};
+
+export const insertStaticInputMaps = (wsValues: string[][], sheetMapping: (ControlledInputMap | StaticInputMap)[]) => {
+  wsValues.forEach((row, firstIndex) => {
+    const isNotEmpty = row.find((str) => str);
+    if (isNotEmpty) {
+      const map = sheetMapping.find((map) => map.index === firstIndex + 1);
+      if (!map) {
+        const colNumbers: number[] = row.map((item, secondIndex) => item && secondIndex + 1).filter((i) => i);
+        sheetMapping.push(new StaticInputMap(firstIndex + 1, colNumbers));
+      }
+    }
+  });
 };

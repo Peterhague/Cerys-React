@@ -5,7 +5,7 @@ import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
-import { TransactionMap } from "../../classes/transaction-map";
+import { StaticInputMap, TransactionMap } from "../../classes/transaction-map";
 import { AddressObject, ClientTransactionProps } from "../../interfaces/interfaces";
 import { CLIENT_NOM_CODE_SELECTION, NOM_CODE_SELECTION } from "../../static-values/views";
 import { BALANCE_SHEET, PL_ACCOUNT, TRIAL_BALANCE } from "../../static-values/worksheet-defaults";
@@ -33,6 +33,7 @@ export function addTbClickListener(context: Excel.RequestContext, session: Sessi
 }
 
 export function addPlClickListener(context: Excel.RequestContext, session: Session) {
+  console.log("pl clicked");
   const ws = context.workbook.worksheets.getItem(PL_ACCOUNT.name);
   ws.onSingleClicked.add(async (e) => showNominalDetailPL(e, session));
   session.assignment.pLListenerAdded = true;
@@ -71,10 +72,10 @@ export const showNominalDetailPL = async (e: Excel.WorksheetSingleClickedEventAr
       const addressObj = interpretEventAddress(e);
       const map = sheet.sheetMapping.find(
         (mapping) =>
-          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+          sheet.getCurrentRow(mapping.index) === addressObj.firstRow &&
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
-      if (!map) return;
+      if (!map || map instanceof StaticInputMap) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLinePL && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailPL(category, session);
@@ -106,7 +107,7 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
         ["Number", "Date", "Type", "Nominal Code", "Nominal Code", "Narrative"],
       ];
       isValueInverted ? valuesToPost[1].push("CR/(DR)") : valuesToPost[1].push("DR/(CR)");
-      let rowNumber = 3;
+      // let rowNumber = 3;
       const sheetMapping = [];
       console.log(transactions);
       transactions.forEach((line) => {
@@ -138,10 +139,10 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
               )
             : null;
         const map = clientDrill
-          ? new TransactionMap(line.cerysTransactionId, line, rowNumber, [clientDrill])
-          : new TransactionMap(line.cerysTransactionId, line, rowNumber, null);
+          ? new TransactionMap(line.cerysTransactionId, line, sheetMapping.length + 1, [clientDrill])
+          : new TransactionMap(line.cerysTransactionId, line, sheetMapping.length + 1, null);
         sheetMapping.push(map);
-        rowNumber += 1;
+        // rowNumber += 1;
       });
       range.values = valuesToPost;
       const headerRange = ws.getRange("A1:G2");
@@ -272,15 +273,17 @@ export function addBsClickListener(context: Excel.RequestContext, session: Sessi
 export const showNominalDetailBS = async (e: Excel.WorksheetSingleClickedEventArgs, session: Session) => {
   try {
     await Excel.run(async (context) => {
+      console.log("bs clicked");
       const sheet = session.controlledSheets.find((sheet) => sheet.name === BS_WSNAME);
       const addressObj = interpretEventAddress(e);
       // issue in progress here
       const map = sheet.sheetMapping.find(
         (mapping) =>
-          sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+          sheet.getCurrentRow(mapping.index) === addressObj.firstRow &&
           sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
       );
-      if (!map || !map.identity) return;
+      console.log(map);
+      if (!map || map instanceof StaticInputMap || !map.identity) return;
       const input = sheet.controlledInputs.find((item) => item.identifier === map.identity);
       const category = input instanceof FSCategoryLineBS && input.categoryName;
       const arrOfTransArrs = getCerysNomDetailBS(category, session);

@@ -7,18 +7,18 @@ import { DrillableCollection } from "./drillable-collection";
 export class TransactionMap {
   transactionId: string;
   controlledInput: Transaction;
-  rowNumberOrig: number;
+  index: number;
   drillableCollections: DrillableCollection[];
 
   constructor(
     transactionId: string,
     controlledInput: Transaction,
-    rowNumber: number,
+    index: number,
     drillableCollections: DrillableCollection[] | null
   ) {
     this.transactionId = transactionId;
     this.controlledInput = controlledInput;
-    this.rowNumberOrig = rowNumber;
+    this.index = index;
     this.drillableCollections = drillableCollections;
   }
   getTran(transactions: Transaction[]) {
@@ -30,20 +30,20 @@ export class ControlledInputMap {
   controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject;
   identity: string | number;
   identifier: string;
-  rowNumberOrig: number;
+  index: number;
   colNumbers: number[];
   drillableCollections: DrillableCollection[];
 
   constructor(
     controlledInput: TrialBalanceLine | FSCategoryLinePL | FSCategoryLineBS | AssignmentClientTBObject,
-    rowNumber: number,
+    index: number,
     colNumbers: number[],
     drillableCollections: DrillableCollection[] | null
   ) {
     this.controlledInput = controlledInput;
     this.identifier = "identifier";
     this.identity = controlledInput[this.identifier];
-    this.rowNumberOrig = rowNumber;
+    this.index = index;
     this.colNumbers = colNumbers;
     this.drillableCollections = drillableCollections;
   }
@@ -51,5 +51,15 @@ export class ControlledInputMap {
     controlledInputs: TrialBalanceLine[] | FSCategoryLinePL[] | FSCategoryLineBS[] | AssignmentClientTBObject[]
   ) {
     return controlledInputs.find((input) => input[this.identifier] === this.identity);
+  }
+}
+
+export class StaticInputMap {
+  index: number;
+  colNumbers: number[];
+
+  constructor(index: number, colNumbers: number[]) {
+    this.index = index;
+    this.colNumbers = colNumbers;
   }
 }

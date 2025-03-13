@@ -1,6 +1,7 @@
 import { ControlledWorksheet } from "../../classes/controlled-worksheet";
 import { QuasiEventObject } from "../../classes/quasi-event-object";
 import { Session } from "../../classes/session";
+import { StaticInputMap } from "../../classes/transaction-map";
 import { AddressObject } from "../../interfaces/interfaces";
 import { colNumToLetter } from "../excel-col-conversion";
 import { accessExcelContext, interpretEventAddress, parseChangeEventObjectType } from "../helper-functions";
@@ -47,8 +48,7 @@ export const testControlledSheetChangesForRejection = async (
   const eColNumber = firstCol;
   const mapping = sheet.sheetMapping.find(
     (map) =>
-      sheet.getCurrentColNumbers(map.colNumbers).includes(eColNumber) &&
-      sheet.getCurrentRow(map.rowNumberOrig) === eRowNumber
+      sheet.getCurrentColNumbers(map.colNumbers).includes(eColNumber) && sheet.getCurrentRow(map.index) === eRowNumber
   );
   const withinProtectedRange = mapping ? true : false;
   if (!withinProtectedRange) sheet.edited = true;
@@ -229,10 +229,10 @@ export const handleControlledSheetRowSort = async (session: Session, wsName: str
   const uniqueCol = sheet.uniqueColumn;
   if (!uniqueCol) return;
   sheet.sheetMapping.forEach((map) => {
-    const controlledInput = map.getControlledInput(sheet.controlledInputs);
+    const controlledInput = !(map instanceof StaticInputMap) && map.getControlledInput(sheet.controlledInputs);
     usedRange.forEach((row, index) => {
       if (row[uniqueCol - 1] === controlledInput[sheet.uniqueValue]) {
-        sheet.mappingObject.rows.find((row) => row.original === map.rowNumberOrig).current = index + 1;
+        sheet.mappingObject.rows.find((row) => row.index === map.index).current = index + 1;
       }
     });
   });

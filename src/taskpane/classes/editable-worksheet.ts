@@ -102,7 +102,7 @@ export class EditableWorksheet {
     this.transactions.forEach((tran) => {
       const existingMap = this.sheetMapping.find((mapping) => mapping.transactionId === tran.cerysTransactionId);
       if (existingMap) {
-        rowNumbers.push(this.getCurrentRow(existingMap.rowNumberOrig));
+        rowNumbers.push(this.getCurrentRow(existingMap.index));
         newMapping.push(existingMap);
       } else {
         newTransToMap.push(tran);
@@ -111,7 +111,7 @@ export class EditableWorksheet {
     newTransToMap.forEach((tran) => {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
-      const newMap = new TransactionMap(tran.cerysTransactionId, tran, nextRow, null);
+      const newMap = new TransactionMap(tran.cerysTransactionId, tran, this.sheetMapping.length + 1, null);
       newMapping.push(newMap);
       additionalTrans.push({ tran, map: newMap });
       rowNumbers.push(nextRow);
@@ -120,7 +120,7 @@ export class EditableWorksheet {
     const updates: ExcelRangeUpdate[] = [];
     console.log(this.definedCols);
     additionalTrans.forEach((obj) => {
-      const row = obj.map.rowNumberOrig;
+      const row = obj.map.index;
       this.definedCols.forEach((definedCol) => {
         let value = definedCol.getTargetProperty(obj.tran.revertToDbIdNotation());
         if (
@@ -169,7 +169,7 @@ export class EditableWorksheet {
             if (update.worksheetId && update.worksheetId !== this.worksheetId) {
               const definedCol = this.definedCols.find((col) => col.type === update.type);
               const col = colNumToLetter(this.getCurrentColumn(definedCol.colNumberOrig));
-              const row = this.getCurrentRow(map.rowNumberOrig);
+              const row = this.getCurrentRow(map.index);
               const sheetUpdate: { address: string; value?: string | number } = {
                 address: `${col}${row}:${col}${row}`,
                 value: update.value,
@@ -247,27 +247,27 @@ export class EditableWorksheet {
   }
 
   getCurrentColumn(originalColumn: number) {
-    const colObj = this.mappingObject.columns.find((obj) => obj.original === originalColumn);
+    const colObj = this.mappingObject.columns.find((obj) => obj.index === originalColumn);
     return colObj ? colObj.current : undefined;
   }
 
   getCurrentRow(originalRow: number) {
     console.log(originalRow);
     console.log(this.mappingObject);
-    const rowObj = this.mappingObject.rows.find((obj) => obj.original === originalRow && obj.current > 0);
+    const rowObj = this.mappingObject.rows.find((obj) => obj.index === originalRow && obj.current > 0);
     console.log(rowObj);
     return rowObj ? rowObj.current : undefined;
   }
 
-  getOriginalColumn(currentColumn: number) {
-    const colObj = this.mappingObject.columns.find((obj) => obj.current === currentColumn);
-    return colObj ? colObj.original : undefined;
-  }
+  // getOriginalColumn(currentColumn: number) {
+  //   const colObj = this.mappingObject.columns.find((obj) => obj.current === currentColumn);
+  //   return colObj ? colObj.original : undefined;
+  // }
 
-  getOriginalRow(currentRow: number) {
-    const rowObj = this.mappingObject.rows.find((obj) => obj.current === currentRow);
-    return rowObj ? rowObj.original : undefined;
-  }
+  // getOriginalRow(currentRow: number) {
+  //   const rowObj = this.mappingObject.rows.find((obj) => obj.current === currentRow);
+  //   return rowObj ? rowObj.original : undefined;
+  // }
 
   getCurrentProtectedRange() {
     const protectedFirstCol = this.getCurrentColumn(this.protectedRange.firstColOrig);

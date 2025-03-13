@@ -116,14 +116,13 @@ export const captureReanalysis = async (
   let handledSuccessfully = false;
   const newValue = e.details.valueAfter;
   const { firstRow } = addressObj;
-  const eRowNumber = firstRow;
   const tests: TranUpdatePrimaryValidation = {
     changeRejected: false,
     isValid: false,
     isNotNegation: true,
     updated: false,
   };
-  const map = sheet.sheetMapping.find((m) => sheet.getCurrentRow(m.rowNumberOrig) === eRowNumber);
+  const map = sheet.sheetMapping.find((m) => sheet.getCurrentRow(m.index) === firstRow);
   console.log(map);
   const tran = map.getTran(session.assignment.transactions);
   const validationObj: TranUpdateFinalValidation = validateChange(session, tran, definedCol, e);

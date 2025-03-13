@@ -48,6 +48,7 @@ import { applyWorkhseetHeader, worksheetHeader } from "../../components/schedule
 export async function wsPLAccount(session: Session) {
   try {
     await Excel.run(async (context) => {
+      console.log("code running");
       const pLoss = session.assignment.getPLAccount();
       const ws: Excel.Worksheet = await getOrAddWorksheet(context, session, PL_ACCOUNT);
       ws.load(["name", "id"]);
@@ -63,8 +64,7 @@ export async function wsPLAccount(session: Session) {
         item.total && pLValues.push(["", "", "", "", "", ""]);
         pLValues.push([item.statementName, "", "", "", "", item.fSValue]);
         item.rowNumber = pLValues.length + 8;
-        //const plCatDrillableCollection = new DrillableCollection()
-        item.mappable && sheetMapping.push(new ControlledInputMap(item, item.rowNumber, [1, 6], null));
+        item.mappable && sheetMapping.push(new ControlledInputMap(item, pLValues.length, [1, 6], null));
         item.statementNameTwo && pLValues.push([item.statementNameTwo, "", "", "", "", ""]);
       });
       const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, pLValues);
@@ -76,6 +76,7 @@ export async function wsPLAccount(session: Session) {
       const numbersRange = ws.getRange("F:F");
       numbersRange.numberFormat = [["#,##0;(#,##0);-"]];
       wsPLAccountFormat(ws, pLoss);
+      console.log(excelRangeObj);
       createControlledWorksheet(session, pLoss, ws, pLValues, sheetMapping, excelRangeObj, 1, "cerysCategory");
     });
   } catch (e) {

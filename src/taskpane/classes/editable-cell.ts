@@ -39,7 +39,7 @@ export class EditableCell {
 
   getActiveTransaction(session: Session) {
     const sheet = session.editableSheets.find((sheet) => sheet.name === this.wsName);
-    const map = sheet.sheetMapping.find((map) => map.rowNumberOrig === this.addressObj.firstRowOrig);
+    const map = sheet.sheetMapping.find((map) => map.index === this.addressObj.firstRowOrig);
     const tran = sheet.transactions.find((t) => t.cerysTransactionId === map.transactionId);
     return tran;
   }

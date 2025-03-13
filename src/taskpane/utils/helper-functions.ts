@@ -29,6 +29,7 @@ import { QuasiEventObject } from "../classes/quasi-event-object";
 import { accountsCategories } from "../static-values/accounts-categories-array";
 import { ControlledWorksheet } from "../classes/controlled-worksheet";
 import { ClientTrialBalanceLine } from "../classes/client-trial-balance-line";
+import { StaticInputMap } from "../classes/transaction-map";
 /* global Excel */
 
 export const getExcelContext = async () => {
@@ -379,7 +380,7 @@ export const getDefinedCol = (sheet: EditableWorksheet, addressCol: number) => {
 
 export const getTransRowNumber = (transaction: Transaction, sheet: EditableWorksheet) => {
   const map = sheet.sheetMapping.find((map) => map.transactionId === transaction.cerysTransactionId);
-  return sheet.getCurrentRow(map.rowNumberOrig);
+  return sheet.getCurrentRow(map.index);
 };
 
 export const getUpdatedDate = (tran: Transaction) => {
@@ -452,12 +453,14 @@ export const updateEdSheetMappingObj = (edSheet: EditableWorksheet, updates: Exc
   updates.forEach((update) => {
     const addressObj = interpretExcelAddress(update.address);
     for (let i = addressObj.firstCol; i < addressObj.lastCol + 1; i++) {
-      const existingCol = edSheet.mappingObject.columns.find((col) => col.current === i);
-      if (!existingCol) edSheet.mappingObject.columns.push({ original: i, current: i });
+      // const existingCol = edSheet.mappingObject.columns.find((col) => col.current === i);
+      // if (!existingCol) edSheet.mappingObject.columns.push({ index: i, current: i });
+      edSheet.mappingObject.columns.push({ index: edSheet.mappingObject.columns.length + 1, current: i });
     }
     for (let i = addressObj.firstRow; i < addressObj.lastRow + 1; i++) {
-      const existingRow = edSheet.mappingObject.rows.find((row) => row.current === i);
-      if (!existingRow) edSheet.mappingObject.rows.push({ original: i, current: i });
+      // const existingRow = edSheet.mappingObject.rows.find((row) => row.current === i);
+      // if (!existingRow) edSheet.mappingObject.rows.push({ index: i, current: i });
+      edSheet.mappingObject.rows.push({ index: edSheet.mappingObject.rows.length + 1, current: i });
     }
   });
 };
@@ -555,8 +558,10 @@ export const handleWorksheetDrill = async (
   if (!sheet) sheet = session.editableSheets.find((ws) => ws.name === wsName);
   if (!sheet) return;
   const addressObj = interpretEventAddress(e);
-  const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow);
-  if (!map) return;
+  console.log(addressObj);
+  const map = sheet.sheetMapping.find((mapping) => sheet.getCurrentRow(mapping.index) === addressObj.firstRow);
+  console.log(map);
+  if (!map || map instanceof StaticInputMap) return;
   console.log(map);
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);

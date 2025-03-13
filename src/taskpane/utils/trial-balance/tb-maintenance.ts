@@ -14,7 +14,6 @@ import { cerysNomDetailView } from "../worksheet-drilling/cerys-drilling";
 export async function wsTrialBalance(session: Session) {
   try {
     await Excel.run(async (context) => {
-      console.log("running new trial balance");
       const ws: Excel.Worksheet = await getOrAddWorksheet(context, session, TRIAL_BALANCE);
       ws.load(["name", "id"]);
       await context.sync();
@@ -22,47 +21,38 @@ export async function wsTrialBalance(session: Session) {
       const headerValues = worksheetHeader(session, TRIAL_BALANCE.name);
       applyWorkhseetHeader(ws, headerValues);
       const headersRange = ws.getRange("A9:C10");
-      const headers = [
+      headersRange.format.font.bold = true;
+      const header = [
         ["Nominal", "Nominal", "Debit/"],
         ["Code", "Name", "(Credit)"],
       ];
-      headersRange.values = headers;
-      headersRange.format.font.bold = true;
+      const mapIndexVerticalOffset = header.length;
+      const tBValues = [...header];
       const trialBalance = session.assignment.tb;
-      const tBValues = [];
       const sheetMapping: ControlledInputMap[] = [];
       const func = (session: Session, line: TrialBalanceLine) => {
         return line.getCerysTransactions(session);
       };
       trialBalance.forEach((line) => {
         tBValues.push([`${line.cerysCode}`, `${line.cerysName}`, `${line.value / 100}`]);
-        // const transactions = line.getCerysTransactions(session);
         const nomDetailDrillableCollection = new DrillableCollection(
           { getter: func, getterParams: [session], getterParamsMapTarget: "itself" },
           [1, 2, 3],
           cerysNomDetailView
         );
         sheetMapping.push(
-          new ControlledInputMap(line, tBValues.length + 10, [1, 2, 3], [nomDetailDrillableCollection])
+          new ControlledInputMap(
+            line,
+            sheetMapping.length + 1 + mapIndexVerticalOffset,
+            [1, 2, 3],
+            [nomDetailDrillableCollection]
+          )
         );
       });
-      const excelRangeObj = new ExcelRangeObject({ row: 11, col: 1 }, tBValues);
+      const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, tBValues);
       const range = ws.getRange(excelRangeObj.address);
-      range.format.font.bold = false;
       range.values = tBValues;
-      range.format.horizontalAlignment = "Left";
-      const total = ws.getRange(`C${tBValues.length + 12}: C${tBValues.length + 12}`);
-      total.values = [[0]];
-      const drCrRange = ws.getRange(`C11:C${tBValues.length + 12}`);
-      drCrRange.numberFormat = STANDARD_NUMBER_FORMAT;
-      range.format.autofitColumns();
-      total.format.font.bold = true;
-      const colC = ws.getRange("C:C");
-      colC.format.horizontalAlignment = "Right";
-      const topBorder = total.format.borders.getItem("EdgeTop");
-      const bottomBorder = total.format.borders.getItem("EdgeBottom");
-      topBorder.style = "Continuous";
-      bottomBorder.style = "Double";
+      wsTrialBalanceFormat(ws, tBValues, range);
       createControlledWorksheet(session, trialBalance, ws, tBValues, sheetMapping, excelRangeObj, 1, "cerysCode");
       await context.sync();
     });
@@ -70,3 +60,19 @@ export async function wsTrialBalance(session: Session) {
     console.error(e);
   }
 }
+
+export const wsTrialBalanceFormat = (ws: Excel.Worksheet, tBValues: string[][], range: Excel.Range) => {
+  range.format.horizontalAlignment = "Left";
+  const total = ws.getRange(`C${tBValues.length + 10}: C${tBValues.length + 10}`);
+  total.values = [[0]];
+  const drCrRange = ws.getRange(`C11:C${tBValues.length + 10}`);
+  drCrRange.numberFormat = STANDARD_NUMBER_FORMAT;
+  range.format.autofitColumns();
+  total.format.font.bold = true;
+  const colC = ws.getRange("C:C");
+  colC.format.horizontalAlignment = "Right";
+  const topBorder = total.format.borders.getItem("EdgeTop");
+  const bottomBorder = total.format.borders.getItem("EdgeBottom");
+  topBorder.style = "Continuous";
+  bottomBorder.style = "Double";
+};

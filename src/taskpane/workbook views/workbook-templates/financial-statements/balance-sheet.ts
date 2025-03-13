@@ -30,7 +30,7 @@ export async function wsBalanceSheet(session: Session) {
           : values.push([item.statementName, "", "", "", "", item.rawValue]);
         item.rowNumber = values.length + 8;
         const colNumber = item.subTotalCol ? 5 : 6;
-        item.mappable && sheetMapping.push(new ControlledInputMap(item, item.rowNumber, [1, colNumber], null));
+        item.mappable && sheetMapping.push(new ControlledInputMap(item, values.length, [1, colNumber], null));
         if (item.spaceAfter) values.push(["", "", "", "", "", ""]);
       });
       const excelRangeObj = new ExcelRangeObject({ row: 9, col: 1 }, values);

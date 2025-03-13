@@ -7,7 +7,7 @@ import { createEditableWorksheet } from "../../classes/editable-worksheet";
 import { ExcelRangeObject } from "../../classes/range-objects";
 import { Session } from "../../classes/session";
 import { Transaction } from "../../classes/transaction";
-import { ControlledInputMap, TransactionMap } from "../../classes/transaction-map";
+import { ControlledInputMap, StaticInputMap, TransactionMap } from "../../classes/transaction-map";
 import { TransactionUpdate } from "../../classes/transaction-update";
 import { ViewOptions } from "../../classes/view-options";
 import { reverseCustomMappingUrl, updateCerysCodeMappingUrl } from "../../fetching/apiEndpoints";
@@ -78,7 +78,6 @@ export async function oBARelevantTransView(session: Session) {
           "Nominal Name",
         ],
       ];
-      let rowNumber = 3;
       const sheetMapping: TransactionMap[] = [];
       relTrans.forEach((line) => {
         const cerysCodeObj = line.getCerysCodeObj(session);
@@ -94,9 +93,8 @@ export async function oBARelevantTransView(session: Session) {
         arr.push(line.getClientMappingObj(session).clientCode);
         arr.push(line.getClientMappingObj(session).clientCodeName);
         valuesToPost.push(arr);
-        const map = new TransactionMap(line.cerysTransactionId, line, rowNumber, null);
+        const map = new TransactionMap(line.cerysTransactionId, line, sheetMapping.length + 1, null);
         sheetMapping.push(map);
-        rowNumber += 1;
       });
       range.values = valuesToPost;
       const headerRange = ws.getRange("A1:I2");
@@ -430,7 +428,7 @@ export const createOBAWorksheet = async (session: Session) => {
         sheetMapping.push(
           new ControlledInputMap(
             obj,
-            values.length + 8,
+            sheetMapping.length + 1,
             [1, 2, 3, 5, 7],
             [clientFigsDrillableCollection, accountsDrillableCollection, adjustmentsDrillableCollection]
           )
@@ -466,10 +464,10 @@ export const handleOBAWorksheetClick = async (e: Excel.WorksheetSingleClickedEve
   const addressObj = interpretEventAddress(e);
   const map = sheet.sheetMapping.find(
     (mapping) =>
-      sheet.getCurrentRow(mapping.rowNumberOrig) === addressObj.firstRow &&
+      sheet.getCurrentRow(mapping.index) === addressObj.firstRow &&
       sheet.getCurrentColNumbers(mapping.colNumbers).includes(addressObj.firstCol)
   );
-  if (!map) return;
+  if (!map || map instanceof StaticInputMap) return;
   map.drillableCollections.forEach((collection) => {
     const valid = collection.colNumbers.find((num) => sheet.getCurrentColumn(num) === addressObj.firstCol);
     if (valid) console.log(collection);

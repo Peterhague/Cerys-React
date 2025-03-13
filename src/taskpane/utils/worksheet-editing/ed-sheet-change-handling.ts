@@ -112,7 +112,7 @@ export const updateEdSheetClientCodeMapping = async (
         affectedTran.updates.forEach((updatedItem) => {
           sheet.definedCols.forEach((definedCol) => {
             const col = colNumToLetter(sheet.getCurrentColumn(definedCol.colNumberOrig));
-            const row = sheet.getCurrentRow(map.rowNumberOrig);
+            const row = sheet.getCurrentRow(map.index);
             let update: { address: string; value?: string | number } = {
               address: `${col}${row}:${col}${row}`,
             };

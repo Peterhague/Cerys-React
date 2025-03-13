@@ -523,7 +523,7 @@ export interface DrillableCollectionProps {
 }
 
 export interface MapTrackingProps {
-  original: number;
+  index: number;
   current: number;
 }
 

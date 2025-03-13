@@ -356,7 +356,7 @@ export const handleEdSheetRowSort = async (session: Session, wsName: string) => 
         usedRange.forEach((row, index) => {
           if (row[uniqueCol - 1] === transaction.transactionNumber) {
             validateOtherValues(session, sheet, transaction, row);
-            sheet.mappingObject.rows.find((row) => row.original === map.rowNumberOrig).current = index + 1;
+            sheet.mappingObject.rows.find((row) => row.index === map.index).current = index + 1;
             protectedRowNumbers.push(index + 1);
           }
         });
