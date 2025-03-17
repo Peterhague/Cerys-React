@@ -139,8 +139,8 @@ export const cerysNomDetailView = async (session: Session, transactions: Transac
               )
             : null;
         const map = clientDrill
-          ? new TransactionMap(line.cerysTransactionId, line, sheetMapping.length + 1, [clientDrill])
-          : new TransactionMap(line.cerysTransactionId, line, sheetMapping.length + 1, null);
+          ? new TransactionMap(line.cerysTransactionId, line, valuesToPost.length, [clientDrill])
+          : new TransactionMap(line.cerysTransactionId, line, valuesToPost.length, null);
         sheetMapping.push(map);
         // rowNumber += 1;
       });

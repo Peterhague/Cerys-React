@@ -158,7 +158,10 @@ export const setExcelRangeValue = async (wsName: string, range: string, value: s
 export const setManyExcelRangeValues = async (wsName: string, updates: ExcelRangeUpdate[]) => {
   try {
     await Excel.run(async (context) => {
+      console.log(wsName);
+      console.log(updates);
       const ws = context.workbook.worksheets.getItem(wsName);
+      console.log(ws);
       updates.forEach((update) => {
         const range = ws.getRange(update.address);
         range.values = update.value;

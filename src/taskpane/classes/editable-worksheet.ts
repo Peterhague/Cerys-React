@@ -94,6 +94,38 @@ export class EditableWorksheet {
     return newTrans;
   }
 
+  getNextRowIndex() {
+    let base = 0;
+    this.mappingObject.rows.forEach((obj) => {
+      if (obj.index > base) base = obj.index;
+    });
+    return base + 1;
+  }
+
+  getNextRowToPopulate() {
+    let base = 0;
+    this.mappingObject.rows.forEach((obj) => {
+      if (obj.current > base) base = obj.current;
+    });
+    return base + 1;
+  }
+
+  getNextColIndex() {
+    let base = 0;
+    this.mappingObject.columns.forEach((obj) => {
+      if (obj.index > base) base = obj.index;
+    });
+    return base + 1;
+  }
+
+  getNextColToPopulate() {
+    let base = 0;
+    this.mappingObject.columns.forEach((obj) => {
+      if (obj.current > base) base = obj.current;
+    });
+    return base + 1;
+  }
+
   async updateMapping(session: Session) {
     const rowNumbers = [];
     const newMapping: TransactionMap[] = [];
@@ -111,7 +143,9 @@ export class EditableWorksheet {
     newTransToMap.forEach((tran) => {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
-      const newMap = new TransactionMap(tran.cerysTransactionId, tran, this.sheetMapping.length + 1, null);
+      const nextIndex = this.getNextRowIndex();
+      console.log("NEXT INDEXT: " + nextIndex);
+      const newMap = new TransactionMap(tran.cerysTransactionId, tran, nextIndex, null);
       newMapping.push(newMap);
       additionalTrans.push({ tran, map: newMap });
       rowNumbers.push(nextRow);
@@ -120,7 +154,7 @@ export class EditableWorksheet {
     const updates: ExcelRangeUpdate[] = [];
     console.log(this.definedCols);
     additionalTrans.forEach((obj) => {
-      const row = obj.map.index;
+      const row = this.getNextRowToPopulate();
       this.definedCols.forEach((definedCol) => {
         let value = definedCol.getTargetProperty(obj.tran.revertToDbIdNotation());
         if (

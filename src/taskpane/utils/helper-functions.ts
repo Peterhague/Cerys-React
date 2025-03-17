@@ -444,23 +444,24 @@ export const accessExcelContext = async (func, args) => {
 
 export const postEditableSheetEffects = async (session: Session, wsName: string, updates: ExcelRangeUpdate[]) => {
   session.options.allowEffects += updates.length;
+  console.log(wsName);
   setManyExcelRangeValues(wsName, updates);
   const sheet = session.editableSheets.find((ws) => ws.name === wsName);
   sheet.usedRange = await getWorksheetUsedRange(wsName);
 };
 
 export const updateEdSheetMappingObj = (edSheet: EditableWorksheet, updates: ExcelRangeUpdate[]) => {
+  const rowIndex = edSheet.getNextRowIndex();
+  const colIndex = edSheet.getNextColIndex();
   updates.forEach((update) => {
     const addressObj = interpretExcelAddress(update.address);
     for (let i = addressObj.firstCol; i < addressObj.lastCol + 1; i++) {
-      // const existingCol = edSheet.mappingObject.columns.find((col) => col.current === i);
-      // if (!existingCol) edSheet.mappingObject.columns.push({ index: i, current: i });
-      edSheet.mappingObject.columns.push({ index: edSheet.mappingObject.columns.length + 1, current: i });
+      const existingCol = edSheet.mappingObject.columns.find((col) => col.current === i);
+      if (!existingCol) edSheet.mappingObject.columns.push({ index: colIndex, current: i });
     }
     for (let i = addressObj.firstRow; i < addressObj.lastRow + 1; i++) {
-      // const existingRow = edSheet.mappingObject.rows.find((row) => row.current === i);
-      // if (!existingRow) edSheet.mappingObject.rows.push({ index: i, current: i });
-      edSheet.mappingObject.rows.push({ index: edSheet.mappingObject.rows.length + 1, current: i });
+      const existingRow = edSheet.mappingObject.rows.find((row) => row.current === i);
+      if (!existingRow) edSheet.mappingObject.rows.push({ index: rowIndex, current: i });
     }
   });
 };
