@@ -41,9 +41,6 @@ export class ControlledWorksheet {
     uniqueColumn: number | null,
     uniqueValue: string | null
   ) {
-    console.log(controlledRangeObject);
-    console.log(sheetMapping);
-    console.log(wsValues);
     insertStaticInputMaps(wsValues, sheetMapping);
     this.name = ws.name;
     this.edited = false;

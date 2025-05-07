@@ -79,10 +79,10 @@ export class EditableWorksheet {
     this.isValueInverted = this.testValueInversion(session);
   }
 
-  async renewTransactions(session: Session, assignmentTrans: Transaction[]) {
-    console.log(assignmentTrans);
-    // const newTrans = assignmentTrans.filter(this.transactionFilter);
+  async renewTransactions(session: Session) {
+    console.log(this);
     const newTrans = this.transactionFilter(session, this);
+    console.log(newTrans);
     newTrans.forEach((newTran) => {
       const transaction = this.transactions.find((tran) => tran.cerysTransactionId === newTran.cerysTransactionId);
       if (transaction) newTran.updates = transaction.updates;
@@ -144,7 +144,6 @@ export class EditableWorksheet {
       rowNumbers.sort((a, b) => b - a);
       const nextRow = rowNumbers[0] + 1;
       const nextIndex = this.getNextRowIndex();
-      console.log("NEXT INDEXT: " + nextIndex);
       const newMap = new TransactionMap(tran.cerysTransactionId, tran, nextIndex, null);
       newMapping.push(newMap);
       additionalTrans.push({ tran, map: newMap });
@@ -152,7 +151,6 @@ export class EditableWorksheet {
     });
     this.sheetMapping = newMapping;
     const updates: ExcelRangeUpdate[] = [];
-    console.log(this.definedCols);
     additionalTrans.forEach((obj) => {
       const row = this.getNextRowToPopulate();
       this.definedCols.forEach((definedCol) => {
@@ -183,8 +181,6 @@ export class EditableWorksheet {
         }
       });
     });
-    console.log(updates);
-    console.log("mapping updated here!!!");
     if (updates.length > 0) {
       await postEditableSheetEffects(session, this.name, updates);
       updateEdSheetMappingObj(this, updates);
@@ -192,7 +188,6 @@ export class EditableWorksheet {
   }
 
   async createChangeObjects(session: Session) {
-    console.log(session);
     const updates = [];
     const deletionObjects = [];
     this.sheetMapping.forEach((map) => {
@@ -215,16 +210,12 @@ export class EditableWorksheet {
         deletionObjects.push(createDeletionObject(map, this));
       }
     });
-    console.log(updates);
     updates.length > 0 && setManyExcelRangeValues(this.name, updates);
-    console.log(deletionObjects);
     if (deletionObjects.length > 0) {
       // needs to be sorted because the row numbers that the deletion objs reference are updated on each deletion,
       // therefore needs to be done from bottom of page up
       deletionObjects.sort((a, b) => b.rowNumber - a.rowNumber);
       const addressObj = interpretExcelAddress(deletionObjects[0].range);
-      console.log(addressObj);
-      console.log(deletionObjects);
       session.options.allowEffects += 1;
       handleCellDeletionUp(session, this, addressObj);
       await deleteWorksheetRangesUp(deletionObjects);
@@ -286,10 +277,7 @@ export class EditableWorksheet {
   }
 
   getCurrentRow(originalRow: number) {
-    console.log(originalRow);
-    console.log(this.mappingObject);
     const rowObj = this.mappingObject.rows.find((obj) => obj.index === originalRow && obj.current > 0);
-    console.log(rowObj);
     return rowObj ? rowObj.current : undefined;
   }
 

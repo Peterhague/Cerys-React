@@ -7,6 +7,7 @@ import { Transaction } from "../../classes/transaction";
 import { TransactionMap } from "../../classes/transaction-map";
 import { postJournalBatch, updateTransactionBatch } from "../../fetching/apiEndpoints";
 import { fetchOptionsTransBatch, fetchOptionsTransBatchUpdate } from "../../fetching/generateOptions";
+import { AssignmentProps, TransactionProps } from "../../interfaces/interfaces";
 import { DELETE_SHEET_PROMPT } from "../../static-values/views";
 import { colNumToLetter } from "../excel-col-conversion";
 import { getUpdatedTransactions, updateAssignmentFigures } from "../helper-functions";
@@ -65,11 +66,13 @@ export const submitTransactionUpdates = async (session: Session) => {
 export const processUpdateBatch = async (session: Session) => {
   const options = fetchOptionsTransBatchUpdate(session);
   const updatedAssignmentAndTransDB = await fetch(updateTransactionBatch, options);
-  const { processedTrans, assignment } = await updatedAssignmentAndTransDB.json();
+  const { processedTrans, assignment }: { processedTrans: TransactionProps[]; assignment: AssignmentProps } =
+    await updatedAssignmentAndTransDB.json();
   const updatedTransactions = processedTrans;
   updatedTransactions.forEach((tran) => {
-    tran.processedAsAsset = false;
+    assignment.transactions.find((tr) => tr._id === tran._id).processedAsAsset = false;
   });
+  console.log(updatedTransactions);
   session.assignment = new Assignment(assignment);
   return updatedTransactions;
 };

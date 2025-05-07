@@ -49,15 +49,12 @@ export const handleEditableSheetChange = async (
   e: Excel.WorksheetChangedEventArgs | QuasiEventObject,
   wsName: string
 ) => {
-  console.log(e);
   if (session.options.allowEffects > 0) {
     console.log("EFFECTS ALLOWED ONLY");
     session.options.allowEffects -= 1;
     return;
   }
-  console.log("change registered");
   const isRangeEdited = parseChangeEventObjectType(e);
-  console.log(isRangeEdited);
   const { sheet, addressObj, definedCol } = parseEdSheetChangeEventDetails(session, e, wsName);
   if (!isRangeEdited && !(e instanceof QuasiEventObject)) {
     handleOtherEdSheetChange(session, e, wsName, sheet, addressObj);
@@ -68,7 +65,6 @@ export const handleEditableSheetChange = async (
   await handleSheetDataCorruption(session, wsName, sheet);
   sheet.usedRange = await getWorksheetUsedRange(wsName);
   session.options.autoFillOverride = false;
-  console.log(handledSuccessfully);
   if (handledSuccessfully && definedCol.type === "cerysCode") {
     await completeCerysCodeUpdate(session, e, sheet, addressObj);
   } else if (handledSuccessfully && definedCol.type === "cerysName") {
@@ -131,7 +127,7 @@ export const updateEdSheetClientCodeMapping = async (
 export const renewEdSheetsTransRefs = async (session: Session) => {
   let promptSheetDeletion = false;
   for (let i = 0; i < session.editableSheets.length; i++) {
-    await session.editableSheets[i].renewTransactions(session, session.assignment.transactions);
+    await session.editableSheets[i].renewTransactions(session);
     if (session.editableSheets[i].transactions.length === 0) {
       session.editableSheets[i].promptDeletion = true;
       promptSheetDeletion = true;
