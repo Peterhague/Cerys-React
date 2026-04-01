@@ -99,8 +99,8 @@ import AddCorpClientIndis from "./Add Client/Add Corporate Client/AddCorpClientI
 import { GlobalInterfaces } from "../interfaces/interfaces";
 import { ViewOptions } from "../classes/view-options";
 import { InTray, InTrayAndItem } from "../classes/in-trays/global";
-import IntraySummary from "./Assignment/Intray/InTraySummary";
-import IntrayDetails from "./Assignment/Intray/InTrayDetails";
+import IntraySummary from "./Assignment/Intray/IntraySummary";
+import IntrayDetails from "./Assignment/Intray/IntrayDetails";
 
 interface AppBodyProps {
   session: Session;
